@@ -9,6 +9,7 @@ sys.path.insert(0, HERE)
 from data_ability import (INDUSTRY, SUB_INDUSTRIES, POSITIONS, ABILITIES,
                           POSITION_ABILITY, PREREQUISITES)
 import panorama_ext as X
+import data_major_standard as MS
 
 LV = {"L1": 1, "L2": 2, "L3": 3}
 TYPE_CN = {"knowledge": "知识", "skill": "技能", "literacy": "素养"}
@@ -244,6 +245,30 @@ for c in list(K.COURSES) + list(CL.LIB_COURSES):
                          "lab": lab_by_equip.get(r["equip"])} for r in reqs],
     })
 
+# ── 专业教学标准：能力测评 V2.0 的「选专业」入口 ──
+clib_by = {c["id"]: c for c in course_lib}
+majors = []
+for m in MS.MAJORS:
+    mm = dict(m)
+    mm["positions"] = [
+        {"id": p["id"], "stdText": p["stdText"], "match": p["match"],
+         "name": pos_by[p["id"]]["name"]}
+        for p in m["positions"] if p["id"] in pos_by
+    ]
+    mm["courses"] = [
+        {"id": cid, "name": clib_by[cid]["name"], "type": clib_by[cid]["type"],
+         "block": clib_by[cid]["block"]}
+        for cid in m["courses"] if cid in clib_by
+    ]
+    majors.append(mm)
+
+# 平台侧实训条件字典：把 equip 键的含义集中定义（V2.0 第 4 层勾选用）
+labDict = {}
+for c in course_lib:
+    for r in c.get("practiceReq", []):
+        labDict.setdefault(r["equip"], {"name": r["item"], "spec": r["spec"],
+                                        "source": r["source"]})
+
 DATA = {
     "industry": industry,
     "subIndustries": subs,
@@ -255,6 +280,8 @@ DATA = {
     "school": X.SCHOOL,
     "courseLib": course_lib,
     "schoolLabs": CL.SCHOOL_LABS,
+    "majors": majors,
+    "labDict": labDict,
     "buildDemo": X.BUILD_DEMO,
     "buildNodes": X.BUILD_NODES,
 }
@@ -276,4 +303,5 @@ print(f"映射边 {len(K.MAPPINGS)} 条 · 有支撑的能力项 {len(support)} 
 print(f"课程体系 {len(course_lib)} 门 · "
       f"知识节点 {sum(c['leafCount'] for c in course_lib)} · 映射边 {len(ALL_MAPPINGS)} · "
       f"课程可支撑能力项 {len({a['id'] for c in course_lib for a in c['abilities']})}")
+print(f"专业教学标准 {len(majors)} 个专业 · 实训条件字典 {len(labDict)} 项")
 print(f"输出 {out_path}（{len(payload)/1024:.0f} KB 数据）")
