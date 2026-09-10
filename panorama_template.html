@@ -1,0 +1,3561 @@
+<title>行业分析 · 能力全景</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --plane:#f5f3f9; --card:#ffffff; --card-2:#faf9fd;
+  --ink:#191524; --ink-2:#5c5670; --muted:#8e88a1;
+  --rule:#e7e3f0; --rule-2:#f0edf7;
+  --brand:#5b3fd6; --brand-soft:#ede9fb; --brand-ink:#3d29a0;
+  --lv1:#b9a9ee; --lv2:#7f63d8; --lv3:#4a3aa7;
+  --src4:#b9a9ee; --src3:#9077e2; --src2:#6a4fce; --src1:#43349b;
+  --good:#0ca30c; --warn:#fab219; --crit:#d03b3b; --warn-ink:#7a5a08;
+  --good-bg:#e8f6e8; --warn-bg:#fdf3de; --crit-bg:#fbeaea;
+  --shadow:0 1px 2px rgba(25,21,36,.05), 0 8px 24px -12px rgba(25,21,36,.14);
+  --pop-shadow:0 12px 40px -12px rgba(25,21,36,.3), 0 2px 6px rgba(25,21,36,.06);
+  --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --plane:#0f0d16; --card:#1c1a26; --card-2:#232030;
+    --ink:#f4f2fa; --ink-2:#b0aac2; --muted:#847e96;
+    --rule:#2b2739; --rule-2:#252132;
+    --brand:#9b8bef; --brand-soft:#282343; --brand-ink:#c3b8f7;
+    --lv1:#54477f; --lv2:#8371d6; --lv3:#b8aaf2;
+    --src4:#5b4d86; --src3:#7d6ad4; --src2:#a493ea; --src1:#c8bcf6;
+    --good:#0ca30c; --warn:#fab219; --crit:#e06a6a; --warn-ink:#e8c876;
+    --good-bg:#122b12; --warn-bg:#332810; --crit-bg:#341a1a;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    --pop-shadow:0 12px 40px -12px rgba(0,0,0,.75), 0 2px 6px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --plane:#0f0d16; --card:#1c1a26; --card-2:#232030;
+  --ink:#f4f2fa; --ink-2:#b0aac2; --muted:#847e96;
+  --rule:#2b2739; --rule-2:#252132;
+  --brand:#9b8bef; --brand-soft:#282343; --brand-ink:#c3b8f7;
+  --lv1:#54477f; --lv2:#8371d6; --lv3:#b8aaf2;
+  --src4:#5b4d86; --src3:#7d6ad4; --src2:#a493ea; --src1:#c8bcf6;
+  --good:#0ca30c; --warn:#fab219; --crit:#e06a6a; --warn-ink:#e8c876;
+  --good-bg:#122b12; --warn-bg:#332810; --crit-bg:#341a1a;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  --pop-shadow:0 12px 40px -12px rgba(0,0,0,.75), 0 2px 6px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);font-family:var(--sans);
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:700;letter-spacing:-.012em}
+p{margin:0}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input{font:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);font-weight:500}
+
+/* ── platform shell ── */
+.app{display:flex;min-height:100vh}
+.lnav{width:206px;flex:0 0 206px;background:var(--card);border-right:1px solid var(--rule);
+  position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:0}
+.lbrand{display:flex;align-items:center;gap:9px;padding:18px 18px 16px;border-bottom:1px solid var(--rule-2)}
+.ldot{width:22px;height:22px;border-radius:7px;flex:0 0 22px;
+  background:linear-gradient(140deg,#7b5cf0,#4a2fc4 60%,#6b3fd0)}
+.lname{font-size:12.5px;font-weight:700;line-height:1.3}
+.lgroup{padding:14px 10px 4px}
+.lgt{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);padding:0 10px 7px}
+.lmenu{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:8px 10px;
+  border-radius:8px;color:var(--ink-2);font-size:13px;transition:background .12s,color .12s}
+.lmenu:hover{background:var(--rule-2);color:var(--ink)}
+.lmenu.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
+.lmenu i{width:15px;height:15px;flex:0 0 15px;display:block;opacity:.75}
+.lmenu.on i{opacity:1}
+.lfoot{margin-top:auto;padding:14px 18px 16px;border-top:1px solid var(--rule-2);
+  font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.7}
+
+.panel{flex:1;min-width:0;display:flex;flex-direction:column}
+.ptop{background:var(--card);border-bottom:1px solid var(--rule);padding:16px 28px 0;
+  position:sticky;top:0;z-index:20}
+.ptop-r{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;padding-bottom:14px}
+.pt-l{flex:1;min-width:260px}
+.pt-t{font-size:17px}
+.pt-d{font-size:12px;color:var(--muted);margin-top:3px}
+.pt-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.field{display:flex;align-items:center;gap:9px;border:1px solid var(--rule);border-radius:10px;
+  background:var(--card-2);padding:0 13px;height:40px;min-width:230px;position:relative}
+.field.wide{width:100%;margin-bottom:13px;height:42px}
+.field.wide input{font-size:14.5px;font-weight:500}
+.fico{font-size:15px;color:var(--muted);flex:0 0 auto;line-height:1}
+.optg{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);padding:7px 9px 4px}
+.field:focus-within{border-color:var(--brand)}
+.field input{border:none;background:none;outline:none;flex:1;min-width:0;font-size:13.5px;
+  color:var(--ink);padding:0}
+.field input::placeholder{color:var(--muted)}
+.field .fk{font-size:11px;color:var(--muted);flex:0 0 auto}
+.fbtn{height:30px;padding:0 18px;flex:0 0 auto;margin-right:-5px}
+.opts{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);
+  border:1px solid var(--rule);border-radius:10px;box-shadow:var(--pop-shadow);padding:5px;
+  z-index:30;max-height:280px;overflow:auto}
+.opts[hidden]{display:none}
+.opt{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:7px 9px;
+  border-radius:7px;font-size:13px}
+.opt:hover{background:var(--rule-2)}
+.opt[disabled]{cursor:default;color:var(--muted)}
+.opt[disabled]:hover{background:none}
+.opt-c{margin-left:auto;font-size:10.5px;color:var(--muted)}
+.btn{background:var(--brand);color:#fff;border-radius:9px;padding:0 15px;height:36px;font-size:13px;
+  font-weight:500;transition:filter .14s;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--rule)}
+.btn.ghost:hover{border-color:var(--brand);color:var(--ink)}
+.btn.ghost.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink);font-weight:500}
+.tabs.l1{display:flex;gap:4px;overflow-x:auto}
+.tabs.l1 .tab{padding:9px 2px 11px;margin-right:20px;font-size:14.5px;font-weight:500;color:var(--muted);
+  border-bottom:2px solid transparent;white-space:nowrap;transition:color .12s,border-color .12s;
+  display:flex;align-items:center;gap:7px}
+.tabs.l1 .tab:hover{color:var(--ink)}
+.tabs.l1 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brand);font-weight:700}
+.tabs.l2{display:flex;gap:3px;padding:3px;background:var(--card);border:1px solid var(--rule);
+  border-radius:11px;margin-bottom:18px;width:fit-content;max-width:100%;overflow-x:auto}
+.tabs.l2 .tab{padding:6px 14px;border-radius:8px;font-size:13px;color:var(--ink-2);white-space:nowrap;
+  transition:all .13s;display:flex;align-items:center;gap:7px;border:none}
+.tabs.l2 .tab:hover{background:var(--rule-2);color:var(--ink)}
+.tabs.l2 .tab[aria-selected="true"]{background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
+.tab .tc{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.tab[aria-selected="true"] .tc{color:var(--brand)}
+.panebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.notesfoot{margin-top:34px;padding-top:20px;border-top:1px solid var(--rule)}
+.foot-d{margin-top:11px;font-size:11.5px;color:var(--muted);line-height:1.65;max-width:78ch}
+.metarow{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0;
+  border-bottom:1px solid var(--rule-2);font-size:11.5px}
+.metarow:last-child{border-bottom:none}
+.mk{color:var(--muted);flex:0 0 auto}
+.mv{color:var(--ink-2);text-align:right;font-size:11px}
+.l1pane[hidden]{display:none}
+.body{padding:22px 28px 60px;max-width:1360px;width:100%}
+@media (max-width:1000px){
+  .app{display:block}
+  .lnav{position:static;width:auto;height:auto;flex:none;border-right:none;border-bottom:1px solid var(--rule)}
+  .lgroup{display:flex;flex-wrap:wrap;gap:2px;padding:8px}.lgt{display:none}.lmenu{width:auto}
+  .lfoot{display:none}
+  .ptop{padding:14px 16px 0;position:static}.body{padding:16px 16px 48px}
+}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:13px}
+.pad{padding:18px 20px}
+
+/* ── hero: sunburst + key info ── */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 316px;gap:16px;align-items:stretch}
+@media (max-width:1120px){.hero{grid-template-columns:1fr}}
+.burst{position:relative;padding:14px 14px 10px;display:flex;flex-direction:column}
+.burst-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:2px 6px 8px}
+.burst-t{font-size:13px;font-weight:700}
+.burst svg{width:100%;height:auto;display:block}
+#burst{max-width:840px;margin:0 auto;width:100%}
+.posview{overflow-y:auto;max-height:min(700px,74vh);padding:2px 2px 4px;flex:1;min-height:0}
+.posview[hidden]{display:none}
+.posview .pgroup:last-child{margin-bottom:0}
+.posview .pos-grid{grid-template-columns:repeat(2,1fr)}
+@media (max-width:1400px){.posview .pos-grid{grid-template-columns:1fr}}
+.seg{cursor:pointer;transition:opacity .14s}
+.seg:hover{opacity:.82}
+.burst.focus .seg.dim{opacity:.16}
+.lead{stroke:var(--rule);stroke-width:1;fill:none}
+.plabel{font-size:11px;fill:var(--ink);font-family:var(--sans);cursor:pointer}
+.plabel:hover{fill:var(--brand)}
+.plabel.nocov{display:none}
+body.diag .plabel.nocov{display:inline}
+.slabel{font-size:11.5px;font-weight:700;fill:var(--brand-ink);pointer-events:none;font-family:var(--sans)}
+.slabel.pend{fill:var(--muted);font-weight:400}
+.pnum{font-size:11px;font-family:var(--mono);font-weight:600;fill:var(--ink-2);pointer-events:none}
+.ctext{fill:var(--ink);font-family:var(--sans);pointer-events:none}
+.cnum{fill:var(--ink);font-family:var(--mono);font-weight:600;pointer-events:none}
+.csub{fill:var(--muted);font-family:var(--mono);pointer-events:none}
+.blegend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 6px 2px;border-top:1px solid var(--rule-2);
+  margin-top:6px}
+.blegend[hidden]{display:none}
+.bl{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2)}
+.bl i{width:12px;height:12px;border-radius:3px;display:block;flex:0 0 12px}
+.bl i.hatch{background:var(--card-2);border:1px dashed var(--rule)}
+
+.keyi{display:flex;flex-direction:column;gap:12px;min-width:0}
+.kbox{padding:14px 16px}
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);
+  border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.kt{background:var(--card);padding:11px 13px}
+.kt-v{font-family:var(--mono);font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.kt-k{font-size:11px;color:var(--ink-2);margin-top:2px}
+.kt-s{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:1px}
+.rank{display:flex;flex-direction:column;gap:6px;margin-top:9px}
+.rk{display:grid;grid-template-columns:94px 1fr 20px;gap:8px;align-items:center;font-size:11.5px;
+  width:100%;text-align:left}
+.rk:hover .rk-n{color:var(--brand)}
+.rk-n{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .12s}
+.rk-b{height:13px;background:var(--rule-2);border-radius:3px;display:flex;gap:2px;overflow:hidden}
+.rk-b>i{display:block;height:100%}
+.rk-v{font-family:var(--mono);font-size:11px;text-align:right;color:var(--ink)}
+.chipbar{display:flex;gap:7px;flex-wrap:wrap}
+.ichip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--rule);border-radius:8px;
+  background:var(--card);padding:7px 11px;font-size:12px;color:var(--ink-2);transition:all .13s;
+  position:relative}
+.ichip:hover{border-color:var(--brand);color:var(--ink)}
+.ichip b{font-family:var(--mono);font-size:11px;color:var(--brand);font-weight:600}
+.ichip .look{font-size:10.5px;color:var(--muted);font-family:var(--mono)}
+.ichip.crit b{color:var(--crit)}
+.ichip.warn b{color:var(--warn-ink)}
+
+/* popover */
+#pop{position:fixed;z-index:70;background:var(--card);border:1px solid var(--rule);border-radius:12px;
+  box-shadow:var(--pop-shadow);width:min(470px,90vw);max-height:min(520px,74vh);overflow:auto;
+  padding:15px 17px;opacity:0;pointer-events:none;transform:translateY(4px);
+  transition:opacity .14s,transform .14s}
+#pop.on{opacity:1;pointer-events:auto;transform:none}
+.pop-t{font-size:13.5px;font-weight:700;margin-bottom:3px}
+.pop-d{font-size:11.5px;color:var(--muted);margin-bottom:11px}
+.brow{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid var(--rule-2);align-items:flex-start}
+.brow:last-child{border-bottom:none}
+.bmark{flex:0 0 16px;width:16px;height:16px;border-radius:5px;margin-top:2px;display:grid;
+  place-items:center;font-size:10px;font-weight:700;font-family:var(--mono)}
+.bmark.in{background:var(--good-bg);color:var(--good)}
+.bmark.ex{background:var(--crit-bg);color:var(--crit)}
+.bmark.q{background:var(--warn-bg);color:var(--warn-ink)}
+.bitem{font-size:12.5px;font-weight:500}
+.breason{font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.6}
+.pop-note{border-left:2px solid var(--brand);padding-left:12px;font-size:12.5px;color:var(--ink-2);
+  line-height:1.7}
+
+/* pills & bits */
+.pill{font-size:10.5px;font-family:var(--mono);padding:2px 7px;border-radius:20px;
+  border:1px solid transparent;white-space:nowrap}
+.pill.core{background:var(--brand-soft);color:var(--brand-ink)}
+.pill.ext{background:var(--card-2);color:var(--muted);border-color:var(--rule)}
+.pill.k{background:var(--card-2);color:var(--ink-2);border-color:var(--rule)}
+.pill.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.pill.crit{background:var(--crit-bg);color:var(--crit)}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.ico{width:15px;height:15px;flex:0 0 15px;display:grid;place-items:center;border-radius:50%;
+  font-size:10px;font-weight:700;font-family:var(--mono)}
+.ico.critical{background:var(--crit);color:#fff}
+.ico.warning{background:var(--warn);color:#3d2c00}
+.ico.good{background:var(--good);color:#fff}
+.star{color:var(--brand);font-size:10px;flex:0 0 auto}
+.tdot{width:5px;height:5px;border-radius:50%;flex:0 0 auto}
+.tdot.knowledge{background:var(--lv1)}.tdot.skill{background:var(--lv2)}.tdot.literacy{background:var(--lv3)}
+.gapdot{width:6px;height:6px;border-radius:50%;background:var(--crit);flex:0 0 auto;display:none}
+body.diag .gapdot.on{display:block}
+
+/* tab panes */
+.pane[hidden]{display:none}
+.pane{padding-top:18px}
+.sect-d{color:var(--ink-2);font-size:12.5px;max-width:66ch;margin-bottom:16px}
+
+.scopebox{margin-bottom:16px}
+.scope-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:11px}
+.scope-g{margin-bottom:9px}
+.scope-gt{font-size:11.5px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.scope-gt button{font-size:10.5px;color:var(--brand);font-family:var(--mono)}
+.scope-gt button:hover{text-decoration:underline}
+.scope-row{display:flex;gap:7px;flex-wrap:wrap}
+.pchip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--rule);border-radius:9px;
+  background:var(--card-2);padding:6px 11px;font-size:12.5px;color:var(--ink-2);transition:all .13s}
+.pchip:hover{border-color:var(--brand);color:var(--ink)}
+.pchip[aria-pressed="true"]{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink);font-weight:500}
+.pchip .pc-n{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.pchip[aria-pressed="true"] .pc-n{color:var(--brand)}
+.pchip .pc-x{width:13px;height:13px;border-radius:4px;border:1px solid var(--rule);display:grid;
+  place-items:center;font-size:8px;color:transparent;flex:0 0 13px}
+.pchip[aria-pressed="true"] .pc-x{background:var(--brand);border-color:var(--brand);color:#fff}
+.scope-d{margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.6}
+.scopewarn{display:flex;gap:9px;padding:10px 13px;border-radius:9px;background:var(--warn-bg);
+  color:var(--warn-ink);font-size:12px;line-height:1.6;margin-bottom:14px;align-items:flex-start}
+
+/* 能力结构对比 */
+.cmpcard{margin-bottom:16px}
+.cmp-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.cmp-body{overflow-x:auto}
+.cmp-body svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.cmp-body .radar{width:100%;max-width:520px;margin:0 auto}
+.cmp-body .ablradar{max-width:730px}
+.rlab[data-abl]{cursor:pointer}
+.rlab[data-abl]:hover{fill:var(--brand)}
+.rlab.gap{fill:var(--ink);font-weight:500}
+.cmp-body .dumb{width:100%;min-width:640px;max-width:820px}
+.cmp-empty{padding:26px 10px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.7}
+.cmp-note{margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.7}
+.cmp-note b{color:var(--ink-2)}
+.cmp-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;padding-top:9px;
+  border-top:1px solid var(--rule-2);font-size:11.5px;color:var(--ink-2)}
+.cmp-legend i{width:14px;height:11px;border-radius:2px;display:block;flex:0 0 14px}
+.lg-req{border:1.5px solid var(--muted);background:transparent}
+.lg-att{background:var(--lv3);opacity:.55;border:1.5px solid var(--lv3)}
+.lg-gap{background:var(--crit)}
+/* radar */
+.rgrid{fill:none;stroke:var(--rule);stroke-width:1}
+.raxis{stroke:var(--rule-2);stroke-width:1}
+.rtick{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+.rreq{fill:var(--muted);fill-opacity:.10;stroke:var(--muted);stroke-width:1.6;stroke-dasharray:4 3}
+.ratt{fill:var(--lv3);fill-opacity:.30;stroke:var(--lv3);stroke-width:2}
+.rgap{fill:var(--crit);stroke:var(--card);stroke-width:2;cursor:default}
+.rok{fill:var(--lv3);stroke:var(--card);stroke-width:1.5;cursor:default}
+.rlab{font-size:11px;fill:var(--ink);font-family:var(--sans);cursor:default}
+.rlab2{font-family:var(--mono);font-size:9.5px;fill:var(--muted)}
+/* dumbbell */
+.dgrid{stroke:var(--rule-2);stroke-width:1}
+.dtick{font-family:var(--mono);font-size:9.5px;fill:var(--muted)}
+.dtrack{stroke:var(--rule-2);stroke-width:1}
+.dgap{stroke:var(--crit);stroke-width:3;stroke-linecap:round}
+.datt{fill:var(--card);stroke:var(--lv3);stroke-width:2;cursor:default}
+.dreq{fill:var(--muted);stroke:var(--card);stroke-width:1.5;cursor:default}
+.dlab{font-size:11.5px;fill:var(--ink-2);font-family:var(--sans);cursor:pointer}
+.dlab.gap{fill:var(--ink)}
+.dlab:hover{fill:var(--brand)}
+.dnum{font-family:var(--mono);font-size:10.5px;fill:var(--crit)}
+
+/* 本校支撑情况 */
+.supsum{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;
+  background:var(--card-2);border:1px solid var(--rule);margin-bottom:10px}
+.supsum-i{display:flex;flex-direction:column;gap:1px;flex:0 0 auto}
+.supsum-i b{font-family:var(--mono);font-size:16px;font-weight:600;line-height:1.1}
+.supsum-i span{font-size:10px;color:var(--muted)}
+.supsum-arrow{font-family:var(--mono);font-size:10.5px;color:var(--muted);flex:0 0 auto}
+.supgap{display:flex;gap:9px;padding:12px 14px;border-radius:10px;background:var(--crit-bg);
+  font-size:12.5px;line-height:1.7;color:var(--ink);align-items:flex-start;margin-bottom:10px}
+.supgap b{font-weight:700}
+.sup-manual{font-size:11.5px;color:var(--ink-2);padding:7px 11px;border-radius:8px;
+  background:var(--card-2);border:1px solid var(--rule);margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.supc{margin-bottom:12px}
+.supc-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sup{border-left:2px solid var(--rule);padding:7px 0 7px 11px;margin-bottom:6px}
+.sup:hover{border-left-color:var(--brand)}
+.sup-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.sup-n{font-size:12.5px;font-weight:500}
+.suprel{font-size:10px;font-family:var(--mono);padding:1px 6px;border-radius:4px;
+  background:var(--rule-2);color:var(--muted)}
+.suprel.covers{background:var(--brand-soft);color:var(--brand-ink)}
+.lvtag{font-family:var(--mono);font-size:9.5px;font-weight:600;padding:1px 6px;border-radius:5px}
+.lvtag.L1{background:var(--lv1);color:#241d3d}
+.lvtag.L2{background:var(--lv2);color:#fff}
+.lvtag.L3{background:var(--lv3);color:#fff}
+:root[data-theme="dark"] .lvtag.L1,:root:not([data-theme="light"]) .lvtag.L1{color:#e6e1f5}
+:root[data-theme="dark"] .lvtag.L3,:root:not([data-theme="light"]) .lvtag.L3{color:#1c1a26}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]) .lvtag.L1{color:#241d3d}
+  :root:not([data-theme="dark"]) .lvtag.L3{color:#fff}
+}
+.sup-c{font-size:10.5px;color:var(--muted);flex:0 0 auto}
+.sup-chain{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.55}
+.sup-note{font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.6}
+.sup-anchor{font-size:9.5px;background:var(--rule-2);color:var(--muted);padding:1px 5px;
+  border-radius:4px;margin-right:6px}
+
+/* 新行业构建流程 */
+.buildov{position:fixed;inset:0;z-index:90;background:rgba(20,16,32,.5);display:grid;
+  place-items:center;padding:24px}
+.buildov[hidden]{display:none}
+.buildbox{background:var(--card);border:1px solid var(--rule);border-radius:15px;
+  width:min(1080px,96vw);max-height:92vh;display:flex;flex-direction:column;
+  box-shadow:0 24px 70px -20px rgba(20,16,32,.5)}
+.build-h{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+  padding:20px 24px 15px;border-bottom:1px solid var(--rule)}
+.build-b{flex:1;overflow-y:auto;padding:18px 24px 24px}
+.bcols{display:grid;grid-template-columns:320px minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.bcols{grid-template-columns:1fr}}
+.bstep{display:grid;grid-template-columns:18px 34px 1fr;gap:8px;align-items:baseline;
+  padding:7px 0;border-bottom:1px solid var(--rule-2);font-size:12px}
+.bstep:last-child{border-bottom:none}
+.bs-dot{width:15px;height:15px;border-radius:50%;display:grid;place-items:center;font-size:9px;
+  align-self:start;margin-top:2px;background:var(--rule-2);color:var(--muted)}
+.bstep.ok .bs-dot{background:var(--good);color:#fff}
+.bstep.gate .bs-dot{background:var(--warn);color:#3d2c00}
+.bstep.run .bs-dot{background:var(--brand);animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.bs-id{font-size:9.5px;color:var(--muted)}
+.bs-n{font-weight:500;color:var(--ink-2)}
+.bstep.ok .bs-n,.bstep.run .bs-n,.bstep.gate .bs-n{color:var(--ink)}
+.bs-note,.bs-m{grid-column:3;font-size:10.5px;color:var(--muted);line-height:1.5}
+.bs-m{font-family:var(--mono);font-size:9.5px}
+.bstep.wait{opacity:.5}
+.bpanel{min-width:0}
+.brun{display:flex;align-items:center;gap:13px;padding:40px 20px;font-size:13px}
+.spin{width:20px;height:20px;border-radius:50%;border:2.5px solid var(--rule);
+  border-top-color:var(--brand);animation:spin .8s linear infinite;flex:0 0 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gate,.bdone{border:1px solid var(--rule);border-radius:12px;padding:17px 19px;background:var(--card-2)}
+.gate-h,.bdone-h{display:flex;gap:11px;align-items:flex-start;padding-bottom:13px;
+  border-bottom:1px solid var(--rule);margin-bottom:14px}
+.gate-h b,.bdone-h b{font-size:14.5px}
+.gate-d{font-size:11.5px;color:var(--ink-2);line-height:1.65;margin-top:4px}
+.gate-s{margin-bottom:16px}
+.gate-st{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px}
+.gate-subs{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media (max-width:700px){.gate-subs{grid-template-columns:1fr}}
+.gsub{border:1px solid var(--rule);border-radius:9px;padding:9px 11px;background:var(--card)}
+.gsub-h{display:flex;align-items:center;gap:7px;font-size:12.5px;margin-bottom:6px}
+.gsub-e{display:flex;gap:5px;flex-wrap:wrap}
+.gate-note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6}
+.gq{padding:9px 0;border-bottom:1px solid var(--rule-2)}
+.gq:last-child{border-bottom:none}
+.gq-t{font-size:12.5px;color:var(--ink-2);line-height:1.6;margin-bottom:7px}
+.gq-seg{width:190px}
+.gpos{display:flex;gap:6px;flex-wrap:wrap}
+.gate-f{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding-top:14px;
+  border-top:1px solid var(--rule);margin-top:4px}
+.gate-fd{font-size:11.5px;color:var(--muted)}
+.bcheck{display:flex;gap:9px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--rule-2);font-size:12px}
+.bcheck:last-of-type{border-bottom:none}
+.bc-n{flex:0 0 auto;color:var(--ink)}
+.bc-d{color:var(--muted);font-size:11px;margin-left:auto;text-align:right}
+
+/* 测评：三步式 */
+.rep-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:24px 0 14px}
+#reportZone:empty{display:none}
+
+.stepcard{margin-bottom:14px;position:relative}
+.step-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:13px}
+.stepno{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-size:11.5px;font-weight:700;font-family:var(--mono)}
+.step-tt{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.step-tt b{font-size:14px}
+.step-d{font-size:11.5px;color:var(--muted);line-height:1.6}
+.s3warn{font-size:11.5px;color:var(--warn-ink);background:var(--warn-bg);padding:5px 10px;border-radius:7px}
+.s3body[hidden]{display:none}
+.srcpick{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.srcpick.s3col{grid-template-columns:repeat(3,1fr)}
+@media (max-width:1080px){.srcpick.s3col{grid-template-columns:1fr}}
+@media (max-width:880px){.srcpick{grid-template-columns:1fr}}
+.libbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.lib-d{font-size:11.5px;color:var(--muted)}
+.libg{margin-bottom:14px}
+.libg-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:7px}
+.libc{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:11px;align-items:center;
+  width:100%;text-align:left;padding:10px 13px;border:1px solid var(--rule);border-radius:10px;
+  background:var(--card);margin-bottom:6px;transition:all .13s}
+.libc:hover{border-color:var(--brand)}
+.libc .pc-x{width:17px;height:17px;border-radius:5px;border:1px solid var(--rule);display:grid;
+  place-items:center;font-size:10px;color:transparent}
+.libc-n{font-size:13px;font-weight:500}
+.libc-m{font-size:11px;color:var(--muted);margin-top:2px}
+.libc-r{font-family:var(--mono);font-size:11px;color:var(--ink-2);text-align:right;white-space:nowrap}
+.libc-r b{font-size:13px}
+.libwrap{margin-bottom:6px}
+.libc{margin-bottom:0;cursor:pointer;grid-template-columns:22px minmax(0,1fr) auto auto}
+.libx{font-size:11px;color:var(--muted);font-family:var(--mono);padding:3px 8px;border-radius:6px;
+  border:1px solid var(--rule);background:var(--card);white-space:nowrap}
+.libx:hover{border-color:var(--brand);color:var(--brand)}
+.libin{border:1px solid var(--rule);border-top:none;border-radius:0 0 10px 10px;
+  background:var(--card-2);padding:12px 15px 10px;margin:-1px 0 0}
+.libin-g{margin-bottom:11px}
+.libin-g:last-child{margin-bottom:0}
+.libin-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:6px}
+.libin-i{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 4px;font-size:12.5px;
+  border-bottom:1px solid var(--rule-2);cursor:pointer;border-radius:6px}
+.libin-i:last-child{border-bottom:none}
+.libin-i:hover{background:var(--rule-2)}
+.libin-i .pc-x{width:15px;height:15px;flex:0 0 15px;border-radius:4px;border:1px solid var(--rule);
+  display:grid;place-items:center;font-size:9px;color:transparent}
+.libin-i[aria-checked="true"] .pc-x{background:var(--brand);border-color:var(--brand);color:#fff}
+.libin-i[aria-checked="true"] b{color:var(--brand-ink)}
+.libc[data-st="part"]{background:var(--brand-soft);border-color:var(--brand)}
+.libc[data-st="part"] .pc-x{background:var(--card);border-color:var(--brand);color:var(--brand)}
+.libc[data-st="on"]{background:var(--brand-soft);border-color:var(--brand)}
+.libc[data-st="on"] .pc-x{background:var(--brand);border-color:var(--brand);color:#fff}
+.rx-lab{display:flex;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px solid var(--rule-2);font-size:12px}
+.rx-lab:last-child{border-bottom:none}
+.rx-lab .st{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:5px;flex:0 0 auto}
+.rx-lab b{flex:0 0 auto;white-space:nowrap}
+.rx-lab .st.have{background:var(--good-bg);color:var(--good)}
+.rx-lab .st.miss{background:var(--crit-bg);color:var(--crit)}
+.rx-lab-s{color:var(--muted);font-size:11px;flex:1 1 100%;line-height:1.6;padding-left:2px}
+.rx-kp{display:flex;align-items:baseline;gap:7px;padding:5px 0;font-size:12px;flex-wrap:wrap}
+.rx-kp .pill{flex:0 0 auto}
+.rx-kp-r{color:var(--muted);font-size:11px;flex:1 1 100%;line-height:1.6;padding-left:2px}
+.src{display:flex;flex-direction:column;gap:7px;text-align:left;padding:14px 16px;border-radius:11px;
+  border:1px solid var(--rule);background:var(--card-2);transition:all .14s;position:relative}
+.src:hover{border-color:var(--brand)}
+.src[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);box-shadow:0 0 0 1px var(--brand)}
+.src-h{display:flex;align-items:center;gap:8px}
+.src-t{font-size:13.5px;font-weight:600;color:var(--ink)}
+.src[aria-pressed="true"] .src-t{color:var(--brand-ink)}
+.src-d{font-size:12px;color:var(--ink-2);line-height:1.65}
+.src-d b{color:var(--ink)}
+.src-m{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.lnk{font-size:11.5px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.lnk:hover{color:var(--brand)}
+.asshd{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 14px;border-radius:10px;
+  background:var(--card);border:1px solid var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:10px;
+  position:static}
+.asshd[hidden]{display:none}
+.stalebar{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:9px;background:var(--warn-bg);
+  color:var(--warn-ink);font-size:12px;line-height:1.55;margin-bottom:10px;flex-wrap:wrap}
+.stalebar[hidden]{display:none}
+.stalebar b{color:var(--ink)}
+.dcta-in{padding:22px 24px;border:1px dashed var(--rule);border-radius:12px;background:var(--card-2);
+  font-size:12.5px;color:var(--ink-2);line-height:1.75}
+.dcta-in b{color:var(--ink)}
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:var(--ink);color:#fff;
+  font-size:12.5px;padding:10px 16px;border-radius:9px;opacity:0;pointer-events:none;transition:all .2s;z-index:200;
+  box-shadow:0 6px 22px rgba(0,0,0,.22);max-width:min(560px,86vw);line-height:1.5}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* 缺口处置建议 */
+.rx-lead{font-size:12.5px;color:var(--ink-2);line-height:1.75;padding:13px 16px;border-radius:11px;
+  background:var(--card-2);border:1px solid var(--rule);margin-bottom:12px}
+.rx-lead b{color:var(--ink)}
+.rx{margin-bottom:12px}
+.rx-h{display:flex;align-items:flex-start;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--rule);margin-bottom:13px}
+.rx-no{font-size:12px;color:var(--muted);padding-top:3px;flex:0 0 auto}
+.rx-t{font-size:14.5px;font-weight:700}
+.rx-m{font-size:11.5px;color:var(--muted);margin-top:3px}
+.rx-rule,.rx-chain{font-size:12px;color:var(--ink-2);line-height:1.7;margin-bottom:10px}
+.rx-kk{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:5px}
+.rx-warn{font-size:12px;line-height:1.65;color:var(--warn-ink);background:var(--warn-bg);
+  padding:9px 12px;border-radius:8px;margin-bottom:11px}
+.rx-sec{margin-bottom:13px}
+.rx-sec:last-child{margin-bottom:0}
+.rx-i{border-left:2px solid var(--rule);padding:8px 0 8px 12px;margin-bottom:8px}
+.rx-i:hover{border-left-color:var(--brand)}
+.rx-ih{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.rx-n{font-size:13px;font-weight:500;color:var(--ink)}
+.rx-n:hover{color:var(--brand);text-decoration:underline;text-underline-offset:3px}
+.rx-d{font-size:12.5px;color:var(--ink-2);line-height:1.7;margin-top:5px}
+.rx-k{font-size:11.5px;color:var(--muted);margin-top:6px}
+.rx-k .rx-kk{display:inline;margin-right:7px;text-transform:none;letter-spacing:.04em}
+.rx-how{margin-top:7px}
+.rx-how .pts{margin-top:2px}
+.rx-p{font-size:12px;color:var(--ink-2);line-height:1.65;padding:5px 0}
+.rx-pn{display:block;font-size:11px;color:var(--muted)}
+.rx-r{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--rule-2)}
+.rx-r:last-child{border-bottom:none}
+.rx-r a{font-size:12.5px;color:var(--brand);text-decoration:none}
+.rx-r a:hover{text-decoration:underline;text-underline-offset:3px}
+.rx-ex{font-size:11px;color:var(--muted);flex:1 1 100%;line-height:1.6;padding-left:2px}
+.rx-none{font-size:12px;color:var(--muted);line-height:1.65}
+.rx-dom{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);margin:12px 0 6px}
+.rx-dom:first-child{margin-top:0}
+.rx-fold{position:relative;overflow:hidden}
+.rx-fold[data-fold="0"]{max-height:300px}
+.rx-fold[data-fold="0"] .rx-mask{position:absolute;left:0;right:0;bottom:0;height:64px;
+  background:linear-gradient(transparent,var(--card))}
+.rx-fold[data-fold="1"] .rx-mask{display:none}
+.rx-more{margin-top:9px}
+
+/* 版本条与导出 */
+.verbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 13px;border-radius:10px;
+  background:var(--card-2);border:1px solid var(--rule);margin-bottom:14px}
+.ver-t{font-size:11px;color:var(--ink-2)}
+.ver-d{font-size:11.5px;color:var(--muted)}
+.mdbox{width:100%;height:210px;border:1px solid var(--rule);border-radius:9px;background:var(--card-2);
+  color:var(--ink-2);font-family:var(--mono);font-size:10.5px;line-height:1.6;padding:10px 12px;
+  resize:vertical;outline:none}
+.mdbox:focus{border-color:var(--brand)}
+
+/* 打印：只留报告正文 */
+@media print{
+  .lnav,.ptop,.scopebox,.viewsw,.chip,.btn,.verbar,.notesfoot,.drawer,.scrim,#tip,#pop,
+  .tabs,.mtools,.panebar,.dcta,.srcpick,.stepcard,.asshd,.stalebar,#toast{display:none!important}
+  body{background:#fff}
+  .app{display:block}
+  .body{padding:0;max-width:none}
+  .card{break-inside:avoid;border-color:#ddd;box-shadow:none}
+  .find,.cmpcard{break-inside:avoid}
+  .pane[hidden],.l1pane[hidden]{display:none!important}
+  @page{margin:14mm}
+}
+
+
+/* 测评 · 人工填报 */
+.modenote{display:flex;flex-direction:column;gap:8px;padding:14px 17px;border-radius:11px;
+  background:var(--card-2);border:1px solid var(--rule);font-size:12.5px;color:var(--ink-2);
+  line-height:1.7;margin-bottom:16px}
+.modenote b{color:var(--ink)}
+.mn-next{font-size:11.5px;color:var(--brand-ink);background:var(--brand-soft);border-radius:8px;
+  padding:8px 11px;line-height:1.6}
+.fillbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+.fprog{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.fp-b{width:130px;height:6px;border-radius:3px;background:var(--rule);overflow:hidden}
+.fp-b>i{display:block;height:100%;background:var(--lv3);border-radius:3px;transition:width .2s;width:0}
+.fp-t{font-size:11.5px;color:var(--ink-2)}
+.fgroup{margin-bottom:14px}
+.fg-h{display:flex;align-items:center;gap:9px;padding:0 2px 7px;font-size:12px;color:var(--ink-2)}
+.fg-n{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.fg-bulk{margin-left:auto;display:flex;gap:5px}
+.fhead,.frow{display:grid;grid-template-columns:minmax(0,1fr) 196px 116px 176px;gap:10px;
+  align-items:center;padding:7px 12px}
+.fhead{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding-bottom:4px}
+.frow{background:var(--card);border:1px solid var(--rule);border-radius:10px;margin-bottom:5px;
+  transition:border-color .13s}
+.frow.done{border-color:var(--rule-2);background:var(--card-2)}
+.frow.none{border-left:3px solid var(--crit)}
+.frow.partial{border-left:3px solid var(--warn)}
+.frow.full{border-left:3px solid var(--good)}
+.fn{display:flex;align-items:center;gap:7px;min-width:0}
+.fn-t{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fmeta{font-family:var(--mono);font-size:10px;color:var(--muted);flex:0 0 auto;margin-left:auto}
+.seg{display:flex;gap:2px;padding:2px;background:var(--card-2);border:1px solid var(--rule);border-radius:8px}
+.seg button{flex:1;padding:4px 0;border-radius:6px;font-size:11.5px;color:var(--ink-2);transition:all .12s}
+.seg button:hover{background:var(--rule-2);color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff;font-weight:500}
+.seg.lv button[aria-pressed="true"]{background:var(--lv3)}
+.seg[data-disabled="1"]{opacity:.34;pointer-events:none}
+.fby{width:100%;border:1px solid var(--rule);background:var(--card-2);border-radius:8px;
+  padding:5px 9px;font-size:11.5px;color:var(--ink);outline:none;min-width:0}
+.fby:focus{border-color:var(--brand)}
+.fby::placeholder{color:var(--muted)}
+@media (max-width:1000px){
+  .fhead{display:none}
+  .frow{grid-template-columns:1fr;gap:7px}
+  .fmeta{margin-left:0}
+}
+.covtable{width:100%;border-collapse:separate;border-spacing:0}
+.covtable th{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;text-align:left;padding:0 10px 8px}
+.covtable td{padding:8px 10px;border-top:1px solid var(--rule-2);font-size:12.5px}
+.covtable td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.covbar{display:flex;gap:2px;height:13px;border-radius:3px;overflow:hidden;min-width:100px}
+.covbar>i{display:block;height:100%}
+
+/* view switch */
+.viewsw{display:flex;gap:2px;padding:2px;background:var(--card-2);border:1px solid var(--rule);
+  border-radius:9px;flex:0 0 auto}
+.vs{padding:4px 12px;border-radius:7px;font-size:12px;color:var(--ink-2);transition:all .13s}
+.vs:hover{color:var(--ink)}
+.vs[aria-pressed="true"]{background:var(--card);color:var(--brand-ink);font-weight:500;box-shadow:var(--shadow)}
+
+/* 树形连线图 */
+#treeWrap{display:flex;flex-direction:column;flex:1;min-height:0;padding:0 2px}
+#treeWrap[hidden]{display:none}
+.selbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 4px 9px;
+  border-bottom:1px solid var(--rule-2);min-height:36px}
+.sb-t{font-size:13.5px;font-weight:700}
+.sb-d{font-size:11.5px;color:var(--muted);line-height:1.5}
+.tree{overflow:auto;flex:1;min-height:360px;max-height:min(700px,74vh);padding:6px 0 6px}
+.tree svg{width:100%;height:auto;display:block;min-width:660px}
+.gch{font-family:var(--mono);font-size:9px;letter-spacing:.12em;fill:var(--muted);
+  text-transform:uppercase;dominant-baseline:hanging}
+.glink{fill:none;stroke-width:1.4;transition:opacity .18s,stroke-width .18s}
+.glink.base{stroke:var(--rule);opacity:.95}
+.glink.lv1{stroke:var(--lv1);opacity:.22}
+.glink.lv2{stroke:var(--lv2);opacity:.22}
+.glink.lv3{stroke:var(--lv3);opacity:.22}
+.glink.on{opacity:.85;stroke-width:1.7}
+.glink.off{opacity:.05}
+.gnode{cursor:pointer;transition:opacity .18s}
+.gnode rect{transition:fill .15s,stroke .15s}
+.gnode:hover rect{stroke:var(--brand)}
+.gnode.off{opacity:.2}
+.gnode.sel rect{stroke:var(--brand);stroke-width:2;fill:var(--brand-soft)}
+.gnode.ab .abbg{fill:transparent}
+.gnode.ab.on .abbg{fill:var(--rule-2)}
+.gnode.ab:hover .abbg{fill:var(--rule-2);stroke:var(--brand);stroke-width:1}
+.gnode.ab.sel .abbg{fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5}
+.gt{font-family:var(--sans);font-size:11.5px;fill:var(--ink)}
+.gt-ind{font-size:13px;font-weight:700;fill:var(--brand-ink)}
+.gt-ab{font-size:11px}
+.gt-n{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.gt-tier{font-family:var(--mono);font-size:9px;fill:var(--brand)}
+.gapc{display:none}
+body.diag .gapc{display:block}
+body.diag .gnode.nocovnode rect{stroke-dasharray:3 3;stroke:var(--crit)}
+
+.pgroup{margin-bottom:22px}
+.pg-h{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.pg-t{font-size:13px;font-weight:700}
+.pg-r{flex:1;height:1px;background:var(--rule)}
+.pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:1180px){.pos-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:680px){.pos-grid{grid-template-columns:1fr}}
+.pos{text-align:left;padding:14px 16px;width:100%;display:block;background:var(--card);
+  border:1px solid var(--rule);border-radius:11px;transition:border-color .14s,box-shadow .14s}
+.pos:hover{border-color:var(--brand);box-shadow:var(--shadow)}
+.pos-t{display:flex;align-items:baseline;gap:8px}
+.pos-n{font-size:14px;font-weight:700}
+.pos-id{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.pos-a{font-size:11.5px;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pos-d{font-size:12px;color:var(--ink-2);margin-top:7px;line-height:1.55;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pos-m{margin-top:10px;padding-top:9px;border-top:1px solid var(--rule-2);display:flex;
+  align-items:center;gap:14px;font-size:11px;color:var(--muted)}
+.pos-m b{font-family:var(--mono);font-size:13px;color:var(--ink);font-weight:600}
+.pos-diag{margin-top:9px;padding-top:8px;border-top:1px dashed var(--rule);display:none;
+  align-items:center;gap:8px;font-size:11.5px}
+body.diag .pos-diag{display:flex}
+.bar{flex:1;height:5px;border-radius:3px;background:var(--rule);overflow:hidden;min-width:36px}
+.bar>i{display:block;height:100%;border-radius:3px;background:var(--lv3)}
+
+.dm{display:grid;grid-template-columns:126px 1fr 40px;gap:10px;align-items:center;padding:5px 0;font-size:12.5px}
+.dm-n{color:var(--ink-2);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dm-b{height:15px;background:var(--rule-2);border-radius:4px;overflow:hidden}
+.dm-b>i{display:block;height:100%;background:var(--lv3);border-radius:4px}
+.dm-v{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
+
+.mtools{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.chip{font-size:11.5px;padding:4px 10px;border-radius:20px;border:1px solid var(--rule);
+  background:var(--card);color:var(--ink-2);transition:all .13s}
+.chip:hover{border-color:var(--brand);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.mscroll{overflow-x:auto;border:1px solid var(--rule);border-radius:12px;background:var(--card)}
+table.mx{border-collapse:separate;border-spacing:0;width:100%;min-width:880px}
+.mx th,.mx td{padding:0;vertical-align:middle}
+.mx thead th{position:sticky;z-index:3;background:var(--card);border-bottom:1px solid var(--rule);
+  padding:9px 4px;font-size:10.5px;font-weight:500;color:var(--ink-2);line-height:1.35;
+  text-align:center;vertical-align:bottom}
+.mx thead tr.subrow th{top:0;height:26px;padding:5px 6px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--muted);background:var(--card-2);
+  border-bottom:1px solid var(--rule-2)}
+.mx thead tr.namerow th{top:26px}
+.mx thead th.corner{text-align:left;padding-left:16px;z-index:4;left:0;border-right:1px solid var(--rule);
+  font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;font-size:9.5px;color:var(--muted)}
+.mx td.gsep,.mx thead th.gsep{border-left:1px solid var(--rule)}
+.mx th.rowh{position:sticky;left:0;z-index:2;background:var(--card);text-align:left;
+  border-right:1px solid var(--rule);border-bottom:1px solid var(--rule-2);padding:0;
+  font-weight:400;width:230px;min-width:230px}
+.rowh-b{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 16px;width:100%;text-align:left}
+.rowh-b:hover .rn{color:var(--brand)}
+.rn{font-size:12.5px;color:var(--ink);transition:color .12s;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;flex:1;min-width:0}
+.mx td.cell{border-bottom:1px solid var(--rule-2);text-align:center;height:29px}
+.cellin{width:100%;height:23px;display:grid;place-items:center;border-radius:4px;font-family:var(--mono);
+  font-size:9.5px;font-weight:600;margin:0 2px;transition:transform .1s}
+.cellin.L1{background:var(--lv1);color:#241d3d}
+.cellin.L2{background:var(--lv2);color:#fff}
+.cellin.L3{background:var(--lv3);color:#fff}
+:root[data-theme="dark"] .cellin.L1,:root:not([data-theme="light"]) .cellin.L1{color:#e6e1f5}
+:root[data-theme="dark"] .cellin.L3,:root:not([data-theme="light"]) .cellin.L3{color:#1c1a26}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]) .cellin.L1{color:#241d3d}
+  :root:not([data-theme="dark"]) .cellin.L3{color:#fff}
+}
+.cellin:hover{transform:scale(1.14)}
+.cellin.none{background:transparent;border:1px dashed var(--rule)}
+.mx tr.grp th,.mx tr.grp td{background:var(--card-2);border-bottom:1px solid var(--rule)}
+.mx tr.grp th{position:sticky;left:0;z-index:2;padding:5px 12px 5px 16px;font-family:var(--mono);
+  font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500}
+body.diag .mx th.nocov,body.diag .mx td.nocov{
+  background-image:repeating-linear-gradient(45deg,transparent,transparent 4px,var(--rule-2) 4px,var(--rule-2) 5px)}
+.nocov-tag{display:none;margin-top:4px}
+body.diag .nocov-tag{display:block}
+.legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:11px;font-size:11.5px;color:var(--ink-2)}
+.lg{display:flex;align-items:center;gap:6px}
+.lg i{width:13px;height:13px;border-radius:4px;display:block}
+.lg i.none{border:1px dashed var(--rule)}
+
+.trendbox{border:1px dashed var(--rule);border-radius:12px;background:var(--card-2);padding:14px 18px 4px}
+.trend-h{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:2px}
+.infoi{width:17px;height:17px;flex:0 0 17px;border-radius:50%;border:1px solid var(--rule);
+  color:var(--muted);font-family:var(--mono);font-size:10px;font-weight:600;line-height:1;
+  display:inline-grid;place-items:center;transition:all .13s;cursor:help}
+.infoi:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+.tr{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--rule-2)}
+.tr:last-child{border-bottom:none}
+.tr-n{font-family:var(--mono);font-size:10.5px;color:var(--muted);flex:0 0 22px;padding-top:3px}
+.tr-b{font-size:12.5px;color:var(--ink-2);line-height:1.65}
+.newab{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:880px){.newab{grid-template-columns:1fr}}
+.na{padding:13px 15px;text-align:left;width:100%;background:var(--card);border:1px solid var(--rule);
+  border-radius:11px;transition:border-color .14s}
+.na:hover{border-color:var(--brand)}
+.na-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.na-n{font-size:13.5px;font-weight:700}
+.na-f{font-size:11.5px;color:var(--ink-2);margin-top:6px;line-height:1.6}
+.na-more{margin-top:9px;padding-top:8px;border-top:1px solid var(--rule-2);font-size:11.5px;
+  color:var(--brand);display:flex;align-items:center;gap:4px}
+.na:hover .na-more{gap:7px}
+
+.qgrid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;align-items:start}
+@media (max-width:880px){.qgrid{grid-template-columns:1fr}}
+.srcbar{display:flex;gap:2px;height:32px;margin:12px 0 11px}
+.srcbar>i{display:block;border-radius:3px}
+.srclg{display:flex;flex-direction:column;gap:6px}
+.sl{display:flex;align-items:center;gap:8px;font-size:12px}
+.sl i{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+.sl b{font-family:var(--mono);font-size:12px;font-weight:600;margin-left:auto;font-variant-numeric:tabular-nums}
+.sl span.n{color:var(--muted);font-size:11px;font-family:var(--mono);width:40px;text-align:right}
+.qrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:8px 0;
+  border-bottom:1px solid var(--rule-2);font-size:12.5px}
+.qrow:last-child{border-bottom:none}
+.qrow b{font-family:var(--mono);font-size:13.5px;font-weight:600}
+.qrow .k{color:var(--ink-2)}
+.qnote{margin-top:13px;padding:11px 13px;background:var(--card-2);border-radius:9px;font-size:12px;
+  color:var(--ink-2);line-height:1.65;border:1px solid var(--rule-2)}
+
+/* diagnose */
+.dcta{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;
+  padding:52px 28px;border:1px dashed var(--rule);border-radius:14px;background:var(--card)}
+.dcta-t{font-size:16px;font-weight:700}
+.dcta-d{font-size:12.5px;color:var(--ink-2);line-height:1.7;max-width:52ch}
+.diagbanner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;
+  background:var(--good-bg);font-size:12.5px;color:var(--ink);line-height:1.55;margin-bottom:12px}
+.diagbanner[hidden]{display:none}
+.dnote{display:flex;gap:9px;padding:11px 14px;border-radius:9px;background:var(--warn-bg);font-size:12px;
+  color:var(--warn-ink);line-height:1.6;margin-bottom:16px;align-items:flex-start}
+.majors{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media (max-width:880px){.majors{grid-template-columns:1fr}}
+.mj{padding:14px 16px}
+.mj-n{font-size:14px;font-weight:700}
+.mj-c{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
+.mj-p{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.mp{display:flex;align-items:center;gap:9px;font-size:12px}
+.mp-n{flex:0 0 88px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-v{font-family:var(--mono);font-size:11.5px;width:32px;text-align:right;font-variant-numeric:tabular-nums}
+.find{display:flex;gap:12px;padding:14px 16px;border-radius:11px;border:1px solid var(--rule);
+  background:var(--card);margin-bottom:10px}
+.find-s{width:3px;border-radius:2px;flex:0 0 3px}
+.find.critical .find-s{background:var(--crit)}
+.find.warning .find-s{background:var(--warn)}
+.find.good .find-s{background:var(--good)}
+.find-t{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.find-b{font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.7}
+.advice{margin-top:14px;padding:15px 17px;border-radius:11px;background:var(--brand-soft);font-size:13px;
+  line-height:1.75;color:var(--brand-ink)}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(20,16,32,.42);opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:min(440px,92vw);background:var(--card);
+  border-left:1px solid var(--rule);box-shadow:-18px 0 48px -24px rgba(20,16,32,.4);z-index:50;
+  transform:translateX(100%);transition:transform .24s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.dr-h{padding:19px 22px 15px;border-bottom:1px solid var(--rule);flex:0 0 auto}
+.dr-k{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dr-t{font-size:18px;font-weight:700;letter-spacing:-.015em;margin-top:5px}
+.dr-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.x{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--muted);
+  flex:0 0 28px;font-size:15px;line-height:1}
+.x:hover{background:var(--rule-2);color:var(--ink)}
+.dr-b{flex:1;overflow-y:auto;padding:17px 22px 40px}
+.dr-s{margin-bottom:20px}
+.dr-st{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;font-weight:500}
+.dr-def{font-size:13px;line-height:1.7;color:var(--ink-2);border-left:2px solid var(--brand);padding-left:13px}
+.lvl{border:1px solid var(--rule);border-radius:10px;padding:11px 13px;margin-bottom:8px}
+.lvl-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.lvl-b{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-family:var(--mono);
+  font-size:9.5px;font-weight:600;flex:0 0 20px}
+.lvl-b.L1{background:var(--lv1);color:#241d3d}
+.lvl-b.L2{background:var(--lv2);color:#fff}
+.lvl-b.L3{background:var(--lv3);color:#fff}
+:root[data-theme="dark"] .lvl-b.L1,:root:not([data-theme="light"]) .lvl-b.L1{color:#e6e1f5}
+:root[data-theme="dark"] .lvl-b.L3,:root:not([data-theme="light"]) .lvl-b.L3{color:#1c1a26}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]) .lvl-b.L1{color:#241d3d}
+  :root:not([data-theme="dark"]) .lvl-b.L3{color:#fff}
+}
+.lvl-n{font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+.lvl-req{margin-left:auto;font-size:10.5px}
+.lvl-d{font-size:12.5px;line-height:1.7}
+.pts{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.pts li{font-size:12px;color:var(--ink-2);line-height:1.55;padding-left:14px;position:relative}
+.pts li::before{content:"";position:absolute;left:3px;top:8px;width:4px;height:4px;border-radius:50%;
+  background:var(--muted)}
+.assess{margin-top:8px;font-size:11.5px;color:var(--muted);font-family:var(--mono);line-height:1.6}
+.ev{padding:10px 0;border-bottom:1px solid var(--rule-2)}
+.ev:last-child{border-bottom:none}
+.ev-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ev-t{font-size:12.5px;font-weight:500}
+.ev-x{font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.6;padding-left:11px;
+  border-left:2px solid var(--rule)}
+.ev-u{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:5px;word-break:break-all}
+.arow{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--rule-2);
+  width:100%;text-align:left}
+.arow:last-child{border-bottom:none}
+.arow:hover .arow-n{color:var(--brand)}
+.arow-n{font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  transition:color .12s}
+.arow-w{font-family:var(--mono);font-size:11px;color:var(--muted);flex:0 0 auto;font-variant-numeric:tabular-nums}
+.warnbox{padding:11px 13px;border-radius:9px;background:var(--warn-bg);font-size:12px;line-height:1.6;
+  color:var(--warn-ink);display:flex;gap:8px;align-items:flex-start}
+
+#tip{position:fixed;z-index:80;pointer-events:none;background:var(--ink);color:var(--plane);
+  border-radius:8px;padding:8px 11px;font-size:11.5px;line-height:1.55;max-width:260px;opacity:0;
+  transition:opacity .12s;box-shadow:0 8px 24px -8px rgba(0,0,0,.4)}
+#tip.on{opacity:1}
+#tip b{font-weight:700}
+#tip .tk{font-family:var(--mono);font-size:10px;opacity:.72;display:block;margin-top:3px}
+</style>
+
+<div class="app">
+  <aside class="lnav">
+    <div class="lbrand"><div class="ldot" aria-hidden="true"></div>
+      <div class="lname">AIGC 智慧课堂<br>教学平台 · 管理端</div></div>
+    <div class="lgroup">
+      <div class="lgt">概览</div>
+      <button class="lmenu"><i>▤</i>数据概览</button>
+      <button class="lmenu on"><i>◎</i>行业分析</button>
+    </div>
+    <div class="lgroup">
+      <div class="lgt">教务</div>
+      <button class="lmenu"><i>▤</i>教务基础数据</button>
+      <button class="lmenu"><i>▤</i>课程计划管理</button>
+      <button class="lmenu"><i>▤</i>账号与角色</button>
+    </div>
+    <div class="lgroup">
+      <div class="lgt">系统</div>
+      <button class="lmenu"><i>▤</i>系统配置</button>
+    </div>
+    <div class="lfoot" id="lfoot"></div>
+  </aside>
+
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">行业分析</h1>
+          <div class="pt-d">输入行业名称，查看该行业的岗位与能力全景；可叠加本校专业布局做覆盖诊断</div>
+        </div>
+      </div>
+      <div class="field wide">
+        <span class="fico" aria-hidden="true">⌕</span>
+        <input id="indInput" value="旅游业" aria-label="行业名称" autocomplete="off"
+               placeholder="输入或选择行业，如 旅游业、住宿业">
+        <button class="btn fbtn" id="goBtn">分析</button>
+        <div class="opts" id="opts" hidden></div>
+      </div>
+      <div class="tabs l1" id="tabs" role="tablist"></div>
+    </div>
+
+    <div class="body">
+     <div class="l1pane" id="l1-panorama">
+      <div class="tabs l2" id="tabs2" role="tablist"></div>
+
+      <div class="pane" id="pane-graph" role="tabpanel">
+      <div class="hero">
+        <div class="card burst" id="burstCard">
+          <div class="burst-h">
+            <span class="burst-t">四层能力全景</span>
+            <span class="pill k" id="viewHint">点子行业或岗位向右追　点能力项向左反推</span>
+            <span style="flex:1"></span>
+            <div class="viewsw" role="group" aria-label="展示形式">
+              <button class="vs" data-bview="ring" aria-pressed="false">环形</button>
+              <button class="vs" data-bview="tree" aria-pressed="true">树形</button>
+              <button class="vs" data-bview="cards" aria-pressed="false">卡片</button>
+            </div>
+          </div>
+          <div id="burst" hidden></div>
+
+          <div id="treeWrap">
+            <div class="selbar" id="selBar"></div>
+            <div class="tree" id="posTree"></div>
+          </div>
+
+          <div class="blegend" id="ringLegend" hidden>
+            <span class="bl"><i style="background:var(--lv1)"></i>L1 认知/辅助级</span>
+            <span class="bl"><i style="background:var(--lv2)"></i>L2 独立操作级</span>
+            <span class="bl"><i style="background:var(--lv3)"></i>L3 综合应用级</span>
+            <span class="bl"><i class="hatch"></i>未纳入本期范围</span>
+            <span class="bl" style="color:var(--muted)">外环每一格 = 一条岗位能力要求　悬停高亮楔形 · 点击展开详情</span>
+          </div>
+          <div class="blegend" id="treeLegend">
+            <span class="bl"><i style="background:var(--lv1)"></i>L1</span>
+            <span class="bl"><i style="background:var(--lv2)"></i>L2</span>
+            <span class="bl"><i style="background:var(--lv3)"></i>L3</span>
+            <span class="bl" style="color:var(--muted)">连线颜色 = 该岗位对该能力的要求等级</span>
+            <span class="bl" style="color:var(--muted)">点子行业或岗位向右追　点能力项向左反推　★ 核心能力　×N 被几个岗位要求</span>
+          </div>
+          <div id="posWrap" class="posview" hidden></div>
+        </div>
+
+        <div class="keyi">
+          <div class="kgrid" id="kgrid"></div>
+          <div class="card kbox">
+            <div class="eyebrow">岗位能力强度　<span style="text-transform:none;letter-spacing:0">按 L3 项数排序</span></div>
+            <div class="rank" id="rank"></div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="pane" id="pane-matrix" role="tabpanel" hidden>
+        <p class="sect-d"><b id="mxLead"></b>${1} 个岗位 × ${2} 条能力项，其中 ${3} 个格子有要求。格子颜色代表该岗位对该能力的要求等级，空白表示该岗位不要求这条能力。列按子行业分组。</p>
+        <div class="card pad" style="margin-bottom:18px">
+          <div class="eyebrow" style="margin-bottom:11px">领域分布</div>
+          <div id="domainChart"></div>
+        </div>
+        <div class="mtools" id="mtools"></div>
+        <div class="mscroll"><table class="mx" id="matrix"></table></div>
+        <div class="legend">
+          <span class="lg"><i style="background:var(--lv1)"></i>L1</span>
+          <span class="lg"><i style="background:var(--lv2)"></i>L2</span>
+          <span class="lg"><i style="background:var(--lv3)"></i>L3</span>
+          <span class="lg"><i class="none"></i>该岗位不要求</span>
+          <span class="lg" style="color:var(--muted)">★ 核心能力（被 2 个以上岗位要求且有国家级来源）</span>
+        </div>
+      </div>
+
+      <div class="pane" id="pane-trends" role="tabpanel" hidden>
+        <div class="trendbox">
+          <div class="trend-h"><span class="eyebrow">产业趋势</span>
+            <button class="infoi" data-pop="trend" aria-label="产业趋势的来源">i</button></div>
+          <div id="trendList"></div>
+        </div>
+        <div class="trend-h" style="margin:24px 0 10px">
+          <span class="eyebrow">新兴能力项 · 国标尚未收录</span>
+          <button class="infoi" data-pop="emerging" aria-label="这一批能力项是什么">i</button></div>
+        <div class="newab" id="flagged"></div>
+      </div>
+
+     </div>
+
+     <div class="l1pane" id="l1-assess" hidden>
+
+      <div class="asshd" id="assHd" hidden>
+        <span class="pill core" id="ahNo"></span>
+        <span class="ver-t mono" id="ahAt"></span>
+        <span class="ver-d" id="ahDesc"></span>
+        <span style="flex:1"></span>
+        <button class="chip" id="ahOverlay">叠加到行业全景</button>
+        <button class="chip" data-ver="export">导出报告</button>
+        <button class="chip" data-ver="hist" id="ahHist" hidden>历史</button>
+      </div>
+      <div class="stalebar" id="ahStale" hidden>
+        <span class="ico warning">!</span>
+        <span id="ahStaleText"></span>
+        <button class="chip" id="ahRecalc">按当前设置重算</button>
+      </div>
+      <div class="diagbanner" id="diagBanner" hidden>
+        <span class="ico good">✓</span>
+        <span id="diagBannerText"></span>
+        <button class="chip" id="diagOff">取消叠加</button>
+      </div>
+
+      <div class="card pad stepcard" id="step1">
+        <div class="step-h"><span class="stepno">1</span>
+          <div class="step-tt"><b>测评方式</b><span class="step-d">按本校数据沉淀程度选择——沉淀越深，结论越可追溯</span></div>
+        </div>
+        <div class="srcpick s3col" id="tabs3" role="radiogroup">
+          <button class="src" data-mode="manual" role="radio" aria-checked="true" aria-pressed="true">
+            <span class="src-h"><span class="src-t">能力现状评估</span></span>
+            <span class="src-m">需逐条人工填报 · 结论不可追溯</span></button>
+          <button class="src" data-mode="lib" role="radio" aria-checked="false" aria-pressed="false">
+            <span class="src-h"><span class="src-t">课程体系评估</span></span>
+            <span class="src-m" id="srcMlib"></span></button>
+          <button class="src" data-mode="auto" role="radio" aria-checked="false" aria-pressed="false">
+            <span class="src-h"><span class="src-t">教学成果测评</span></span>
+            <span class="src-m" id="srcMauto"></span></button>
+        </div>
+      </div>
+
+      <div class="card pad stepcard scopebox" id="step2">
+        <div class="step-h"><span class="stepno">2</span>
+          <div class="step-tt"><b>测评范围</b><span class="step-d">选中的岗位决定填报清单、诊断报告与能力图谱的范围</span></div>
+          <span style="flex:1"></span>
+          <span class="pill k" id="scopeCount"></span>
+          <button class="chip" data-scope="all">全选</button>
+          <button class="chip" data-scope="none">清空</button>
+        </div>
+        <div id="scopeBar"></div>
+      </div>
+
+      <div class="card pad stepcard" id="step3">
+        <div class="step-h"><span class="stepno">3</span>
+          <div class="step-tt"><b id="s3t">采集本校数据</b><span class="step-d" id="s3d"></span></div>
+          <span style="flex:1"></span>
+          <span class="s3warn" id="scopeWarn" hidden>请先在第 2 步选择至少一个岗位</span>
+          <button class="btn" id="runBtn">生成诊断报告</button>
+        </div>
+
+        <div class="s3body" id="pane-manual" hidden>
+          <div class="fillbar">
+            <div class="fprog"><div class="fp-b"><i id="fpBar"></i></div><span class="fp-t mono" id="fpText"></span></div>
+            <span style="flex:1"></span>
+            <button class="chip" id="onlyCore" aria-pressed="false">只填核心能力</button>
+            <button class="chip" id="clearFill">清空</button>
+            <button class="lnk" id="loadSample">载入示例填报</button>
+          </div>
+          <div id="fillTable"></div>
+        </div>
+
+        <div class="s3body" id="pane-lib" hidden>
+          <div class="libbar">
+            <span class="pill k" id="libCount"></span>
+            <span class="lib-d">勾课程即勾中它下面全部节点；展开后也可以只勾其中几条——本校开了这门课但没上某些模块时这样更准。</span>
+            <span style="flex:1"></span>
+            <button class="chip" data-lib="all">全选</button>
+            <button class="chip" data-lib="none">全部取消</button>
+          </div>
+          <div id="libList"></div>
+        </div>
+
+        <div class="s3body" id="pane-diag">
+          <div class="dcta-in" id="dctaIn"></div>
+        </div>
+      </div>
+
+      <div id="reportZone"></div>
+     </div>
+
+     <footer class="notesfoot">
+       <div class="eyebrow" style="margin-bottom:10px">说明信息</div>
+       <div class="chipbar" id="chipbar"></div>
+       <p class="foot-d">以上为本行业图谱的时效、边界与口径说明，悬停或点击任一项查看详情。图谱在「图谱平台」构建并确认后发布，本页呈现的是已发布版本的全部内容。</p>
+     </footer>
+    </div>
+  </div>
+</div>
+
+<div id="pop" role="dialog" aria-label="说明信息"></div>
+<div class="buildov" id="buildOv" hidden>
+  <div class="buildbox">
+    <div class="build-h">
+      <div><span class="eyebrow">图谱平台 · 构建流水线</span>
+        <h3 class="dr-t" id="buildTitle"></h3><div class="dr-sub" id="buildSub"></div></div>
+      <button class="x" data-bf="cancel" aria-label="关闭">✕</button>
+    </div>
+    <div class="build-b" id="buildBody"></div>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drTitle" aria-hidden="true">
+  <div class="dr-h">
+    <div class="dr-k"><span class="eyebrow" id="drKind"></span>
+      <button class="x" id="drClose" aria-label="关闭">✕</button></div>
+    <h3 class="dr-t" id="drTitle"></h3>
+    <div class="dr-sub" id="drSub"></div>
+  </div>
+  <div class="dr-b" id="drBody"></div>
+</aside>
+<div id="tip" role="status"></div>
+
+<script>
+const D = /*__DATA__*/;
+const $ = (s,r)=>(r||document).querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const abl = Object.fromEntries(D.abilities.map(a=>[a.id,a]));
+const pos = Object.fromEntries(D.positions.map(p=>[p.id,p]));
+const sub = Object.fromEntries(D.subIndustries.map(s=>[s.id,s]));
+const LVN = {L1:'认知/辅助级',L2:'独立操作级',L3:'综合应用级'};
+const SRC = {'L1_国家':'国家法规与政策','L2_标准':'国家与行业标准','L3_招聘':'招聘市场语料','L4_其他':'其他公开来源'};
+const S = D.stats, I = D.industry, SC = D.school;
+// 诊断叠加的数据源：两种测评模式（人工填报 / 双图谱自动）都写这里
+let OVP = new Set(SC.uncovered_positions);   // 本校未覆盖的岗位
+let OVA = new Set(SC.uncovered_abilities);   // 本校无支撑的能力项
+let OVC = Object.fromEntries(D.positions.map(p=>{
+  let b=0; SC.majors.forEach(m=>{ if(m.coverage[p.id]!==undefined) b=Math.max(b,m.coverage[p.id]); });
+  return [p.id, b];
+}));
+let OVSRC = 'graph';                          // graph | manual
+let OVVER = null;                             // 当前叠加所依据的诊断批次号
+let MODE  = 'manual';                         // ① 测评方式：manual | auto（默认人工填报）
+let report = null;                            // 当前展示的报告 {no, mode, key}
+// 测评范围：选中的岗位（默认都不勾选）
+let scope = new Set();
+const scopedPos = ()=> D.positions.filter(p=>scope.has(p.id));
+const scopedAbl = ()=>{
+  const set = new Set(scopedPos().flatMap(p=>p.abilities.map(r=>r.ability)));
+  return D.abilities.filter(a=>set.has(a.id));
+};
+const isAllScope = ()=> scope.size===D.positions.length;
+
+$('#lfoot').innerHTML = `图谱 ${esc(I.version)} · ${esc(I.builtAt)}<br>四层能力图谱 V2 流水线`;
+
+/* ═══ 1. 全景 sunburst ═══ */
+const R0=62, R1a=68, R1b=110, R2a=115, R2b=148, R3a=152, R3b=248;
+const PAD = 0.006;                       // 段间弧度留白
+const subOrder = D.subIndustries.filter(s=>s.built).map(s=>s.id);
+const relOf = pid => pos[pid].abilities.length;
+
+// ids 为 null 表示全行业；传入岗位集合则只画这些岗位所在的分支
+function buildWedges(ids){
+  const full = !ids;
+  const inScope = pid => full || ids.has(pid);
+  const subsOf = s => s.positionIds.filter(inScope);
+  const shown = D.subIndustries.filter(s => full ? true : subsOf(s).length);
+  const pend = shown.filter(s=>!s.built);
+  const pendSpan = pend.length * 0.10;
+  const avail = (1 - pendSpan) * Math.PI*2;
+  const totalRel = shown.filter(s=>s.built)
+    .reduce((n,s)=> n + subsOf(s).reduce((m,p)=>m+relOf(p),0), 0) || 1;
+  let a = -Math.PI/2, out = [];
+  shown.forEach(s=>{
+    const ps = s.built ? subsOf(s) : [];
+    const srel = ps.reduce((m,p)=>m+relOf(p),0);
+    const span = s.built ? avail * srel / totalRel : 0.10 * Math.PI*2;
+    const w = {sub:s, a0:a, a1:a+span, positions:[]};
+    let pa = a;
+    ps.forEach(pid=>{ const q = span * relOf(pid) / srel;
+      w.positions.push({id:pid, a0:pa, a1:pa+q}); pa += q; });
+    out.push(w); a += span;
+  });
+  return out;
+}
+
+function arcPath(r0,r1,a0,a1){
+  const big = (a1-a0) > Math.PI ? 1 : 0;
+  const p = (r,a)=>[(r*Math.cos(a)).toFixed(2),(r*Math.sin(a)).toFixed(2)].join(' ');
+  return `M ${p(r0,a0)} L ${p(r1,a0)} A ${r1} ${r1} 0 ${big} 1 ${p(r1,a1)} L ${p(r0,a1)} A ${r0} ${r0} 0 ${big} 0 ${p(r0,a0)} Z`;
+}
+function fit(text, maxPx, px){ const n = Math.floor(maxPx/px); return text.length>n ? text.slice(0,Math.max(1,n-1))+'…' : text; }
+
+function burstSVG(ids){
+  const DG = document.body.classList.contains("diag");
+  const WED = buildWedges(ids);
+  const inPos = ids ? [...ids] : D.positions.map(p=>p.id);
+  const inAbl = new Set(inPos.flatMap(p=>pos[p].abilities.map(r=>r.ability)));
+  const inRel = inPos.reduce((n,p)=>n+pos[p].abilities.length,0);
+  let g = '', defs = '';
+  // ring 1 子行业（标签沿弧排布，避免横排文字压到中心圆）
+  WED.forEach(w=>{
+    const s = w.sub, a0=w.a0+PAD, a1=w.a1-PAD;
+    const fill = s.built ? 'var(--brand-soft)' : 'url(#hatch)';
+    const stroke = s.built ? 'var(--brand)' : 'var(--rule)';
+    g += `<path class="seg s-${s.id}" data-sub="${s.id}" d="${arcPath(R1a,R1b,a0,a1)}"
+        fill="${fill}" stroke="${stroke}" stroke-width="1"${s.built?'':' stroke-dasharray="3 3"'}></path>`;
+    const mid=(w.a0+w.a1)/2, lr=(R1a+R1b)/2 - 4;
+    const flip = Math.sin(mid) > 0.02;
+    const pa0 = flip ? a1 : a0, pa1 = flip ? a0 : a1, sweep = flip ? 0 : 1;
+    const big = Math.abs(a1-a0) > Math.PI ? 1 : 0;
+    const pt = (a)=>`${(lr*Math.cos(a)).toFixed(2)} ${(lr*Math.sin(a)).toFixed(2)}`;
+    defs += `<path id="sp-${s.id}" fill="none" d="M ${pt(pa0)} A ${lr} ${lr} 0 ${big} ${sweep} ${pt(pa1)}"></path>`;
+    const arcLen = lr * (a1-a0);
+    if(s.built){
+      g += `<text class="slabel" dy="4"><textPath href="#sp-${s.id}" startOffset="50%"
+          text-anchor="middle">${esc(fit(s.name, arcLen-10, 12))}</textPath></text>`;
+    } else {
+      // 未建图子行业：外侧楔形是空的，标签横排放在那里，比塞进窄弧更清楚
+      const rr = 186;
+      g += `<text class="slabel pend" x="${(rr*Math.cos(mid)).toFixed(1)}" y="${(rr*Math.sin(mid)).toFixed(1)}"
+          text-anchor="middle" dominant-baseline="central">${esc(s.name)}</text>
+        <text class="slabel pend" x="${(rr*Math.cos(mid)).toFixed(1)}" y="${(rr*Math.sin(mid)+15).toFixed(1)}"
+          text-anchor="middle" dominant-baseline="central" style="font-size:10px">未纳入本期</text>`;
+    }
+  });
+  // ring 2 岗位 + ring 3 关系
+  WED.forEach(w=> w.positions.forEach(pw=>{
+    const p = pos[pw.id], nocov = OVP.has(p.id);
+    g += `<path class="seg p-${p.id}" data-pos="${p.id}" d="${arcPath(R2a,R2b,pw.a0+PAD,pw.a1-PAD)}"
+        fill="${DG&&nocov?'url(#hatch)':'var(--card-2)'}" stroke="${DG&&nocov?'var(--crit)':'var(--rule)'}"
+        stroke-width="1"></path>`;
+    const pm=(pw.a0+pw.a1)/2, pr=(R2a+R2b)/2;
+    g += `<text class="pnum" x="${(pr*Math.cos(pm)).toFixed(1)}" y="${(pr*Math.sin(pm)).toFixed(1)}"
+        text-anchor="middle" dominant-baseline="central">${p.abilityCount}</text>`;
+    const rels = p.abilities;
+    const step = (pw.a1-pw.a0)/rels.length;
+    rels.forEach((r,i)=>{
+      const a0 = pw.a0 + i*step + 0.0035, a1 = pw.a0 + (i+1)*step - 0.0035;
+      g += `<path class="seg" data-cell="${r.ability}|${p.id}" d="${arcPath(R3a,R3b,a0,a1)}"
+          fill="var(--lv${r.level[1]})"></path>`;
+    });
+    // 岗位标签
+    const mid=(pw.a0+pw.a1)/2, c=Math.cos(mid), s2=Math.sin(mid);
+    const lx=(R3b+16)*c, ly=(R3b+16)*s2;
+    const anchor = Math.abs(c)<0.25 ? 'middle' : (c>0?'start':'end');
+    g += `<path class="lead" d="M ${(R3b+3)*c} ${(R3b+3)*s2} L ${(R3b+13)*c} ${(R3b+13)*s2}"></path>`;
+    g += `<text class="plabel" data-pos="${p.id}" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}"
+        text-anchor="${anchor}" dominant-baseline="central">${esc(p.name)}</text>`;
+    if(nocov) g += `<text class="plabel nocov" x="${lx.toFixed(1)}" y="${(ly+13).toFixed(1)}"
+        text-anchor="${anchor}" dominant-baseline="central" fill="var(--crit)"
+        style="font-size:10px">无对口专业</text>`;
+  }));
+  // 中心
+  g += `<circle r="${R0}" fill="var(--card)" stroke="var(--rule)"></circle>
+    <text class="ctext" y="-20" text-anchor="middle" style="font-size:17px;font-weight:700">${esc(I.name)}</text>
+    <text class="cnum" y="6" text-anchor="middle" style="font-size:22px">${inPos.length} · ${inAbl.size}</text>
+    <text class="csub" y="24" text-anchor="middle" style="font-size:10px">岗位 · 能力项</text>
+    <text class="csub" y="40" text-anchor="middle" style="font-size:9.5px">${ids?'已选范围':'全行业'} ${inRel} 条能力要求</text>`;
+
+  return `<svg viewBox="-392 -298 784 596" role="img"
+    aria-label="${esc(I.name)}四层能力全景：${S.subIndustries} 个子行业、${S.positions} 个岗位、${S.abilities} 条能力项、${S.relations} 条岗位能力要求">
+    <defs><pattern id="hatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="var(--card-2)"></rect>
+      <line x1="0" y1="0" x2="0" y2="6" stroke="var(--rule)" stroke-width="1.6"></line></pattern>
+      ${defs}</defs>
+    ${g}</svg>`;
+}
+function renderBurst(){
+  $('#burst').innerHTML = burstSVG(null);
+}
+renderBurst();
+
+// 悬停：高亮所在楔形
+const bc = $('#burstCard');
+$('#burst').addEventListener('mouseover', e=>{
+  const seg = e.target.closest('[data-sub],[data-pos],[data-cell]'); if(!seg) return;
+  let pid = seg.dataset.pos || (seg.dataset.cell||'').split('|')[1];
+  let sid = seg.dataset.sub || (pid && pos[pid].sub);
+  bc.classList.add('focus');
+  bc.querySelectorAll('.seg').forEach(s=>{
+    const sp = s.dataset.pos || (s.dataset.cell||'').split('|')[1];
+    const ss = s.dataset.sub || (sp && pos[sp].sub);
+    s.classList.toggle('dim', ss !== sid);
+  });
+});
+$('#burst').addEventListener('mouseleave', ()=>{
+  bc.classList.remove('focus');
+  bc.querySelectorAll('.seg').forEach(s=>s.classList.remove('dim'));
+});
+
+/* ═══ 2. 关键信息栏 ═══ */
+$('#kgrid').innerHTML = [
+  [S.subIndustriesBuilt+'/'+S.subIndustries,'子行业','已建图 / 已识别'],
+  [S.positions,'代表岗位','分属 '+S.subIndustriesBuilt+' 个子行业'],
+  [S.abilities,'能力项','收敛于 '+S.domains+' 个领域'],
+  [S.coreAbilities,'核心能力','多岗位 + 国标来源'],
+].map(([v,k,s])=>`<div class="kt"><div class="kt-v">${esc(v)}</div><div class="kt-k">${esc(k)}</div>
+  <div class="kt-s">${esc(s)}</div></div>`).join('');
+
+const rankRows = D.positions.slice().sort((a,b)=> b.l3Count-a.l3Count || b.abilityCount-a.abilityCount);
+const rmax = Math.max(...rankRows.map(p=>p.abilityCount));
+$('#rank').innerHTML = rankRows.map(p=>{
+  const c={L1:0,L2:0,L3:0}; p.abilities.forEach(r=>c[r.level]++);
+  return `<button class="rk" data-pos="${p.id}" title="${esc(p.name)}：L3 ${c.L3} · L2 ${c.L2} · L1 ${c.L1}">
+    <span class="rk-n">${esc(p.name)}</span>
+    <span class="rk-b" style="width:${(p.abilityCount/rmax*100).toFixed(0)}%">
+      ${['L3','L2','L1'].map(L=>c[L]?`<i style="flex:${c[L]};background:var(--lv${L[1]})"></i>`:'').join('')}
+    </span><span class="rk-v">${c.L3}</span></button>`;
+}).join('');
+
+const chips = [
+  {k:'freshness', label:'数据时效', n:I.version, cls:''},
+  {k:'boundary', label:'行业边界说明', n:'', cls:''},
+  {k:'excluded', label:'排除项', n:I.excluded.length, cls:'crit'},
+  {k:'included', label:'纳入范围', n:I.included.length, cls:''},
+  {k:'quality', label:'数据可信度', n:S.evidenceTotal, cls:''},
+];
+$('#chipbar').innerHTML = chips.map(c=>
+  `<button class="ichip ${c.cls}" data-pop="${c.k}">${esc(c.label)}${c.n!==''?` <b>${c.n}</b>`:''}
+   <span class="look">查看</span></button>`).join('');
+
+/* popover */
+const pop = $('#pop');
+let popTimer = null;
+const POPC = {
+  freshness: ()=>{
+    const d0 = new Date(I.builtAt + 'T00:00:00'), days = Math.max(0, Math.round((Date.now()-d0)/864e5));
+    const ago = days===0 ? '今天' : days===1 ? '昨天' : days<30 ? `${days} 天前` :
+                days<365 ? `${Math.round(days/30)} 个月前` : `${(days/365).toFixed(1)} 年前`;
+    const rows = [
+      ['更新时间', `${I.builtAt}（${ago}） · ${I.version}`],
+      ['覆盖范围', `${S.subIndustriesBuilt} 个子行业 · ${S.positions} 个岗位 · ${S.abilities} 条能力项`],
+      ['行业口径', I.aliases.join(' / ')],
+      ['数据依据', `${S.evidenceTotal} 条来源证据 · ${S.sourceDist['L1_国家']||0} 条国家级`],
+      ['维护方', '图谱平台统一维护，更新后本页自动同步'],
+    ];
+    return {t:'数据时效与覆盖范围', d:'这份行业图谱是什么时候的、覆盖多大范围、由谁维护',
+      h: rows.map(([k,v])=>`<div class="metarow"><span class="mk">${esc(k)}</span><span class="mv">${esc(v)}</span></div>`).join('')
+       + `<div class="qnote" style="margin-top:12px">行业能力结构会随政策与市场变化，用这份数据做专业调整决策前先看更新时间。图谱的构建、边界确认与版本发布都在<b>图谱平台</b>完成，本页只呈现已发布的版本。</div>`};
+  },
+  emerging: ()=>({t:'新兴能力项', d:'国家标准尚未收录，但岗位上已经在要求',
+    h:`<div class="pop-note">下列能力项<b>只有市场侧来源</b>（招聘要求、行业标准、企业规范），国家职业标准还没有收录，
+        已由行业专家在<b>图谱平台</b>确认后纳入本图谱。</div>
+       <div class="brow"><span class="bmark in">✓</span><div>
+         <div class="bitem">为什么值得优先看</div>
+         <div class="breason">它们是产业已经在要，而现有专业教学标准往往还没写进去的部分——课程修订时最容易漏掉的一批。</div></div></div>
+       <div class="brow"><span class="bmark q">?</span><div>
+         <div class="bitem">怎么核对</div>
+         <div class="breason">每条都可点开查看来源证据与三级行为化描述，和图谱里其他能力项一样可追溯。</div></div></div>`}),
+  trend: ()=>({t:'产业趋势的来源', d:'和能力项不同，这一节没有可核对的出处',
+    h:`<div class="pop-note">以下 ${I.trends.length} 条不是从语料里抽取出来的，而是<b>建图模型基于公开信息给出的背景判断</b>，
+        没有可点开核对的出处，也没有经过原文比对校验。</div>
+       <div class="brow"><span class="bmark q">?</span><div>
+         <div class="bitem">它在流水线里的作用</div>
+         <div class="breason">注入到能力抽取环节当上下文，帮助识别国家标准尚未收录的能力方向。它是流程内部的中间产物，不是图谱主体。</div></div></div>
+       <div class="brow"><span class="bmark ex">!</span><div>
+         <div class="bitem">请把它当线索，不要当依据</div>
+         <div class="breason">需要引用的结论，请用下方「新兴能力项」——每条都带来源证据、可点开核对，并已由行业专家在图谱平台确认后纳入。</div></div></div>`}),
+  boundary: ()=>({t:'行业边界原则', d:'决定了这张图纳入谁、排除谁',
+    h:`<div class="pop-note">${esc(I.boundaryNotes)}</div>`}),
+  included: ()=>({t:'纳入建图的方向', d:`${I.included.length} 项`,
+    h:I.included.map(x=>`<div class="brow"><span class="bmark in">✓</span><div class="bitem">${esc(x)}</div></div>`).join('')}),
+  excluded: ()=>({t:'排除项与理由', d:'理由须指向岗位能力差异，而非笼统的行业归属',
+    h:I.excluded.map(e=>`<div class="brow"><span class="bmark ex">✕</span><div>
+      <div class="bitem">${esc(e.item)}</div><div class="breason">${esc(e.reason)}</div></div></div>`).join('')}),
+  quality: ()=>({t:'数据可信度', d:'每条能力都带来源与原文片段，且经过逐字比对校验——这一节回答「你这张图的依据是什么」',
+    h: qualityHTML()}),
+};
+function showPop(btn, key){
+  const c = POPC[key]();
+  pop.innerHTML = `<div class="pop-t">${esc(c.t)}</div><div class="pop-d">${esc(c.d)}</div>${c.h}`;
+  pop.classList.add('on');
+  const r = btn.getBoundingClientRect(), pr = pop.getBoundingClientRect();
+  let x = Math.min(r.left, innerWidth - pr.width - 14);
+  let y = r.bottom + 8;
+  if(y + pr.height > innerHeight - 12) y = Math.max(12, r.top - pr.height - 8);
+  pop.style.left = Math.max(12,x)+'px'; pop.style.top = y+'px';
+}
+function hidePop(){ pop.classList.remove('on'); }
+document.addEventListener('mouseover', e=>{
+  const b = e.target.closest('[data-pop]'); if(!b) return;
+  clearTimeout(popTimer); showPop(b, b.dataset.pop);
+});
+document.addEventListener('mouseout', e=>{
+  if(!e.target.closest('[data-pop]')) return;
+  if(e.relatedTarget && pop.contains(e.relatedTarget)) return;
+  popTimer = setTimeout(hidePop, 220);
+});
+pop.addEventListener('mouseenter', ()=>clearTimeout(popTimer));
+pop.addEventListener('mouseleave', hidePop);
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-pop]'); if(!b) return;
+  clearTimeout(popTimer); showPop(b, b.dataset.pop);
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#pop') && !e.target.closest('[data-pop]')) hidePop();
+});
+
+/* ═══ 3. 两级 tab ═══ */
+const L1 = [['panorama','行业全景',''],['assess','能力测评','']];
+const TABS = [['graph','能力图谱',S.abilities],
+  ['matrix','能力矩阵',`${S.positions} × ${S.abilities}`],
+  ['trends','趋势与新兴',I.trends.length]];
+$('#tabs').innerHTML = L1.map(([k,t],i)=>
+  `<button class="tab" role="tab" data-l1="${k}" aria-selected="${i===0}">${esc(t)}</button>`).join('');
+$('#tabs2').innerHTML = TABS.map(([k,t,c],i)=>
+  `<button class="tab" role="tab" data-tab="${k}" aria-selected="${i===0}"
+   >${esc(t)}${c!==''?`<span class="tc">${c}</span>`:''}</button>`).join('');
+function selL1(k){
+  $('#tabs').querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.l1===k)));
+  L1.forEach(([kk])=>{ $('#l1-'+kk).hidden = kk!==k; });
+}
+function selTab(k){
+  $('#tabs2').querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.tab===k)));
+  TABS.forEach(([kk])=>{ $('#pane-'+kk).hidden = kk!==k; });
+}
+$('#tabs').addEventListener('click', e=>{
+  const b = e.target.closest('[data-l1]'); if(b) selL1(b.dataset.l1);
+});
+$('#tabs2').addEventListener('click', e=>{
+  const b = e.target.closest('[data-tab]'); if(b) selTab(b.dataset.tab);
+});
+selL1('panorama'); selTab('graph');
+
+/* ═══ 4. 岗位全景 ═══ */
+function coverageOf(pid){ return OVC[pid] || 0; }
+function renderPosCards(){
+$('#posWrap').innerHTML = D.subIndustries.filter(s=>s.built).map(s=>
+  `<div class="pgroup"><div class="pg-h"><span class="pg-t">${esc(s.name)}</span>
+    <span class="pill k">${s.positionIds.length} 个岗位</span><span class="pg-r"></span></div>
+   <div class="pos-grid">${s.positionIds.map(id=>{
+     const p = pos[id], nocov = OVP.has(id), cov = coverageOf(id);
+     return `<button class="pos" data-pos="${id}">
+       <div class="pos-t"><span class="pos-n">${esc(p.name)}</span><span class="pos-id">${id}</span></div>
+       <div class="pos-a">${esc(p.aliases.join(' / '))}</div>
+       <div class="pos-d">${esc(p.desc)}</div>
+       <div class="pos-m"><span><b>${p.abilityCount}</b> 能力项</span><span><b>${p.coreAbilityCount}</b> 核心</span>
+         <span><b>${p.l3Count}</b> 项需 L3</span></div>
+       <div class="pos-diag">${nocov
+         ? '<span class="ico critical">!</span><span style="color:var(--crit)">本校无对口专业</span>'
+         : `<span style="color:var(--muted);flex:0 0 auto">本校覆盖</span><span class="bar"><i style="width:${Math.round(cov*100)}%"></i></span><span class="mono" style="flex:0 0 auto">${Math.round(cov*100)}%</span>`}
+       </div></button>`;
+   }).join('')}</div></div>`).join('');
+}
+renderPosCards();
+
+/* ═══ 4b. 四层能力全景 · 树形（连线图） ═══ */
+const LV = {L1:1,L2:2,L3:3};
+const builtSubs = subOrder;
+// 上浮口径：被全部已建图子行业要求 = 全行业通用；子行业内半数以上岗位要求 = 该子行业共性。
+// 「共性」这一档口径依赖子行业岗位数、会随建图范围漂移，暂不对外展示——
+// subSharedSet / breakdown().sh 仍保留计算，需要时把展示恢复即可。
+const isInd = new Set(D.abilities.filter(a=>a.acrossSubIndustries.length===builtSubs.length).map(a=>a.id));
+const subSharedSet = {};
+builtSubs.forEach(sid=>{
+  const need = Math.max(2, Math.ceil(sub[sid].positionIds.length/2));
+  subSharedSet[sid] = new Set(D.abilities.filter(a=>!isInd.has(a.id) &&
+    a.requiredBy.filter(r=>pos[r.position].sub===sid).length >= need).map(a=>a.id));
+});
+function breakdown(pid){
+  const p = pos[pid]; let ind=0, sh=0, own=0;
+  p.abilities.forEach(r=>{
+    if(isInd.has(r.ability)) ind++;
+    else if(subSharedSet[p.sub].has(r.ability)) sh++;
+    else own++;
+  });
+  return {ind, sh, own};
+}
+
+/* ---- 布局 ---- */
+const GW = 836, ROWH = 23, TOP = 16;
+const XI=[8,92], XS=[140,296], XP=[340,490], XA=[584,GW];
+const GH = TOP*2 + (D.abilities.length-1)*ROWH + 24;
+
+const posLayout = [];          // {id, y}
+(function(){
+  const n = D.positions.length, gaps = builtSubs.length-1;
+  const span = GH - TOP*2 - 24;
+  const step = span / (n - 1 + gaps*0.7);
+  let y = TOP + 12, prev = null;
+  builtSubs.forEach(sid=>{
+    if(prev !== null) y += step*0.7;
+    sub[sid].positionIds.forEach(pid=>{ posLayout.push({id:pid, y}); y += step; });
+    prev = sid;
+  });
+  y -= step;
+})();
+const posY = Object.fromEntries(posLayout.map(p=>[p.id,p.y]));
+
+// 能力项按「要求它的岗位的平均 y」排序，减少连线交叉
+const ablOrder = D.abilities.slice().sort((a,b)=>{
+  const my = x => x.requiredBy.reduce((s,r)=>s+posY[r.position],0)/x.requiredBy.length;
+  return my(a)-my(b) || b.positionCount-a.positionCount;
+});
+const ablY = {};
+ablOrder.forEach((a,i)=>{ ablY[a.id] = TOP + 12 + i*ROWH; });
+
+const subY = {};
+builtSubs.forEach(sid=>{
+  const ys = sub[sid].positionIds.map(p=>posY[p]);
+  subY[sid] = (Math.min(...ys)+Math.max(...ys))/2;
+});
+const pendSubs = D.subIndustries.filter(s=>!s.built);
+pendSubs.forEach((s,i)=>{ subY[s.id] = GH - 26 - i*30; });
+const indY = GH/2;
+
+/* ---- 选中与联动 ---- */
+let sel = {type:'sub', id:builtSubs[0]};
+function activeSets(){
+  const subs=new Set(), poss=new Set(), abls=new Set();
+  if(!sel) return null;
+  if(sel.type==='sub'){
+    subs.add(sel.id);
+    (sub[sel.id].positionIds||[]).forEach(p=>{ poss.add(p); pos[p].abilities.forEach(r=>abls.add(r.ability)); });
+  } else if(sel.type==='pos'){
+    poss.add(sel.id); subs.add(pos[sel.id].sub);
+    pos[sel.id].abilities.forEach(r=>abls.add(r.ability));
+  } else if(sel.type==='abl'){
+    abls.add(sel.id);
+    abl[sel.id].requiredBy.forEach(r=>{ poss.add(r.position); subs.add(pos[r.position].sub); });
+  } else if(sel.type==='ind'){ return null; }
+  return {subs, poss, abls};
+}
+
+function link(x1,y1,x2,y2){
+  const dx = (x2-x1)*0.5;
+  return `M ${x1} ${y1.toFixed(1)} C ${x1+dx} ${y1.toFixed(1)}, ${x2-dx} ${y2.toFixed(1)}, ${x2} ${y2.toFixed(1)}`;
+}
+const cls = (on)=> on===null ? '' : (on ? ' on' : ' off');
+
+function renderGraph(){
+  const A = activeSets();
+  const sOn = id => A ? A.subs.has(id) : null;
+  const pOn = id => A ? A.poss.has(id) : null;
+  const aOn = id => A ? A.abls.has(id) : null;
+  let links = '', nodes = '';
+
+  // 行业 → 子行业
+  D.subIndustries.forEach(s=>{
+    links += `<path class="glink base${cls(sOn(s.id))}" d="${link(XI[1], indY, XS[0], subY[s.id])}"></path>`;
+  });
+  // 子行业 → 岗位
+  posLayout.forEach(p=>{
+    const sid = pos[p.id].sub;
+    links += `<path class="glink base${cls(A ? (A.subs.has(sid)&&A.poss.has(p.id)) : null)}"
+      d="${link(XS[1], subY[sid], XP[0], p.y)}"></path>`;
+  });
+  // 岗位 → 能力项（颜色 = 要求等级）
+  posLayout.forEach(p=>{
+    pos[p.id].abilities.forEach(r=>{
+      const on = A ? (A.poss.has(p.id) && A.abls.has(r.ability)) : null;
+      links += `<path class="glink lv${LV[r.level]}${cls(on)}" d="${link(XP[1], p.y, XA[0]-6, ablY[r.ability])}"></path>`;
+    });
+  });
+
+  // 行业节点
+  nodes += `<g class="gnode${sel&&sel.type==='ind'?' sel':''}" data-n="ind|${I.name}">
+    <rect x="${XI[0]}" y="${indY-17}" width="${XI[1]-XI[0]}" height="34" rx="9"
+      fill="var(--brand-soft)" stroke="var(--brand)"></rect>
+    <text x="${(XI[0]+XI[1])/2}" y="${indY}" text-anchor="middle" dominant-baseline="central"
+      class="gt gt-ind">${esc(I.name)}</text></g>`;
+
+  // 子行业节点
+  D.subIndustries.forEach(s=>{
+    const on = sOn(s.id), w = XS[1]-XS[0];
+    nodes += `<g class="gnode${cls(on)}${sel&&sel.type==='sub'&&sel.id===s.id?' sel':''}" data-n="sub|${s.id}">
+      <rect x="${XS[0]}" y="${subY[s.id]-15}" width="${w}" height="30" rx="8"
+        fill="${s.built?'var(--card-2)':'var(--card)'}" stroke="${s.built?'var(--rule)':'var(--rule)'}"
+        ${s.built?'':'stroke-dasharray="3 3"'}></rect>
+      <text x="${XS[0]+11}" y="${subY[s.id]}" dominant-baseline="central" class="gt">${esc(fit(s.name, w-38, 11.5))}</text>
+      <text x="${XS[1]-10}" y="${subY[s.id]}" text-anchor="end" dominant-baseline="central"
+        class="gt gt-n">${s.built? s.positionIds.length : '—'}</text></g>`;
+  });
+
+  // 岗位节点
+  posLayout.forEach(p=>{
+    const P = pos[p.id], on = pOn(p.id), w = XP[1]-XP[0];
+    const nocov = OVP.has(p.id);
+    nodes += `<g class="gnode${cls(on)}${sel&&sel.type==='pos'&&sel.id===p.id?' sel':''}${nocov?' nocovnode':''}" data-n="pos|${p.id}">
+      <rect x="${XP[0]}" y="${p.y-14}" width="${w}" height="28" rx="8"
+        fill="var(--card-2)" stroke="var(--rule)"></rect>
+      <text x="${XP[0]+11}" y="${p.y}" dominant-baseline="central" class="gt">${esc(fit(P.name, w-38, 11.5))}</text>
+      <text x="${XP[1]-10}" y="${p.y}" text-anchor="end" dominant-baseline="central"
+        class="gt gt-n">${P.abilityCount}</text></g>`;
+  });
+
+  // 能力项节点
+  ablOrder.forEach(a=>{
+    const on = aOn(a.id), y = ablY[a.id];
+    const gap = OVA.has(a.id);
+    const tier = isInd.has(a.id) ? '通用' : '';
+    nodes += `<g class="gnode ab${cls(on)}${sel&&sel.type==='abl'&&sel.id===a.id?' sel':''}" data-n="abl|${a.id}">
+      <rect x="${XA[0]-4}" y="${y-10}" width="${XA[1]-XA[0]+4}" height="20" rx="6"
+        class="abbg"></rect>
+      <circle cx="${XA[0]+4}" cy="${y}" r="3" fill="var(--${a.core?'brand':'muted'})"></circle>
+      <text x="${XA[0]+14}" y="${y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(a.name, 182, 11))}${a.core?' ★':''}</text>
+      ${tier?`<text x="${XA[1]-42}" y="${y}" text-anchor="end" dominant-baseline="central" class="gt gt-tier">${tier}</text>`:''}
+      ${gap?`<circle class="gapc" cx="${XA[1]-32}" cy="${y}" r="3" fill="var(--crit)"></circle>`:''}
+      <text x="${XA[1]-4}" y="${y}" text-anchor="end" dominant-baseline="central" class="gt gt-n">×${a.positionCount}</text></g>`;
+  });
+
+  $('#posTree').innerHTML = `<svg viewBox="0 0 ${GW} ${GH}" preserveAspectRatio="xMidYMin meet"
+    role="img" aria-label="四层能力全景树形图：行业、子行业、岗位、能力项四列，连线表示归属与能力要求">
+    <g class="colhead">
+      <text x="${XI[0]}" y="8" class="gch">行业</text>
+      <text x="${XS[0]}" y="8" class="gch">子行业 ${D.subIndustries.length}</text>
+      <text x="${XP[0]}" y="8" class="gch">岗位 ${D.positions.length}</text>
+      <text x="${XA[0]}" y="8" class="gch">能力项 ${D.abilities.length}</text>
+    </g>
+    ${links}${nodes}</svg>`;
+  renderSelBar(A);
+}
+
+function renderSelBar(A){
+  let h = '';
+  if(!sel){
+    h = `<span class="sb-t">未选中</span>
+      <span class="sb-d">点击任一节点：子行业与岗位向右追出关联能力，能力项向左反推出关联岗位与子行业</span>`;
+  } else {
+    const n = {sub:sub[sel.id], pos:pos[sel.id], abl:abl[sel.id], ind:{name:I.name}}[sel.type];
+    const kind = {sub:'子行业', pos:'岗位', abl:'能力项', ind:'行业'}[sel.type];
+    let meta = '';
+    if(sel.type==='sub'){
+      const b = sub[sel.id].positionIds.reduce((o,p)=>{const x=breakdown(p);return o;},null);
+      meta = `<span class="pill k">${A.poss.size} 个岗位</span><span class="pill k">${A.abls.size} 条关联能力</span>`;
+    } else if(sel.type==='pos'){
+      const b = breakdown(sel.id);
+      meta = `<span class="pill core">通用 ${b.ind}</span>
+        <span class="pill k">岗位专项 ${b.sh + b.own}</span>`;
+    } else if(sel.type==='abl'){
+      const a = abl[sel.id];
+      meta = `<span class="pill k">${A.poss.size} 个岗位要求</span>
+        <span class="pill k">跨 ${A.subs.size} 个子行业</span>
+        <span class="pill ${a.maxRequiredLevel==='L3'?'core':'k'}">最高 ${a.maxRequiredLevel}</span>
+        ${a.core?'<span class="pill core">核心能力</span>':''}`;
+    }
+    h = `<span class="pill core">${kind}</span><span class="sb-t">${esc(n.name)}</span>${meta}
+      <span style="flex:1"></span>
+      ${sel.type!=='ind'?`<button class="chip" id="selDetail">查看详情</button>`:''}
+      <button class="chip" id="selClear">清除选择</button>`;
+  }
+  $('#selBar').innerHTML = h;
+}
+
+renderGraph();
+
+$('#posTree').addEventListener('click', e=>{
+  const g = e.target.closest('[data-n]');
+  if(!g){ sel = null; renderGraph(); return; }
+  const [t,id] = g.dataset.n.split('|');
+  if(t==='ind'){ sel = null; }
+  else if(sel && sel.type===t && sel.id===id){ sel = null; }
+  else { sel = {type:t, id}; }
+  renderGraph();
+});
+$('#selBar').addEventListener('click', e=>{
+  if(e.target.id==='selClear'){ sel = null; renderGraph(); return; }
+  if(e.target.id==='selDetail' && sel){
+    if(sel.type==='pos'){ const p=pos[sel.id];
+      openDrawer('岗位 · '+p.id, p.name,
+        `${sub[p.sub].name} · ${p.career_level} · 别名 ${p.aliases.join(' / ')}`, positionHTML(p));
+    } else if(sel.type==='abl'){ const a=abl[sel.id];
+      openDrawer('能力项 · '+a.id, a.name,
+        `${a.typeCn} · ${a.domain} · ${a.core?'核心能力 · ':''}最高要求 ${a.maxRequiredLevel}`, abilityHTML(a));
+    } else if(sel.type==='sub'){ const s=sub[sel.id];
+      openDrawer('子行业 · '+s.id, s.name, `${s.priority} · ${s.positionIds.length} 个岗位`,
+        `<div class="dr-s"><div class="dr-st">定位</div><div class="dr-def">${esc(s.desc)}</div></div>
+         <div class="dr-s"><div class="dr-st">典型用人单位</div>
+           ${s.typicalEmployers.map(x=>`<div class="arow"><span class="arow-n">${esc(x)}</span></div>`).join('')}</div>
+         <div class="dr-s"><div class="dr-st">下辖岗位</div>
+           ${s.positionIds.map(pid=>`<button class="arow" data-pos="${pid}">
+             <span class="arow-n">${esc(pos[pid].name)}</span>
+             <span class="pill k">${pos[pid].abilityCount} 条能力</span>
+             <span class="arow-w">${pos[pid].l3Count} 条需 L3</span></button>`).join('')}</div>`);
+    }
+  }
+});
+$('#posTree').addEventListener('mouseover', e=>{
+  const g = e.target.closest('[data-n]'); if(!g){ tip.classList.remove('on'); return; }
+  const [t,id] = g.dataset.n.split('|');
+  if(t==='sub'){ const s=sub[id];
+    tip.innerHTML = `<b>${esc(s.name)}</b><span class="tk">${s.built?
+      `${s.positionIds.length} 个岗位 · ${s.distinctAbilityCount} 条去重能力项`:'未纳入本期范围'}</span>`;
+  } else if(t==='pos'){ const p=pos[id], b=breakdown(id);
+    tip.innerHTML = `<b>${esc(p.name)}</b><span class="tk">${esc(p.aliases.join(' / '))}</span>
+      <span class="tk">通用 ${b.ind} · 岗位专项 ${b.sh + b.own}　${p.l3Count} 条需 L3</span>`;
+  } else if(t==='abl'){ const a=abl[id];
+    tip.innerHTML = `<b>${esc(a.name)}</b><span class="tk">${a.typeCn} · ${esc(a.domain)}</span>
+      <span class="tk">${a.positionCount} 个岗位要求 · 最高 ${a.maxRequiredLevel}${a.core?' · 核心能力':''}</span>`;
+  } else { tip.classList.remove('on'); return; }
+  tip.classList.add('on');
+});
+$('#posTree').addEventListener('mouseleave', ()=>tip.classList.remove('on'));
+
+const VIEWHINT = {ring:'行业 → 子行业 → 岗位 → 能力要求',
+  tree:'点子行业或岗位向右追　点能力项向左反推',
+  cards:'按子行业分组的岗位清单　点开看完整能力要求'};
+$('#pane-graph .viewsw').addEventListener('click', e=>{
+  const b = e.target.closest('[data-bview]'); if(!b) return;
+  const v = b.dataset.bview;
+  $('#pane-graph').querySelectorAll('.vs').forEach(x=>x.setAttribute('aria-pressed', String(x===b)));
+  $('#viewHint').textContent = VIEWHINT[v];
+  $('#burst').hidden      = v!=='ring';
+  $('#treeWrap').hidden   = v!=='tree';
+  $('#ringLegend').hidden = v!=='ring';
+  $('#treeLegend').hidden = v!=='tree';
+  $('#posWrap').hidden    = v!=='cards';
+});
+
+/* ═══ 5. 能力矩阵 ═══ */
+$('#mxLead') && ($('#mxLead').parentElement.innerHTML =
+  `<b>${S.positions}</b> 个岗位 × <b>${S.abilities}</b> 条能力项，其中 <b>${S.relations}</b> 个格子有要求。` +
+  `格子颜色代表该岗位对该能力的要求等级，空白表示该岗位不要求这条能力。列按子行业分组。`);
+const dmax = Math.max(...D.domains.map(d=>d.count));
+$('#domainChart').innerHTML = D.domains.slice().sort((a,b)=>b.count-a.count).map(d=>
+  `<div class="dm"><div class="dm-n" title="${esc(d.name)}">${esc(d.name)}</div>
+   <div class="dm-b"><i style="width:${(d.count/dmax*100).toFixed(1)}%"></i></div>
+   <div class="dm-v">${d.count}</div></div>`).join('');
+
+const cols = D.positions.slice().sort((a,b)=>
+  (subOrder.indexOf(a.sub)-subOrder.indexOf(b.sub)) || a.id.localeCompare(b.id));
+const colGroups = subOrder.map(sid=>({sid,name:sub[sid].name,n:cols.filter(p=>p.sub===sid).length})).filter(g=>g.n);
+const firstOfGroup = new Set(colGroups.map(g=>cols.find(p=>p.sub===g.sid).id));
+let activeDomain = null;
+$('#mtools').innerHTML = '<span class="eyebrow" style="margin-right:4px">按领域筛选</span>' +
+  `<button class="chip" data-dm="" aria-pressed="true">全部 ${D.abilities.length}</button>` +
+  D.domains.map(d=>`<button class="chip" data-dm="${esc(d.name)}" aria-pressed="false">${esc(d.name)} ${d.count}</button>`).join('');
+function renderMatrix(){
+  const rows = D.abilities.filter(a=>!activeDomain || a.domain===activeDomain);
+  const groups = [];
+  rows.forEach(a=>{ let g=groups.find(x=>x.name===a.domain); if(!g){g={name:a.domain,items:[]};groups.push(g);} g.items.push(a); });
+  const head = `<thead>
+    <tr class="subrow"><th class="corner" style="top:0"></th>${colGroups.map(g=>
+      `<th colspan="${g.n}" class="gsep">${esc(g.name)}</th>`).join('')}</tr>
+    <tr class="namerow"><th class="corner">能力项 \\ 岗位</th>${cols.map(p=>{
+      const nc = OVP.has(p.id)?' nocov':'';
+      const gs = firstOfGroup.has(p.id)?' gsep':'';
+      return `<th class="${(nc+gs).trim()}"><div>${esc(p.name)}</div>${nc?
+        '<div class="nocov-tag"><span class="pill crit" style="font-size:9px;padding:1px 5px">无对口专业</span></div>':''}</th>`;
+    }).join('')}</tr></thead>`;
+  const body = groups.map(g=>
+    `<tr class="grp"><th>${esc(g.name)}</th><td colspan="${cols.length}"></td></tr>` +
+    g.items.map(a=>{
+      const gap = OVA.has(a.id);
+      const cells = cols.map(p=>{
+        const r = a.requiredBy.find(x=>x.position===p.id);
+        const nc = OVP.has(p.id)?' nocov':'';
+        const gs = firstOfGroup.has(p.id)?' gsep':'';
+        return r ? `<td class="cell${nc}${gs}"><span class="cellin ${r.level}" data-cell="${a.id}|${p.id}">${r.level}</span></td>`
+                 : `<td class="cell${nc}${gs}"><span class="cellin none"></span></td>`;
+      }).join('');
+      return `<tr><th class="rowh"><button class="rowh-b" data-abl="${a.id}">
+        <span class="tdot ${a.type}" title="${a.typeCn}类"></span>
+        <span class="rn" title="${esc(a.name)}">${esc(a.name)}</span>
+        ${a.core?'<span class="star" title="核心能力">★</span>':''}
+        <span class="gapdot${gap?' on':''}" title="本校无课程支撑"></span></button></th>${cells}</tr>`;
+    }).join('')).join('');
+  $('#matrix').innerHTML = head + '<tbody>'+body+'</tbody>';
+}
+renderMatrix();
+$('#mtools').addEventListener('click', e=>{
+  const b = e.target.closest('.chip'); if(!b) return;
+  activeDomain = b.dataset.dm || null;
+  $('#mtools').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed', String(c===b)));
+  renderMatrix();
+});
+
+/* ═══ 6. 趋势 / 可信度 ═══ */
+$('#trendList').innerHTML = I.trends.map((t,i)=>
+  `<div class="tr"><span class="tr-n">${String(i+1).padStart(2,'0')}</span><div class="tr-b">${esc(t)}</div></div>`).join('');
+$('#flagged').innerHTML = D.abilities.filter(a=>a.flag||a.inferred).map(a=>
+  `<button class="na" data-abl="${a.id}"><div class="na-h"><span class="na-n">${esc(a.name)}</span>
+    <span class="pill warn">新兴能力</span>
+    <span class="pos-id mono">${a.id}</span></div>
+   <div class="na-f">${esc(a.flag||'国家标准尚未收录，依据市场侧来源抽取，已由行业专家确认后纳入。')}</div>
+   <div class="na-more">查看详情 <span aria-hidden="true">›</span></div></button>`).join('');
+
+const order = ['L1_国家','L2_标准','L3_招聘','L4_其他'];
+const cvar = {'L1_国家':'var(--src1)','L2_标准':'var(--src2)','L3_招聘':'var(--src3)','L4_其他':'var(--src4)'};
+const tot = order.reduce((s,k)=>s+(S.sourceDist[k]||0),0);
+function qualityHTML(){
+  const bar = order.filter(k=>S.sourceDist[k]).map(k=>
+    `<i style="flex:${S.sourceDist[k]};background:${cvar[k]}"></i>`).join('');
+  const lg = order.map(k=>{ const n=S.sourceDist[k]||0;
+    return `<div class="sl"><i style="background:${cvar[k]}"></i><span>${esc(SRC[k])}</span>
+      <span class="n mono">${k.split('_')[0]}</span><b>${n} 条</b>
+      <span class="n mono">${tot?Math.round(n/tot*100):0}%</span></div>`; }).join('');
+  const rows = [
+    ['能力项含国家级来源', S.withL1+' / '+S.abilities, ''],
+    ['无来源且未标推断', S.noEvidence, S.noEvidence===0?'good':'crit'],
+    ['无文献直接依据（专家确认后纳入）', (S.inferredRate*100).toFixed(1)+'%', (S.inferredRate>=0.05&&S.inferredRate<=0.20)?'good':'warn'],
+    ['国标未收录的新兴能力', S.flagged, ''],
+    ['跨子行业能力项', S.crossSub, ''],
+  ].map(([k,v,st])=>`<div class="qrow"><span class="k">${esc(k)}</span>
+    <b${st?` style="color:var(--${st==='crit'?'crit':st==='good'?'good':'warn'})"`:''}>${esc(v)}</b></div>`).join('');
+  return `<div class="eyebrow" style="margin-bottom:2px">来源等级分布 · 共 ${S.evidenceTotal} 条</div>
+    <div class="srcbar">${bar}</div><div class="srclg">${lg}</div>
+    <div class="eyebrow" style="margin:16px 0 2px">校验指标</div>${rows}
+    <div class="qnote">图谱内的每一条能力项都已在图谱平台经过人工确认后入库，本页展示的均为确认后的数据。「无文献直接依据」的健康区间是 10~15%：过高说明语料不足或岗位太新；为 0 反而要警惕——通常意味着抽取时在硬凑引用，而不是资料完美。</div>`;
+}
+
+/* ═══ 9b. 报告版本与导出 ═══ */
+let versions = [];   // {no, at, mode, scopeN, scopeNames, metrics}
+function nowStr(){
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function pushVersion(mode, metrics){
+  const v = {no: versions.length+1, at: nowStr(), mode, scopeN: scope.size,
+             scopeNames: scopedPos().map(p=>p.name), metrics};
+  versions.push(v);
+  return v;
+}
+function verBar(v){
+  return `<div class="verbar">
+    <span class="pill core">诊断 #${v.no}</span>
+    <span class="ver-t mono">${v.at}</span>
+    <span class="ver-d">${SRC_CN[v.mode]} · ${v.scopeN} 个岗位</span>
+    <span style="flex:1"></span>
+    ${versions.length>1?`<button class="chip" data-ver="hist">历史 ${versions.length} 次</button>`:''}
+    <button class="chip" data-ver="export">导出报告</button>
+  </div>`;
+}
+
+function reportMarkdown(){
+  const v = report ? versions[report.no-1] : versions[versions.length-1]; if(!v) return '';
+  const m = v.metrics;
+  const L = [];
+  L.push(`# ${I.name} · 本校能力覆盖诊断报告`);
+  L.push('');
+  L.push(`- 诊断批次：#${v.no}　生成时间：${v.at}`);
+  L.push(`- 测评方式：${SRC_CN[v.mode]}${v.mode==='manual'?'（不可追溯到具体课程与知识点）':v.mode==='lib'?'（依据平台课程体系，可追溯到课程与知识点）':'（依据本校知识图谱，可追溯到任务与知识点）'}`);
+  L.push(`- 测评范围：${v.scopeN} 个岗位 —— ${v.scopeNames.join('、')}`);
+  L.push(`- 行业图谱：${I.name} ${I.version}（${I.builtAt}） · ${S.positions} 岗位 / ${S.abilities} 能力项 / ${S.evidenceTotal} 条来源证据`);
+  L.push('');
+  L.push('## 一、岗位达标情况');
+  L.push('');
+  L.push('| 岗位 | 子行业 | 能力项 | 已达标 | 等级不足 | 未覆盖 | 达标率 |');
+  L.push('|---|---|---|---|---|---|---|');
+  m.rows.forEach(r=> L.push(`| ${r.name} | ${r.sub} | ${r.total} | ${r.ok} | ${r.levelgap} | ${r.none} | ${Math.round(r.rate*100)}% |`));
+  L.push('');
+  L.push('## 二、缺口清单');
+  L.push('');
+  if(m.none.length){
+    L.push(`### 内容缺口 —— 本校完全未开设（${m.none.length} 条）`);
+    L.push('');
+    L.push('| 能力项 | 领域 | 核心 | 要求岗位数 | 岗位最高要求 |');
+    L.push('|---|---|---|---|---|');
+    m.none.forEach(a=> L.push(`| ${a.name} | ${a.domain} | ${a.core?'★':''} | ${a.positionCount} | ${a.maxRequiredLevel} |`));
+    L.push('');
+  }
+  if(m.gap.length){
+    L.push(`### 等级缺口 —— 教了但未教到岗位要求（${m.gap.length} 条）`);
+    L.push('');
+    L.push('| 能力项 | 本校教到 | 岗位要求 | 差距 |');
+    L.push('|---|---|---|---|');
+    m.gap.forEach(a=> L.push(`| ${a.name} | ${a.att} | ${a.req} | ${a.d} 级 |`));
+    L.push('');
+  }
+  L.push('## 三、诊断结论');
+  L.push('');
+  m.findings.forEach(f=>{ L.push(`### ${f.title}`); L.push(''); L.push(f.body); L.push(''); });
+  if(v.rxMd){ L.push(v.rxMd); }
+  L.push('---');
+  L.push('');
+  L.push(v.mode==='lib'
+    ? '> 本报告依据平台预置的课程体系与本校已开设课程的勾选结果推出，可追溯到课程与知识点；它假设课程一旦开设其标准知识点均已教到。'
+    : v.mode==='manual'
+    ? '> 本报告依据人工填报，反映填报人对本校教学的判断，无法追溯到具体课程与知识点。接入知识图谱后可由映射自动生成。'
+    : `> 本报告由「能力项 ↔ 技能规范/知识点」的映射边自动推导，检索范围为${SC.majorWithKg.name}专业知识图谱（${SC.majorWithKg.courses.length} 门课 · ${SC.majorWithKg.leafCount} 个知识节点 · ${SC.majorWithKg.mappingCount} 条映射边）。`);
+  return L.join('\n');
+}
+
+function openExport(){
+  const md = reportMarkdown();
+  openDrawer('导出报告', `诊断 #${report?report.no:versions.length}`, '两种带走方式',
+    `<div class="dr-s"><div class="dr-st">打印 / 另存为 PDF</div>
+      <div class="dr-def">隐藏导航与交互控件，只保留报告正文，交给浏览器打印。这是拿去开会、放进申报书最直接的一种。</div>
+      <button class="btn" id="doPrint" style="margin-top:11px">打开打印视图</button></div>
+     <div class="dr-s"><div class="dr-st">复制为 Markdown</div>
+      <div class="dr-def">结构化文本，可直接粘进文档或 Obsidian。</div>
+      <button class="chip" id="doCopy" style="margin:11px 0 8px">复制到剪贴板</button>
+      <textarea class="mdbox" id="mdBox" readonly>${esc(md)}</textarea></div>
+     <div class="dr-s"><div class="assess">正式版本还会提供 Word / PDF 后端导出与分享链接；原型内以浏览器打印与文本复制替代。</div></div>`);
+  $('#doPrint').addEventListener('click', ()=>{ closeDrawer(); setTimeout(()=>window.print(), 220); });
+  $('#doCopy').addEventListener('click', async ()=>{
+    const el = $('#mdBox'); el.select();
+    try { await navigator.clipboard.writeText(el.value); $('#doCopy').textContent = '✓ 已复制'; }
+    catch { $('#doCopy').textContent = '请按 Ctrl/Cmd+C 复制'; }
+  });
+}
+function openHist(){
+  openDrawer('版本历史', `共 ${versions.length} 次诊断`, '同一份行业图谱下的历次测评',
+    versions.slice().reverse().map(v=>`<div class="ev">
+      <div class="ev-h"><span class="pill core">#${v.no}</span>
+        <span class="ev-t">${SRC_CN[v.mode]}</span>
+        <span class="pill k mono">${v.at}</span></div>
+      <div class="ev-x">范围 ${v.scopeN} 个岗位 · 未覆盖 ${v.metrics.none.length} 条 · 等级缺口 ${v.metrics.gap.length} 条 ·
+        达标率 ≥60% 的岗位 ${v.metrics.rows.filter(r=>r.rate>=0.6).length} 个</div>
+      <div class="ev-u">${esc(v.scopeNames.join('、'))}</div></div>`).join('') +
+    `<div class="assess" style="margin-top:12px">正式版本中，每次「重算」都会生成新版本并可回看与对比；原型内仅记录本次会话内的批次。</div>`);
+}
+document.addEventListener('click', e=>{
+  const m = e.target.closest('[data-rxmore]');
+  if(m){
+    const box = m.previousElementSibling;
+    const on = box.dataset.fold === '1';
+    box.dataset.fold = on ? '0' : '1';
+    m.textContent = on ? `展开全部 ${box.querySelectorAll('.rx-i').length} 条` : '收起';
+    return;
+  }
+});
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-ver]'); if(!b) return;
+  if(b.dataset.ver==='export') openExport();
+  if(b.dataset.ver==='hist') openHist();
+});
+
+
+/* ═══ 7c. 能力结构对比：领域雷达 / 缺口哑铃 ═══ */
+const cmpView = {manual:'ablradar', lib:'ablradar', auto:'ablradar'};
+
+// 本校已达成等级（0=未开设，1/2/3=L1/L2/L3，null=未填报）
+function attainedOf(aid, mode){
+  if(mode==='lib'){
+    const v = libAttained()[aid];
+    return v==null ? null : (v===0 ? 0 : LV[v]);
+  }
+  if(mode==='manual'){
+    const f = fill[aid];
+    if(!f || !f.cov) return null;
+    if(f.cov==='none') return 0;
+    return LV[f.lv] - (f.cov==='partial' ? 0.5 : 0);
+  }
+  const v = SC.attained[aid];
+  return v==null ? null : (v===0 ? 0 : LV[v]);
+}
+// 范围内该能力被要求的最高等级
+function requiredOf(aid){
+  const rows = abl[aid].requiredBy.filter(r=>scope.has(r.position));
+  return rows.length ? Math.max(...rows.map(r=>LV[r.level])) : 0;
+}
+
+function cmpRows(mode){
+  return scopedAbl().map(a=>{
+    const req = requiredOf(a.id), att = attainedOf(a.id, mode);
+    return {a, req, att, gap: att==null ? null : Math.max(0, req-att)};
+  }).filter(r=>r.req>0);
+}
+
+/* ---- 领域雷达 ---- */
+function radarSVG(mode){
+  const rows = cmpRows(mode);
+  const byD = {};
+  rows.forEach(r=>{ (byD[r.a.domain] = byD[r.a.domain] || []).push(r); });
+  const axes = Object.keys(byD).sort();
+  if(axes.length < 3) return `<div class="cmp-empty">所选范围只涉及 ${axes.length} 个能力领域，雷达图至少需要 3 个轴。请扩大测评范围，或切到「缺口哑铃」按能力项查看。</div>`;
+  const R = 148, N = axes.length;
+  const ang = i => -Math.PI/2 + i*2*Math.PI/N;
+  const pt = (i, v) => [(v/3*R*Math.cos(ang(i))).toFixed(1), (v/3*R*Math.sin(ang(i))).toFixed(1)];
+  const avg = (arr, f) => arr.reduce((s,x)=>s+f(x),0)/arr.length;
+
+  const reqPts = axes.map((d,i)=> pt(i, avg(byD[d], r=>r.req)));
+  const attPts = axes.map((d,i)=> pt(i, avg(byD[d], r=>r.att==null?0:r.att)));
+  const poly = ps => ps.map(p=>p.join(',')).join(' ');
+
+  let g = '';
+  // 网格
+  for(let v=1; v<=3; v++){
+    g += `<polygon class="rgrid" points="${poly(axes.map((_,i)=>pt(i,v)))}"></polygon>`;
+    g += `<text class="rtick" x="4" y="${(-v/3*R).toFixed(1)}" dy="3">L${v}</text>`;
+  }
+  axes.forEach((_,i)=>{ const p = pt(i,3);
+    g += `<line class="raxis" x1="0" y1="0" x2="${p[0]}" y2="${p[1]}"></line>`; });
+
+  g += `<polygon class="rreq" points="${poly(reqPts)}"></polygon>`;
+  g += `<polygon class="ratt" points="${poly(attPts)}"></polygon>`;
+
+  axes.forEach((d,i)=>{
+    const rq = avg(byD[d], r=>r.req), at = avg(byD[d], r=>r.att==null?0:r.att);
+    const p = pt(i, at);
+    if(rq - at >= 0.4) g += `<circle class="rgap" cx="${p[0]}" cy="${p[1]}" r="4.5"
+      data-tipd="${esc(d)}|${rq.toFixed(1)}|${at.toFixed(1)}"></circle>`;
+    else g += `<circle class="rok" cx="${p[0]}" cy="${p[1]}" r="3"
+      data-tipd="${esc(d)}|${rq.toFixed(1)}|${at.toFixed(1)}"></circle>`;
+    const lp = pt(i, 3.62), c = Math.cos(ang(i));
+    const anchor = Math.abs(c) < 0.3 ? 'middle' : (c > 0 ? 'start' : 'end');
+    g += `<text class="rlab" x="${lp[0]}" y="${lp[1]}" text-anchor="${anchor}"
+      dominant-baseline="central" data-tipd="${esc(d)}|${rq.toFixed(1)}|${at.toFixed(1)}"
+      >${esc(fit(d, 86, 11))}</text>`;
+    g += `<text class="rlab2" x="${lp[0]}" y="${(+lp[1]+13).toFixed(1)}" text-anchor="${anchor}"
+      dominant-baseline="central">${at.toFixed(1)} / ${rq.toFixed(1)}</text>`;
+  });
+
+  const gaps = axes.filter(d=> avg(byD[d],r=>r.req) - avg(byD[d],r=>r.att==null?0:r.att) >= 0.4);
+  return `<svg viewBox="-268 -212 536 424" class="radar" role="img"
+      aria-label="能力结构雷达图：${N} 个领域的行业要求与本校达成对比">${g}</svg>
+    <div class="cmp-note">轴为能力领域，半径为该领域内能力项的<b>平均等级</b>（外圈 L3）。
+      灰色轮廓是行业要求，紫色实心是本校达成，两者之间的空白就是缺口。
+      ${gaps.length?`<b>${gaps.length}</b> 个领域平均差距 ≥ 0.4 级：${gaps.map(esc).join('、')}。`:'各领域平均差距均小于 0.4 级。'}</div>`;
+}
+
+/* ---- 能力雷达：轴 = 单条能力项 ---- */
+const ABR_MAX = 12;
+function ablRadarSVG(mode){
+  const all = cmpRows(mode)
+    .sort((x,y)=> (y.a.core-x.a.core) || (y.a.positionCount-x.a.positionCount)
+                || x.a.name.localeCompare(y.a.name));
+  if(all.length < 3) return `<div class="cmp-empty">所选范围只有 ${all.length} 条能力项，雷达图至少需要 3 个轴。请扩大测评范围。</div>`;
+  const rows = all.slice(0, ABR_MAX), hidden = all.length - rows.length;
+  const R = 138, N = rows.length;
+  const lvTxt = r => {
+    if(r.att==null) return '未填报';
+    const v = r.att;
+    if(v === 0) return `未开设 / L${r.req}`;
+    return (Number.isInteger(v) ? `L${v}` : `L${Math.ceil(v)} 部分`) + ` / L${r.req}`;
+  };
+  const ang = i => -Math.PI/2 + i*2*Math.PI/N;
+  const pt = (i, v) => [(v/3*R*Math.cos(ang(i))).toFixed(1), (v/3*R*Math.sin(ang(i))).toFixed(1)];
+  const poly = ps => ps.map(p=>p.join(',')).join(' ');
+  const attv = r => r.att==null ? 0 : r.att;
+
+  let g = '';
+  for(let v=1; v<=3; v++){
+    g += `<polygon class="rgrid" points="${poly(rows.map((_,i)=>pt(i,v)))}"></polygon>`;
+    g += `<text class="rtick" x="4" y="${(-v/3*R).toFixed(1)}" dy="3">L${v}</text>`;
+  }
+  rows.forEach((_,i)=>{ const p = pt(i,3);
+    g += `<line class="raxis" x1="0" y1="0" x2="${p[0]}" y2="${p[1]}"></line>`; });
+
+  g += `<polygon class="rreq" points="${poly(rows.map((r,i)=>pt(i,r.req)))}"></polygon>`;
+  g += `<polygon class="ratt" points="${poly(rows.map((r,i)=>pt(i,attv(r))))}"></polygon>`;
+
+  rows.forEach((r,i)=>{
+    const p = pt(i, attv(r)), gap = r.att!=null && r.gap>0;
+    g += gap
+      ? `<circle class="rgap" cx="${p[0]}" cy="${p[1]}" r="4.5" data-tipa="${r.a.id}|${attv(r)}|${r.req}"></circle>`
+      : `<circle class="rok" cx="${p[0]}" cy="${p[1]}" r="3" data-tipa="${r.a.id}|${attv(r)}|${r.req}"></circle>`;
+    const lp = pt(i, 3.58), c = Math.cos(ang(i));
+    const anchorT = Math.abs(c) < 0.3 ? 'middle' : (c > 0 ? 'start' : 'end');
+    g += `<text class="rlab${gap?' gap':''}" x="${lp[0]}" y="${lp[1]}" text-anchor="${anchorT}"
+      dominant-baseline="central" data-abl="${r.a.id}"
+      >${esc(fit(r.a.name, 132, 11))}${r.a.core?' ★':''}</text>`;
+    g += `<text class="rlab2" x="${lp[0]}" y="${(+lp[1]+13).toFixed(1)}" text-anchor="${anchorT}"
+      dominant-baseline="central">${lvTxt(r)}</text>`;
+  });
+
+  const gaps = rows.filter(r=>r.att!=null && r.gap>0).length;
+  const uncov = rows.filter(r=>r.att!=null && attv(r)===0).length;
+  return `<svg viewBox="-336 -208 672 416" class="radar ablradar" role="img"
+      aria-label="能力雷达：${N} 条能力项的行业要求与本校达成对比">${g}</svg>
+    <div class="cmp-note">每条轴是<b>一条能力项</b>（不像「领域雷达」那样取平均），半径为等级，外圈 L3。
+      灰色虚线是行业要求，紫色实心是本校达成。
+      轴按<b>核心能力优先、被要求岗位数次之</b>排序，最多画 ${ABR_MAX} 条${hidden?`，另有 ${hidden} 条未画（切到「缺口哑铃」看全部）`:''}。
+      图上 <b>${gaps}</b> 条存在缺口${uncov?`，其中 <b>${uncov}</b> 条完全未开设（紫色形状在该轴上塌到圆心）`:''}。★ 为核心能力，点轴标签看详情。</div>`;
+}
+
+/* ---- 缺口哑铃 ---- */
+function dumbbellSVG(mode){
+  const rows = cmpRows(mode).filter(r=>r.att!=null)
+    .sort((a,b)=> b.gap-a.gap || b.req-a.req || a.a.name.localeCompare(b.a.name));
+  if(!rows.length) return `<div class="cmp-empty">所选范围内还没有可对比的填报数据。</div>`;
+  const RH = 22, L = 210, W = 660, X0 = L + 12, X1 = W - 46;
+  const H = rows.length*RH + 34;
+  const x = v => X0 + (v/3)*(X1-X0);
+  let g = '';
+  for(let v=0; v<=3; v++){
+    g += `<line class="dgrid" x1="${x(v)}" y1="18" x2="${x(v)}" y2="${H-6}"></line>
+      <text class="dtick" x="${x(v)}" y="10" text-anchor="middle">${v===0?'未开设':'L'+v}</text>`;
+  }
+  rows.forEach((r,i)=>{
+    const y = 30 + i*RH;
+    const gap = r.gap > 0;
+    g += `<text class="dlab${gap?' gap':''}" x="${L}" y="${y}" text-anchor="end"
+        dominant-baseline="central" data-abl="${r.a.id}">${esc(fit(r.a.name, L-14, 11.5))}${r.a.core?' ★':''}</text>`;
+    g += `<line class="dtrack" x1="${x(0)}" y1="${y}" x2="${x(3)}" y2="${y}"></line>`;
+    if(gap) g += `<line class="dgap" x1="${x(r.att)}" y1="${y}" x2="${x(r.req)}" y2="${y}"></line>`;
+    g += `<circle class="datt" cx="${x(r.att)}" cy="${y}" r="4.5"
+        data-tipa="${r.a.id}|${r.att}|${r.req}"></circle>`;
+    g += `<circle class="dreq" cx="${x(r.req)}" cy="${y}" r="4.5"
+        data-tipa="${r.a.id}|${r.att}|${r.req}"></circle>`;
+    if(gap) g += `<text class="dnum" x="${X1+8}" y="${y}" dominant-baseline="central">−${r.gap}</text>`;
+  });
+  const withGap = rows.filter(r=>r.gap>0).length;
+  return `<svg viewBox="0 0 ${W} ${H}" class="dumb" role="img"
+      aria-label="能力缺口哑铃图：${rows.length} 条能力项的本校达成与行业要求对比">${g}</svg>
+    <div class="cmp-note">每行一条能力项，按缺口从大到小排。空心点是<b>本校达成</b>，实心点是<b>行业要求</b>，
+      中间红线就是差距。${withGap?`共 <b>${withGap}</b> 条存在缺口，最大差 ${rows[0].gap} 级。`:'所选范围内无缺口。'}</div>`;
+}
+
+function drawCmp(mode){
+  const box = $('#cmp' + (mode==='manual'?'Manual':mode==='lib'?'Lib':'Auto'));
+  if(!box) return;
+  const v = cmpView[mode];
+  box.querySelectorAll('.vs').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.cv===v)));
+  $('.cmp-body', box).innerHTML =
+    v==='radar' ? radarSVG(mode) : v==='ablradar' ? ablRadarSVG(mode) : dumbbellSVG(mode);
+}
+function cmpCard(mode){
+  return `<div class="card pad cmpcard" id="cmp${mode==='manual'?'Manual':mode==='lib'?'Lib':'Auto'}" data-cmpmode="${mode}">
+    <div class="cmp-h"><span class="eyebrow">能力结构对比</span>
+      <span class="pill k">行业要求 vs 本校达成</span>
+      <span style="flex:1"></span>
+      <div class="viewsw"><button class="vs" data-cv="radar" aria-pressed="false">领域雷达</button>
+        <button class="vs" data-cv="ablradar" aria-pressed="true">能力雷达</button>
+        <button class="vs" data-cv="dumbbell" aria-pressed="false">缺口哑铃</button></div></div>
+    <div class="cmp-body"></div>
+    <div class="cmp-legend">
+      <span class="bl"><i class="lg-req"></i>行业要求</span>
+      <span class="bl"><i class="lg-att"></i>本校达成</span>
+      <span class="bl"><i class="lg-gap"></i>缺口</span>
+      <span class="bl" style="color:var(--muted)">部分覆盖按「该等级 − 0.5」计入</span>
+    </div></div>`;
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-cv]'); if(!b) return;
+  const card = b.closest('[data-cmpmode]'); if(!card) return;
+  cmpView[card.dataset.cmpmode] = b.dataset.cv;
+  drawCmp(card.dataset.cmpmode);
+});
+document.addEventListener('mouseover', e=>{
+  const d = e.target.closest('[data-tipd]');
+  if(d){ const [n,rq,at] = d.dataset.tipd.split('|');
+    tip.innerHTML = `<b>${esc(n)}</b><span class="tk">行业要求平均 ${rq} 级 · 本校达成平均 ${at} 级</span>
+      <span class="tk">差距 ${(rq-at).toFixed(1)} 级</span>`;
+    tip.classList.add('on'); return; }
+  const a = e.target.closest('[data-tipa]');
+  if(a){ const [id,att,req] = a.dataset.tipa.split('|');
+    tip.innerHTML = `<b>${esc(abl[id].name)}</b>
+      <span class="tk">本校达成 ${att==0?'未开设':'L'+att} · 行业要求 L${req}</span>
+      <span class="tk">${esc(abl[id].domain)}${abl[id].core?' · 核心能力':''}</span>`;
+    tip.classList.add('on'); }
+});
+
+
+/* ═══ 6b. 测评编排：① 测评方式 → ② 测评范围 → ③ 采集/计算 ═══ */
+const SRC_CN = {manual:'能力现状评估', lib:'课程体系评估', auto:'教学成果测评'};
+function stateKey(mode){
+  const sc = [...scope].sort().join(',');
+  if(mode === 'lib') return 'lib|' + sc + '|' + [...pickedLeaf].sort().join(',');
+  if(mode !== 'manual') return 'auto|' + sc;
+  const f = Object.keys(fill).filter(k=>fill[k] && fill[k].cov).sort()
+    .map(k=>`${k}:${fill[k].cov}${fill[k].lv||''}`).join(';');
+  return 'manual|' + sc + '|' + f;
+}
+function staleReason(){
+  if(!report) return null;
+  if(MODE !== report.mode)
+    return `第 1 步现在选的是「${SRC_CN[MODE]}」，但下面这份报告来自「${SRC_CN[report.mode]}」。`;
+  if(report.key !== stateKey(report.mode))
+    return report.mode==='manual' ? '测评范围或填报内容已变更，下面这份报告仍是变更前的结果。'
+         : report.mode==='lib'    ? '测评范围或课程勾选已变更，下面这份报告仍是变更前的结果。'
+         : '测评范围已变更，下面这份报告仍是变更前的结果。';
+  return null;
+}
+function syncHead(){
+  const empty = scope.size === 0;
+  const wn = $('#scopeWarn'); if(wn) wn.hidden = !empty;
+  const rb = $('#runBtn');
+  if(rb){
+    rb.disabled = empty;
+    rb.style.opacity = empty ? '.45' : '';
+    rb.style.cursor  = empty ? 'not-allowed' : '';
+    rb.textContent = (report && report.mode===MODE) ? '按当前设置重算' : '生成诊断报告';
+  }
+  const hd = $('#assHd'); if(!hd) return;
+  hd.hidden = !report;
+  if(report){
+    const v = versions[report.no-1];
+    $('#ahNo').textContent = `诊断 #${v.no}`;
+    $('#ahAt').textContent = v.at;
+    $('#ahDesc').textContent = `${SRC_CN[v.mode]} · ${v.scopeN} 个岗位 · 未覆盖 ${v.metrics.none.length} 条 · 等级缺口 ${v.metrics.gap.length} 条`;
+    const on = OVVER === v.no;
+    $('#ahOverlay').textContent = on ? '✓ 已叠加（点此取消）' : '叠加到行业全景';
+    $('#ahOverlay').setAttribute('aria-pressed', String(on));
+    $('#ahHist').hidden = versions.length < 2;
+    $('#ahHist').textContent = `历史 ${versions.length} 次`;
+  }
+  const r = staleReason();
+  const sb = $('#ahStale'); if(!sb) return;
+  sb.hidden = !r;
+  if(r) $('#ahStaleText').innerHTML = esc(r) + ' 报告不会被自动清掉。';
+  paintBanner();
+}
+function focusReport(){
+  const hd = $('#assHd');
+  if(hd) hd.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ═══ 7. 诊断 ═══ */
+function autoMetrics(){
+  const rows = scopedPos().map(p=>{
+    const c = {ok:0, levelgap:0, none:0};
+    p.abilities.forEach(r=>{
+      const att = SC.attained[r.ability];
+      if(!att) c.none++;
+      else if(LV[att] >= LV[r.level]) c.ok++;
+      else c.levelgap++;
+    });
+    return {name:p.name, sub:sub[p.sub].name, total:p.abilityCount,
+            ok:c.ok, levelgap:c.levelgap, none:c.none, partial:0,
+            rate:c.ok/p.abilityCount};
+  }).sort((a,b)=>b.rate-a.rate);
+  const none = scopedAbl().filter(a=>!SC.attained[a.id])
+    .sort((a,b)=>b.positionCount-a.positionCount)
+    .map(a=>({name:a.name, domain:a.domain, core:a.core,
+              positionCount:a.positionCount, maxRequiredLevel:a.maxRequiredLevel}));
+  const gap = scopedAbl().filter(a=>{ const att=SC.attained[a.id];
+      return att && LV[att] < LV[requiredOf(a.id)]; })
+    .map(a=>({name:a.name, att:SC.attained[a.id], req:'L'+requiredOf(a.id),
+              d: requiredOf(a.id) - LV[SC.attained[a.id]]}))
+    .sort((a,b)=>b.d-a.d);
+  const finds = SC.findings.filter(f=>!f.pos || f.pos.some(p=>scope.has(p)))
+    .map(f=>({title:f.title, body:f.body}));
+  return {rows, none, gap, findings:finds};
+}
+function renderAutoReport(){
+  $('#dNote').innerHTML = '<span class="ico warning">i</span><span>'+esc(SC.note)+'</span>';
+  const inS = pid => scope.has(pid);
+  const majors = SC.majors.filter(m=>m.positions.some(inS));
+  $('#majors').innerHTML = majors.length ? majors.map(m=>
+    `<div class="card mj"><div class="mj-n">${esc(m.name)}</div>
+     <div class="mj-c">${esc(m.stage)} · ${esc(m.code)}</div>
+     <div class="mj-p">${m.positions.filter(inS).map(pid=>{ const c=m.coverage[pid]||0;
+       return `<div class="mp"><span class="mp-n" title="${esc(pos[pid].name)}">${esc(pos[pid].name)}</span>
+         <span class="bar"><i style="width:${Math.round(c*100)}%"></i></span>
+         <span class="mp-v">${Math.round(c*100)}%</span></div>`; }).join('')}</div></div>`).join('')
+    : `<div class="card pad" style="grid-column:1/-1;color:var(--muted);font-size:12.5px">
+        所选岗位中没有本校对口专业——这本身就是结论：这些岗位在本校没有任何专业面向。</div>`;
+
+  const finds = SC.findings.filter(f=>!f.pos || f.pos.some(inS));
+  const outOfScope = D.positions.filter(p=>!scope.has(p.id) && SC.uncovered_positions.includes(p.id)).length;
+  $('#findings').innerHTML = (finds.length ? finds : [{level:'good', title:'所选范围内无重大缺口',
+      body:'当前选中的岗位在本校均有对口专业且覆盖率处于正常区间。扩大测评范围可以看到更多结论。'}]).map(f=>{
+    const icon={critical:'!',warning:'!',good:'✓'}[f.level];
+    const label={critical:'内容缺口',warning:'混合缺口',good:'覆盖良好'}[f.level];
+    return `<div class="find ${f.level}"><span class="find-s"></span><div>
+      <div class="find-t"><span class="ico ${f.level}">${icon}</span>${esc(f.title)}
+        <span class="pill ${f.level==='good'?'good':f.level==='warning'?'warn':'crit'}">${label}</span></div>
+      <div class="find-b">${esc(f.body)}</div></div></div>`; }).join('')
+    + (isAllScope()?'':`<div class="assess" style="margin:8px 0 4px">已按测评范围过滤${outOfScope?`，另有 ${outOfScope} 个未选入的岗位同样无对口专业`:''}。</div>`);
+
+  const cb = $('#cmpAutoWrap'); if(cb){ cb.innerHTML = cmpCard('auto'); drawCmp('auto'); }
+  $('#advice').textContent = isAllScope() ? SC.group_advice
+    : `以上结论仅针对所选的 ${scope.size} 个岗位。专业群层面的组群合理性判断需要覆盖全部岗位，请全选后重新查看。`;
+  const rz = $('#rxZone'); if(rz) rz.innerHTML = adviceHTML('auto');
+}
+
+/* ─── 全局提示条 ─── */
+let toastT = null;
+function toast(msg){
+  const t = $('#toast'); t.innerHTML = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('on'), 3200);
+}
+
+/* ─── 叠加：始终绑定到产出它的那一版报告 ─── */
+function setDiag(on){
+  document.body.classList.toggle('diag', on);
+  $('#diagBanner').hidden = !on;
+  paintBanner();
+  renderBurst(); renderGraph(); renderMatrix(); renderPosCards();
+  syncHead();
+}
+function paintBanner(){
+  const v = OVVER ? versions[OVVER-1] : null;
+  if(!v || $('#diagBanner').hidden) return;
+  const stale = report && report.no===v.no && staleReason();
+  $('#diagBannerText').innerHTML =
+    `<b>诊断 #${v.no}</b>（${SRC_CN[v.mode]} · ${v.scopeN} 个岗位）的结果已叠加到「行业全景」`
+    + (v.mode==='manual'
+        ? '——填报为「未开设」的能力项、达标率过低的岗位都会标出。'
+        : '——没有课程支撑的能力项、达标率过低的岗位都会标出。')
+    + (stale ? ' <b>（第 1／2 步已变更，叠加的仍是这一版）</b>' : '');
+}
+function applyOverlay(v){
+  OVP = new Set(v.ov.P); OVA = new Set(v.ov.A); OVC = v.ov.C; OVSRC = v.ov.src; OVVER = v.no;
+  setDiag(true);
+  toast(`诊断 #${v.no} 已叠加到「行业全景」，可在上方「行业全景」页的环形图 / 树形图 / 能力矩阵中查看`);
+}
+function clearOverlay(){
+  OVVER = null; setDiag(false);
+  toast('已取消叠加。「行业全景」已恢复为不含任何院校信息的产业侧原始数据');
+}
+$('#diagOff').addEventListener('click', clearOverlay);
+$('#ahOverlay').addEventListener('click', ()=>{
+  if(!report) return;
+  const v = versions[report.no-1];
+  if(OVVER === v.no) clearOverlay(); else applyOverlay(v);
+});
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-goto]'); if(!b) return;
+  selL1(b.dataset.goto); window.scrollTo({top:0, behavior:'smooth'});
+});
+/* ═══ 7a. 测评范围选择 ═══ */
+function renderScope(){
+  $('#scopeCount').textContent = `已选 ${scope.size} / ${D.positions.length} 个岗位`;
+  $('#scopeBar').innerHTML = D.subIndustries.filter(s=>s.built).map(s=>{
+    const n = s.positionIds.filter(p=>scope.has(p)).length;
+    return `<div class="scope-g"><div class="scope-gt">${esc(s.name)}
+      <button data-subsel="${s.id}">${n===s.positionIds.length?'取消本组':'选中本组'}</button></div>
+      <div class="scope-row">${s.positionIds.map(pid=>{
+        const p = pos[pid], on = scope.has(pid);
+        return `<button class="pchip" data-pchip="${pid}" aria-pressed="${on}">
+          <span class="pc-x">✓</span>${esc(p.name)}
+          <span class="pc-n">${p.abilityCount}</span></button>`;
+      }).join('')}</div></div>`;
+  }).join('');
+  const ab = scopedAbl().length;
+  $('#scopeCount').textContent = `已选 ${scope.size} / ${D.positions.length} 个岗位 · 涉及 ${ab} 条能力项`;
+}
+function scopeChanged(){
+  renderScope(); renderFill(); renderBurst(); syncHead();
+}
+$('#step2').addEventListener('click', e=>{
+  const c = e.target.closest('[data-pchip]');
+  if(c){ const id=c.dataset.pchip; scope.has(id)?scope.delete(id):scope.add(id); scopeChanged(); return; }
+  const g = e.target.closest('[data-subsel]');
+  if(g){ const ids = sub[g.dataset.subsel].positionIds;
+    const allOn = ids.every(x=>scope.has(x));
+    ids.forEach(x=> allOn ? scope.delete(x) : scope.add(x));
+    scopeChanged(); return; }
+  const a = e.target.closest('[data-scope]');
+  if(a){ scope = a.dataset.scope==='all' ? new Set(D.positions.map(p=>p.id)) : new Set();
+    scopeChanged(); }
+});
+
+/* ═══ 7b. 测评 · 模式一：本校能力达成人工填报 ═══ */
+const COVL = {full:'已覆盖', partial:'部分覆盖', none:'未开设'};
+let fill = {};              // {ABL-xx: {cov, lv, by}}
+let onlyCore = false;
+
+function fillOrder(){
+  return scopedAbl().sort((a,b)=>
+    (b.core-a.core) || (b.positionCount-a.positionCount) || a.id.localeCompare(b.id));
+}
+function fillRows(){ return fillOrder().filter(a=>!onlyCore || a.core); }
+
+function renderFill(){
+  const rows = fillRows();
+  const groups = [];
+  rows.forEach(a=>{ let g=groups.find(x=>x.name===a.domain);
+    if(!g){g={name:a.domain,items:[]};groups.push(g);} g.items.push(a); });
+
+  $('#fillTable').innerHTML = `
+    <div class="fhead"><span>能力项（按核心与被要求岗位数排序）</span><span>本校覆盖情况</span>
+      <span>教到等级</span><span>承接专业 / 课程</span></div>` +
+    groups.map(g=>{
+      const done = g.items.filter(a=>fill[a.id]&&fill[a.id].cov).length;
+      return `<div class="fgroup"><div class="fg-h"><b style="font-weight:500">${esc(g.name)}</b>
+        <span class="fg-n">${done}/${g.items.length}</span>
+        <span class="fg-bulk">
+          <button class="chip" data-bulk="full" data-dm="${esc(g.name)}">全标已覆盖</button>
+          <button class="chip" data-bulk="none" data-dm="${esc(g.name)}">全标未开设</button>
+        </span></div>` +
+      g.items.map(a=>{
+        const f = fill[a.id] || {};
+        const st = f.cov ? ' done '+f.cov : '';
+        return `<div class="frow${st}" data-abl="${a.id}">
+          <div class="fn"><span class="tdot ${a.type}" title="${a.typeCn}类"></span>
+            <span class="fn-t" title="${esc(a.name)}">${esc(a.name)}</span>
+            ${a.core?'<span class="star" title="核心能力">★</span>':''}
+            <span class="fmeta">${a.positionCount} 岗 · 最高 ${a.maxRequiredLevel}</span></div>
+          <div class="seg">${['full','partial','none'].map(c=>
+            `<button data-cov="${c}" aria-pressed="${f.cov===c}">${COVL[c]}</button>`).join('')}</div>
+          <div class="seg lv" data-disabled="${f.cov&&f.cov!=='none'?'0':'1'}">${['L1','L2','L3'].map(L=>
+            `<button data-lv="${L}" aria-pressed="${f.lv===L}">${L}</button>`).join('')}</div>
+          <input class="fby" data-by="${a.id}" value="${esc(f.by||'')}" placeholder="选填，如：导游服务 · 导游实务">
+        </div>`;
+      }).join('') + `</div>`;
+    }).join('');
+
+  const inScope = new Set(scopedAbl().map(a=>a.id));
+  const total = inScope.size;
+  const done = Object.keys(fill).filter(id=>inScope.has(id) && fill[id].cov).length;
+  $('#fpBar').style.width = (done/total*100).toFixed(1)+'%';
+  $('#fpText').textContent = `已填 ${done} / ${total}`;
+  syncCoreBtn();
+  syncHead();
+}
+function syncCoreBtn(){
+  const b = $('#onlyCore'); if(!b) return;
+  b.textContent = onlyCore ? `显示全部 ${scopedAbl().length}` : `只填核心能力 ${scopedAbl().filter(a=>a.core).length}`;
+}
+renderScope();
+renderFill();
+
+$('#fillTable').addEventListener('click', e=>{
+  const bulk = e.target.closest('[data-bulk]');
+  if(bulk){
+    fillRows().filter(a=>a.domain===bulk.dataset.dm).forEach(a=>{
+      fill[a.id] = bulk.dataset.bulk==='none'
+        ? {cov:'none', lv:null, by:(fill[a.id]||{}).by||''}
+        : {cov:'full', lv:(fill[a.id]||{}).lv || (a.maxRequiredLevel==='L3'?'L2':a.maxRequiredLevel),
+           by:(fill[a.id]||{}).by||''};
+    });
+    renderFill(); return;
+  }
+  const row = e.target.closest('[data-abl]'); if(!row) return;
+  const id = row.dataset.abl;
+  const cb = e.target.closest('[data-cov]');
+  if(cb){
+    const c = cb.dataset.cov;
+    const cur = fill[id] || {};
+    fill[id] = {cov: cur.cov===c ? null : c,
+      lv: c==='none' ? null : (cur.lv || (abl[id].maxRequiredLevel==='L3'?'L2':abl[id].maxRequiredLevel)),
+      by: cur.by||''};
+    renderFill(); return;
+  }
+  const lb = e.target.closest('[data-lv]');
+  if(lb){ const cur = fill[id]||{}; if(!cur.cov||cur.cov==='none') return;
+    fill[id] = {...cur, lv: lb.dataset.lv}; renderFill(); }
+});
+$('#fillTable').addEventListener('input', e=>{
+  const inp = e.target.closest('[data-by]'); if(!inp) return;
+  const id = inp.dataset.by;
+  fill[id] = {...(fill[id]||{cov:null,lv:null}), by: inp.value};
+});
+$('#onlyCore').addEventListener('click', ()=>{
+  onlyCore = !onlyCore;
+  $('#onlyCore').setAttribute('aria-pressed', String(onlyCore));
+  syncCoreBtn();
+  renderFill();
+});
+$('#clearFill').addEventListener('click', ()=>{ fill = {}; renderFill(); });
+$('#loadSample').addEventListener('click', ()=>{
+  fill = {};
+  const partialSet = new Set(['ABL-09','ABL-24']);
+  D.abilities.forEach(a=>{
+    if(SC.uncovered_abilities.includes(a.id)) fill[a.id] = {cov:'none', lv:null, by:''};
+    else if(partialSet.has(a.id)) fill[a.id] = {cov:'partial', lv:'L1', by:'康养休闲旅游服务'};
+    else fill[a.id] = {cov:'full',
+      lv: a.maxRequiredLevel==='L3' ? 'L2' : a.maxRequiredLevel,
+      by: a.core ? '导游服务 · 旅游服务与管理' : ''};
+  });
+  renderFill();
+  toast('已载入一份示例填报，可直接点右上「生成诊断报告」查看效果');
+});
+
+/* ---- ③ 采集/计算：统一入口 ---- */
+function autoSkeleton(){
+  return `<div class="rep-h"><span class="eyebrow">诊断报告</span>
+      <span class="pill k">双图谱映射自动推导 · 每条结论可追溯到知识点</span></div>
+    <div class="dnote" id="dNote"></div>
+    <div id="cmpAutoWrap"></div>
+    <div class="eyebrow" style="margin-bottom:10px">本校对接本行业的专业</div>
+    <div class="majors" id="majors"></div>
+    <div class="eyebrow" style="margin-bottom:10px">诊断结论</div>
+    <div id="findings"></div>
+    <div class="advice" id="advice"></div>
+    <div class="eyebrow" style="margin:26px 0 10px">缺口处置建议</div>
+    <div id="rxZone"></div>`;
+}
+
+function runAuto(){
+  const v = pushVersion('auto', autoMetrics());
+  v.ov = {src:'graph', P:[...SC.uncovered_positions], A:[...SC.uncovered_abilities],
+    C:Object.fromEntries(D.positions.map(p=>{ let b=0;
+      SC.majors.forEach(m=>{ if(m.coverage[p.id]!==undefined) b=Math.max(b,m.coverage[p.id]); }); return [p.id,b]; }))};
+  v.rxMd = adviceMarkdown('auto');
+  report = {no:v.no, mode:'auto', key:stateKey('auto')};
+  $('#reportZone').innerHTML = autoSkeleton();
+  renderAutoReport();
+  if(OVVER != null) applyOverlay(v); else { renderBurst(); syncHead(); }
+  focusReport();
+}
+
+function manualStatus(pid){
+  const p = pos[pid];
+  const c = {ok:0, levelgap:0, partial:0, none:0, unfilled:0};
+  p.abilities.forEach(r=>{
+    const f = fill[r.ability];
+    if(!f || !f.cov) c.unfilled++;
+    else if(f.cov==='none') c.none++;
+    else if(f.cov==='partial') c.partial++;
+    else c[LV[f.lv] >= LV[r.level] ? 'ok' : 'levelgap']++;
+  });
+  return {c, rate: c.ok / p.abilityCount};
+}
+
+function runManual(){
+  const inS = new Set(scopedAbl().map(a=>a.id));
+  const filled = Object.keys(fill).filter(id=>inS.has(id) && fill[id].cov).length;
+  if(!filled){
+    toast('还没有填报任何一条能力项。可以先点「载入示例填报」，或从「只填核心能力」开始。');
+    $('#fillTable').scrollIntoView({behavior:'smooth', block:'start'});
+    return;
+  }
+  const stat = scopedPos().map(p=>({p, ...manualStatus(p.id)})).sort((a,b)=>a.rate-b.rate);
+  const noneAb = scopedAbl().filter(a=>fill[a.id]&&fill[a.id].cov==='none')
+    .sort((a,b)=>b.positionCount-a.positionCount);
+  const gapAb = scopedAbl().filter(a=>{ const f=fill[a.id];
+    return f&&f.cov==='full'&&LV[f.lv]<LV[a.maxRequiredLevel]; })
+    .sort((a,b)=>b.positionCount-a.positionCount);
+  const partAb = scopedAbl().filter(a=>fill[a.id]&&fill[a.id].cov==='partial');
+
+  const findings = [];
+  stat.filter(x=>x.rate<0.5).slice(0,2).forEach(x=>findings.push({level:'critical',
+    title:`${x.p.name}岗位达标率 ${Math.round(x.rate*100)}%`,
+    body:`该岗位 ${x.p.abilityCount} 条能力要求中，已达标 ${x.c.ok} 条，等级不足 ${x.c.levelgap} 条，未开设 ${x.c.none} 条，部分覆盖 ${x.c.partial} 条${x.c.unfilled?`，另有 ${x.c.unfilled} 条未填报`:''}。未开设的能力项需要新增课程模块承接，不是调整现有课程能解决的。`}));
+  if(noneAb.length){
+    const nc = noneAb.filter(a=>a.core).length;
+    findings.push({level:'critical', title:`${noneAb.length} 条能力项本校完全未开设`,
+      body:`按被要求的岗位数排序，最需要补的是「${noneAb.slice(0,3).map(a=>a.name).join('」「')}」${noneAb.length>3?' 等':''}。`
+        + (nc ? `其中 ${nc} 条是核心能力（被 2 个以上岗位要求且有国家级来源），优先级最高。`
+              : `其中没有核心能力——空缺集中在只被少数岗位要求的专项能力上，是否补齐取决于本校要不要拓宽专业面向。`)});
+  }
+  if(gapAb.length) findings.push({level:'warning', title:`${gapAb.length} 条能力项教了但未教到岗位要求的高度`,
+    body:`集中在「${gapAb.slice(0,3).map(a=>a.name).join('」「')}」${gapAb.length>3?' 等':''}。L3 的共同特征是「处理非常规情境、优化流程、指导他人」，这类要求很难在课堂任务里达成，通常应由顶岗实习或真实项目承接——这张表可以直接作为实习任务书的依据。`});
+  if(partAb.length) findings.push({level:'warning', title:`${partAb.length} 条能力项填报为部分覆盖`,
+    body:`「部分覆盖」意味着教学内容触及但不成体系。建议在下一轮课程修订时明确：是并入现有课程加深，还是单独设立教学任务。`});
+  const best = stat[stat.length-1];
+  if(best && best.rate>=0.6) findings.push({level:'good', title:`${best.p.name}岗位达标率 ${Math.round(best.rate*100)}%`,
+    body:`${best.p.abilityCount} 条能力要求中已达标 ${best.c.ok} 条${best.c.levelgap?`，未达标的 ${best.c.levelgap} 条集中在等级不足而非内容空白`:''}。这是本校在该行业里最扎实的岗位方向。`});
+
+  const covered = scopedPos().filter(p=>manualStatus(p.id).rate>=0.6).length;
+  const rows = stat.slice().sort((a,b)=>b.rate-a.rate).map(x=>{
+    const seg = (k,v)=> x.c[k] ? `<i style="flex:${x.c[k]};background:var(--${v})" title="${k}"></i>` : '';
+    return `<tr><td><b style="font-weight:500">${esc(x.p.name)}</b>
+        <span class="mono" style="color:var(--muted);font-size:10.5px"> ${esc(sub[x.p.sub].name)}</span></td>
+      <td><span class="covbar">${seg('ok','good')}${seg('levelgap','warn')}${seg('partial','muted')}${seg('none','crit')}${seg('unfilled','rule')}</span></td>
+      <td class="num">${x.c.ok}</td><td class="num">${x.c.levelgap}</td>
+      <td class="num">${x.c.partial}</td><td class="num">${x.c.none}</td>
+      <td class="num"><b>${Math.round(x.rate*100)}%</b></td></tr>`;
+  }).join('');
+
+  const v = pushVersion('manual', {
+    rows: stat.slice().sort((a,b)=>b.rate-a.rate).map(x=>({name:x.p.name, sub:sub[x.p.sub].name,
+      total:x.p.abilityCount, ok:x.c.ok, levelgap:x.c.levelgap, none:x.c.none,
+      partial:x.c.partial, rate:x.rate})),
+    none: noneAb.map(a=>({name:a.name, domain:a.domain, core:a.core,
+      positionCount:a.positionCount, maxRequiredLevel:a.maxRequiredLevel})),
+    gap: gapAb.map(a=>({name:a.name, att:fill[a.id].lv, req:a.maxRequiredLevel,
+      d: LV[a.maxRequiredLevel]-LV[fill[a.id].lv]})).sort((a,b)=>b.d-a.d),
+    findings: findings.map(f=>({title:f.title, body:f.body})),
+  });
+  v.ov = {src:'manual',
+    A: scopedAbl().filter(a=>fill[a.id]&&fill[a.id].cov==='none').map(a=>a.id),
+    P: scopedPos().filter(p=>manualStatus(p.id).rate < 0.34).map(p=>p.id),
+    C: Object.fromEntries(scopedPos().map(p=>[p.id, manualStatus(p.id).rate]))};
+  v.rxMd = adviceMarkdown('manual');
+  report = {no:v.no, mode:'manual', key:stateKey('manual')};
+
+  $('#reportZone').innerHTML = `
+    <div class="rep-h"><span class="eyebrow">诊断报告</span>
+      <span class="pill k">依据人工填报 ${filled}/${scopedAbl().length} 条</span></div>
+    <div class="dnote"><span class="ico warning">i</span>
+      <span>本报告的依据是人工填报，反映的是填报人对本校教学的判断，<b>无法追溯到具体课程与知识点</b>。接入知识图谱后，同样结构的报告可由映射自动生成，每条结论都能落到某门课的某个知识点上。</span></div>
+    ${cmpCard('manual')}
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="eyebrow" style="margin-bottom:12px">岗位达标情况</div>
+      <div style="overflow-x:auto"><table class="covtable"><thead><tr>
+        <th style="min-width:150px">岗位</th><th style="min-width:120px">构成</th>
+        <th style="text-align:right">已达标</th><th style="text-align:right">等级不足</th>
+        <th style="text-align:right">部分</th><th style="text-align:right">未开设</th>
+        <th style="text-align:right">达标率</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="assess" style="margin-top:11px">达标 = 本校填报的教学等级 ≥ 该岗位对该能力的要求等级。
+${scope.size} 个所选岗位中达标率 ≥ 60% 的有 <b>${covered}</b> 个。</div>
+    </div>
+    <div class="eyebrow" style="margin-bottom:10px">诊断结论</div>
+    ${findings.map(f=>{
+      const icon={critical:'!',warning:'!',good:'✓'}[f.level];
+      const label={critical:'内容缺口',warning:'等级/深度缺口',good:'覆盖良好'}[f.level];
+      return `<div class="find ${f.level}"><span class="find-s"></span><div>
+        <div class="find-t"><span class="ico ${f.level}">${icon}</span>${esc(f.title)}
+          <span class="pill ${f.level==='good'?'good':f.level==='warning'?'warn':'crit'}">${label}</span></div>
+        <div class="find-b">${esc(f.body)}</div></div></div>`;
+    }).join('')}
+    <div class="eyebrow" style="margin:26px 0 10px">缺口处置建议</div>
+    ${adviceHTML('manual')}`;
+  drawCmp('manual');
+  if(OVVER != null) applyOverlay(v); else { renderBurst(); syncHead(); }
+  focusReport();
+}
+
+$('#runBtn').addEventListener('click', ()=>{
+  if(!scope.size) return;
+  MODE==='manual' ? runManual() : MODE==='lib' ? runLib() : runAuto();
+});
+$('#ahRecalc').addEventListener('click', ()=>{
+  if(!scope.size){ toast('请先在第 2 步选择至少一个岗位'); return; }
+  if(report && MODE!==report.mode) setMode(report.mode);
+  MODE==='manual' ? runManual() : MODE==='lib' ? runLib() : runAuto();
+});
+
+/* ---- ① 测评方式 ---- */
+function setMode(m){
+  MODE = m;
+  $('#tabs3').querySelectorAll('.src').forEach(b=>{
+    const on = b.dataset.mode===m;
+    b.setAttribute('aria-pressed', String(on));
+    b.setAttribute('aria-checked', String(on));
+  });
+  $('#pane-manual').hidden = m!=='manual';
+  $('#pane-lib').hidden    = m!=='lib';
+  $('#pane-diag').hidden   = m!=='auto';
+  $('#s3t').textContent = m==='manual' ? '填报本校能力达成情况'
+                        : m==='lib'    ? '勾选已有课程体系' : '计算';
+  $('#s3d').textContent = m==='manual'
+    ? '逐条填报本校教到了什么程度，填完点右侧生成报告；也可以只填核心能力先看个大概。'
+    : m==='lib'
+    ? '不用填等级，只勾「本校已有」——勾课程即勾中它下面全部节点，也可以展开只勾其中几条。'
+    : '这一步不需要你做任何输入——直接依据已入库的双图谱映射计算。';
+  syncHead();
+}
+$('#tabs3').addEventListener('click', e=>{
+  const b = e.target.closest('[data-mode]'); if(!b) return;
+  setMode(b.dataset.mode);
+});
+
+/* ═══ 7e. 缺口处置建议 ═══ */
+/* 只输出图谱里查得到依据的内容：承接形态由可写明的规则判定，达标要求取自能力项的
+   三级行为化描述，教学蓝本取自该能力的来源证据，先后顺序取自 prerequisites。
+   学时、开课学期、课程名一律不生成。 */
+const PRE_OF = {};
+D.prerequisites.forEach(x=>{ (PRE_OF[x.from] = PRE_OF[x.from] || []).push(x); });
+
+function gapList(mode){
+  return cmpRows(mode)
+    .filter(r => r.att != null && r.gap > 0)
+    .map(r => ({...r, kind: r.att === 0 ? 'content' : 'level'}));
+}
+// 本校现有承接点：双图谱取映射边所在课程，人工填报取填报人写的「承接专业/课程」
+function holderOf(aid, mode){
+  if(mode === 'manual'){
+    const by = (fill[aid] || {}).by;
+    return by ? {name: by, src: 'fill'} : null;
+  }
+  const es = (SC.support && SC.support[aid]) || [];
+  const cov = es.filter(e => e.rel === 'covers' || e.rel === 'partially_covers');
+  if(!cov.length) return null;
+  const top = cov[0];
+  return {name: top.course, src: 'map', chain: top.chain};
+}
+const FORM = {
+  newmodule: {t:'新增教学模块', rule:'本校完全没有承接内容，属内容缺口——调整现有课程解决不了。'},
+  deepen:    {t:'在现有课程中加深', rule:'本校已有承接点但只教到较低等级，属等级缺口，课内加深即可补齐。'},
+  practice:  {t:'由实训 / 顶岗 / 真实项目承接', rule:'目标等级 L3 的定义是「处理非常规情境、优化流程、指导他人」，课堂任务难以达成。'},
+};
+function gapLabel(r){
+  if(r.kind === 'content') return '内容缺口';
+  if(!Number.isInteger(r.att)) return `等级缺口 · 现为 L${Math.ceil(r.att)} 部分覆盖`;
+  return `等级缺口 差 ${r.gap} 级`;
+}
+function formOf(r){
+  if(r.kind === 'content') return 'newmodule';
+  return r.req === 3 ? 'practice' : 'deepen';
+}
+
+function adviceCards(mode){
+  const rows = gapList(mode);
+  if(!rows.length) return [];
+  const gapIds = new Set(rows.map(r => r.a.id));
+  const groups = {};
+  rows.forEach(r => {
+    const form = formOf(r);
+    const h = holderOf(r.a.id, mode);
+    // 「加深」按课程归组（可直接落到某门课）；「实训承接」合成一张（本就是同一件事）；
+    // 「新增模块」按能力领域归组（同域的缺口应当合成一个模块，而不是各开一门）
+    const key = form === 'deepen' ? `deepen|${h ? h.name : '未注明承接课程'}`
+              : form === 'practice' ? 'practice'
+              : `newmodule|${r.a.domain}`;
+    (groups[key] = groups[key] || {form, label: form === 'newmodule' ? r.a.domain : (form === 'deepen' ? (h ? h.name : null) : null),
+                                    items: [], holder: h}).items.push(r);
+  });
+  return Object.values(groups).map(g => {
+    const cores = g.items.filter(r => r.a.core).length;
+    const posN  = new Set(g.items.flatMap(r => r.a.requiredBy.filter(x => scope.has(x.position)).map(x => x.position))).size;
+    // 教学蓝本：本组能力项的国家级 / 行业标准来源，去重
+    const seen = new Set(), refs = [];
+    g.items.forEach(r => r.a.evidences.forEach(e => {
+      if(e.sourceLevel !== 'L1_国家' && e.sourceLevel !== 'L2_标准') return;
+      if(seen.has(e.sourceTitle)) return;
+      seen.add(e.sourceTitle); refs.push(e);
+    }));
+    // 前置：本组内某条能力的前置能力，也在缺口清单里 → 需要先补
+    const pres = [];
+    g.items.forEach(r => (PRE_OF[r.a.id] || []).forEach(x => {
+      if(gapIds.has(x.to) && !g.items.some(i => i.a.id === x.to))
+        pres.push({from: r.a.id, to: x.to, note: x.note});
+    }));
+    return {...g, cores, posN, refs: refs.slice(0, 5), pres};
+  }).sort((a, b) => b.cores - a.cores || b.posN - a.posN || b.items.length - a.items.length);
+}
+
+function adviceMarkdown(mode){
+  const cards = adviceCards(mode);
+  if(!cards.length) return ['## 四、缺口处置建议','','所选范围内没有缺口，无需处置建议。',''].join('\n');
+  const L = ['## 四、缺口处置建议',''];
+  L.push('> 承接形态按可写明的规则判定；达标要求与考核方式取自能力项的三级行为化描述；教学蓝本取自该能力的来源证据；补齐顺序取自能力项之间的前置关系。学时、开课学期与课程归属没有图谱依据，不在本报告中生成。');
+  L.push('');
+  cards.forEach((g,i)=>{
+    const F = FORM[g.form];
+    const title = g.form==='deepen' ? (g.label?`在《${g.label}》中加深`:'在现有承接课程中加深（承接点未注明）')
+                : g.form==='practice' ? F.t : `${F.t}｜${g.label}`;
+    L.push(`### ${String(i+1).padStart(2,'0')} ${title}`);
+    L.push('');
+    L.push(`- 规模：${g.items.length} 条能力项 · ${g.cores} 条核心 · 影响 ${g.posN} 个岗位`);
+    L.push(`- 为什么这样承接：${F.rule}`);
+    if(g.form==='deepen' && g.holder) L.push(`- 现有承接点：${g.holder.chain||g.holder.name}${g.holder.src==='fill'?'（据人工填报，未经映射核实）':''}`);
+    L.push('');
+    L.push('| 能力项 | 缺口 | 目标 | 要教到什么程度 | 怎么做 | 达标考核 |');
+    L.push('|---|---|---|---|---|---|');
+    g.items.slice().sort((x,y)=>(y.a.core-x.a.core)||(y.a.positionCount-x.a.positionCount)).forEach(r=>{
+      const lv = r.a.levels['L'+r.req];
+      const pts = (lv.points||[]).join('；');
+      L.push(`| ${r.a.name}${r.a.core?' ★':''} | ${gapLabel(r)} | L${r.req} | ${lv.desc} | ${pts} | ${lv.assess} |`);
+    });
+    L.push('');
+    if(g.pres.length){
+      L.push('补齐顺序：');
+      g.pres.forEach(x=>L.push(`- 先补「${abl[x.to].name}」，再补「${abl[x.from].name}」——${x.note}`));
+      L.push('');
+    }
+    if(g.refs.length){
+      L.push('教学蓝本（来自本组能力的来源证据）：');
+      g.refs.forEach(e=>L.push(`- ${e.sourceTitle}　${e.sourceLevel.split('_')[1]}　「${e.excerpt}」`));
+    } else {
+      L.push('教学蓝本：本组能力项没有国家级或行业标准来源，只有市场侧依据，教学内容需自行组织。');
+    }
+    L.push('');
+  });
+  return L.join('\n');
+}
+
+function adviceHTML(mode){
+  const cards = adviceCards(mode);
+  if(!cards.length) return `<div class="card pad" style="color:var(--muted);font-size:12.5px">
+    所选范围内没有缺口，无需处置建议。</div>`;
+  const body = cards.map((g, i) => {
+    const F = FORM[g.form];
+    const title = g.form === 'deepen'
+      ? (g.label ? `在《${esc(g.label)}》中加深` : '在现有承接课程中加深（承接点未注明）')
+      : g.form === 'practice' ? F.t
+      : `${F.t}｜${esc(g.label)}`;
+    const sorted = g.items.slice().sort((x,y)=>
+      (g.form === 'practice' ? x.a.domain.localeCompare(y.a.domain) : 0)
+      || (y.a.core - x.a.core) || (y.a.positionCount - x.a.positionCount)
+      || x.a.name.localeCompare(y.a.name));
+    const FOLD = 6, foldable = sorted.length > FOLD;
+    let lastDom = null;
+    const items = sorted.map(r => {
+      let domHead = '';
+      if(g.form === 'practice' && r.a.domain !== lastDom){
+        domHead = `<div class="rx-dom">${esc(r.a.domain)}</div>`;
+        lastDom = r.a.domain;
+      }
+      const lv = r.a.levels['L' + r.req];
+      return domHead + `<div class="rx-i">
+        <div class="rx-ih"><button class="rx-n" data-abl="${r.a.id}">${esc(r.a.name)}</button>
+          ${r.a.core ? '<span class="star" title="核心能力">★</span>' : ''}
+          <span class="pill ${r.kind === 'content' ? 'crit' : 'warn'}">${esc(gapLabel(r))}</span>
+          <span style="flex:1"></span>
+          <span class="lvtag L${r.req}">目标 L${r.req}</span></div>
+        <div class="rx-d">${esc(lv.desc)}</div>
+        <div class="rx-how"><span class="rx-kk">怎么做</span><ul class="pts">${(lv.points||[]).map(p=>`<li>${esc(p)}</li>`).join('')}</ul></div>
+        <div class="rx-k"><span class="rx-kk">达标考核</span>${esc(lv.assess)}</div>
+      </div>`;
+    }).join('');
+    const foldWrap = h => foldable
+      ? `<div class="rx-fold" data-fold="0">${h}<div class="rx-mask"></div></div>
+         <button class="chip rx-more" data-rxmore="1">展开全部 ${sorted.length} 条</button>`
+      : h;
+    const holderChain = g.form === 'deepen' && g.holder && g.holder.chain
+      ? `<div class="rx-chain"><span class="rx-kk">现有承接点</span>${esc(g.holder.chain)}</div>` : '';
+    const holderFill = g.form === 'deepen' && g.holder && g.holder.src === 'fill'
+      ? `<div class="rx-chain"><span class="rx-kk">现有承接点</span>${esc(g.holder.name)}（据人工填报，未经映射核实）</div>` : '';
+    const l3note = g.form === 'newmodule' && g.items.some(r => r.req === 3)
+      ? `<div class="rx-warn">本组有 ${g.items.filter(r => r.req === 3).length} 条目标等级为 L3，模块内需保留实训或真实项目环节，纯课堂任务达不到。</div>` : '';
+    const preHTML = g.pres.length
+      ? `<div class="rx-sec"><span class="rx-kk">补齐顺序</span>${g.pres.map(x =>
+          `<div class="rx-p">先补「${esc(abl[x.to].name)}」，再补「${esc(abl[x.from].name)}」<span class="rx-pn">${esc(x.note)}</span></div>`).join('')}</div>` : '';
+    const refHTML = g.refs.length
+      ? `<div class="rx-sec"><span class="rx-kk">教学蓝本 · 来自本组能力的来源证据</span>
+          ${g.refs.map(e => `<div class="rx-r"><span class="pill ${e.sourceLevel === 'L1_国家' ? 'core' : 'k'}">${esc(e.sourceLevel.split('_')[1])}</span>
+            <b style="font-weight:500">${esc(e.sourceTitle)}</b>
+            <span class="rx-ex">${esc(e.excerpt)}</span></div>`).join('')}</div>`
+      : `<div class="rx-sec"><span class="rx-kk">教学蓝本</span>
+          <span class="rx-none">本组能力项没有国家级或行业标准来源，只有市场侧依据，教学内容需自行组织。</span></div>`;
+    return `<div class="card pad rx">
+      <div class="rx-h"><span class="rx-no mono">${String(i + 1).padStart(2, '0')}</span>
+        <div><div class="rx-t">${title}</div>
+          <div class="rx-m">${g.items.length} 条能力项 · ${g.cores} 条核心 · 影响 ${g.posN} 个岗位</div></div>
+        <span style="flex:1"></span>
+        <span class="pill ${g.form === 'newmodule' ? 'crit' : g.form === 'practice' ? 'warn' : 'k'}">${F.t}</span></div>
+      <div class="rx-rule"><span class="rx-kk">为什么这样承接</span>${F.rule}</div>
+      ${holderChain}${holderFill}${l3note}
+      <div class="rx-sec"><span class="rx-kk">要教到什么程度 · 取自能力项的三级行为化描述</span>${foldWrap(items)}</div>
+      ${preHTML}${refHTML}
+    </div>`;
+  }).join('');
+  return `<div class="rx-lead">下列建议由缺口清单推导：<b>承接形态</b>按可写明的规则判定，<b>达标要求与考核方式</b>直接取自能力项的三级行为化描述，
+    <b>教学蓝本</b>取自该能力的来源证据，<b>补齐顺序</b>取自能力项之间的前置关系。
+    学时、开课学期与课程归属没有图谱依据，本页不生成——那些在《课程计划管理》里由教务决定。</div>${body}`;
+}
+
+
+/* ═══ 7f. 测评方式三：课程体系评估 ═══
+   平台预置的课程体系在图谱平台维护；学校只勾「已开设哪些课」，
+   达成等级沿课程内知识节点的映射边推出，不需要人工判断。 */
+const CLIB = D.courseLib;
+const clib = Object.fromEntries(CLIB.map(c=>[c.id,c]));
+const leafCourse = {};
+CLIB.forEach(c=>c.leaves.forEach(l=>leafCourse[l.id]=c.id));
+let pickedLeaf = new Set();          // 勾选到知识节点一级
+let openCourse = null;
+
+const courseState = c => {
+  const n = c.leaves.filter(l=>pickedLeaf.has(l.id)).length;
+  return n===0 ? 'off' : n===c.leaves.length ? 'on' : 'part';
+};
+function libAttained(){
+  const m = {};
+  CLIB.forEach(c=>c.edges.forEach(e=>{
+    if(!pickedLeaf.has(e.leaf)) return;
+    if(e.rel!=='covers' && e.rel!=='partially_covers') return;
+    if(!m[e.ability] || LV[e.level] > LV[m[e.ability]]) m[e.ability] = e.level;
+  }));
+  D.abilities.forEach(a=>{ if(!m[a.id]) m[a.id] = 0; });
+  return m;
+}
+const KORD = {'技能规范':0, '知识点':1, '标准':2, '案例':3};
+function libModules(c){
+  const mods = [];
+  c.leaves.slice().sort((x,y)=>(KORD[x.kind]??9)-(KORD[y.kind]??9) || x.id.localeCompare(y.id))
+    .forEach(l=>{ let g = mods.find(x=>x.name===l.module);
+      if(!g){ g={name:l.module, items:[]}; mods.push(g); } g.items.push(l); });
+  return mods;
+}
+function renderLib(){
+  $('#libList').innerHTML = CLIB.map(c=>{
+    const st = courseState(c), n = c.leaves.filter(l=>pickedLeaf.has(l.id)).length;
+    return `<div class="libwrap">
+      <div class="libc" data-course="${c.id}" role="checkbox" tabindex="0"
+           aria-checked="${st==='on'?'true':st==='part'?'mixed':'false'}" data-st="${st}">
+        <span class="pc-x">${st==='part'?'–':'✓'}</span>
+        <span><span class="libc-n">${esc(c.name)}</span>
+          <span class="libc-m">${esc(c.type)} · ${esc(c.block)}</span></span>
+        <span class="libc-r"><b>${n}</b> / ${c.leafCount} 个知识点 / 技能规范<br>
+          <span style="color:var(--muted)">全选可支撑 ${c.abilities.length} 条能力项</span></span>
+        <button class="libx" data-open="${c.id}" aria-expanded="${openCourse===c.id}"
+          aria-label="展开课程内容">${openCourse===c.id?'收起':'展开'}</button>
+      </div>
+      ${openCourse===c.id ? `<div class="libin">${libModules(c).map(g=>`<div class="libin-g">
+          <div class="libin-h">${esc(g.name)}</div>
+          ${g.items.map(l=>`<div class="libin-i" data-leaf="${l.id}" role="checkbox" tabindex="0"
+              aria-checked="${pickedLeaf.has(l.id)}">
+            <span class="pc-x">✓</span>
+            <span class="pill k">${esc(l.kind)}</span>
+            <b style="font-weight:500">${esc(l.name)}</b></div>`).join('')}
+        </div>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+  const att = libAttained();
+  const n = D.abilities.filter(a=>att[a.id]).length;
+  const cn = CLIB.filter(c=>courseState(c)!=='off').length;
+  $('#libCount').textContent = `已勾选 ${pickedLeaf.size} 个知识点 / 技能规范 · 涉及 ${cn} 门课 · 可支撑 ${n} 条能力项`;
+  syncHead();
+}
+function setCourse(cid, on){
+  clib[cid].leaves.forEach(l=> on ? pickedLeaf.add(l.id) : pickedLeaf.delete(l.id));
+}
+$('#libList').addEventListener('click', e=>{
+  const x = e.target.closest('[data-open]');
+  if(x){ openCourse = openCourse===x.dataset.open ? null : x.dataset.open; renderLib(); return; }
+  const lf = e.target.closest('[data-leaf]');
+  if(lf){ const id = lf.dataset.leaf;
+    pickedLeaf.has(id) ? pickedLeaf.delete(id) : pickedLeaf.add(id); renderLib(); return; }
+  const b = e.target.closest('[data-course]'); if(!b) return;
+  setCourse(b.dataset.course, b.dataset.st !== 'on');
+  renderLib();
+});
+$('#libList').addEventListener('keydown', e=>{
+  const b = e.target.closest('[data-course],[data-leaf]'); if(!b) return;
+  if(e.key===' ' || e.key==='Enter'){ e.preventDefault(); b.click(); }
+});
+$('#pane-lib').addEventListener('click', e=>{
+  const b = e.target.closest('[data-lib]'); if(!b) return;
+  if(b.dataset.lib==='all') CLIB.forEach(c=>setCourse(c.id, true));
+  else pickedLeaf = new Set();
+  renderLib();
+});
+
+/* ---- 由勾选课程生成诊断 ---- */
+function libMetrics(){
+  const att = libAttained();
+  const rows = scopedPos().map(p=>{
+    const c = {ok:0, levelgap:0, none:0};
+    p.abilities.forEach(r=>{
+      const v = att[r.ability];
+      if(!v) c.none++;
+      else if(LV[v] >= LV[r.level]) c.ok++;
+      else c.levelgap++;
+    });
+    return {name:p.name, sub:sub[p.sub].name, total:p.abilityCount,
+            ok:c.ok, levelgap:c.levelgap, none:c.none, partial:0, rate:c.ok/p.abilityCount};
+  }).sort((a,b)=>b.rate-a.rate);
+  const none = scopedAbl().filter(a=>!att[a.id]).sort((a,b)=>b.positionCount-a.positionCount)
+    .map(a=>({name:a.name, domain:a.domain, core:a.core,
+              positionCount:a.positionCount, maxRequiredLevel:a.maxRequiredLevel}));
+  const gap = scopedAbl().filter(a=>att[a.id] && LV[att[a.id]] < requiredOf(a.id))
+    .map(a=>({name:a.name, att:att[a.id], req:'L'+requiredOf(a.id),
+              d: requiredOf(a.id) - LV[att[a.id]]})).sort((a,b)=>b.d-a.d);
+
+  const findings = [];
+  const fx = libFix();
+  const addable = fx.filter(g=>g.course);
+  if(addable.length) findings.push({level:'critical', tag:'可补课覆盖',
+    title:`补齐 ${addable.length} 门课的相关内容可补上 ${addable.reduce((n,g)=>n+g.items.length,0)} 条能力缺口`,
+    body:`${addable.map(g=>'《'+g.course.name+'》').join('、')}都在平台课程体系里，有现成的知识点与实训条件要求，不需要从零开发。下方按课程逐条列出了要补的知识点与实训条件。`});
+  const cap = fx.find(g=>g.kind==='cap');
+  if(cap) findings.push({level:'warning', tag:'实训承接', title:`${cap.items.length} 条能力项课程体系最高只教到 L2`,
+    body:`「${cap.items.slice(0,3).map(r=>r.a.name).join('」「')}」${cap.items.length>3?' 等':''}岗位要求 L3，而课程体系里的课程最高服务到 L2。L3 的定义是「处理复杂/非常规情境、优化流程、指导他人」，课堂任务本就难以达成，应由顶岗实习或真实项目承接。`});
+  const nc = fx.find(g=>g.kind==='none');
+  if(nc) findings.push({level:'warning', tag:'校本开发', title:`${nc.items.length} 条能力项连课程体系也没有覆盖`,
+    body:`「${nc.items.map(r=>r.a.name).join('」「')}」在整个课程体系里找不到承接点，属于校本开发范围。可先在实习或真实项目中承接，同时向图谱平台反馈补充该课程。`});
+  const worst = rows[rows.length-1];
+  if(worst && worst.rate<0.5) findings.push({level:'critical',
+    title:`${worst.name}岗位达标率 ${Math.round(worst.rate*100)}%`,
+    body:`${worst.total} 条能力要求中已达标 ${worst.ok} 条，等级不足 ${worst.levelgap} 条，未覆盖 ${worst.none} 条。这是当前课程结构下最薄弱的岗位方向。`});
+  const best = rows[0];
+  if(best && best.rate>=0.6) findings.push({level:'good', title:`${best.name}岗位达标率 ${Math.round(best.rate*100)}%`,
+    body:`${best.total} 条能力要求中已达标 ${best.ok} 条。这是现有课程结构支撑最扎实的岗位方向。`});
+  return {rows, none, gap, findings: findings.map(f=>({title:f.title, body:f.body})), _f:findings, att};
+}
+
+/* ---- 课程级处置：补哪门课、补哪几个知识点、缺什么实训条件 ---- */
+function libFix(){
+  const att = libAttained();
+  const gaps = scopedAbl().map(a=>({a, req:requiredOf(a.id), att:att[a.id]}))
+    .filter(r=>r.req>0 && (!r.att || LV[r.att] < r.req));
+  const byCourse = new Map(), noCourse = [], levelCap = [];
+  // 课程体系里任一课程对该能力的最高服务等级（不论是否已勾选）
+  const capOf = aid => Math.max(0, ...CLIB.flatMap(c=>c.edges
+    .filter(x=>x.ability===aid && (x.rel==='covers'||x.rel==='partially_covers'))
+    .map(x=>LV[x.level])));
+  gaps.forEach(r=>{
+    // 在未勾选的课程里找能支撑这条能力、且服务等级更高的课
+    const cands = CLIB.map(c=>{
+        const es = c.edges.filter(x=>x.ability===r.a.id && !pickedLeaf.has(x.leaf) &&
+          (x.rel==='covers'||x.rel==='partially_covers') && LV[x.level] > (r.att?LV[r.att]:0));
+        if(!es.length) return null;
+        const e = es.slice().sort((p,q)=>LV[q.level]-LV[p.level])[0];
+        return {c, e, es};
+      }).filter(Boolean)
+      .sort((x,y)=> LV[y.e.level]-LV[x.e.level] || y.c.abilities.length-x.c.abilities.length);
+    if(!cands.length){
+      const cap = capOf(r.a.id);
+      (cap === 0 ? noCourse : levelCap).push({...r, cap});
+      return;
+    }
+    const {c, e, es} = cands[0];
+    if(!byCourse.has(c.id)) byCourse.set(c.id, {course:c, items:[]});
+    byCourse.get(c.id).items.push({...r, edge:e, edges:es});
+  });
+  const out = [...byCourse.values()].sort((a,b)=>
+    b.items.filter(x=>x.a.core).length - a.items.filter(x=>x.a.core).length ||
+    b.items.length - a.items.length);
+  if(levelCap.length) out.push({course:null, kind:'cap', items:levelCap});
+  if(noCourse.length)  out.push({course:null, kind:'none', items:noCourse});
+  return out;
+}
+
+function libFixHTML(){
+  const groups = libFix();
+  if(!groups.length) return `<div class="card pad" style="color:var(--muted);font-size:12.5px">
+    所选范围内没有缺口，无需补课。</div>`;
+  return `<div class="rx-lead">下列建议由「课程体系 ↔ 能力图谱」的映射边推出：<b>补哪门课</b>取自能覆盖该缺口的课程体系课程，
+      <b>补哪几个知识点</b>取自该课程下真正支撑这些能力的知识节点，
+      <b>实训条件</b>取自课程的实训要求，并与<b>本校实训室清单</b>逐项比对。学时与开课学期沿用课程体系的标准值。</div>` +
+    groups.map((g,i)=>{
+      if(!g.course){
+        const isCap = g.kind==='cap';
+        return `<div class="card pad rx">
+        <div class="rx-h"><span class="rx-no mono">${String(i+1).padStart(2,'0')}</span>
+          <div><div class="rx-t">${isCap?'课程体系最高只教到 L2 · 由实训 / 顶岗承接':'课程体系内无现成课程 · 需校本开发'}</div>
+            <div class="rx-m">${g.items.length} 条能力项 · ${g.items.filter(x=>x.a.core).length} 条核心</div></div>
+          <span style="flex:1"></span><span class="pill warn">${isCap?'实训承接':'校本开发'}</span></div>
+        <div class="rx-sec">${g.items.map(r=>`<div class="rx-i">
+          <div class="rx-ih"><button class="rx-n" data-abl="${r.a.id}">${esc(r.a.name)}</button>
+            ${r.a.core?'<span class="star">★</span>':''}
+            <span class="pill ${r.att?'warn':'crit'}">${r.att?`等级缺口 ${r.att}→L${r.req}`:'内容缺口'}</span>
+            <span style="flex:1"></span><span class="lvtag L${r.req}">目标 L${r.req}</span></div>
+          <div class="rx-d">${esc(r.a.levels['L'+r.req].desc)}</div>
+          <div class="rx-k"><span class="rx-kk">达标考核</span>${esc(r.a.levels['L'+r.req].assess)}</div>
+        </div>`).join('')}</div>
+        <div class="rx-sec"><span class="rx-kk">建议</span>
+          <div class="rx-d">${isCap
+            ? 'L3 的定义是「处理复杂/非常规情境、优化流程、指导他人」，课堂任务难以达成。课程体系已把这些能力教到 L2，剩下的一级应由顶岗实习或真实项目承接——上面的达标考核可以直接作为实习任务书的验收条款。'
+            : '先在顶岗实习或真实项目中承接，同时向图谱平台反馈补充该课程——课程体系补齐后，本页会自动出现对应的补课建议。'}</div></div></div>`;
+      }
+
+      const c = g.course;
+      // 该课程下真正支撑这些缺口能力的知识节点
+      const need = new Set(g.items.flatMap(x=>x.edges.map(y=>y.leaf)));
+      const kps = c.leaves.filter(l=>need.has(l.id));
+      const miss = c.practiceReq.filter(r=>!r.have);
+      return `<div class="card pad rx">
+        <div class="rx-h"><span class="rx-no mono">${String(i+1).padStart(2,'0')}</span>
+          <div><div class="rx-t">补齐《${esc(c.name)}》</div>
+            <div class="rx-m">${esc(c.type)} · ${esc(c.block)}　—　
+              可补齐 ${g.items.length} 条能力项（${g.items.filter(x=>x.a.core).length} 条核心）</div></div>
+          <span style="flex:1"></span>
+          <span class="pill ${miss.length?'warn':'good'}">${miss.length?`缺 ${miss.length} 项实训条件`:'实训条件齐备'}</span></div>
+
+        <div class="rx-sec"><span class="rx-kk">能补齐哪些能力项</span>
+          ${g.items.sort((x,y)=>(y.a.core-x.a.core)||(y.a.positionCount-x.a.positionCount)).map(r=>`<div class="rx-i">
+            <div class="rx-ih"><button class="rx-n" data-abl="${r.a.id}">${esc(r.a.name)}</button>
+              ${r.a.core?'<span class="star">★</span>':''}
+              <span class="pill ${r.att?'warn':'crit'}">${r.att?`等级缺口 ${r.att}→L${r.req}`:'内容缺口'}</span>
+              <span style="flex:1"></span>
+              <span class="lvtag L${LV[r.edge.level]}">该课教到 ${r.edge.level}</span></div>
+            <div class="rx-k"><span class="rx-kk">达标考核</span>${esc(r.a.levels['L'+r.req].assess)}</div>
+          </div>`).join('')}</div>
+
+        <div class="rx-sec"><span class="rx-kk">要补的知识点 / 技能规范 · ${kps.length} 个（该课程共 ${c.leafCount} 个节点）</span>
+          ${kps.map(l=>`<div class="rx-kp"><span class="pill k">${esc(l.kind)}</span>
+            <b style="font-weight:500;font-size:12.5px">${esc(l.name)}</b>
+            <span class="sup-c mono">${esc(l.module)}</span>
+            <span class="rx-kp-r">${esc(l.req)}</span></div>`).join('')}</div>
+
+        <div class="rx-sec"><span class="rx-kk">实训条件 · 与本校实训室清单比对</span>
+          ${c.practiceReq.length ? c.practiceReq.map(r=>`<div class="rx-lab">
+            <span class="st ${r.have?'have':'miss'}">${r.have?'已具备':'缺'}</span>
+            <b style="font-weight:500">${esc(r.item)}</b>
+            ${r.have?`<span class="sup-c mono">${esc(r.lab)}</span>`:''}
+            <div class="rx-lab-s">${esc(r.spec)}　—　依据：${esc(r.source)}</div></div>`).join('')
+            : `<div class="rx-none">该课程未提出专门的实训条件要求。</div>`}</div>
+      </div>`;
+    }).join('');
+}
+
+function libSkeleton(){
+  return `<div class="rep-h"><span class="eyebrow">诊断报告</span>
+      <span class="pill k">课程体系评估 · 已勾 ${pickedLeaf.size} 个知识点 / 技能规范</span></div>
+    <div class="dnote"><span class="ico warning">i</span>
+      <span>本报告依据<b>平台预置的课程体系</b>推出：勾选的课程下有哪些知识节点、这些节点映射到哪些能力项、服务到什么等级，都是课程体系里已有的数据。
+        它假设<b>课程一旦开设，其标准知识点均已教到</b>——实际教学中若某些模块未上，达成会被高估。接入本校自己的知识图谱后可精确到任务级。</span></div>
+    <div id="cmpLibWrap"></div>
+    <div class="eyebrow" style="margin-bottom:10px">岗位达标情况</div>
+    <div class="card pad" style="margin-bottom:16px"><div style="overflow-x:auto">
+      <table class="covtable"><thead><tr>
+        <th style="min-width:150px">岗位</th><th style="min-width:120px">构成</th>
+        <th style="text-align:right">已达标</th><th style="text-align:right">等级不足</th>
+        <th style="text-align:right">未覆盖</th><th style="text-align:right">达标率</th>
+      </tr></thead><tbody id="libRows"></tbody></table></div></div>
+    <div class="eyebrow" style="margin-bottom:10px">诊断结论</div>
+    <div id="libFindings"></div>
+    <div class="eyebrow" style="margin:26px 0 10px">缺口处置建议 · 按课程</div>
+    <div id="libRx"></div>`;
+}
+
+function runLib(){
+  if(!pickedLeaf.size){ toast('还没有勾选任何内容。请在第 3 步勾选本校已有的课程与知识点。'); return; }
+  const m = libMetrics();
+  const v = pushVersion('lib', m);
+  const att = m.att;
+  v.ov = {src:'lib',
+    A: D.abilities.filter(a=>!att[a.id]).map(a=>a.id),
+    P: D.positions.filter(p=>{
+        const r = p.abilities.filter(x=>att[x.ability] && LV[att[x.ability]]>=LV[x.level]).length / p.abilityCount;
+        return r < 0.34; }).map(p=>p.id),
+    C: Object.fromEntries(D.positions.map(p=>[p.id,
+        p.abilities.filter(x=>att[x.ability] && LV[att[x.ability]]>=LV[x.level]).length / p.abilityCount]))};
+  v.rxMd = libFixMarkdown();
+  report = {no:v.no, mode:'lib', key:stateKey('lib')};
+
+  $('#reportZone').innerHTML = libSkeleton();
+  $('#libRows').innerHTML = m.rows.map(r=>{
+    const seg = (n,c)=> n ? `<i style="flex:${n};background:var(--${c})" title="${n}"></i>` : '';
+    return `<tr><td><b style="font-weight:500">${esc(r.name)}</b>
+        <span class="mono" style="color:var(--muted);font-size:10.5px"> ${esc(r.sub)}</span></td>
+      <td><span class="covbar">${seg(r.ok,'good')}${seg(r.levelgap,'warn')}${seg(r.none,'crit')}</span></td>
+      <td class="num">${r.ok}</td><td class="num">${r.levelgap}</td><td class="num">${r.none}</td>
+      <td class="num"><b>${Math.round(r.rate*100)}%</b></td></tr>`;
+  }).join('');
+  $('#libFindings').innerHTML = m._f.map(f=>{
+    const icon={critical:'!',warning:'!',good:'✓'}[f.level];
+    const label = f.tag || {critical:'内容缺口',warning:'等级缺口',good:'覆盖良好'}[f.level];
+    return `<div class="find ${f.level}"><span class="find-s"></span><div>
+      <div class="find-t"><span class="ico ${f.level}">${icon}</span>${esc(f.title)}
+        <span class="pill ${f.level==='good'?'good':f.level==='warning'?'warn':'crit'}">${esc(label)}</span></div>
+      <div class="find-b">${esc(f.body)}</div></div></div>`; }).join('');
+  $('#libRx').innerHTML = libFixHTML();
+  const cb = $('#cmpLibWrap'); if(cb){ cb.innerHTML = cmpCard('lib'); drawCmp('lib'); }
+  if(OVVER != null) applyOverlay(v); else { renderBurst(); syncHead(); }
+  focusReport();
+}
+
+function libFixMarkdown(){
+  const groups = libFix();
+  const L = ['## 四、缺口处置建议 · 按课程',''];
+  L.push('> 补哪门课取自课程体系中能覆盖该缺口的课程；补哪几个知识点取自该课程下真正支撑这些能力的知识节点；实训条件取自课程的实训要求并与本校实训室清单比对。');
+  L.push('');
+  groups.forEach((g,i)=>{
+    if(!g.course){
+      L.push(`### ${String(i+1).padStart(2,'0')} ${g.kind==='cap'?'课程体系最高只教到 L2 · 由实训 / 顶岗承接':'课程体系内无现成课程 · 需校本开发'}`);
+      L.push('');
+      g.items.forEach(r=>L.push(`- ${r.a.name}${r.a.core?' ★':''}　目标 L${r.req}　考核：${r.a.levels['L'+r.req].assess}`));
+      L.push('');
+      return;
+    }
+    const c = g.course, need = new Set(g.items.map(x=>x.edge.leaf));
+    const kps = c.leaves.filter(l=>need.has(l.id));
+    L.push(`### ${String(i+1).padStart(2,'0')} 补齐《${c.name}》`);
+    L.push('');
+    L.push(`- ${c.type} · ${c.block}`);
+    L.push(`- 可补齐 ${g.items.length} 条能力项（${g.items.filter(x=>x.a.core).length} 条核心）`);
+    L.push('');
+    L.push('| 能力项 | 缺口 | 目标 | 该课教到 |');
+    L.push('|---|---|---|---|');
+    g.items.forEach(r=>L.push(`| ${r.a.name}${r.a.core?' ★':''} | ${r.att?'等级缺口 '+r.att+'→L'+r.req:'内容缺口'} | L${r.req} | ${r.edge.level} |`));
+    L.push('');
+    L.push(`要补的知识点（${kps.length} 个）：`);
+    kps.forEach(l=>L.push(`- [${l.kind}] ${l.name}　（${l.module}）——${l.req}`));
+    L.push('');
+    L.push('实训条件：');
+    (c.practiceReq.length ? c.practiceReq : []).forEach(r=>
+      L.push(`- ${r.have?'已具备':'**缺**'}　${r.item}——${r.spec}（依据：${r.source}${r.have?'；本校：'+r.lab:''}）`));
+    if(!c.practiceReq.length) L.push('- 该课程未提出专门的实训条件要求。');
+    L.push('');
+  });
+  return L.join('\n');
+}
+
+/* ═══ 7d. 本校支撑情况（双图谱映射下钻） ═══ */
+const KG = SC.majorWithKg;
+function supportHTML(a){
+  // 「本校支撑情况」只在做过测评、并且把结果叠加到全景之后才出现。
+  // 未叠加时行业全景保持纯产业侧数据，不含任何院校信息。
+  const v = OVVER ? versions[OVVER-1] : null;
+  if(!v) return '';
+  const req = a.maxRequiredLevel;
+  const head = `<div class="dr-st">本校支撑情况
+    <span class="pill k" style="margin-left:7px;text-transform:none;letter-spacing:0">诊断 #${v.no} · ${SRC_CN[v.mode]}</span></div>`;
+
+  /* ── 模式一：人工填报 ── */
+  if(v.mode === 'manual'){
+    const f = fill[a.id];
+    if(!f || !f.cov) return `<div class="dr-s">${head}
+      <div class="sup-manual"><span class="pill k">未填报</span>
+        诊断 #${v.no} 生成时，这条能力项没有填报记录（可能不在当时的测评范围内，或被跳过了）。</div>
+      <div class="assess">人工填报模式下，本校达成情况由专业负责人逐条判断。接入知识图谱后，这里会自动列出是哪门课的哪个知识点在支撑。</div></div>`;
+    const lvTxt = f.cov==='none' ? '未开设' : `${COVL[f.cov]}${f.lv?' · 教到 '+f.lv:''}`;
+    const gap = f.cov==='none' ? LV[req] : (f.cov==='full' && f.lv ? LV[req]-LV[f.lv] : null);
+    return `<div class="dr-s">${head}
+      <div class="supsum">
+        <span class="supsum-i"><b>${f.cov==='none'?'未开设':(f.lv||'—')}</b><span>本校填报</span></span>
+        <span class="supsum-arrow">${gap===null?'部分覆盖':gap>0?'差 '+gap+' 级':'已达标'}</span>
+        <span class="supsum-i"><b>${req}</b><span>行业要求</span></span>
+        <span style="flex:1"></span>
+        <span class="pill ${f.cov==='none'?'crit':f.cov==='partial'?'warn':(gap>0?'warn':'good')}">${lvTxt}</span>
+      </div>
+      ${f.by?`<div class="sup-manual"><span class="pill k">承接</span>${esc(f.by)}</div>`:''}
+      ${f.cov==='none'?`<div class="supgap"><span class="ico critical">!</span><div>
+        <b>填报为「未开设」。</b>行业对它的最高要求是 ${req}，${a.positionCount} 个岗位提出要求。
+        这属于<b>内容缺口</b>——需要新增课程模块承接，调整现有课程解决不了。</div></div>`:''}
+      <div class="assess">以上依据人工填报，反映填报人对本校教学的判断，<b>无法追溯到具体课程与知识点</b>。接入知识图谱后，同样这一块会自动展开到知识点级。</div></div>`;
+  }
+
+  /* ── 模式二：课程体系评估 ── */
+  if(v.mode === 'lib'){
+    const att = libAttained()[a.id];
+    const src = CLIB.map(c=>{
+        const es = c.edges.filter(x=>x.ability===a.id && pickedLeaf.has(x.leaf) &&
+          (x.rel==='covers'||x.rel==='partially_covers'));
+        return es.length ? {c, e: es.slice().sort((p,q)=>LV[q.level]-LV[p.level])[0]} : null;
+      }).filter(Boolean).sort((x,y)=>LV[y.e.level]-LV[x.e.level]);
+    const gapN = LV[req] - (att ? LV[att] : 0);
+    if(!src.length) return `<div class="dr-s">${head}
+      <div class="supgap"><span class="ico critical">!</span><div>
+        <b>已勾选的课程里没有任何知识节点支撑这条能力。</b>
+        行业对它的最高要求是 ${req}，${a.positionCount} 个岗位提出要求。诊断报告的「缺口处置建议 · 按课程」里给出了该补哪门课。</div></div>
+      <div class="assess">检索范围：平台课程体系中本校已勾选的 ${pickedLeaf.size} 个知识点 / 技能规范。</div></div>`;
+    return `<div class="dr-s">${head}
+      <div class="supsum">
+        <span class="supsum-i"><b>${att||'未覆盖'}</b><span>本校教到</span></span>
+        <span class="supsum-arrow">${gapN>0?'差 '+gapN+' 级':'已达标'}</span>
+        <span class="supsum-i"><b>${req}</b><span>行业要求</span></span>
+        <span style="flex:1"></span>
+        <span class="pill ${gapN>0?'warn':'good'}">${gapN>0?'等级缺口':'已覆盖'}</span></div>
+      ${src.map(({c,e})=>`<div class="supc">
+        <div class="supc-h"><span class="pill core">${esc(c.name)}</span>
+          <span class="gt-n mono">${esc(c.type)} · ${esc(c.block)}</span></div>
+        <div class="sup"><div class="sup-h"><span class="pill k">${esc(e.kind)}</span>
+          <span class="sup-n">${esc(e.leafName)}</span>
+          <span class="suprel ${e.rel}">${esc(e.relCn)}</span>
+          <span style="flex:1"></span><span class="lvtag ${e.level}">${e.level}</span></div>
+          <div class="sup-note">${esc(e.note)}</div></div></div>`).join('')}
+      <div class="assess">以上来自<b>平台课程体系</b>：勾选该课程即视为其标准知识节点均已教到。接入本校自己的知识图谱后可精确到任务级。</div></div>`;
+  }
+
+  /* ── 模式三：双图谱映射（本校已接入知识图谱） ── */
+  const edges = (SC.support && SC.support[a.id]) || [];
+  const att = SC.attained[a.id];
+  if(!edges.length){
+    return `<div class="dr-s">${head}
+      <div class="supgap"><span class="ico critical">!</span><div>
+        <b>本校现有课程中没有任何知识点或技能规范映射到这条能力。</b>
+        行业对它的最高要求是 ${req}，${a.positionCount} 个岗位提出要求。
+        这属于<b>内容缺口</b>——需要新增课程模块承接，调整现有课程解决不了。</div></div>
+      <div class="assess">检索范围：${esc(KG.name)}专业知识图谱（${KG.courses.length} 门课 · ${KG.leafCount} 个知识节点 · ${KG.mappingCount} 条映射边）</div></div>`;
+  }
+  const byC = {};
+  edges.forEach(e=>{ (byC[e.course] = byC[e.course] || []).push(e); });
+  const gap = LV[req] - (att ? LV[att] : 0);
+  return `<div class="dr-s">${head}
+    <div class="supsum">
+      <span class="supsum-i"><b>${att||'未覆盖'}</b><span>本校教到</span></span>
+      <span class="supsum-arrow">${gap>0?'差 '+gap+' 级':'已达标'}</span>
+      <span class="supsum-i"><b>${req}</b><span>行业要求</span></span>
+      <span style="flex:1"></span>
+      <span class="pill ${gap>0?'warn':'good'}">${gap>0?'等级缺口':'已覆盖'}</span>
+    </div>
+    ${Object.keys(byC).map(c=>`<div class="supc">
+      <div class="supc-h"><span class="pill core">${esc(c)}</span>
+        <span class="gt-n mono">${byC[c].length} 个节点</span></div>
+      ${byC[c].map(e=>`<div class="sup">
+        <div class="sup-h"><span class="pill k">${esc(e.kind)}</span>
+          <span class="sup-n">${esc(e.name)}</span>
+          <span class="suprel ${e.rel}">${esc(e.relCn)}</span>
+          <span style="flex:1"></span>
+          <span class="lvtag ${e.level}">${e.level}</span>
+          <span class="sup-c mono" title="置信度">${e.conf.toFixed(2)}</span></div>
+        <div class="sup-chain">${esc(e.chain)}</div>
+        <div class="sup-note"><span class="sup-anchor mono">${esc(e.anchor)}</span>${esc(e.note)}</div>
+      </div>`).join('')}</div>`).join('')}
+    <div class="assess">每条映射边带服务等级、锚定方式与置信度；「直接支撑」来自技能规范，「部分支撑」来自知识点，
+      「达标判据」来自标准与案例（后两类不计入覆盖等级）。数据来自${esc(KG.stage)}${esc(KG.name)}专业知识图谱。</div></div>`;
+}
+
+/* ═══ 8. drawer ═══ */
+let lastFocus = null;
+function openDrawer(kind,title,subt,html){
+  lastFocus = document.activeElement;
+  $('#drKind').textContent = kind; $('#drTitle').textContent = title;
+  $('#drSub').textContent = subt; $('#drBody').innerHTML = html; $('#drBody').scrollTop = 0;
+  $('#drawer').classList.add('on'); $('#drawer').setAttribute('aria-hidden','false');
+  $('#scrim').classList.add('on'); $('#drClose').focus();
+}
+function closeDrawer(){
+  $('#drawer').classList.remove('on'); $('#drawer').setAttribute('aria-hidden','true');
+  $('#scrim').classList.remove('on'); if(lastFocus) lastFocus.focus();
+}
+$('#drClose').addEventListener('click', closeDrawer);
+$('#scrim').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeDrawer(); hidePop(); } });
+
+function abilityHTML(a){
+  const gap = OVA.has(a.id);
+  let h = '';
+  if(a.flag||a.inferred) h += `<div class="dr-s"><div class="warnbox"><span class="ico warning">!</span>
+    <span>${esc(a.flag||'国家标准尚未收录，依据市场侧来源抽取，已由行业专家在图谱平台确认后纳入。')}</span></div></div>`;
+  h += `<div class="dr-s"><div class="dr-st">定义</div><div class="dr-def">${esc(a.definition)}</div></div>`;
+  if(a.core) h += `<div class="dr-s"><div class="dr-st">为什么是核心能力</div>
+    <div class="assess" style="margin-top:0">判定口径：被 2 个以上岗位要求，且至少有一条国家级来源。
+      本条被 <b>${a.positionCount}</b> 个岗位要求，国家级来源 <b>${a.evidences.filter(e=>e.sourceLevel==='L1_国家').length}</b> 条。</div></div>`;
+  h += supportHTML(a);
+  h += `<div class="dr-s"><div class="dr-st">三级行为化描述</div>` + ['L1','L2','L3'].map(L=>{
+    const l = a.levels[L];
+    return `<div class="lvl"><div class="lvl-h"><span class="lvl-b ${L}">${L}</span>
+      <span class="lvl-n">${LVN[L]}</span></div><div class="lvl-d">${esc(l.desc)}</div>
+      <ul class="pts">${l.points.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>
+      <div class="assess">考核：${esc(l.assess)}</div></div>`;
+  }).join('') + `</div>`;
+  h += `<div class="dr-s"><div class="dr-st">被 ${a.positionCount} 个岗位要求</div>` +
+    a.requiredBy.map(r=>`<button class="arow" data-pos="${r.position}">
+      <span class="arow-n">${esc(pos[r.position].name)}</span><span class="pill k">${r.level}</span>
+      <span class="arow-w">权重 ${r.weight.toFixed(2)}</span></button>`).join('') + `</div>`;
+  h += `<div class="dr-s"><div class="dr-st">来源证据 ${a.evidences.length} 条</div>` +
+    (a.evidences.length ? a.evidences.map(e=>`<div class="ev">
+      <div class="ev-h"><span class="ev-t">${esc(e.sourceTitle)}</span><span class="pill k">${esc(e.sourceLevel)}</span></div>
+      <div class="ev-x">${esc(e.excerpt)}</div></div>`).join('')
+      : '<div class="ev-x">无来源，已标记为 AI 推断项</div>') +
+    `<div class="assess">证据为示例占位；真实数据由 C1 来源分级 + C1.5 逐字校验产出</div></div>`;
+  if(gap) h += `<div class="dr-s"><div class="warnbox"><span class="ico critical">!</span>
+    <span>本校现有课程无任何知识点或技能规范映射到该能力（诊断叠加数据）</span></div></div>`;
+  return h;
+}
+function positionHTML(p){
+  let h = `<div class="dr-s"><div class="dr-st">岗位职责</div><div class="dr-def">${esc(p.desc)}</div></div>`;
+  h += `<div class="dr-s"><div class="dr-st">检索查询（用于语料采集）</div>
+    <div class="ev-u" style="margin-top:0">主查询　${esc(p.merged_query)}</div>
+    <div class="ev-u">备用　　${esc(p.fallback_query)}</div></div>`;
+  const byLv = {L3:[],L2:[],L1:[]};
+  p.abilities.forEach(r=>byLv[r.level].push(r));
+  h += `<div class="dr-s"><div class="dr-st">能力要求 ${p.abilityCount} 条（按要求等级分组）</div>` +
+    ['L3','L2','L1'].filter(L=>byLv[L].length).map(L=>
+      `<div style="margin-bottom:13px"><div class="lvl-h" style="margin-bottom:3px">
+        <span class="lvl-b ${L}">${L}</span><span class="lvl-n">${LVN[L]} · ${byLv[L].length} 条</span></div>` +
+      byLv[L].map(r=>{ const a=abl[r.ability], gap=OVA.has(a.id);
+        return `<button class="arow" data-abl="${a.id}">
+          <span class="tdot ${a.type}" title="${a.typeCn}类"></span>
+          <span class="arow-n">${esc(a.name)}</span>
+          ${a.core?'<span class="star" title="核心能力">★</span>':''}
+          ${gap?'<span class="gapdot on" style="display:block" title="本校无课程支撑"></span>':''}
+          <span class="arow-w">${r.weight.toFixed(2)}</span></button>`; }).join('') + `</div>`).join('') +
+    `<div class="assess">★ 核心能力　● 红点为本校无课程支撑（需先开启诊断）　右侧为该能力对本岗位的权重</div></div>`;
+  return h;
+}
+document.addEventListener('click', e=>{
+  const pb = e.target.closest('[data-pos]');
+  if(pb){ const p = pos[pb.dataset.pos];
+    openDrawer('岗位 · '+p.id, p.name,
+      `${sub[p.sub].name} · ${p.career_level} · 别名 ${p.aliases.join(' / ')}`, positionHTML(p)); return; }
+  const cb = e.target.closest('[data-cell]');
+  if(cb){ const a = abl[cb.dataset.cell.split('|')[0]];
+    openDrawer('能力项 · '+a.id, a.name,
+      `${a.typeCn} · ${a.domain} · ${a.core?'核心能力 · ':''}最高要求 ${a.maxRequiredLevel}`, abilityHTML(a)); return; }
+  const ab = e.target.closest('[data-abl]');
+  if(ab){ const a = abl[ab.dataset.abl];
+    openDrawer('能力项 · '+a.id, a.name,
+      `${a.typeCn} · ${a.domain} · ${a.core?'核心能力 · ':''}最高要求 ${a.maxRequiredLevel}`, abilityHTML(a)); return; }
+});
+
+/* ═══ 9. tooltip ═══ */
+const tip = $('#tip');
+document.addEventListener('mouseover', e=>{
+  const c = e.target.closest('[data-cell]');
+  if(c){ const [aid,pid]=c.dataset.cell.split('|'); const a=abl[aid],p=pos[pid];
+    const r=a.requiredBy.find(x=>x.position===pid);
+    tip.innerHTML = `<b>${esc(p.name)}</b> 要求 <b>${esc(a.name)}</b>
+      <span class="tk">${r.level} ${LVN[r.level]}　权重 ${r.weight.toFixed(2)}　${esc(a.domain)}</span>
+      <span class="tk">${esc(a.levels[r.level].desc.slice(0,42))}…</span>`;
+    tip.classList.add('on'); return; }
+  const sp = e.target.closest('#burst [data-sub]');
+  if(sp){ const s=sub[sp.dataset.sub];
+    tip.innerHTML = `<b>${esc(s.name)}</b><span class="tk">${s.built?
+      `${s.positionCount} 个岗位 · ${s.distinctAbilityCount} 条去重能力项`:'未纳入本期图谱范围'}</span>
+      <span class="tk">用人单位：${esc(s.typicalEmployers.slice(0,3).join('、'))}</span>`;
+    tip.classList.add('on'); return; }
+  const pp = e.target.closest('#burst [data-pos]');
+  if(pp){ const p=pos[pp.dataset.pos];
+    tip.innerHTML = `<b>${esc(p.name)}</b><span class="tk">${esc(p.aliases.join(' / '))}</span>
+      <span class="tk">${p.abilityCount} 条能力 · ${p.l3Count} 条需 L3 · ${p.career_level}</span>`;
+    tip.classList.add('on'); return; }
+  tip.classList.remove('on');
+});
+document.addEventListener('mousemove', e=>{
+  if(!tip.classList.contains('on')) return;
+  const w=tip.offsetWidth,h=tip.offsetHeight;
+  let x=e.clientX+14,y=e.clientY+16;
+  if(x+w>innerWidth-10) x=e.clientX-w-14;
+  if(y+h>innerHeight-10) y=e.clientY-h-16;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+});
+
+/* ═══ 10. 行业输入 ═══ */
+const INDUSTRIES = [{n:I.name, v:I.version, built:true, alias:I.aliases.join(' '),
+  subs:S.subIndustriesBuilt, poss:S.positions, abls:S.abilities}];
+const inp = $('#indInput'), opts = $('#opts');
+function optRow(x){
+  return `<button class="opt" data-ind="${esc(x.n)}" data-built="1">${esc(x.n)}</button>`;
+}
+function renderOpts(q){
+  // 只列可分析的行业。未建成的图谱不出现在这里——那是图谱平台的事。
+  const list = INDUSTRIES.filter(x=>x.built).filter(x=>!q || x.n.includes(q) || (x.alias||'').includes(q));
+  opts.innerHTML = list.length
+    ? list.map(optRow).join('')
+    : `<div class="opt" style="color:var(--muted);display:block;line-height:1.7">
+         没有匹配的行业。<br><span style="font-size:11.5px">行业图谱在「图谱平台」建成并发布后，会自动出现在这里。</span></div>`;
+  opts.hidden = false;
+}
+inp.addEventListener('focus', ()=>renderOpts(''));
+inp.addEventListener('input', ()=>renderOpts(inp.value.trim()));
+opts.addEventListener('click', e=>{
+  const b = e.target.closest('[data-ind]'); if(!b) return;
+  opts.hidden = true;
+  inp.value = b.dataset.ind;
+});
+document.addEventListener('click', e=>{ if(!e.target.closest('.field')) opts.hidden = true; });
+inp.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ opts.hidden = true; inp.blur(); return; }
+  if(e.key==='Enter'){ e.preventDefault(); analyze(); }
+});
+function analyze(){
+  const q = inp.value.trim();
+  opts.hidden = true;
+  const hit = INDUSTRIES.filter(x=>x.built)
+    .find(x=>x.n===q || x.n.includes(q) || (x.alias||'').includes(q));
+  if(!hit){
+    const names = Object.keys(D.buildDemo || {});
+    const exact = names.find(n => n === q || n.includes(q));
+    const demo  = exact || names[0];      // 没有对应演示数据时，用内置的那一份走流程
+    openDrawer('尚未建图', q || '未输入行业', '本模块只呈现已建成并发布的行业图谱',
+      `<div class="dr-s"><div class="dr-def">「${esc(q || '（空）')}」的能力图谱还没有建成，所以这里没有可看的全景数据。</div></div>
+       <div class="dr-s"><div class="dr-st">去图谱平台构建</div>
+        <div class="dr-def">行业图谱的构建与确认在<b>图谱平台</b>完成：行业边界怎么划、子行业按什么口径拆、岗位清单取舍、证据是否成立——这些需要业务方拍板的事都在那边一次性定好，发布后本模块自动出现该行业。</div>
+        ${demo ? `<button class="btn" id="goBuild" style="margin-top:13px">走一遍构建流程${exact?'':`（以${esc(demo)}为例）`}</button>
+          <div class="assess" style="margin-top:8px">${exact
+            ? `「${esc(exact)}」内置了一份可走通的构建演示：输入规范化 → 行业界定 → 人工确认闸口 → 语料采集 → 证据校验 → 归并分级 → 组装自检。`
+            : `原型内只有「${esc(demo)}」一份完整的演示数据，所以流程会以它为例走一遍；正式版本会以你输入的行业名触发同一条流水线。`}</div>` : ''}
+       </div>
+       <div class="dr-s"><div class="assess">分工：图谱平台负责造图并确认，本模块负责用图。所以你在本模块看到的每一条数据都是已确认的结论。</div></div>`);
+    if(demo) $('#goBuild').addEventListener('click', ()=>{ closeDrawer(); setTimeout(()=>openBuild(demo), 180); });
+    return;
+  }
+  inp.value = hit.n;
+  inp.blur();
+  selL1('panorama');
+  window.scrollTo({top:0, behavior:'smooth'});
+  toast(`已加载「${hit.n}」${hit.v} · ${hit.subs} 子行业 / ${hit.poss} 岗位 / ${hit.abls} 条能力项`);
+}
+$('#goBtn').addEventListener('click', analyze);
+
+
+/* ═══ 11. 初始化 ═══ */
+$('#srcMauto').textContent = `已接入：${KG.name}（${KG.courses.length} 门课 · ${KG.mappingCount} 条映射边） · 无需填报`;
+$('#dctaIn').innerHTML = `本校 <b>${esc(KG.name)}</b> 专业的知识图谱已入库：${KG.courses.length} 门课程 · ${KG.leafCount} 个知识节点 · 与本行业能力图谱之间已建立 <b>${KG.mappingCount}</b> 条映射边。<br>
+  这一步不需要任何人工输入——点右上「生成诊断报告」，系统按当前测评范围沿映射边计算「本校教到了什么等级」，与岗位要求等级逐条比对，得出内容缺口与等级缺口。`;
+$('#srcMlib').textContent = `${CLIB.length} 门课 · ${CLIB.reduce((n,c)=>n+c.leafCount,0)} 个知识点 / 技能规范`;
+setMode('manual');
+renderScope();
+renderLib();
+syncHead();
+/* ═══ 12. 图谱平台的构建流水线（演示） ═══
+   注意：这一块呈现的是「另一个平台」的工作——行业边界、子行业划分、岗位清单这些
+   需要业务方拍板的事都在那边定。本模块只在用户主动点进来时演示，不参与行业分析本身。 */
+const BN = D.buildNodes;
+let bf = null;
+
+function openBuild(name){
+  const demo = D.buildDemo[name];
+  if(!demo) return;
+  bf = {name, demo, step:-1, answers:{}, extra:0, cancelled:false};
+  $('#buildOv').hidden = false;
+  document.body.style.overflow = 'hidden';
+  stepBuild();
+}
+function closeBuild(){
+  if(bf){ bf.cancelled = true; clearTimeout(bf.timer); }
+  $('#buildOv').hidden = true;
+  document.body.style.overflow = '';
+  bf = null;
+}
+function stepBuild(){
+  if(!bf || bf.cancelled) return;
+  bf.step++;
+  if(bf.step >= BN.length){ renderBuild(); return; }
+  renderBuild();
+  if(BN[bf.step].id === 'GATE') return;          // 闸口：等业务方拍板
+  bf.timer = setTimeout(stepBuild, BN[bf.step].ms);
+}
+
+function renderBuild(){
+  if(!bf) return;
+  const d = bf.demo, done = bf.step >= BN.length;
+  const gateIdx = BN.findIndex(n=>n.id==='GATE');
+  const atGate = bf.step === gateIdx;
+
+  const steps = BN.map((n,i)=>{
+    const st = i < bf.step ? 'ok' : i === bf.step ? (n.id==='GATE'?'gate':'run') : 'wait';
+    return `<div class="bstep ${st}">
+      <span class="bs-dot">${st==='ok'?'✓':st==='gate'?'⛔':''}</span>
+      <span class="bs-id mono">${n.id}</span>
+      <span class="bs-n">${esc(n.name)}</span>
+      <span class="bs-note">${esc(n.note)}</span>
+      <span class="bs-m mono">${esc(n.model)}</span></div>`;
+  }).join('');
+
+  let panel = '';
+  if(atGate){
+    const posN = d.positions.length + bf.extra;
+    panel = `<div class="gate">
+      <div class="gate-h"><span class="ico warning">⛔</span>
+        <div><b>人工确认闸口</b><div class="gate-d">AI 已产出前三层骨架。下面三件事由业务方在<b>图谱平台</b>拍板——只看三样：子行业是否按业务形态划分、岗位有无遗漏、排除理由是否具体到岗位层面。<br>这些判断一次定好并随图谱入库，之后「行业分析」里的使用者不再需要碰。</div></div></div>
+
+      <div class="gate-s"><div class="gate-st">✅ 本次建图包含</div>
+        <div class="gate-subs">${d.subIndustries.map(x=>`<div class="gsub">
+          <div class="gsub-h"><b>${esc(x.name)}</b>
+            <span class="pill ${x.priority==='core'?'core':'ext'}">${x.priority}</span></div>
+          <div class="gsub-e">${x.employers.map(e=>`<span class="emp">${esc(e)}</span>`).join('')}</div>
+        </div>`).join('')}</div>
+        <div class="gate-note">自检：${d.subIndustries.length} 个子行业的典型用人单位互不相同 → 按业务形态划分成立</div></div>
+
+      <div class="gate-s"><div class="gate-st">❌ 本次不包含</div>
+        ${d.excluded.map(e=>`<div class="brow"><span class="bmark ex">✕</span><div>
+          <div class="bitem">${esc(e.item)}</div><div class="breason">${esc(e.reason)}</div></div></div>`).join('')}</div>
+
+      <div class="gate-s"><div class="gate-st">⚠️ 需要业务方拍板（${d.questions.length} 项）</div>
+        ${d.questions.map((q,i)=>`<div class="gq">
+          <div class="gq-t">${esc(q.q)}</div>
+          <div class="seg gq-seg">
+            <button data-gq="${i}" data-v="纳入" aria-pressed="${bf.answers[i]==='纳入'}">纳入</button>
+            <button data-gq="${i}" data-v="不纳入" aria-pressed="${bf.answers[i]==='不纳入'}">不纳入</button>
+          </div></div>`).join('')}</div>
+
+      <div class="gate-s"><div class="gate-st">📋 岗位清单 ${posN} 个</div>
+        <div class="gpos">${d.positions.map(x=>`<span class="pchip" aria-pressed="true">
+          <span class="pc-x">✓</span>${esc(x)}</span>`).join('')}
+          ${bf.extra?`<span class="pchip" aria-pressed="true"><span class="pc-x">✓</span>民宿管家（本次拍板纳入）</span>`:''}</div></div>
+
+      <div class="gate-f">
+        <span class="gate-fd">${Object.keys(bf.answers).length}/${d.questions.length} 项已拍板</span>
+        <span style="flex:1"></span>
+        <button class="btn ghost" data-bf="cancel">退出</button>
+        <button class="btn" data-bf="go" ${Object.keys(bf.answers).length<d.questions.length?'disabled style="opacity:.45;cursor:not-allowed"':''}>确认并开始采集</button>
+      </div></div>`;
+  } else if(done){
+    const r = d.result, srcTot = Object.values(r.sourceDist).reduce((a,b)=>a+b,0);
+    const checks = [
+      ['excluded 理由说到岗位层面', true, `${d.excluded.length} 条排除项均指向岗位能力重合度或标准归属`],
+      ['子行业能对应到不同用人单位', true, `${d.subIndustries.length} 个子行业的典型用人单位无重复`],
+      ['证据 URL 编造率', r.failedUrl===0, `failedUrl = ${r.failedUrl}`],
+      ['原文摘录比对失败率', r.failedExcerpt/r.evidence < 0.2, `${r.failedExcerpt}/${r.evidence} = ${(r.failedExcerpt/r.evidence*100).toFixed(1)}%，低于 20% 阈值`],
+      ['无文献直接依据的比例', r.inferredRate>=0.10 && r.inferredRate<=0.15, `${(r.inferredRate*100).toFixed(1)}%，健康区间 10~15%`],
+    ];
+    panel = `<div class="bdone">
+      <div class="bdone-h"><span class="ico good">✓</span><div><b>「${esc(bf.name)}」能力图谱构建完成</b>
+        <div class="gate-d">耗时约 6 分钟 · 搜索 12 次 · LLM 调用 15 次</div></div></div>
+      <div class="kgrid" style="margin-bottom:14px">
+        ${[[r.subIndustries,'子行业',''],[r.positions+bf.extra,'岗位','含拍板新增 '+bf.extra],
+           [r.abilities,'能力项',''],[r.core,'核心能力','多岗位 + 国标来源']]
+          .map(([v,k,sub2])=>`<div class="kt"><div class="kt-v">${v}</div><div class="kt-k">${esc(k)}</div>
+            <div class="kt-s">${esc(sub2)}</div></div>`).join('')}
+      </div>
+      <div class="gate-st">验收五信号</div>
+      ${checks.map(([n,ok,d2])=>`<div class="bcheck"><span class="ico ${ok?'good':'warning'}">${ok?'✓':'!'}</span>
+        <span class="bc-n">${esc(n)}</span><span class="bc-d">${esc(d2)}</span></div>`).join('')}
+      <div class="gate-note" style="margin-top:12px">来源分布：${Object.entries(r.sourceDist).map(([k,v])=>`${k.split('_')[1]} ${v} 条（${Math.round(v/srcTot*100)}%）`).join(' · ')}</div>
+      <div class="gate-f"><span class="gate-fd">图谱已入库并发布，版本 v1.0 —— 此后「行业分析」里会出现该行业</span><span style="flex:1"></span>
+        <button class="btn" data-bf="cancel">知道了</button></div></div>`;
+  } else {
+    const n = BN[bf.step];
+    panel = `<div class="brun"><div class="spin"></div>
+      <div><b>${esc(n.id)} · ${esc(n.name)}</b><div class="gate-d">${esc(n.note)}　—　${esc(n.model)}</div></div></div>`;
+  }
+
+  $('#buildBody').innerHTML = `
+    <div class="bcols">
+      <div class="bsteps"><div class="eyebrow" style="margin-bottom:10px">流水线节点</div>${steps}</div>
+      <div class="bpanel">${panel}</div>
+    </div>`;
+  $('#buildTitle').textContent = `构建「${bf.name}」能力图谱`;
+  $('#buildSub').textContent = done ? '构建完成 · 已发布' : (atGate ? '等待业务方确认' : `进行中 · ${bf.step+1}/${BN.length}`);
+}
+
+$('#buildOv').addEventListener('click', e=>{
+  const q = e.target.closest('[data-gq]');
+  if(q){ bf.answers[q.dataset.gq] = q.dataset.v;
+    bf.extra = (bf.answers['0']==='纳入') ? 1 : 0;
+    renderBuild(); return; }
+  const b = e.target.closest('[data-bf]');
+  if(!b) return;
+  if(b.dataset.bf==='cancel'){ closeBuild(); return; }
+  if(b.dataset.bf==='go'){ stepBuild(); return; }
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && bf) closeBuild(); });
+
+</script>
