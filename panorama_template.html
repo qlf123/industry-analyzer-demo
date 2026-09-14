@@ -289,6 +289,11 @@ body.diag .gapdot.on{display:block}
 .cmp-empty{padding:26px 10px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.7}
 .cmp-note{margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.7}
 .cmp-note b{color:var(--ink-2)}
+.cmp-pos{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule)}
+.cmp-pos .cp-h{font-size:11px;color:var(--muted);margin-right:2px}
+.cmp-pos .cp{padding:3px 10px;border-radius:99px;border:1px solid var(--rule);background:var(--card-2);font-size:11.5px;color:var(--ink-2);cursor:pointer;transition:all .13s}
+.cmp-pos .cp:hover{border-color:var(--brand);color:var(--ink)}
+.cmp-pos .cp[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:500}
 .cmp-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;padding-top:9px;
   border-top:1px solid var(--rule-2);font-size:11.5px;color:var(--ink-2)}
 .cmp-legend i{width:14px;height:11px;border-radius:2px;display:block;flex:0 0 14px}
@@ -489,6 +494,7 @@ body.diag .gapdot.on{display:block}
 .src-d{font-size:12px;color:var(--ink-2);line-height:1.65}
 .src-d b{color:var(--ink)}
 .src-m{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.src[hidden]{display:none}
 .lnk{font-size:11.5px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 .lnk:hover{color:var(--brand)}
 .asshd{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 14px;border-radius:10px;
@@ -601,7 +607,8 @@ body.diag .gapdot.on{display:block}
 .frow.none{border-left:3px solid var(--crit)}
 .frow.partial{border-left:3px solid var(--warn)}
 .frow.full{border-left:3px solid var(--good)}
-.fn{display:flex;align-items:center;gap:7px;min-width:0}
+.fn{display:flex;align-items:center;gap:7px;min-width:0;cursor:pointer;border-radius:6px}
+.fn:hover .fn-t{color:var(--brand)}
 .fn-t{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fmeta{font-family:var(--mono);font-size:10px;color:var(--muted);flex:0 0 auto;margin-left:auto}
 .seg{display:flex;gap:2px;padding:2px;background:var(--card-2);border:1px solid var(--rule);border-radius:8px}
@@ -909,13 +916,10 @@ body.diag .nocov-tag{display:block}
 .posgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
 @media (max-width:980px){.posgrid{grid-template-columns:1fr 1fr}}
 @media (max-width:640px){.posgrid{grid-template-columns:1fr}}
-.pospick{display:flex;flex-direction:column;gap:5px;padding:11px 13px;border:1px solid var(--rule);border-radius:10px;cursor:pointer}
+.pospick{display:flex;flex-direction:column;gap:5px;padding:11px 13px;border:1px solid var(--rule);border-radius:10px;cursor:pointer;text-align:left}
 .pospick:hover{border-color:var(--brand)}
 .pospick[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft)}
-.pospick .pp-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.pospick .pp-n{font-size:13px;font-weight:500}
-.pospick .pp-std{font-size:11px;color:var(--muted)}
-.pospick .pp-m{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.pospick .pp-n{font-size:13px;font-weight:600}
 .pospick .pp-d{font-size:11.5px;color:var(--ink-2);line-height:1.5;margin-top:3px}
 .labc{display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border:1px solid var(--rule);border-radius:10px;cursor:pointer}
 .labc:hover{border-color:var(--brand)}
@@ -925,7 +929,6 @@ body.diag .nocov-tag{display:block}
 .labc[aria-checked="true"] .pc-x{background:var(--brand);border-color:var(--brand)}
 .labc-n{font-size:13px;font-weight:500}
 .labc-s{font-size:11px;color:var(--muted);line-height:1.55;margin-top:2px}
-.labc-src{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
 .dxgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
 @media (max-width:880px){.dxgrid{grid-template-columns:1fr}}
 .dxnum{padding:16px;border-radius:12px;border:1px solid var(--rule);background:var(--card-2)}
@@ -936,11 +939,6 @@ body.diag .nocov-tag{display:block}
 .dxnum .dx-d{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.6}
 .dxnum .bar{height:6px;border-radius:3px;background:var(--rule-2);margin-top:12px;overflow:hidden}
 .dxnum .bar i{display:block;height:100%;background:var(--brand);border-radius:3px}
-.dxconcl{display:flex;gap:9px;padding:13px 16px;border-radius:11px;background:var(--brand-soft);font-size:13px;
-  line-height:1.7;color:var(--ink);margin-bottom:12px}
-.dxconcl .ico{flex:0 0 auto;margin-top:2px}
-.dxstruct{font-size:12.5px;color:var(--ink-2);line-height:1.7;padding:12px 15px;border-radius:10px;
-  background:var(--card-2);border:1px solid var(--rule);margin-bottom:12px}
 .dxbound{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:12px}
 .stdpos{display:flex;flex-direction:column;gap:7px}
 .stdpos .sp{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12.5px;padding:8px 12px;
@@ -960,6 +958,67 @@ body.diag .nocov-tag{display:block}
 .abli{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 12px;border-radius:9px;border:1px solid var(--rule-2);font-size:12.5px}
 .abli .bar{flex:1 1 60px;max-width:110px;height:5px;border-radius:3px;background:var(--rule-2);overflow:hidden}
 .abli .bar i{display:block;height:100%;background:var(--lv2);border-radius:3px}
+/* 一页纸诊断 · 能力雷达图 */
+.dxradars{display:block}
+.dxradar{background:var(--card-2);border:1px solid var(--rule);border-radius:10px;padding:10px 12px 8px}
+.dxradar-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
+.dxradar-h .dr-n{font-size:12.5px;font-weight:600}
+.dxradar .radar{display:block;width:100%;max-width:420px;margin:0 auto}
+.dxradar-all .radar{max-width:640px}
+.dxradar-note{margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.7}
+.dxradar-note b{color:var(--ink-2)}
+.dxradar-supp{margin-top:10px;padding-top:9px;border-top:1px dashed var(--rule);font-size:11.5px;color:var(--ink-2);line-height:1.8}
+.dxradar-supp b{color:var(--ink);font-weight:600}
+/* 概况总览 */
+.ovline{display:flex;gap:11px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--rule-2)}
+.ovk{flex:0 0 66px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);padding-top:2px}
+.ovv{flex:1;font-size:12.5px;line-height:1.6;color:var(--ink-2)}
+.ov-major{margin-bottom:8px}
+.ov-major:last-child{margin-bottom:0}
+.ov-major b{font-weight:600;color:var(--ink)}
+.ov-goal{font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:3px}
+.ov-sum{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--brand-soft);font-size:12.5px;line-height:1.7;color:var(--ink)}
+.ov-sum b{color:var(--brand-ink)}
+/* 能力提升路径卡（按能力看） */
+.pathcard{display:flex;flex-direction:column;gap:0}
+.pathcard .pc-b{padding:13px 0;border-top:1px solid var(--rule-2)}
+.pathcard .pc-b:first-child{border-top:none;padding-top:2px}
+.pc-k{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:9px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.pc-src{font-size:10.5px;color:var(--muted);font-family:var(--mono);font-weight:400}
+.pc-now,.pc-target{border-radius:10px;padding:11px 13px;margin:0 0 9px}
+.pc-now{background:var(--card-2);border:1px solid var(--rule)}
+.pc-target{background:var(--brand-soft);border:1px solid var(--brand);box-shadow:0 0 0 1px var(--brand) inset}
+.pc-now-h,.pc-target-h{display:block;font-size:11.5px;font-weight:600;margin-bottom:7px}
+.pc-target-h{color:var(--brand-ink)}
+.pc-now .pts,.pc-target .pts{margin:0}
+.pc-zero{font-size:12.5px;color:var(--ink-2);margin-bottom:9px}
+.pc-prog{border-left:2px solid var(--rule);padding:2px 0 9px 12px;margin-left:5px}
+.pc-prog:last-child{border-left:2px solid transparent;padding-bottom:0}
+.pc-prog.target{border-left-color:var(--brand);background:var(--brand-soft);border-radius:0 8px 8px 0;padding:9px 12px 9px 12px;margin-left:0}
+.pc-prog.above{opacity:.55}
+.pc-prog-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px}
+.pc-prog-n{font-size:11.5px;color:var(--ink-2)}
+.pc-prog .pts{margin:0 0 0 2px}
+.pc-where{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;font-size:12.5px}
+.pc-where-chain{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.pc-none,.pc-where-none{font-size:12px;color:var(--muted);padding:4px 0}
+.pc-where-none{color:var(--ink-2)}
+.pc-assess{font-size:12.5px;color:var(--ink-2);line-height:1.6;padding:8px 11px;border-radius:8px;background:var(--card-2);border:1px dashed var(--rule);margin-bottom:8px}
+.pc-rule{font-size:12px;color:var(--ink-2);line-height:1.6;padding:7px 0}
+.pc-rule-h{color:var(--brand-ink);font-weight:500}
+.pc-rule-why{font-size:11.5px;color:var(--muted);margin-top:2px}
+.pc-rulesum{margin-top:8px}
+.pc-rulesum summary{cursor:pointer;font-size:11px;color:var(--muted);font-family:var(--mono)}
+.pc-rule-none{font-size:12px;color:var(--muted);padding:4px 0}
+.pc-cond,.pc-pre{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0;font-size:12.5px}
+.pc-pre.warn{color:var(--ink-2)}
+.pc-pre.warn .ico{flex:0 0 auto}
+.pc-jump{border:none;background:none;padding:0;color:var(--brand-ink);font-weight:600;font-size:12.5px;cursor:pointer;border-bottom:1px dashed var(--brand)}
+.pc-why{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12.5px}
+.pc-why b{font-size:15px;font-variant-numeric:tabular-nums}
+.rx-view{display:flex;gap:2px;padding:2px;background:var(--card-2);border:1px solid var(--rule);border-radius:9px}
+.rx-view .vs{padding:4px 12px;border-radius:7px;font-size:12px;color:var(--ink-2);border:none;background:none;cursor:pointer;transition:all .13s}
+.rx-view .vs[aria-pressed="true"]{background:var(--card);color:var(--brand-ink);font-weight:500;box-shadow:var(--shadow)}
 @media print{
   body.print-dx .v2lead,body.print-dx #v2steps,body.print-dx #v2report > :not(#dxPage){display:none!important}
   body.print-dx #dxPage{box-shadow:none;border-color:#ddd}
@@ -993,7 +1052,7 @@ body.diag .nocov-tag{display:block}
       <div class="ptop-r">
         <div class="pt-l">
           <h1 class="pt-t">行业分析</h1>
-          <div class="pt-d">输入行业名称，查看该行业的岗位与能力全景；可叠加本校专业布局做覆盖诊断</div>
+          <div class="pt-d">输入行业名称，查看该行业的岗位与能力全景</div>
         </div>
       </div>
       <div class="field wide">
@@ -1114,14 +1173,14 @@ body.diag .nocov-tag{display:block}
         <div class="step-h"><span class="stepno">1</span>
           <div class="step-tt"><b>测评方式</b><span class="step-d">按本校数据沉淀程度选择——沉淀越深，结论越可追溯</span></div>
         </div>
-        <div class="srcpick s3col" id="tabs3" role="radiogroup">
+        <div class="srcpick" id="tabs3" role="radiogroup" style="grid-template-columns:1fr">
           <button class="src" data-mode="manual" role="radio" aria-checked="true" aria-pressed="true">
             <span class="src-h"><span class="src-t">能力现状评估</span></span>
             <span class="src-m">需逐条人工填报 · 结论不可追溯</span></button>
-          <button class="src" data-mode="lib" role="radio" aria-checked="false" aria-pressed="false">
+          <button class="src" data-mode="lib" role="radio" aria-checked="false" aria-pressed="false" hidden>
             <span class="src-h"><span class="src-t">课程体系评估</span></span>
             <span class="src-m" id="srcMlib"></span></button>
-          <button class="src" data-mode="auto" role="radio" aria-checked="false" aria-pressed="false">
+          <button class="src" data-mode="auto" role="radio" aria-checked="false" aria-pressed="false" hidden>
             <span class="src-h"><span class="src-t">教学成果测评</span></span>
             <span class="src-m" id="srcMauto"></span></button>
         </div>
@@ -1182,22 +1241,14 @@ body.diag .nocov-tag{display:block}
         <span class="ver-t mono" id="v2at"></span>
         <span class="ver-d" id="v2desc"></span>
         <span style="flex:1"></span>
+        <button class="chip" id="v2Overlay" data-v2="overlay">叠加到行业全景</button>
         <button class="chip" data-v2="hist">历史</button>
         <button class="chip" data-v2="export">导出报告</button>
-      </div>
-      <div class="v2lead">
-        按<b>国家专业教学标准</b>先把「标准答案」摆出来，你只做减法与修正：选专业 → 确认目标岗位 → 在标准课程表上划掉没开的课 → 勾一下本校的实训室。
-        每一层结束都有一份完整可用的报告，<b>随时可以停</b>。不问你「这门课教到什么程度」——达成等级一律从课程内知识节点的映射边推出。
       </div>
       <div id="v2steps"></div>
       <div id="v2report"></div>
      </div>
 
-     <footer class="notesfoot">
-       <div class="eyebrow" style="margin-bottom:10px">说明信息</div>
-       <div class="chipbar" id="chipbar"></div>
-       <p class="foot-d">以上为本行业图谱的时效、边界与口径说明，悬停或点击任一项查看详情。图谱在「图谱平台」构建并确认后发布，本页呈现的是已发布版本的全部内容。</p>
-     </footer>
     </div>
   </div>
 </div>
@@ -1243,8 +1294,9 @@ let OVC = Object.fromEntries(D.positions.map(p=>{
   let b=0; SC.majors.forEach(m=>{ if(m.coverage[p.id]!==undefined) b=Math.max(b,m.coverage[p.id]); });
   return [p.id, b];
 }));
-let OVSRC = 'graph';                          // graph | manual
-let OVVER = null;                             // 当前叠加所依据的诊断批次号
+let OVSRC = 'graph';                          // graph | manual | v2
+let OVVER = null;                             // 当前叠加所依据的诊断批次号（V1）
+let V2OV  = null;                             // V2 测评叠加快照 {at, posN, totalAb, coveredAb, ...}
 let MODE  = 'manual';                         // ① 测评方式：manual | auto（默认人工填报）
 let report = null;                            // 当前展示的报告 {no, mode, key}
 // 测评范围：选中的岗位（默认都不勾选）
@@ -1421,7 +1473,7 @@ const chips = [
   {k:'included', label:'纳入范围', n:I.included.length, cls:''},
   {k:'quality', label:'数据可信度', n:S.evidenceTotal, cls:''},
 ];
-$('#chipbar').innerHTML = chips.map(c=>
+const _cb = $('#chipbar'); if(_cb) _cb.innerHTML = chips.map(c=>
   `<button class="ichip ${c.cls}" data-pop="${c.k}">${esc(c.label)}${c.n!==''?` <b>${c.n}</b>`:''}
    <span class="look">查看</span></button>`).join('');
 
@@ -1503,11 +1555,11 @@ document.addEventListener('click', e=>{
 });
 
 /* ═══ 3. 两级 tab ═══ */
-const L1 = [['panorama','行业全景',''],['assess','能力测评',''],['assess2','能力测评V2.0','']];
+const L1 = [['panorama','行业全景',''],['assess','能力测评0.1','hide'],['assess2','能力测评','']];
 const TABS = [['graph','能力图谱',S.abilities],
   ['matrix','能力矩阵',`${S.positions} × ${S.abilities}`],
   ['trends','趋势与新兴',I.trends.length]];
-$('#tabs').innerHTML = L1.map(([k,t],i)=>
+$('#tabs').innerHTML = L1.filter(([, , h])=>h!=='hide').map(([k,t],i)=>
   `<button class="tab" role="tab" data-l1="${k}" aria-selected="${i===0}">${esc(t)}</button>`).join('');
 $('#tabs2').innerHTML = TABS.map(([k,t,c],i)=>
   `<button class="tab" role="tab" data-tab="${k}" aria-selected="${i===0}"
@@ -1611,7 +1663,7 @@ pendSubs.forEach((s,i)=>{ subY[s.id] = GH - 26 - i*30; });
 const indY = GH/2;
 
 /* ---- 选中与联动 ---- */
-let sel = {type:'sub', id:builtSubs[0]};
+let sel = null;
 function activeSets(){
   const subs=new Set(), poss=new Set(), abls=new Set();
   if(!sel) return null;
@@ -2026,6 +2078,7 @@ document.addEventListener('click', e=>{
 
 /* ═══ 7c. 能力结构对比：领域雷达 / 缺口哑铃 ═══ */
 const cmpView = {manual:'ablradar', lib:'ablradar', auto:'ablradar'};
+let cmpPos = null;              // 「能力雷达」当前筛选的岗位（null = 全部已选岗位合并去重）
 
 // 本校已达成等级（0=未开设，1/2/3=L1/L2/L3，null=未填报）
 function attainedOf(aid, mode){
@@ -2048,11 +2101,14 @@ function requiredOf(aid){
   return rows.length ? Math.max(...rows.map(r=>LV[r.level])) : 0;
 }
 
-function cmpRows(mode){
-  return scopedAbl().map(a=>{
-    const req = requiredOf(a.id), att = attainedOf(a.id, mode);
-    return {a, req, att, gap: att==null ? null : Math.max(0, req-att)};
-  }).filter(r=>r.req>0);
+function cmpRows(mode, pid){
+  // pid 为岗位 id 时，只看该岗位要求的能力项（要求等级取该岗位自身，而非全范围最高）。
+  const list = pid
+    ? pos[pid].abilities.map(r=>({a: abl[r.ability], req: LV[r.level], att: attainedOf(r.ability, mode)}))
+    : scopedAbl().map(a=>({a, req: requiredOf(a.id), att: attainedOf(a.id, mode)}));
+  return list
+    .filter(r=>r.req>0)
+    .map(r=>({a:r.a, req:r.req, att:r.att, gap: r.att==null ? null : Math.max(0, r.req-r.att)}));
 }
 
 /* ---- 领域雷达 ---- */
@@ -2109,11 +2165,20 @@ function radarSVG(mode){
 
 /* ---- 能力雷达：轴 = 单条能力项 ---- */
 const ABR_MAX = 12;
+function cmpPosBar(){
+  // 「能力雷达」底部的岗位筛选标签：选中某岗位后，只画该岗位要求的能力项。
+  const ps = scopedPos();
+  const btn = (id, label, on) => `<button class="cp" data-cmp-pos="${id}" aria-pressed="${on}">${label}</button>`;
+  return `<div class="cmp-pos"><span class="cp-h">岗位</span>
+    ${btn('', '全部岗位', cmpPos===null)}
+    ${ps.map(p=>btn(p.id, esc(p.name), cmpPos===p.id)).join('')}</div>`;
+}
 function ablRadarSVG(mode){
-  const all = cmpRows(mode)
+  const posBar = cmpPosBar();
+  const all = cmpRows(mode, cmpPos)
     .sort((x,y)=> (y.a.core-x.a.core) || (y.a.positionCount-x.a.positionCount)
                 || x.a.name.localeCompare(y.a.name));
-  if(all.length < 3) return `<div class="cmp-empty">所选范围只有 ${all.length} 条能力项，雷达图至少需要 3 个轴。请扩大测评范围。</div>`;
+  if(all.length < 3) return `<div class="cmp-empty">${cmpPos?`该岗位只要求 ${all.length} 条能力项，`:''}雷达图至少需要 3 个轴。${cmpPos?'请切回「全部岗位」或换一个岗位。':'请扩大测评范围。'}</div>${posBar}`;
   const rows = all.slice(0, ABR_MAX), hidden = all.length - rows.length;
   const R = 138, N = rows.length;
   const lvTxt = r => {
@@ -2159,7 +2224,8 @@ function ablRadarSVG(mode){
     <div class="cmp-note">每条轴是<b>一条能力项</b>（不像「领域雷达」那样取平均），半径为等级，外圈 L3。
       灰色虚线是行业要求，紫色实心是本校达成。
       轴按<b>核心能力优先、被要求岗位数次之</b>排序，最多画 ${ABR_MAX} 条${hidden?`，另有 ${hidden} 条未画（切到「缺口哑铃」看全部）`:''}。
-      图上 <b>${gaps}</b> 条存在缺口${uncov?`，其中 <b>${uncov}</b> 条完全未开设（紫色形状在该轴上塌到圆心）`:''}。★ 为核心能力，点轴标签看详情。</div>`;
+      图上 <b>${gaps}</b> 条存在缺口${uncov?`，其中 <b>${uncov}</b> 条完全未开设（紫色形状在该轴上塌到圆心）`:''}。★ 为核心能力，点轴标签看详情。</div>
+    ${posBar}`;
 }
 
 /* ---- 缺口哑铃 ---- */
@@ -2223,6 +2289,12 @@ document.addEventListener('click', e=>{
   const b = e.target.closest('[data-cv]'); if(!b) return;
   const card = b.closest('[data-cmpmode]'); if(!card) return;
   cmpView[card.dataset.cmpmode] = b.dataset.cv;
+  drawCmp(card.dataset.cmpmode);
+});
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-cmp-pos]'); if(!b) return;
+  const card = b.closest('[data-cmpmode]'); if(!card) return;
+  cmpPos = b.dataset.cmpPos || null;
   drawCmp(card.dataset.cmpmode);
 });
 document.addEventListener('mouseover', e=>{
@@ -2369,8 +2441,15 @@ function setDiag(on){
   syncHead();
 }
 function paintBanner(){
+  if($('#diagBanner').hidden) return;
+  if(OVSRC === 'v2'){
+    const o = V2OV;
+    if(o) $('#diagBannerText').innerHTML =
+      `<b>能力测评</b>（面向 ${o.posN} 个岗位 · 覆盖 ${o.coveredAb}/${o.totalAb} 条能力）的结果已叠加到「行业全景」——没有课程支撑的能力项、覆盖率过低的岗位都会标出。`;
+    return;
+  }
   const v = OVVER ? versions[OVVER-1] : null;
-  if(!v || $('#diagBanner').hidden) return;
+  if(!v) return;
   const stale = report && report.no===v.no && staleReason();
   $('#diagBannerText').innerHTML =
     `<b>诊断 #${v.no}</b>（${SRC_CN[v.mode]} · ${v.scopeN} 个岗位）的结果已叠加到「行业全景」`
@@ -2385,7 +2464,7 @@ function applyOverlay(v){
   toast(`诊断 #${v.no} 已叠加到「行业全景」，可在上方「行业全景」页的环形图 / 树形图 / 能力矩阵中查看`);
 }
 function clearOverlay(){
-  OVVER = null; setDiag(false);
+  OVVER = null; V2OV = null; OVSRC = 'graph'; setDiag(false);
   toast('已取消叠加。「行业全景」已恢复为不含任何院校信息的产业侧原始数据');
 }
 $('#diagOff').addEventListener('click', clearOverlay);
@@ -2504,6 +2583,9 @@ $('#fillTable').addEventListener('click', e=>{
   }
   const row = e.target.closest('[data-abl]'); if(!row) return;
   const id = row.dataset.abl;
+  // 覆盖情况 / 等级 / 承接专业是填表控件：只填报，不弹能力详情抽屉。
+  // 只有点能力名那一列才打开抽屉（走 document 上的 data-abl 处理器）。
+  if(e.target.closest('[data-cov],[data-lv],[data-by]')) e.stopPropagation();
   const cb = e.target.closest('[data-cov]');
   if(cb){
     const c = cb.dataset.cov;
@@ -2603,7 +2685,7 @@ function runManual(){
   const findings = [];
   stat.filter(x=>x.rate<0.5).slice(0,2).forEach(x=>findings.push({level:'critical',
     title:`${x.p.name}岗位达标率 ${Math.round(x.rate*100)}%`,
-    body:`该岗位 ${x.p.abilityCount} 条能力要求中，已达标 ${x.c.ok} 条，等级不足 ${x.c.levelgap} 条，未开设 ${x.c.none} 条，部分覆盖 ${x.c.partial} 条${x.c.unfilled?`，另有 ${x.c.unfilled} 条未填报`:''}。未开设的能力项需要新增课程模块承接，不是调整现有课程能解决的。`}));
+    body:`该岗位 ${x.p.abilityCount} 条能力要求中，已达标 ${x.c.ok} 条，等级不足 ${x.c.levelgap} 条，未开设 ${x.c.none} 条，部分覆盖 ${x.c.partial} 条${x.c.unfilled?`，另有 ${x.c.unfilled} 条未填报`:''}。未开设的能力项需要新增教学模块承接，不是调整现有承接内容能解决的。`}));
   if(noneAb.length){
     const nc = noneAb.filter(a=>a.core).length;
     findings.push({level:'critical', title:`${noneAb.length} 条能力项本校完全未开设`,
@@ -2614,7 +2696,7 @@ function runManual(){
   if(gapAb.length) findings.push({level:'warning', title:`${gapAb.length} 条能力项教了但未教到岗位要求的高度`,
     body:`集中在「${gapAb.slice(0,3).map(a=>a.name).join('」「')}」${gapAb.length>3?' 等':''}。L3 的共同特征是「处理非常规情境、优化流程、指导他人」，这类要求很难在课堂任务里达成，通常应由顶岗实习或真实项目承接——这张表可以直接作为实习任务书的依据。`});
   if(partAb.length) findings.push({level:'warning', title:`${partAb.length} 条能力项填报为部分覆盖`,
-    body:`「部分覆盖」意味着教学内容触及但不成体系。建议在下一轮课程修订时明确：是并入现有课程加深，还是单独设立教学任务。`});
+    body:`「部分覆盖」意味着教学内容触及但不成体系。建议在下一轮课程修订时明确：是并入现有承接内容加深，还是单独设立教学任务。`});
   const best = stat[stat.length-1];
   if(best && best.rate>=0.6) findings.push({level:'good', title:`${best.p.name}岗位达标率 ${Math.round(best.rate*100)}%`,
     body:`${best.p.abilityCount} 条能力要求中已达标 ${best.c.ok} 条${best.c.levelgap?`，未达标的 ${best.c.levelgap} 条集中在等级不足而非内容空白`:''}。这是本校在该行业里最扎实的岗位方向。`});
@@ -2739,8 +2821,8 @@ function holderOf(aid, mode){
   return {name: top.course, src: 'map', chain: top.chain};
 }
 const FORM = {
-  newmodule: {t:'新增教学模块', rule:'本校完全没有承接内容，属内容缺口——调整现有课程解决不了。'},
-  deepen:    {t:'在现有课程中加深', rule:'本校已有承接点但只教到较低等级，属等级缺口，课内加深即可补齐。'},
+  newmodule: {t:'新增教学模块', rule:'本校完全没有承接内容，属内容缺口——调整现有承接内容解决不了。'},
+  deepen:    {t:'在现有承接内容中加深', rule:'本校已有承接点但只教到较低等级，属等级缺口，在现有承接内容中加深即可补齐。'},
   practice:  {t:'由实训 / 顶岗 / 真实项目承接', rule:'目标等级 L3 的定义是「处理非常规情境、优化流程、指导他人」，课堂任务难以达成。'},
 };
 function gapLabel(r){
@@ -2763,7 +2845,7 @@ function adviceCards(mode){
     const h = holderOf(r.a.id, mode);
     // 「加深」按课程归组（可直接落到某门课）；「实训承接」合成一张（本就是同一件事）；
     // 「新增模块」按能力领域归组（同域的缺口应当合成一个模块，而不是各开一门）
-    const key = form === 'deepen' ? `deepen|${h ? h.name : '未注明承接课程'}`
+    const key = form === 'deepen' ? `deepen|${h ? h.name : '未注明承接专业/课程'}`
               : form === 'practice' ? 'practice'
               : `newmodule|${r.a.domain}`;
     (groups[key] = groups[key] || {form, label: form === 'newmodule' ? r.a.domain : (form === 'deepen' ? (h ? h.name : null) : null),
@@ -2797,7 +2879,7 @@ function adviceMarkdown(mode){
   L.push('');
   cards.forEach((g,i)=>{
     const F = FORM[g.form];
-    const title = g.form==='deepen' ? (g.label?`在《${g.label}》中加深`:'在现有承接课程中加深（承接点未注明）')
+    const title = g.form==='deepen' ? (g.label?`在《${g.label}》中加深`:'在现有承接专业/课程中加深（承接点未注明）')
                 : g.form==='practice' ? F.t : `${F.t}｜${g.label}`;
     L.push(`### ${String(i+1).padStart(2,'0')} ${title}`);
     L.push('');
@@ -2836,7 +2918,7 @@ function adviceHTML(mode){
   const body = cards.map((g, i) => {
     const F = FORM[g.form];
     const title = g.form === 'deepen'
-      ? (g.label ? `在《${esc(g.label)}》中加深` : '在现有承接课程中加深（承接点未注明）')
+      ? (g.label ? `在《${esc(g.label)}》中加深` : '在现有承接专业/课程中加深（承接点未注明）')
       : g.form === 'practice' ? F.t
       : `${F.t}｜${esc(g.label)}`;
     const sorted = g.items.slice().sort((x,y)=>
@@ -3234,6 +3316,7 @@ const KG = SC.majorWithKg;
 function supportHTML(a){
   // 「本校支撑情况」只在做过测评、并且把结果叠加到全景之后才出现。
   // 未叠加时行业全景保持纯产业侧数据，不含任何院校信息。
+  if(OVSRC === 'v2') return v2SupportHTML(a);
   const v = OVVER ? versions[OVVER-1] : null;
   if(!v) return '';
   const req = a.maxRequiredLevel;
@@ -3260,7 +3343,7 @@ function supportHTML(a){
       ${f.by?`<div class="sup-manual"><span class="pill k">承接</span>${esc(f.by)}</div>`:''}
       ${f.cov==='none'?`<div class="supgap"><span class="ico critical">!</span><div>
         <b>填报为「未开设」。</b>行业对它的最高要求是 ${req}，${a.positionCount} 个岗位提出要求。
-        这属于<b>内容缺口</b>——需要新增课程模块承接，调整现有课程解决不了。</div></div>`:''}
+        这属于<b>内容缺口</b>——需要新增教学模块承接，调整现有承接内容解决不了。</div></div>`:''}
       <div class="assess">以上依据人工填报，反映填报人对本校教学的判断，<b>无法追溯到具体课程与知识点</b>。接入知识图谱后，同样这一块会自动展开到知识点级。</div></div>`;
   }
 
@@ -3335,6 +3418,39 @@ function supportHTML(a){
       「达标判据」来自标准与案例（后两类不计入覆盖等级）。数据来自${esc(KG.stage)}${esc(KG.name)}专业知识图谱。</div></div>`;
 }
 
+/* ─── V2 叠加后的「本校支撑情况」（能力测评 V2.0 口径） ─── */
+function v2SupportHTML(a){
+  const req = v2ReqMap()[a.id] || 0;
+  if(!req) return '';                     // 该能力不在当前目标岗位要求内，不展示
+  const att = v2Attained()[a.id] || 0;
+  const head = `<div class="dr-st">本校支撑情况
+    <span class="pill k" style="margin-left:7px;text-transform:none;letter-spacing:0">能力测评 · 面向 ${V2.positions.size} 个岗位</span></div>`;
+  const sup = v2SupportEdges(a.id);
+  if(att === 0){
+    return `<div class="dr-s">${head}
+      <div class="supgap"><span class="ico critical">!</span><div>
+        <b>本校没有课程支撑这条能力。</b>目标岗位对它最高要求 L${req}，${a.positionCount} 个岗位提出要求。
+        这属于<b>内容缺口</b>——需要新增课程模块承接，调整现有课程解决不了。详见测评报告「缺口处置建议」。</div></div></div>`;
+  }
+  const gapN = req - att;
+  return `<div class="dr-s">${head}
+    <div class="supsum">
+      <span class="supsum-i"><b>L${att}</b><span>本校教到</span></span>
+      <span class="supsum-arrow">${gapN>0?'差 '+gapN+' 级':'已达标'}</span>
+      <span class="supsum-i"><b>L${req}</b><span>岗位要求</span></span>
+      <span style="flex:1"></span>
+      <span class="pill ${gapN>0?'warn':'good'}">${gapN>0?'等级缺口':'已覆盖'}</span></div>
+    ${sup.map(({c,es})=>{ const top = es[0];
+      return `<div class="supc"><div class="supc-h"><span class="pill core">${esc(c.name)}</span>
+        <span class="gt-n mono">${es.length} 个节点</span></div>
+        <div class="sup"><div class="sup-h"><span class="pill k">${esc(top.kind)}</span>
+          <span class="sup-n">${esc(top.leafName)}</span>
+          <span style="flex:1"></span><span class="lvtag ${top.level}">${top.level}</span></div>
+          ${top.note?`<div class="sup-note">${esc(top.note)}</div>`:''}</div></div>`;
+    }).join('')}
+    <div class="assess">以上来自平台课程体系中本校已勾选的课程与知识节点；接入本校知识图谱后可精确到任务级。</div></div>`;
+}
+
 /* ═══ 8. drawer ═══ */
 let lastFocus = null;
 function openDrawer(kind,title,subt,html){
@@ -3362,6 +3478,7 @@ function abilityHTML(a){
     <div class="assess" style="margin-top:0">判定口径：被 2 个以上岗位要求，且至少有一条国家级来源。
       本条被 <b>${a.positionCount}</b> 个岗位要求，国家级来源 <b>${a.evidences.filter(e=>e.sourceLevel==='L1_国家').length}</b> 条。</div></div>`;
   h += supportHTML(a);
+  h += v2PathInDrawer(a);
   h += `<div class="dr-s"><div class="dr-st">三级行为化描述</div>` + ['L1','L2','L3'].map(L=>{
     const l = a.levels[L];
     return `<div class="lvl"><div class="lvl-h"><span class="lvl-b ${L}">${L}</span>
@@ -3373,12 +3490,6 @@ function abilityHTML(a){
     a.requiredBy.map(r=>`<button class="arow" data-pos="${r.position}">
       <span class="arow-n">${esc(pos[r.position].name)}</span><span class="pill k">${r.level}</span>
       <span class="arow-w">权重 ${r.weight.toFixed(2)}</span></button>`).join('') + `</div>`;
-  h += `<div class="dr-s"><div class="dr-st">来源证据 ${a.evidences.length} 条</div>` +
-    (a.evidences.length ? a.evidences.map(e=>`<div class="ev">
-      <div class="ev-h"><span class="ev-t">${esc(e.sourceTitle)}</span><span class="pill k">${esc(e.sourceLevel)}</span></div>
-      <div class="ev-x">${esc(e.excerpt)}</div></div>`).join('')
-      : '<div class="ev-x">无来源，已标记为 AI 推断项</div>') +
-    `<div class="assess">证据为示例占位；真实数据由 C1 来源分级 + C1.5 逐字校验产出</div></div>`;
   if(gap) h += `<div class="dr-s"><div class="warnbox"><span class="ico critical">!</span>
     <span>本校现有课程无任何知识点或技能规范映射到该能力（诊断叠加数据）</span></div></div>`;
   return h;
@@ -3656,7 +3767,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape' && bf) closeBuild(
 /* ════════════════════════════════════════════════════════════════
    8. 能力测评 V2.0 · 渐进式专业体检
    范式：系统先按国家专业教学标准摆出「标准答案」，用户只做减法与修正。
-   第1层 选专业 → 第2层 确认目标岗位 → 第3层 标准课程表减法 → 第4层 勾实训室
+   第1层 选专业 → 第2层 选择目标岗位 → 第3层 选择已设课程 → 第4层 选择已有资源
    每一层结束都有一份完整可用的报告，随时可以停。
    ════════════════════════════════════════════════════════════════ */
 const MAJORS = D.majors || [];
@@ -3676,11 +3787,15 @@ const V2C = {
 };
 
 const V2 = {
-  majors: [], multi: false, unsure: false,
+  majors: [],
   positions: new Set(), courseIntent: new Set(), leaves: new Set(), labs: new Set(),
-  layer: 0, openCourse: null, stale: false,
+  layer: 0, openCourse: null, stale: false, rxView: 'course', radarPos: null,
 };
 let v2Versions = [];
+// 能力提升路径：教学形式提示规则表（数据层 ASSESS_RULES）+ 知识点归属索引
+const ASSESS_RULES = D.assessRules || [];
+const leafInfo = {};
+CLIB.forEach(c=>c.leaves.forEach(l=>leafInfo[l.id]=l));
 
 /* ─── 派生计算 ─── */
 function v2SelMajors(){ return V2.majors.map(c=>majorById[c]).filter(Boolean); }
@@ -3795,12 +3910,17 @@ function v2LabGaps(){
   });
   return miss;
 }
-function v2Prescriptions(){
+function v2GapList(){
+  // 缺口清单（有缺口的能力项）：核心能力优先、被要求岗位数次之。
+  // 「按课程」处方与「按能力」提升路径共用同一份排序，切换视图时相对位置不变。
   const reqMap = v2ReqMap(), att = v2Attained();
-  const gaps = Object.keys(reqMap)
+  return Object.keys(reqMap)
     .map(id=>({a:abl[id], req:reqMap[id], att:att[id]||0}))
     .filter(g=>g.att < g.req)
     .sort((x,y)=>(y.a.core-x.a.core)||(y.a.positionCount-x.a.positionCount));
+}
+function v2Prescriptions(){
+  const gaps = v2GapList();
   const T = {
     1:{tier:1,name:'现有课加深',cost:'改教学设计 · 零成本',rule:'已开课程覆盖了该能力，只是没教到岗位要求的高度。',items:[]},
     2:{tier:2,name:'现有课扩内容',cost:'改大纲 · 低成本',rule:'已开课程里还有没选中的知识节点，选上就能补上缺口。',items:[]},
@@ -3831,6 +3951,162 @@ function v2Prescriptions(){
   return [T[1],T[2],T[3],T[4],T[5]].filter(t=>t.items.length || t.unfilled);
 }
 
+/* ─── 能力提升路径卡（「按能力」切法的六块） ─── */
+function v2SupportEdges(aid){
+  const out = [];
+  CLIB.forEach(c=>{
+    if(!V2.courseIntent.has(c.id)) return;
+    const es = c.edges.filter(e=>e.ability===aid && V2.leaves.has(e.leaf) &&
+      (e.rel==='covers'||e.rel==='partially_covers'));
+    if(es.length) out.push({c, es: es.slice().sort((a,b)=>LV[b.level]-LV[a.level])});
+  });
+  return out.sort((x,y)=>LV[y.es[0].level]-LV[x.es[0].level]);
+}
+function v2RulesFor(assess){ return ASSESS_RULES.filter(r=>r.keys.some(k=>assess.includes(k))); }
+function v2WhereHTML(aid, req){
+  const sup = v2SupportEdges(aid);
+  if(!sup.length){
+    const cand = v2CoveringCourse(aid, req);
+    return `<div class="pc-where-none">现有课程中无任何知识节点映射到这条能力。对应「按课程」视图第 3 档「新增课程模块」：
+      ${cand?`可补开《${esc(cand.course.name)}》承接（${cand.edges.length} 个知识节点，可支撑到 ${cand.top.level}）`:'课程体系暂无现成课程，需校本开发'}。</div>`;
+  }
+  return sup.map(({c,es})=>{
+    const top = es[0];
+    const mod = leafInfo[top.leaf] ? leafInfo[top.leaf].module : '';
+    return `<div class="pc-where"><span class="pill core">${esc(c.name)}</span>
+      <span class="pc-where-chain">${mod?esc(mod)+' › ':''}${esc(top.leafName)}</span>
+      <span style="flex:1"></span>
+      <span class="lvtag ${top.level}">${top.level}</span>
+      <span class="mono" style="color:var(--muted);font-size:10.5px">${es.length} 个节点</span></div>`;
+  }).join('');
+}
+function v2CondHTML(aid, att, req){
+  if(V2.layer < 4) return `<div class="pc-none">未填报实训室，无法比对——完成第 4 层勾选后，这里逐项比对「已具备 / 缺」。</div>`;
+  let courses = [];
+  if(att > 0) courses = v2SupportEdges(aid).map(x=>x.c);
+  else { const cand = v2CoveringCourse(aid, req); if(cand) courses = [cand.course]; }
+  if(!courses.length) return `<div class="pc-none">该能力无承接课程，暂无实训条件可比对。</div>`;
+  const rows = [];
+  courses.forEach(c=>{ (c.practiceReq||[]).forEach(r=>{
+    if(rows.some(x=>x.equip===r.equip)) return;
+    rows.push({equip:r.equip, name:r.item, spec:r.spec, course:c.name, have:V2.labs.has(r.equip)});
+  }); });
+  if(!rows.length) return `<div class="pc-none">承接课程无实训条件要求。</div>`;
+  return rows.map(r=>`<div class="pc-cond">
+    <span class="pill ${r.have?'good':'crit'}">${r.have?'已具备':'缺'}</span>
+    <span>${esc(r.name)}</span>
+    <span class="mono" style="color:var(--muted);font-size:10.5px">${esc(r.spec)}${r.course?` · 配套《${esc(r.course)}》`:''}</span></div>`).join('');
+}
+function v2PreHTML(aid){
+  const pres = D.prerequisites.filter(p=>p.to===aid);
+  if(!pres.length) return '';
+  const att = v2Attained(), reqMap = v2ReqMap();
+  return pres.map(p=>{
+    const pre = abl[p.from];
+    const preReq = reqMap[p.from] || 0, preAtt = att[p.from] || 0;
+    let line;
+    if(!preReq) line = `<span>前置〈${esc(pre.name)}〉不在当前目标岗位要求内，无需处理。</span>`;
+    else if(preAtt >= preReq) line = `<span>前置条件已满足：</span>
+      <button class="pc-jump" data-abl="${p.from}">${esc(pre.name)}</button>
+      <span class="pill good">已达标 L${preReq}</span>`;
+    else line = `<span class="ico critical">!</span><span>需先补齐：</span>
+      <button class="pc-jump" data-abl="${p.from}">${esc(pre.name)}</button>
+      <span class="pill warn">前置也在缺口 · L${preAtt} → L${preReq}</span>`;
+    return `<div class="pc-pre">${line}${p.note?`<span class="mono" style="color:var(--muted);font-size:10.5px">${esc(p.note)}</span>`:''}</div>`;
+  }).join('');
+}
+function v2WhyHTML(a){
+  const l3 = a.requiredBy.filter(r=>r.level==='L3').length;
+  const subs = a.acrossSubIndustries.map(id=>sub[id].name);
+  return `<div class="pc-why"><span><b>${a.positionCount}</b> 个岗位要求</span>
+    <span><b>${l3}</b> 个要求最高等级 L3</span>
+    ${a.core?'<span class="pill core">核心能力</span>':''}
+    <span class="mono" style="color:var(--muted);font-size:10.5px">出现于 ${subs.join('、')}</span></div>`;
+}
+function v2PathBody(g){
+  const a = g.a, req = g.req, att = g.att, aid = a.id;
+  const tgtLv = a.levels['L'+req];
+  const B = [];
+  /* ① 差在哪 */
+  let gapHTML;
+  if(att > 0){
+    const now = a.levels['L'+att];
+    gapHTML = `<div class="pc-now"><span class="pc-now-h">现在能做到 · L${att} ${LVN['L'+att]}</span>
+        <ul class="pts">${now.points.map(p=>`<li>${esc(p)}</li>`).join('')}</ul></div>
+      <div class="pc-target"><span class="pc-target-h">还要能做到 · L${req} ${LVN['L'+req]}（要补的教学目标）</span>
+        <ul class="pts">${tgtLv.points.map(p=>`<li>${esc(p)}</li>`).join('')}</ul></div>`;
+  } else {
+    const steps = ['L1','L2','L3'].map(L=>{
+      const l = a.levels[L], n = LV[L];
+      const cls = n===req ? 'target' : (n>req ? 'above' : '');
+      const tag = n===req ? ' · 目标停在这一级' : (n>req ? ' · 超出目标，仅参考' : '');
+      const pra = (n>=2 && n<=req) ? ' · 课堂达不到，靠实训/顶岗承接' : '';
+      return `<div class="pc-prog ${cls}"><div class="pc-prog-h">
+        <span class="lvtag ${L}">${L}</span><span class="pc-prog-n">${LVN[L]}${tag}${pra}</span></div>
+        <ul class="pts">${l.points.map(p=>`<li>${esc(p)}</li>`).join('')}</ul></div>`;
+    }).join('');
+    gapHTML = `<div class="pc-zero">本校暂无课程承接，从零开始——按 L1 → L2 → L3 分级递进，不一步到位：</div>${steps}`;
+  }
+  B.push(`<div class="pc-b"><div class="pc-k">① 差在哪
+      <span class="pc-src">观测点差集 · 原样取自 levels[].points，未改写</span></div>${gapHTML}</div>`);
+  /* ② 在哪教 */
+  B.push(`<div class="pc-b"><div class="pc-k">② 在哪教
+      <span class="pc-src">来自课程映射边</span></div>${v2WhereHTML(aid, req)}</div>`);
+  /* ③ 怎么教 */
+  const rules = v2RulesFor(tgtLv.assess);
+  let howHTML = `<div class="pc-assess"><b>考核方式（目标等级原文）</b>：${esc(tgtLv.assess)}</div>`;
+  if(rules.length){
+    howHTML += rules.map(r=>`<div class="pc-rule"><span class="pc-rule-h">→ ${esc(r.hint)}</span>
+      <details class="pc-rulesum"><summary>这条建议按哪条规则推出</summary>
+        <div class="pc-rule-why">命中关键词：${r.keys.map(k=>`「${esc(k)}」`).join('、')}　理由：${esc(r.why)}</div></details></div>`).join('');
+  } else {
+    howHTML += `<div class="pc-rule-none">该考核方式未命中已有规则，教学形式由任课教师判断。</div>`;
+  }
+  howHTML += `<div class="mono" style="font-size:10.5px;color:var(--muted);margin-top:6px">教学形式提示由考核方式按规则反推，非图谱原生数据</div>`;
+  B.push(`<div class="pc-b"><div class="pc-k">③ 怎么教
+      <span class="pc-src">由目标等级考核方式反推</span></div>${howHTML}</div>`);
+  /* ④ 需要什么条件 */
+  B.push(`<div class="pc-b"><div class="pc-k">④ 需要什么条件
+      <span class="pc-src">实训条件比对 · 来自课程 practiceReq</span></div>${v2CondHTML(aid, att, req)}</div>`);
+  /* ⑤ 先补什么 */
+  B.push(`<div class="pc-b"><div class="pc-k">⑤ 先补什么
+      <span class="pc-src">前置关系 · prerequisites</span></div>
+    ${v2PreHTML(aid) || '<div class="pc-none">该能力没有前置依赖。</div>'}</div>`);
+  /* ⑥ 为什么值得补 */
+  B.push(`<div class="pc-b"><div class="pc-k">⑥ 为什么值得补
+      <span class="pc-src">优先级依据，不替你打分</span></div>${v2WhyHTML(a)}</div>`);
+  return B.join('');
+}
+function v2PathCard(g){
+  const a = g.a, req = g.req, att = g.att;
+  return `<div class="card pad pathcard" data-v2card="${a.id}">
+    <div class="rx-h" style="border-bottom:none;padding-bottom:8px;margin-bottom:2px">
+      <button class="rx-n" data-abl="${a.id}" style="font-size:14px">${esc(a.name)}</button>
+      ${a.core?'<span class="star">★</span>':''}
+      <span class="pill k">${esc(a.typeCn)}</span>
+      <span class="pill ${att===0?'crit':'warn'}">${att===0?'内容缺口':`L${att} → L${req}`}</span>
+      <span style="flex:1"></span><span class="lvtag L${req}">目标 L${req}</span></div>
+    ${v2PathBody(g)}
+  </div>`;
+}
+function v2PathCards(){
+  const gaps = v2GapList();
+  if(!gaps.length) return '';
+  const cards = gaps.map(v2PathCard).join('');
+  if(gaps.length <= 6) return cards;
+  return `<div class="rx-fold" data-fold="0">${cards}<div class="rx-mask"></div></div>
+    <button class="chip rx-more" data-v2rxmore="1">展开全部 ${gaps.length} 张路径卡</button>`;
+}
+function v2PathInDrawer(a){
+  // 能力项详情抽屉里的提升路径：仅在已走到第 3 层（生成了缺口诊断）且该能力确有缺口时显示。
+  if(V2.layer < 3) return '';
+  const g = v2GapList().find(x=>x.a.id===a.id);
+  if(!g) return '';
+  return `<div class="dr-s"><div class="dr-st">能力提升路径
+      <span class="pill k" style="margin-left:7px;text-transform:none;letter-spacing:0">诊断 · 第 ${V2.layer} 层</span></div>
+    <div class="pathcard">${v2PathBody(g)}</div></div>`;
+}
+
 /* ─── 专业教学标准符合度（待定项 A：默认做） ─── */
 function v2StdCompliance(){
   return v2SelMajors().map(m=>({
@@ -3848,7 +4124,7 @@ function v2StepState(n){
   return 'locked';
 }
 function v2Unlock(n){ return ['','岗位面向 · 第一个数','能力要求清单与优先级','内容完整 / 培养深度 · 第二、三个数','实训条件比对'][n]; }
-function v2StepTitle(n){ return ['','选专业','确认目标岗位','在标准课程表上做减法','勾实训室'][n]; }
+function v2StepTitle(n){ return ['','选专业','选择目标岗位','选择已设课程','选择已有资源'][n]; }
 
 function v2Step1Body(){
   const sel = V2.majors.map(c=>majorById[c].name).join('、');
@@ -3856,35 +4132,29 @@ function v2Step1Body(){
     const on = V2.majors.includes(m.code);
     return `<button class="card mjcard" data-v2major="${m.code}" aria-pressed="${on}">
       <div class="mj-n">${esc(m.name)}</div>
-      <div class="mj-c">${esc(m.stage)} · ${esc(m.code)} · ${m.years} 年制</div>
+      <div class="mj-c">${esc(m.stage)} · ${esc(m.code)}</div>
       <div class="mj-g">${esc(m.goal)}</div></button>`;
   }).join('');
   return `<div class="mjpick">${cards}</div>
     <div style="margin-top:11px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <button class="chip" data-v2="unsure">${V2.unsure?'已收起专业详情':'我不确定，浏览全部专业'}</button>
-      <button class="chip" data-v2="multi" aria-pressed="${V2.multi}">我们有多个相关专业（多选）</button>
+      <button class="chip" data-v2majorall="1">全选</button>
+      <button class="chip" data-v2majorall="0">清空</button>
       <span style="flex:1"></span>
       <button class="chip" data-v2="upload">上传人才培养方案（快速通道）</button>
+      <button class="btn" data-v2="confirm1">确认专业，继续</button>
     </div>
     ${V2.majors.length ? `<div class="v2sum" style="margin-top:12px"><span class="pill core">已选</span><b>${esc(sel)}</b>
       <span class="v2unlock">解锁：<b>${v2Unlock(1)}</b></span></div>` : ''}`;
 }
 
 function v2Step2Body(){
-  const std = new Map();
-  V2.majors.forEach(c=>{ (stdPosOf[c]||[]).forEach(p=>std.set(p.id, p)); });
   const grid = D.positions.map(p=>{
     const on = V2.positions.has(p.id);
-    const st = std.get(p.id);
     return `<button class="pospick" data-v2pos="${p.id}" aria-pressed="${on}">
-      <div class="pp-h"><span class="pp-n">${esc(p.name)}</span>
-        ${st?`<span class="pill k">标准对接 · ${st.match==='exact'?'exact':'近义/归并'}</span>`:''}
-        <span class="pp-m">${p.abilityCount} 能力项${p.coreAbilityCount?` · ${p.coreAbilityCount} 核心`:''}</span></div>
-      ${st?`<div class="pp-std">标准写的是「${esc(st.stdText)}」→ 对到 ${esc(p.name)}</div>`:''}
+      <div class="pp-n">${esc(p.name)}</div>
       <div class="pp-d">${esc(p.desc)}</div></button>`;
   }).join('');
-  return `<p class="sect-d">标准答案已按专业教学标准预选，你可以加（「我们其实还面向研学指导师」）、可以减（「我们不做计调」）。</p>
-    <div class="posgrid">${grid}</div>
+  return `<div class="posgrid">${grid}</div>
     <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button class="chip" data-v2posall="1">全选</button>
       <button class="chip" data-v2posall="0">仅保留标准对接岗位</button>
@@ -3893,21 +4163,17 @@ function v2Step2Body(){
 }
 
 function v2Step3Body(){
-  const std = v2StdCourses();
-  const keptStd = CLIB.filter(c=>std.has(c.id));
-  const ext = CLIB.filter(c=>!std.has(c.id));
   const unmap = new Set();
   v2SelMajors().forEach(m=>(m.coursesUnmapped||[]).forEach(u=>unmap.add(u)));
   const courseRow = c=>{
     const st = v2CourseSt(c.id);
     const n = c.leaves.filter(l=>V2.leaves.has(l.id)).length;
-    const isStd = std.has(c.id);
     return `<div class="libwrap">
       <div class="libc" data-v2course="${c.id}" role="checkbox" tabindex="0"
            aria-checked="${st==='on'?'true':st==='part'?'mixed':'false'}" data-st="${st}">
         <span class="pc-x">${st==='part'?'–':'✓'}</span>
         <span><span class="libc-n">${esc(c.name)}</span>
-          <span class="libc-m">${esc(c.type)} · ${esc(c.block)}　<span class="pill ${isStd?'core':'ext'}">${isStd?'标准课程':'拓展课程'}</span></span></span>
+          <span class="libc-m">${esc(c.type)} · ${esc(c.block)}</span></span>
         <span class="libc-r"><b>${n}</b> / ${c.leafCount} 个知识点 / 技能规范<br>
           <span style="color:var(--muted)">全选可支撑 ${c.abilities.length} 条能力项</span></span>
         <button class="libx" data-v2open="${c.id}" aria-expanded="${V2.openCourse===c.id}"
@@ -3923,11 +4189,7 @@ function v2Step3Body(){
         </div>`).join('')}</div>` : ''}
     </div>`;
   };
-  return `<p class="sect-d">标准课程已默认<b>全部勾上</b>，你的动作是<b>取消</b>没开的课；拓展课程默认不勾。展开可勾到知识点 / 技能规范一级（这门课开了但没上某个模块时这样更准）。</p>
-    <div class="eyebrow" style="margin:4px 0 8px">标准课程（默认已开，取消表示没开）</div>
-    ${keptStd.map(courseRow).join('')}
-    <div class="eyebrow" style="margin:16px 0 8px">拓展课程（默认未开，勾选表示本校也开了）</div>
-    ${ext.map(courseRow).join('')}
+  return `${CLIB.map(courseRow).join('')}
     ${unmap.size ? `<div class="rx-warn" style="margin-top:14px"><b>标准要求、但课程体系暂无对应课程：</b>${[...unmap].map(esc).join('、')}。只作展示，不参与计算。</div>` : ''}
     <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button class="chip" data-v2courseall="1">全部勾上</button>
@@ -3949,11 +4211,9 @@ function v2Step4Body(){
     return `<div class="labc" data-v2lab="${equip}" role="checkbox" tabindex="0" aria-checked="${on}">
       <span class="pc-x">${on?'✓':''}</span>
       <span><span class="labc-n">${esc(r.name)}</span>
-        <div class="labc-s">${esc(r.spec)}</div>
-        <div class="labc-src">${esc(r.source)}</div></span></div>`;
+        <div class="labc-s">${esc(r.spec)}</div></span></div>`;
   }).join('');
-  return `<p class="sect-d">从平台实训条件字典勾出本校已有的实训室。勾完处方明细里的实训条件才有「已具备 / 缺」的比对结果；不勾则显示「未填报，无法比对」。</p>
-    ${list}
+  return `${list}
     <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
       <span style="flex:1"></span>
       <button class="btn" data-v2="confirm4">完成</button></div>`;
@@ -3963,9 +4223,9 @@ function v2StepSummary(n){
   const l = V2.majors.map(c=>majorById[c].name);
   const s = {
     1: n=>n?`已选专业 <b>${esc(V2.majors.map(c=>majorById[c].name).join('、'))}</b>`:'',
-    2: n=>`目标岗位 <b>${V2.positions.size}</b> 个（市场 ${D.positions.length} 个）`,
+    2: n=>`目标岗位 <b>${V2.positions.size}</b> 个：${esc(v2PosArr().map(p=>p.name).join('、'))}`,
     3: n=>`已保留 <b>${V2.courseIntent.size}</b> 门课 · 勾中 <b>${V2.leaves.size}</b> 个知识节点`,
-    4: n=>`已勾 <b>${V2.labs.size}</b> 项实训条件`,
+    4: n=>`已勾 <b>${V2.labs.size}</b> 项实训资源${V2.labs.size?`：${esc([...V2.labs].map(e=>LABDICT[e]&&LABDICT[e].name).filter(Boolean).join('、'))}`:''}`,
   }[n](l);
   return `<div class="v2sum" style="margin-bottom:0"><span class="pill good">✓ 已完成</span>${s}
     <span class="v2unlock">已解锁：<b>${v2Unlock(n)}</b></span></div>`;
@@ -3977,8 +4237,7 @@ function renderV2Steps(){
     const body = st==='done' ? v2StepSummary(n) : st==='active' ? ({1:v2Step1Body,2:v2Step2Body,3:v2Step3Body,4:v2Step4Body}[n])() : '';
     return `<div class="card pad stepcard v2step" data-state="${st}">
       <div class="step-h"><span class="stepno">${n}</span>
-        <div class="step-tt"><b>${v2StepTitle(n)}</b>
-          <span class="step-d">${['','按国家专业教学标准选对口专业，十秒出第一版报告','标准答案预选，你只做增删','预勾「标准课程表」，取消没开的课','勾出本校已有的实训室'][n]}</span></div>
+        <div class="step-tt"><b>${v2StepTitle(n)}</b></div>
         <span style="flex:1"></span>
         ${st==='locked'?'<span class="pill ext">待办</span>':st==='done'?'<span class="pill good">已完成</span>':`<span class="pill k">进行中</span>`}</div>
       ${body}
@@ -4000,15 +4259,146 @@ function v2Sources(a){
   const t = (a.evidences||[]).filter(e=>e.sourceLevel==='L1_国家'||e.sourceLevel==='L2_标准').map(e=>e.sourceTitle);
   return t.length ? t.join('、') : '无国标 / 行业标准来源，仅有市场侧依据';
 }
-function v2OnePage(){
+/* ---- 一页纸诊断 · 岗位能力雷达图：轴 = 该岗位要求的能力项 ---- */
+const POS_RADAR_MAX = 8;
+const ALL_RADAR_MAX = 12;   // 「全部」合并图的轴数上限，超出折叠、引导切到单岗位
+function v2PosRadar(p){
+  const att = v2Attained();
+  const rows = p.abilities.map(r=>({ a:abl[r.ability], req:LV[r.level], att:att[r.ability]||0, w:r.weight }))
+    .sort((x,y)=>(y.a.core-x.a.core)||(y.req-x.req)||(y.w-x.w));
+  const shown = rows.slice(0, POS_RADAR_MAX), hidden = rows.length - shown.length;
+  const R = 118, N = shown.length;
+  const ang = i => -Math.PI/2 + i*2*Math.PI/N;
+  const pt = (i,v)=>[(v/3*R*Math.cos(ang(i))).toFixed(1),(v/3*R*Math.sin(ang(i))).toFixed(1)];
+  const poly = ps=>ps.map(x=>x.join(',')).join(' ');
+  let g = '';
+  for(let v=1;v<=3;v++){
+    g += `<polygon class="rgrid" points="${poly(shown.map((_,i)=>pt(i,v)))}"></polygon>`;
+    g += `<text class="rtick" x="4" y="${(-v/3*R).toFixed(1)}" dy="3">L${v}</text>`;
+  }
+  shown.forEach((_,i)=>{ const q=pt(i,3); g += `<line class="raxis" x1="0" y1="0" x2="${q[0]}" y2="${q[1]}"></line>`; });
+  g += `<polygon class="rreq" points="${poly(shown.map((r,i)=>pt(i,r.req)))}"></polygon>`;
+  g += `<polygon class="ratt" points="${poly(shown.map((r,i)=>pt(i,r.att)))}"></polygon>`;
+  shown.forEach((r,i)=>{
+    const q = pt(i, r.att), gap = r.req - r.att >= 0.4;
+    g += gap ? `<circle class="rgap" cx="${q[0]}" cy="${q[1]}" r="3.6"></circle>`
+             : `<circle class="rok" cx="${q[0]}" cy="${q[1]}" r="2.6"></circle>`;
+    const lp = pt(i, 3.5), c = Math.cos(ang(i));
+    const anchor = Math.abs(c)<0.3?'middle':(c>0?'start':'end');
+    g += `<text class="rlab${gap?' gap':''}" x="${lp[0]}" y="${lp[1]}" text-anchor="${anchor}" dominant-baseline="central">${esc(fit(r.a.name, 96, 10))}${r.a.core?' ★':''}</text>`;
+    g += `<text class="rlab2" x="${lp[0]}" y="${(+lp[1]+11).toFixed(1)}" text-anchor="${anchor}" dominant-baseline="central">${r.att===0?'未开':'L'+r.att} / L${r.req}</text>`;
+  });
+  const covered = rows.filter(r=>r.att>0).length;
+  const attained = rows.filter(r=>r.att>=r.req).length;
+  const none = rows.filter(r=>r.att===0);
+  const shallow = rows.filter(r=>r.att>0 && r.att<r.req);
+  const nameList = arr => { const n = arr.map(r=>r.a.name); return n.length<=4 ? n.join('、') : n.slice(0,4).join('、') + ' 等'; };
+  const supp = `<div class="dxradar-supp">
+      <div>该岗位要求 <b>${rows.length}</b> 条能力，本校覆盖 <b>${covered}</b> 条、达标 <b>${attained}</b> 条。</div>
+      ${none.length ? `<div>还有 <b>${none.length}</b> 条完全没开：${nameList(none)}。</div>`
+                    : '<div>没有完全没开的能力。</div>'}
+      ${shallow.length ? `<div>另有 <b>${shallow.length}</b> 条开了但没到要求高度：${nameList(shallow)}。</div>` : ''}
+    </div>`;
+  return `<div class="dxradar">
+    <div class="dxradar-h"><span class="dr-n">${esc(p.name)}</span>
+      <span class="pill ${attained===rows.length?'good':covered===rows.length?'warn':'crit'}">${attained}/${rows.length} 达标</span>
+      <span class="mono" style="color:var(--muted);font-size:10px">覆盖 ${covered}/${rows.length}</span>
+      ${hidden?`<span class="mono" style="color:var(--muted);font-size:10px">另有 ${hidden} 条未画</span>`:''}</div>
+    <svg viewBox="-260 -170 520 340" class="radar" role="img" aria-label="${esc(p.name)} 岗位能力雷达图">${g}</svg>
+    ${supp}
+  </div>`;
+}
+function v2AllRadar(){
+  // 「全部」= 一张雷达图，轴 = 目标岗位合并去重后的每条能力项（要求取最高等级）。
+  // 轴过多时标签糊成一团，故与单岗位雷达一样设上限，超出折叠、引导切到单岗位。
+  const reqMap = v2ReqMap(), att = v2Attained();
+  const rows = Object.keys(reqMap).map(id=>({ a:abl[id], req:reqMap[id], att:att[id]||0 }))
+    .sort((x,y)=>(y.a.core-x.a.core)||(y.req-x.req)||(y.a.positionCount-x.a.positionCount));
+  const shown = rows.slice(0, ALL_RADAR_MAX), hidden = rows.length - shown.length;
+  const R = 155, N = shown.length;
+  const ang = i => -Math.PI/2 + i*2*Math.PI/N;
+  const pt = (i,v)=>[(v/3*R*Math.cos(ang(i))).toFixed(1),(v/3*R*Math.sin(ang(i))).toFixed(1)];
+  const poly = ps=>ps.map(x=>x.join(',')).join(' ');
+  let g = '';
+  for(let v=1;v<=3;v++){
+    g += `<polygon class="rgrid" points="${poly(shown.map((_,i)=>pt(i,v)))}"></polygon>`;
+    g += `<text class="rtick" x="4" y="${(-v/3*R).toFixed(1)}" dy="3">L${v}</text>`;
+  }
+  shown.forEach((_,i)=>{ const q=pt(i,3); g += `<line class="raxis" x1="0" y1="0" x2="${q[0]}" y2="${q[1]}"></line>`; });
+  g += `<polygon class="rreq" points="${poly(shown.map((r,i)=>pt(i,r.req)))}"></polygon>`;
+  g += `<polygon class="ratt" points="${poly(shown.map((r,i)=>pt(i,r.att)))}"></polygon>`;
+  shown.forEach((r,i)=>{
+    const q = pt(i, r.att), gap = r.req - r.att >= 0.4;
+    g += gap ? `<circle class="rgap" cx="${q[0]}" cy="${q[1]}" r="3.4"></circle>`
+             : `<circle class="rok" cx="${q[0]}" cy="${q[1]}" r="2.4"></circle>`;
+    const lp = pt(i, 3.55), c = Math.cos(ang(i));
+    const anchor = Math.abs(c)<0.3?'middle':(c>0?'start':'end');
+    g += `<text class="rlab${gap?' gap':''}" x="${lp[0]}" y="${lp[1]}" text-anchor="${anchor}" dominant-baseline="central">${esc(fit(r.a.name, 72, 10))}${r.a.core?' ★':''}</text>`;
+    g += `<text class="rlab2" x="${lp[0]}" y="${(+lp[1]+11).toFixed(1)}" text-anchor="${anchor}" dominant-baseline="central">${r.att===0?'未开':'L'+r.att} / L${r.req}</text>`;
+  });
+  const covered = rows.filter(r=>r.att>0).length;
+  const attained = rows.filter(r=>r.att>=r.req).length;
+  return `<div class="dxradar dxradar-all">
+    <div class="dxradar-h"><span class="dr-n">全部目标岗位</span>
+      <span class="pill ${attained===rows.length?'good':covered===rows.length?'warn':'crit'}">${attained}/${rows.length} 达标</span>
+      <span class="mono" style="color:var(--muted);font-size:10px">覆盖 ${covered}/${rows.length}</span>
+      <span class="mono" style="color:var(--muted);font-size:10px">${rows.length} 条能力</span>
+      ${hidden?`<span class="mono" style="color:var(--muted);font-size:10px">另有 ${hidden} 条未画，请切到单岗位查看</span>`:''}</div>
+    <svg viewBox="-340 -210 680 420" class="radar" role="img" aria-label="全部目标岗位能力雷达图">${g}</svg>
+  </div>`;
+}
+function v2PosRadars(){
+  const ps = v2PosArr().slice().sort((a,b)=>b.abilityCount-a.abilityCount);
+  if(!ps.length) return '';
+  const cur = V2.radarPos && ps.some(p=>p.id===V2.radarPos) ? V2.radarPos : null;
+  const sw = `<div class="rx-view" style="flex-wrap:wrap"><button class="vs" data-v2radar="" aria-pressed="${!cur}">全部</button>
+    ${ps.map(p=>`<button class="vs" data-v2radar="${p.id}" aria-pressed="${cur===p.id}">${esc(p.name)}</button>`).join('')}</div>`;
+  const body = cur ? v2PosRadar(ps.find(p=>p.id===cur)) : v2AllRadar();
+  const totalAb = Object.keys(v2ReqMap()).length;
+  const note = cur
+    ? `每根轴是该岗位要求的一条能力项，灰虚线是<b>岗位要求等级</b>，紫块是<b>本校达成</b>，红点是缺口轴。轴按核心优先、要求等级从高到低取前 ${POS_RADAR_MAX} 条。★ 为核心能力。`
+    : `每根轴是一条能力项，灰虚线是<b>目标岗位要求的最高等级</b>，紫块是<b>本校达成</b>，两圈越贴合越到位；红点是缺口轴。合并全部目标岗位的 ${totalAb} 条能力，轴按核心优先、要求等级从高到低取前 ${ALL_RADAR_MAX} 条。★ 为核心能力。`;
+  return `<div class="dxradars-wrap">
+    <div class="rep-h" style="margin:14px 0 8px"><span class="eyebrow">能力雷达图</span>
+      <span style="flex:1"></span>${sw}</div>
+    <div class="dxradars">${body}</div>
+    <div class="dxradar-note">${note}</div>
+  </div>`;
+}
+function v2OverviewVerdict(){
+  const n = v2Numbers();
+  const majorNames = V2.majors.map(c=>majorById[c].name).join('、');
+  const pn = v2PosArr();
+  if(!pn.length) return `${esc(majorNames)}专业，尚未确定目标岗位——请在第 2 层选择目标岗位。`;
+  const target = `面向 <b>${pn.length}</b> 个目标岗位（${esc(pn.map(p=>p.name).join('、'))}）`;
+  if(V2.layer < 3) return `${esc(majorNames)}专业，${target}。整体水平与核心优势需完成第 3 层「选择已设课程」后评估。`;
+  let level;
+  if(n.coverage >= V2C.COVERAGE_OK && n.attainment < V2C.ATTAIN_OK)
+    level = `课程覆盖较全（${n.coveredAb}/${n.totalAb}），但达标深度不足——问题不在「没教」，在「教得浅」`;
+  else if(n.coverage < V2C.COVERAGE_LOW && n.coreGap >= V2C.CORE_GAP_MIN)
+    level = `有 ${n.coreGap} 条核心能力存在整块承接空白`;
+  else if(n.posRatio < V2C.POS_NARROW)
+    level = '专业面向偏窄，属方向选择问题而非教学质量问题';
+  else
+    level = '能力覆盖与培养深度相对均衡，无突出结构短板';
+  // 核心优势 = 已有能力达标（达到岗位要求高度）的领域
+  const reqMap = v2ReqMap(), att = v2Attained();
+  const byDom = {};
+  Object.keys(reqMap).forEach(id=>{ const d=abl[id].domain, o=byDom[d]=byDom[d]||{ok:0}; if(att[id]>=reqMap[id]) o.ok++; });
+  const adv = Object.entries(byDom).filter(([,o])=>o.ok>0).sort((a,b)=>b[1].ok-a[1].ok).map(([d])=>d).slice(0,2);
+  const advTxt = adv.length ? `核心优势集中在「${adv.join('、')}」方向` : '目前还没有能力项达到岗位要求高度，尚未形成可称优势的方向';
+  return `${esc(majorNames)}专业，${target}。${level}；${advTxt}。`;
+}
+function v2Overview(){
+  if(!V2.majors.length) return '';
   const n = v2Numbers();
   const has3 = V2.layer >= 3;
   const pct = x=>`${Math.round(x*100)}%`;
-  return `<div class="card pad dxpage" id="dxPage">
-    <div class="rep-h" style="margin:0 0 4px"><span class="eyebrow">一页纸诊断 · 给校领导</span>
-      <span style="flex:1"></span>
-      <button class="chip" data-v2="printpage">导出这一页</button></div>
-    <div class="dxgrid">
+  const industryTxt = `${I.name} · ${I.version} · ${S.subIndustries} 个子行业 / ${S.positions} 个岗位 / ${S.abilities} 条能力项`;
+  const majorHTML = v2SelMajors().map(m=>`<div class="ov-major"><span class="pill k">${esc(m.stage)} · ${esc(m.code)}</span> <b>${esc(m.name)}</b><div class="ov-goal">${esc(m.goal)}</div></div>`).join('');
+  const posArr = v2PosArr();
+  const posHTML = posArr.length ? posArr.map(p=>`<span class="pill core">${esc(p.name)}</span>`).join(' ') : '<span style="color:var(--muted);font-size:12px">待选择</span>';
+  const cards = `<div class="dxgrid">
       <div class="dxnum"><div class="dx-k">岗位面向</div>
         <div class="dx-v">${n.posN}<small> / ${n.totalPos}</small></div>
         <div class="dx-s">市场 ${n.totalPos} 个岗位，你面向 ${n.posN} 个</div>
@@ -4024,10 +4414,16 @@ function v2OnePage(){
         <div class="dx-s">${has3?`覆盖的 ${n.coveredAb} 条里，达到岗位要求高度的 ${n.depthAb} 条`:'完成第 3 层后出现'}</div>
         <div class="bar"><i style="width:${has3?pct(n.attainment):0}"></i></div>
         <div class="dx-d">对应决策：要不要加实训（花钱）</div></div>
-    </div>
-    <div class="dxconcl"><span class="ico warning">i</span><span>${esc(v2Conclusion(n))}</span></div>
-    <div class="dxstruct">${esc(v2StructureSentence(n))}</div>
-    <div class="dxbound">精度边界：因为还没有你们的实际教学数据，以上只能给到<b>课程级</b>；接入本校知识图谱后可精确到知识点级。本页不与同类院校做对比。</div>
+    </div>`;
+  return `<div class="card pad" id="dxPage">
+    <div class="rep-h" style="margin:0 0 4px"><span class="eyebrow">概况总览</span>
+      <span style="flex:1"></span>
+      <button class="chip" data-v2="printpage">导出这一页</button></div>
+    <div class="ovline"><span class="ovk">行业</span><span class="ovv">${industryTxt}</span></div>
+    <div class="ovline"><span class="ovk">专业定位</span><div class="ovv">${majorHTML}</div></div>
+    <div class="ovline"><span class="ovk">目标岗位</span><div class="ovv">${posHTML}</div></div>
+    ${cards}
+    <div class="ov-sum">${v2OverviewVerdict()}</div>
   </div>`;
 }
 function v2AbilityList(){
@@ -4073,13 +4469,14 @@ function v2StdSection(){
       <div class="eyebrow" style="margin:14px 0 7px">标准对接岗位 · 课程支撑得住吗</div>${posRows}
     </div>`;
   }).join('');
-  return `<div id="v2std">${v2rxTitle('专业教学标准符合度 · 学校最在意的硬约束')}${body}
-    <p class="sect-d">这一节与上面的产业侧能力缺口是<b>两套独立的判断</b>——标准符合度看「国家标准要求做到什么、本校做到没有」，产业侧缺口看「市场岗位在招什么、本校教到没有」。两下叠起来，才是写申报材料需要的素材。</p></div>`;
+  return `<div id="v2std">${v2rxTitle('专业教学标准符合度 · 学校最在意的硬约束')}${body}</div>`;
 }
 function v2RxSection(){
   const tiers = v2Prescriptions();
-  if(!tiers.length) return `<div id="v2rx">${v2rxTitle('处方明细')}<div class="card pad" style="color:var(--muted);font-size:12.5px">所选范围内没有缺口，无需处置建议。</div></div>`;
-  const body = tiers.map((t,i)=>{
+  const gaps = v2GapList();
+  const noneMsg = `<div class="card pad" style="color:var(--muted);font-size:12.5px">所选范围内没有缺口，无需处置建议。</div>`;
+  if(!tiers.length && !gaps.length) return `<div id="v2rx">${v2rxTitle('缺口处置建议')}${noneMsg}</div>`;
+  const courseView = tiers.length ? tiers.map((t,i)=>{
     const items = t.tier===4
       ? (t.unfilled ? `<div class="rx-none" style="padding:6px 0">未填报，无法比对——勾完第 4 层实训室后，这里会逐项比对「已具备 / 缺」。</div>` : t.items.map(x=>`<div class="rx-i">
           <div class="rx-ih"><span class="pill crit">缺实训条件</span><b style="font-weight:500">${esc(x.name)}</b>
@@ -4115,8 +4512,64 @@ function v2RxSection(){
         <span style="flex:1"></span><span class="tier-cost">${t.cost}</span></div>
       ${items}
     </div>`;
-  }).join('');
-  return `<div id="v2rx">${v2rxTitle('处方明细 · 按投入产出排序，先做哪一件')}${body}</div>`;
+  }).join('') : noneMsg;
+  const abilityView = v2PathCards() || noneMsg;
+  const sw = `<div class="rx-view"><button class="vs" data-v2rxview="course" aria-pressed="${V2.rxView==='course'}">按课程</button>
+    <button class="vs" data-v2rxview="ability" aria-pressed="${V2.rxView==='ability'}">按能力</button></div>`;
+  const body = V2.rxView === 'ability' ? abilityView : courseView;
+  return `<div id="v2rx"><div class="rep-h"><span class="eyebrow">缺口处置建议 · 先做哪一件</span>
+    <span style="flex:1"></span>${sw}</div>${body}</div>`;
+}
+
+/* ─── 诊断结论：规则生成的发现清单（与「能力测评-报告」同款 .find 卡） ─── */
+function v2Findings(){
+  const n = v2Numbers();
+  const gaps = v2GapList();
+  const noneAb = gaps.filter(g=>g.att===0);
+  const gapAb = gaps.filter(g=>g.att>0);
+  const coreNone = noneAb.filter(g=>g.a.core);
+  const out = [];
+  if(noneAb.length){
+    out.push({level:'critical',
+      title:`${noneAb.length} 条能力项本校完全未覆盖`,
+      body:`按被要求的岗位数排序，最需要补的是「${noneAb.slice(0,3).map(g=>g.a.name).join('」「')}」${noneAb.length>3?' 等':''}。`
+        + (coreNone.length
+          ? `其中 ${coreNone.length} 条是核心能力（被 2 个以上岗位要求且有国家级来源），优先级最高。`
+          : `其中没有核心能力——空缺集中在只被少数岗位要求的专项能力上，是否补齐取决于本校要不要拓宽专业面向。`)});
+  }
+  if(gapAb.length){
+    out.push({level:'warning',
+      title:`${gapAb.length} 条能力项教了但未教到岗位要求的高度`,
+      body:`集中在「${gapAb.slice(0,3).map(g=>g.a.name).join('」「')}」${gapAb.length>3?' 等':''}。这些能力已有课程承接，但承接等级低于岗位要求——需要在现有课程里加深，或由实训/顶岗承接 L3 的综合应用要求。`});
+  }
+  const att = v2Attained();
+  const best = v2PosArr().map(p=>{
+    let covered=0, attained=0;
+    p.abilities.forEach(r=>{ const a=att[r.ability]||0; if(a>0) covered++; if(a>=LV[r.level]) attained++; });
+    return {p, total:p.abilities.length, covered, attained,
+            rate: p.abilities.length ? attained/p.abilities.length : 0};
+  }).sort((a,b)=>b.rate-a.rate)[0];
+  if(best && best.rate>=0.6){
+    out.push({level:'good',
+      title:`${best.p.name}岗位达标扎实`,
+      body:`${best.total} 条能力要求中已达标 ${best.attained} 条、覆盖 ${best.covered} 条${best.total-best.attained?`，未达标的集中在等级不足而非内容空白`:''}。这是本校在该行业里最扎实的岗位方向。`});
+  } else if(!noneAb.length){
+    out.push({level:'good',
+      title:'所选范围内无内容空白',
+      body:`面向岗位所需的 ${n.totalAb} 条能力均有课程承接，剩下的问题只在培养深度，不在课程结构。`});
+  }
+  return out;
+}
+function v2FindingsSection(){
+  const finds = v2Findings();
+  if(!finds.length) return '';
+  const icon = {critical:'!', warning:'!', good:'✓'};
+  const label = {critical:'内容缺口', warning:'深度缺口', good:'覆盖良好'};
+  return `<div class="eyebrow" style="margin:26px 0 10px">诊断结论</div>` +
+    finds.map(f=>`<div class="find ${f.level}"><span class="find-s"></span><div>
+      <div class="find-t"><span class="ico ${f.level}">${icon[f.level]}</span>${esc(f.title)}
+        <span class="pill ${f.level==='good'?'good':f.level==='warning'?'warn':'crit'}">${label[f.level]}</span></div>
+      <div class="find-b">${esc(f.body)}</div></div></div>`).join('');
 }
 function renderV2Report(){
   const z = $('#v2report');
@@ -4124,9 +4577,9 @@ function renderV2Report(){
   let html = '';
   if(V2.stale) html += `<div class="stalebar" style="margin-bottom:14px"><span class="ico warning">!</span>
     <span>设置已变更，报告已按当前设置重新计算，不会静默清空。</span></div>`;
-  html += v2OnePage();
+  html += v2Overview();
   if(V2.layer >= 2) html += v2AbilityList();
-  if(V2.layer >= 3) html += v2StdSection() + v2RxSection();
+  if(V2.layer >= 3) html += v2PosRadars() + v2StdSection() + v2FindingsSection() + v2RxSection();
   z.innerHTML = html;
 }
 function v2SyncHead(){
@@ -4135,21 +4588,38 @@ function v2SyncHead(){
   if(!V2.majors.length) return;
   $('#v2no').textContent = V2.majors.map(c=>majorById[c].name).join(' + ');
   $('#v2at').textContent = nowStr();
-  $('#v2desc').textContent = `已完成 ${V2.layer} / 4 层 · 面向 ${V2.positions.size} 个岗位 · 保留 ${V2.courseIntent.size} 门课`;
   $('#v2desc').textContent = `第 ${V2.layer} / 4 层 · 面向 ${V2.positions.size} 个岗位 · 保留 ${V2.courseIntent.size} 门课`;
+  const ob = $('#v2Overlay');
+  if(ob){
+    const on = OVSRC === 'v2';
+    ob.textContent = on ? '✓ 已叠加（点此取消）' : '叠加到行业全景';
+    ob.setAttribute('aria-pressed', String(on));
+  }
 }
 function renderV2(){ renderV2Steps(); renderV2Report(); v2SyncHead(); }
 
+/* ─── V2 叠加到行业全景：复用 V1 的 OVP / OVA / OVC 全局，OVSRC 记为 'v2' ─── */
+function v2ApplyOverlay(){
+  if(!V2.positions.size){ toast('请先在第 2 层确认目标岗位，再叠加到行业全景'); return; }
+  const reqMap = v2ReqMap(), att = v2Attained();
+  const A = Object.keys(reqMap).filter(id => !att[id]);   // 目标岗位要求、但本校无课程支撑的能力项
+  const P = v2PosArr().filter(p => v2PosCoverage(p.id) < V2C.POS_COV_LOW).map(p => p.id);  // 覆盖率过低的岗位
+  const C = Object.fromEntries(D.positions.map(p => [p.id, v2PosCoverage(p.id)]));
+  OVP = new Set(P); OVA = new Set(A); OVC = C;
+  OVSRC = 'v2'; OVVER = null; V2OV = { at: nowStr(), ...v2Numbers() };
+  setDiag(true);
+  toast(`能力测评 结果已叠加到「行业全景」——${A.length} 条无支撑能力项、${P.length} 个低覆盖岗位已标出`);
+}
+function v2ToggleOverlay(){
+  if(OVSRC === 'v2') clearOverlay(); else v2ApplyOverlay();
+  v2SyncHead();
+}
+
 /* ═══════ 交互 ═══════ */
-function v2SelectMajor(code, additive){
-  if(additive){
-    V2.majors.includes(code) ? V2.majors.splice(V2.majors.indexOf(code),1) : V2.majors.push(code);
-  } else {
-    V2.majors = [code];
-  }
-  V2.unsure = false;
-  v2InitFromMajors();
-  v2Bump(1);
+function v2SelectMajor(code){
+  // 默认多选：点一下加入，再点一下移除，和选岗位一致；点「确认专业」才真正生效。
+  V2.majors.includes(code) ? V2.majors.splice(V2.majors.indexOf(code),1) : V2.majors.push(code);
+  renderV2Steps();
 }
 function v2InitFromMajors(){
   if(!V2.majors.length) return;
@@ -4184,21 +4654,29 @@ function v2ToggleCourse(cid){
   else { V2.courseIntent.delete(cid); c.leaves.forEach(l=>V2.leaves.delete(l.id)); }
   v2MarkStale();
 }
+function v2LeafCourse(id){
+  // 反查叶子所属课程：单点勾选叶子时，保证「叶子被选 ⟹ 所属课程被选」，
+  // 否则 v2Attained 会算这个叶子、而 v2HoldingCourse 找不到承接课，处方会漏课名。
+  for(const c of CLIB) if(c.leaves.some(l=>l.id===id)) return c.id;
+  return null;
+}
 
 document.addEventListener('click', e=>{
   const mj = e.target.closest('[data-v2major]');
-  if(mj){ v2SelectMajor(mj.dataset.v2major, V2.multi); return; }
+  if(mj){ v2SelectMajor(mj.dataset.v2major); return; }
+  const ma = e.target.closest('[data-v2majorall]');
+  if(ma){ V2.majors = ma.dataset.v2majorall==='1' ? MAJORS.map(m=>m.code) : []; renderV2Steps(); return; }
   const up = e.target.closest('[data-v2]');
   if(up){
-    if(up.dataset.v2==='unsure'){ V2.unsure = !V2.unsure; renderV2Steps(); return; }
-    if(up.dataset.v2==='multi'){ V2.multi = !V2.multi; renderV2Steps(); return; }
     if(up.dataset.v2==='upload'){ v2UploadDrawer(); return; }
+    if(up.dataset.v2==='confirm1'){ if(V2.majors.length){ v2InitFromMajors(); v2Bump(1); } else toast('请至少选择一个专业'); return; }
     if(up.dataset.v2==='confirm2'){ if(V2.positions.size) v2Bump(2); else toast('请至少选择一个目标岗位'); return; }
     if(up.dataset.v2==='confirm3'){ v2Bump(3); return; }
     if(up.dataset.v2==='confirm4'){ v2Bump(4); return; }
     if(up.dataset.v2==='printpage'){ v2PrintPage(); return; }
     if(up.dataset.v2==='export'){ v2Export(); return; }
     if(up.dataset.v2==='hist'){ v2Hist(); return; }
+    if(up.dataset.v2==='overlay'){ v2ToggleOverlay(); return; }
     return;
   }
   const p = e.target.closest('[data-v2pos]');
@@ -4216,7 +4694,10 @@ document.addEventListener('click', e=>{
   const op = e.target.closest('[data-v2open]');
   if(op){ V2.openCourse = V2.openCourse===op.dataset.v2open ? null : op.dataset.v2open; renderV2Steps(); return; }
   const lf = e.target.closest('[data-v2leaf]');
-  if(lf){ const id = lf.dataset.v2leaf; V2.leaves.has(id) ? V2.leaves.delete(id) : V2.leaves.add(id); v2MarkStale(); return; }
+  if(lf){ const id = lf.dataset.v2leaf;
+    if(V2.leaves.has(id)) V2.leaves.delete(id);
+    else { V2.leaves.add(id); const cid = v2LeafCourse(id); if(cid && !V2.courseIntent.has(cid)) V2.courseIntent.add(cid); }
+    v2MarkStale(); return; }
   const c = e.target.closest('[data-v2course]');
   if(c){ v2ToggleCourse(c.dataset.v2course); return; }
   const ca = e.target.closest('[data-v2courseall]');
@@ -4227,6 +4708,20 @@ document.addEventListener('click', e=>{
   }
   const lb = e.target.closest('[data-v2lab]');
   if(lb){ const id = lb.dataset.v2lab; V2.labs.has(id) ? V2.labs.delete(id) : V2.labs.add(id); v2MarkStale(); return; }
+  // 缺口处置建议的「按课程 / 按能力」视图切换（只重算报告区，不动流程步骤）
+  const rv = e.target.closest('[data-v2rxview]');
+  if(rv){ V2.rxView = rv.dataset.v2rxview; renderV2Report(); return; }
+  const rd = e.target.closest('[data-v2radar]');
+  if(rd){ V2.radarPos = rd.dataset.v2radar || null; renderV2Report(); return; }
+  // 「按能力」视图 > 6 张路径卡的折叠展开
+  const rm = e.target.closest('[data-v2rxmore]');
+  if(rm){
+    const box = rm.previousElementSibling;
+    const on = box.dataset.fold === '1';
+    box.dataset.fold = on ? '0' : '1';
+    rm.textContent = on ? `展开全部 ${box.querySelectorAll('.pathcard').length} 张路径卡` : '收起';
+    return;
+  }
   // 已完成层点击摘要重新展开
   const dh = e.target.closest('.v2step[data-state="done"] .step-h');
   if(dh){ const card = dh.closest('.v2step'); const n = +card.querySelector('.stepno').textContent;
@@ -4309,6 +4804,32 @@ function v2Markdown(){
       });
       L.push('');
     });
+    L.push('## 按能力的提升路径');
+    L.push('');
+    v2GapList().forEach(g=>{
+      const a = g.a, req = g.req, att = g.att;
+      L.push(`### ${a.name}${a.core?' ★':''}（${att===0?'内容缺口':'L'+att+' → L'+req}）`);
+      L.push('');
+      if(att > 0){
+        const now = a.levels['L'+att].points, tgt = a.levels['L'+req].points;
+        const rows = Math.max(now.length, tgt.length);
+        L.push(`| 现在能做到（L${att}） | 还要能做到（L${req}） |`);
+        L.push('|---|---|');
+        for(let i=0;i<rows;i++) L.push(`| ${now[i]||''} | ${tgt[i]||''} |`);
+      } else {
+        L.push('| 等级 | 观测点 |');
+        L.push('|---|---|');
+        ['L1','L2','L3'].forEach(Lv=>{
+          const l = a.levels[Lv];
+          const tag = LV[Lv]===req ? '（目标）' : (LV[Lv]>req ? '（超出目标）' : '');
+          l.points.forEach((p,i)=>L.push(`| ${i===0 ? Lv+tag : ''} | ${p} |`));
+        });
+      }
+      L.push('');
+      L.push(`- 考核方式（目标等级）：${a.levels['L'+req].assess}`);
+      L.push(`- 依据：${v2Sources(a)}`);
+      L.push('');
+    });
   }
   L.push('---');
   L.push('');
@@ -4316,7 +4837,7 @@ function v2Markdown(){
   return L.join('\n');
 }
 function v2Export(){
-  openDrawer('导出报告', `V2.0 · ${V2.majors.map(c=>majorById[c].name).join('、')}`, '两种带走方式',
+  openDrawer('导出报告', `能力测评 · ${V2.majors.map(c=>majorById[c].name).join('、')}`, '两种带走方式',
     `<div class="dr-s"><div class="dr-st">打印 / 另存为 PDF</div>
       <div class="dr-def">隐藏导航与交互控件，只保留报告正文，交给浏览器打印。</div>
       <button class="btn" id="v2doPrint" style="margin-top:11px">打开打印视图</button></div>

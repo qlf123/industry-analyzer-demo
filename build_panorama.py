@@ -282,6 +282,7 @@ DATA = {
     "schoolLabs": CL.SCHOOL_LABS,
     "majors": majors,
     "labDict": labDict,
+    "assessRules": MS.ASSESS_RULES,
     "buildDemo": X.BUILD_DEMO,
     "buildNodes": X.BUILD_NODES,
 }
@@ -303,5 +304,5 @@ print(f"映射边 {len(K.MAPPINGS)} 条 · 有支撑的能力项 {len(support)} 
 print(f"课程体系 {len(course_lib)} 门 · "
       f"知识节点 {sum(c['leafCount'] for c in course_lib)} · 映射边 {len(ALL_MAPPINGS)} · "
       f"课程可支撑能力项 {len({a['id'] for c in course_lib for a in c['abilities']})}")
-print(f"专业教学标准 {len(majors)} 个专业 · 实训条件字典 {len(labDict)} 项")
+print(f"专业教学标准 {len(majors)} 个专业 · 实训条件字典 {len(labDict)} 项 · 教学形式规则 {len(MS.ASSESS_RULES)} 条")
 print(f"输出 {out_path}（{len(payload)/1024:.0f} KB 数据）")
