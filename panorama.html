@@ -1,3 +1,4 @@
+<meta charset="UTF-8">
 <title>行业分析 · 能力全景</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -940,7 +941,6 @@ body.diag .nocov-tag{display:block}
 .dxnum .dx-v{font-size:30px;font-weight:700;line-height:1.1;margin-top:9px;font-variant-numeric:tabular-nums}
 .dxnum .dx-v small{font-size:15px;font-weight:500;color:var(--muted)}
 .dxnum .dx-s{font-size:12px;color:var(--ink-2);margin-top:7px;line-height:1.6}
-.dxnum .dx-d{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.6}
 .dxnum .bar{height:6px;border-radius:3px;background:var(--rule-2);margin-top:12px;overflow:hidden}
 .dxnum .bar i{display:block;height:100%;background:var(--brand);border-radius:3px}
 .dxbound{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:12px}
@@ -949,15 +949,7 @@ body.diag .nocov-tag{display:block}
   border-radius:9px;border:1px solid var(--rule-2);background:var(--card-2)}
 .stdpos .sp-n{font-weight:500}
 .stdpos .sp-m{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
-.std-c{display:flex;align-items:flex-start;gap:9px;flex-wrap:wrap;font-size:12.5px;line-height:1.6;
-  padding:8px 12px;border-radius:9px;border:1px solid var(--rule-2);margin-bottom:6px}
-.std-c.ok{border-left:3px solid var(--good)}
-.std-c.miss{border-left:3px solid var(--crit)}
-.std-c.part{border-left:3px solid var(--warn)}
-.std-c .sc-n{font-weight:500}
-.std-c .sc-d{flex:1 1 100%;color:var(--muted);font-size:11.5px}
 .tier-no{font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--brand);color:#fff}
-.tier-cost{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .ablist{display:flex;flex-direction:column;gap:6px}
 .abli{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 12px;border-radius:9px;border:1px solid var(--rule-2);font-size:12.5px}
 .abli .bar{flex:1 1 60px;max-width:110px;height:5px;border-radius:3px;background:var(--rule-2);overflow:hidden}
@@ -1017,8 +1009,6 @@ body.diag .nocov-tag{display:block}
 .pc-pre.warn{color:var(--ink-2)}
 .pc-pre.warn .ico{flex:0 0 auto}
 .pc-jump{border:none;background:none;padding:0;color:var(--brand-ink);font-weight:600;font-size:12.5px;cursor:pointer;border-bottom:1px dashed var(--brand)}
-.pc-why{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12.5px}
-.pc-why b{font-size:15px;font-variant-numeric:tabular-nums}
 .rx-view{display:flex;gap:2px;padding:2px;background:var(--card-2);border:1px solid var(--rule);border-radius:9px}
 .rx-view .vs{padding:4px 12px;border-radius:7px;font-size:12px;color:var(--ink-2);border:none;background:none;cursor:pointer;transition:all .13s}
 .rx-view .vs[aria-pressed="true"]{background:var(--card);color:var(--brand-ink);font-weight:500;box-shadow:var(--shadow)}
@@ -3959,10 +3949,7 @@ function v2WhereHTML(aid, req){
     const top = es[0];
     const mod = leafInfo[top.leaf] ? leafInfo[top.leaf].module : '';
     return `<div class="pc-where"><span class="pill core">${esc(c.name)}</span>
-      <span class="pc-where-chain">${mod?esc(mod)+' › ':''}${esc(top.leafName)}</span>
-      <span style="flex:1"></span>
-      <span class="lvtag ${top.level}">${top.level}</span>
-      <span class="mono" style="color:var(--muted);font-size:10.5px">${es.length} 个节点</span></div>`;
+      <span class="pc-where-chain">${mod?esc(mod)+' › ':''}${esc(top.leafName)}</span></div>`;
   }).join('');
 }
 function v2CondHTML(aid, att, req){
@@ -3999,14 +3986,6 @@ function v2PreHTML(aid){
       <span class="pill warn">前置也在缺口 · L${preAtt} → L${preReq}</span>`;
     return `<div class="pc-pre">${line}${p.note?`<span class="mono" style="color:var(--muted);font-size:10.5px">${esc(p.note)}</span>`:''}</div>`;
   }).join('');
-}
-function v2WhyHTML(a){
-  const l3 = a.requiredBy.filter(r=>r.level==='L3').length;
-  const subs = a.acrossSubIndustries.map(id=>sub[id].name);
-  return `<div class="pc-why"><span><b>${a.positionCount}</b> 个岗位要求</span>
-    <span><b>${l3}</b> 个要求最高等级 L3</span>
-    ${a.core?'<span class="pill core">核心能力</span>':''}
-    <span class="mono" style="color:var(--muted);font-size:10.5px">出现于 ${subs.join('、')}</span></div>`;
 }
 function v2PathBody(g){
   const a = g.a, req = g.req, att = g.att, aid = a.id;
@@ -4052,29 +4031,7 @@ function v2PathBody(g){
   /* ⑤ 先补什么 */
   B.push(`<div class="pc-b"><div class="pc-k">⑤ 先补什么</div>
     ${v2PreHTML(aid) || '<div class="pc-none">该能力没有前置依赖。</div>'}</div>`);
-  /* ⑥ 为什么值得补 */
-  B.push(`<div class="pc-b"><div class="pc-k">⑥ 为什么值得补</div>${v2WhyHTML(a)}</div>`);
   return B.join('');
-}
-function v2PathCard(g){
-  const a = g.a, req = g.req, att = g.att;
-  return `<div class="card pad pathcard" data-v2card="${a.id}">
-    <div class="rx-h" style="border-bottom:none;padding-bottom:8px;margin-bottom:2px">
-      <button class="rx-n" data-abl="${a.id}" style="font-size:14px">${esc(a.name)}</button>
-      ${a.core?'<span class="star">★</span>':''}
-      <span class="pill k">${esc(a.typeCn)}</span>
-      <span class="pill ${att===0?'crit':'warn'}">${att===0?'内容缺口':`L${att} → L${req}`}</span>
-      <span style="flex:1"></span><span class="lvtag L${req}">目标 L${req}</span></div>
-    ${v2PathBody(g)}
-  </div>`;
-}
-function v2PathCards(){
-  const gaps = v2GapList();
-  if(!gaps.length) return '';
-  const cards = gaps.map(v2PathCard).join('');
-  if(gaps.length <= 6) return cards;
-  return `<div class="rx-fold" data-fold="0">${cards}<div class="rx-mask"></div></div>
-    <button class="chip rx-more" data-v2rxmore="1">展开全部 ${gaps.length} 张路径卡</button>`;
 }
 function v2PathInDrawer(a){
   // 能力项详情抽屉里的提升路径：仅在已走到第 3 层（生成了缺口诊断）且该能力确有缺口时显示。
@@ -4084,16 +4041,6 @@ function v2PathInDrawer(a){
   return `<div class="dr-s"><div class="dr-st">能力提升路径
       <span class="pill k" style="margin-left:7px;text-transform:none;letter-spacing:0">诊断 · 第 ${V2.layer} 层</span></div>
     <div class="pathcard">${v2PathBody(g)}</div></div>`;
-}
-
-/* ─── 专业教学标准符合度（待定项 A：默认做） ─── */
-function v2StdCompliance(){
-  return v2SelMajors().map(m=>({
-    m,
-    courses: m.courses.map(c=>({...c, kept: V2.courseIntent.has(c.id)})),
-    unmapped: m.coursesUnmapped || [],
-    positions: m.positions.map(p=>({...p, cov: v2PosCoverage(p.id)})),
-  }));
 }
 
 /* ═══════ 步骤卡片渲染 ═══════ */
@@ -4230,10 +4177,6 @@ function renderV2Steps(){
 /* ═══════ 报告渲染 ═══════ */
 function v2rxTitle(t){
   return `<div class="rep-h"><span class="eyebrow">${t}</span></div>`;
-}
-function v2Sources(a){
-  const t = (a.evidences||[]).filter(e=>e.sourceLevel==='L1_国家'||e.sourceLevel==='L2_标准').map(e=>e.sourceTitle);
-  return t.length ? t.join('、') : '无国标 / 行业标准来源，仅有市场侧依据';
 }
 /* ---- 一页纸诊断 · 岗位能力雷达图：轴 = 该岗位要求的能力项 ---- */
 const POS_RADAR_MAX = 8;
@@ -4378,18 +4321,15 @@ function v2Overview(){
       <div class="dxnum"><div class="dx-k">岗位面向</div>
         <div class="dx-v">${n.posN}<small> / ${n.totalPos}</small></div>
         <div class="dx-s">市场 ${n.totalPos} 个岗位，你面向 ${n.posN} 个</div>
-        <div class="bar"><i style="width:${pct(n.posRatio)}"></i></div>
-        <div class="dx-d">对应决策：要不要拓专业方向</div></div>
+        <div class="bar"><i style="width:${pct(n.posRatio)}"></i></div></div>
       <div class="dxnum"><div class="dx-k">内容完整</div>
         <div class="dx-v">${has3?`${n.coveredAb}<small> / ${n.totalAb}</small>`:'—'}</div>
         <div class="dx-s">${has3?`面向的岗位要 ${n.totalAb} 条能力，你覆盖 ${n.coveredAb} 条`:'完成第 3 层后出现'}</div>
-        <div class="bar"><i style="width:${has3?pct(n.coverage):0}"></i></div>
-        <div class="dx-d">对应决策：要不要加课</div></div>
+        <div class="bar"><i style="width:${has3?pct(n.coverage):0}"></i></div></div>
       <div class="dxnum"><div class="dx-k">培养深度</div>
         <div class="dx-v">${has3?`${n.depthAb}<small> / ${n.coveredAb}</small>`:'—'}</div>
         <div class="dx-s">${has3?`覆盖的 ${n.coveredAb} 条里，达到岗位要求高度的 ${n.depthAb} 条`:'完成第 3 层后出现'}</div>
-        <div class="bar"><i style="width:${has3?pct(n.attainment):0}"></i></div>
-        <div class="dx-d">对应决策：要不要加实训</div></div>
+        <div class="bar"><i style="width:${has3?pct(n.attainment):0}"></i></div></div>
     </div>`;
   return `<div class="card pad" id="dxPage">
     <div class="rep-h" style="margin:0 0 4px"><span class="eyebrow">概况总览</span>
@@ -4417,35 +4357,6 @@ function v2AbilityList(){
   }).join('');
   return `<div class="card pad" id="v2ablist"><div class="eyebrow" style="margin-bottom:10px">能力要求清单 · 按核心 / 被要求岗位数排序</div>
     <div class="ablist">${html}</div></div>`;
-}
-function v2StdSection(){
-  const rows = v2StdCompliance();
-  const body = rows.map(({m,courses,unmapped,positions})=>{
-    const courseRows = courses.map(c=>{
-      const cls = c.kept ? 'ok' : 'miss';
-      return `<div class="std-c ${cls}"><span class="sc-n">${cls==='ok'?'✓':'✕'} ${esc(c.name)}</span>
-        <span class="pill ${c.kept?'good':'crit'}">${c.kept?'本校已开':'本校未开'}</span>
-        <span class="sc-d">标准课程 · ${esc(c.type)} · ${esc(c.block)}</span></div>`;
-    }).join('') +
-    unmapped.map(u=>`<div class="std-c part"><span class="sc-n">△ ${esc(u)}</span>
-      <span class="pill warn">标准要求但课程体系暂无</span>
-      <span class="sc-d">暂无法比对，需向图谱平台反馈补建该课程</span></div>`).join('');
-    const posRows = positions.map(p=>{
-      const ok = p.cov >= 0.6, mid = p.cov >= 0.4;
-      const cls = ok?'ok':mid?'part':'miss';
-      return `<div class="std-c ${cls}"><span class="sc-n">${esc(p.name)}</span>
-        <span class="pill ${ok?'good':mid?'warn':'crit'}">支撑度 ${Math.round(p.cov*100)}%</span>
-        <span class="sc-d">标准原文「${esc(p.stdText)}」· ${p.match==='exact'?'exact 精确匹配':'近义/归并'}</span></div>`;
-    }).join('');
-    return `<div class="card pad" style="margin-bottom:14px">
-      <div class="rx-h" style="border-bottom:none;padding-bottom:4px;margin-bottom:8px"><div class="rx-t">${esc(m.name)}</div>
-        <span class="pill k">${esc(m.stage)} · ${esc(m.code)}</span>
-        <span style="flex:1"></span><span class="mono" style="color:var(--muted);font-size:10.5px">${esc(m.source)}</span></div>
-      <div class="eyebrow" style="margin:8px 0 7px">标准课程 · 开齐了吗</div>${courseRows}
-      <div class="eyebrow" style="margin:14px 0 7px">标准对接岗位 · 课程支撑得住吗</div>${posRows}
-    </div>`;
-  }).join('');
-  return `<div id="v2std">${v2rxTitle('专业教学标准符合度 · 学校最在意的硬约束')}${body}</div>`;
 }
 function v2RxSection(){
   const tiers = v2Prescriptions();
@@ -4478,23 +4389,16 @@ function v2RxSection(){
               <span style="flex:1"></span><span class="lvtag L${r.req}">目标 L${r.req}</span></div>
             <div class="rx-d">${esc(lv.desc)}${extra}</div>
             <div class="rx-k"><span class="rx-kk">达标考核</span>${esc(lv.assess)}</div>
-            <div class="rx-k"><span class="rx-kk">依据文件</span>${esc(v2Sources(r.a))}</div>
           </div>`;
         }).join('');
     return `<div class="card pad rx" style="margin-bottom:14px">
       <div class="rx-h"><span class="tier-no">${t.tier}</span>
         <div><div class="rx-t">${t.name}</div>
-          <div class="rx-m">${t.rule}</div></div>
-        <span style="flex:1"></span><span class="tier-cost">${t.cost}</span></div>
+          <div class="rx-m">${t.rule}</div></div></div>
       ${items}
     </div>`;
   }).join('') : noneMsg;
-  const abilityView = v2PathCards() || noneMsg;
-  const sw = `<div class="rx-view"><button class="vs" data-v2rxview="course" aria-pressed="${V2.rxView==='course'}">按课程</button>
-    <button class="vs" data-v2rxview="ability" aria-pressed="${V2.rxView==='ability'}">按能力</button></div>`;
-  const body = V2.rxView === 'ability' ? abilityView : courseView;
-  return `<div id="v2rx"><div class="rep-h"><span class="eyebrow">缺口处置建议 · 先做哪一件</span>
-    <span style="flex:1"></span>${sw}</div>${body}</div>`;
+  return `<div id="v2rx"><div class="rep-h"><span class="eyebrow">调整建议</span></div>${courseView}</div>`;
 }
 
 /* ─── 诊断结论：规则生成的发现清单（与「能力测评-报告」同款 .find 卡） ─── */
@@ -4556,7 +4460,7 @@ function renderV2Report(){
   html += v2Overview();
   if(V2.layer >= 3) html += v2PosRadars();
   if(V2.layer >= 2) html += v2AbilityList();
-  if(V2.layer >= 3) html += v2StdSection() + v2FindingsSection() + v2RxSection();
+  if(V2.layer >= 3) html += v2FindingsSection() + v2RxSection();
   html += `<div class="v2foot"><span class="v2foot-s">在浏览器打印对话框中可选择「另存为 PDF」</span>
     <span style="flex:1"></span><button class="btn" data-v2="export">导出报告</button></div>`;
   z.innerHTML = html;
@@ -4692,20 +4596,8 @@ document.addEventListener('click', e=>{
   }
   const lb = e.target.closest('[data-v2lab]');
   if(lb){ const id = lb.dataset.v2lab; V2.labs.has(id) ? V2.labs.delete(id) : V2.labs.add(id); v2MarkStale(); return; }
-  // 缺口处置建议的「按课程 / 按能力」视图切换（只重算报告区，不动流程步骤）
-  const rv = e.target.closest('[data-v2rxview]');
-  if(rv){ V2.rxView = rv.dataset.v2rxview; renderV2Report(); return; }
   const rd = e.target.closest('[data-v2radar]');
   if(rd){ V2.radarPos = rd.dataset.v2radar || null; renderV2Report(); return; }
-  // 「按能力」视图 > 6 张路径卡的折叠展开
-  const rm = e.target.closest('[data-v2rxmore]');
-  if(rm){
-    const box = rm.previousElementSibling;
-    const on = box.dataset.fold === '1';
-    box.dataset.fold = on ? '0' : '1';
-    rm.textContent = on ? `展开全部 ${box.querySelectorAll('.pathcard').length} 张路径卡` : '收起';
-    return;
-  }
   // 已完成层点击摘要重新展开
   const dh = e.target.closest('.v2step[data-state="done"] .step-h');
   if(dh){ const card = dh.closest('.v2step'); const n = +card.querySelector('.stepno').textContent;
