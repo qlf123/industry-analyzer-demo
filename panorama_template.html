@@ -172,7 +172,6 @@ input{font:inherit}
 .plabel.nocov{display:none}
 body.diag .plabel.nocov{display:inline}
 .slabel{font-size:11.5px;font-weight:700;fill:var(--brand-ink);pointer-events:none;font-family:var(--sans)}
-.slabel.pend{fill:var(--muted);font-weight:400}
 .pnum{font-size:11px;font-family:var(--mono);font-weight:600;fill:var(--ink-2);pointer-events:none}
 .ctext{fill:var(--ink);font-family:var(--sans);pointer-events:none}
 .cnum{fill:var(--ink);font-family:var(--mono);font-weight:600;pointer-events:none}
@@ -570,7 +569,7 @@ body.diag .gapdot.on{display:block}
 /* 打印：只留报告正文 */
 @media print{
   .lnav,.ptop,.scopebox,.viewsw,.chip,.btn,.verbar,.notesfoot,.drawer,.scrim,#tip,#pop,
-  .tabs,.mtools,.panebar,.dcta,.srcpick,.stepcard,.asshd,.stalebar,#toast{display:none!important}
+  .tabs,.mtools,.panebar,.dcta,.srcpick,.stepcard,.asshd,.stalebar,.v2bar,.v2foot,#toast{display:none!important}
   body{background:#fff}
   .app{display:block}
   .body{padding:0;max-width:none}
@@ -898,6 +897,11 @@ body.diag .nocov-tag{display:block}
 .v2lead{font-size:12.5px;color:var(--ink-2);line-height:1.75;padding:13px 16px;border-radius:11px;
   background:var(--brand-soft);margin-bottom:16px}
 .v2lead b{color:var(--ink)}
+.v2bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.v2bar-t{font-size:14px;font-weight:700;color:var(--ink)}
+.v2bar-s{font-size:12px;color:var(--muted)}
+.v2foot{display:flex;align-items:center;gap:9px;margin-top:22px;padding-top:14px;border-top:1px solid var(--rule)}
+.v2foot-s{font-size:11.5px;color:var(--muted)}
 .v2step[data-state="locked"]{opacity:.55}
 .v2step[data-state="locked"] .step-h{cursor:default}
 .v2sum{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);
@@ -984,7 +988,6 @@ body.diag .nocov-tag{display:block}
 .pathcard .pc-b{padding:13px 0;border-top:1px solid var(--rule-2)}
 .pathcard .pc-b:first-child{border-top:none;padding-top:2px}
 .pc-k{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:9px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.pc-src{font-size:10.5px;color:var(--muted);font-family:var(--mono);font-weight:400}
 .pc-now,.pc-target{border-radius:10px;padding:11px 13px;margin:0 0 9px}
 .pc-now{background:var(--card-2);border:1px solid var(--rule)}
 .pc-target{background:var(--brand-soft);border:1px solid var(--brand);box-shadow:0 0 0 1px var(--brand) inset}
@@ -1020,7 +1023,7 @@ body.diag .nocov-tag{display:block}
 .rx-view .vs{padding:4px 12px;border-radius:7px;font-size:12px;color:var(--ink-2);border:none;background:none;cursor:pointer;transition:all .13s}
 .rx-view .vs[aria-pressed="true"]{background:var(--card);color:var(--brand-ink);font-weight:500;box-shadow:var(--shadow)}
 @media print{
-  body.print-dx .v2lead,body.print-dx #v2steps,body.print-dx #v2report > :not(#dxPage){display:none!important}
+  body.print-dx .v2lead,body.print-dx .v2bar,body.print-dx #v2steps,body.print-dx #v2report > :not(#dxPage){display:none!important}
   body.print-dx #dxPage{box-shadow:none;border-color:#ddd}
 }
 </style>
@@ -1093,7 +1096,6 @@ body.diag .nocov-tag{display:block}
             <span class="bl"><i style="background:var(--lv1)"></i>L1 认知/辅助级</span>
             <span class="bl"><i style="background:var(--lv2)"></i>L2 独立操作级</span>
             <span class="bl"><i style="background:var(--lv3)"></i>L3 综合应用级</span>
-            <span class="bl"><i class="hatch"></i>未纳入本期范围</span>
             <span class="bl" style="color:var(--muted)">外环每一格 = 一条岗位能力要求　悬停高亮楔形 · 点击展开详情</span>
           </div>
           <div class="blegend" id="treeLegend">
@@ -1236,14 +1238,18 @@ body.diag .nocov-tag{display:block}
      </div>
 
      <div class="l1pane" id="l1-assess2" hidden>
+      <div class="v2bar">
+        <span class="v2bar-t">能力测评</span>
+        <span class="v2bar-s">按专业体检本校能力覆盖与培养深度</span>
+        <span style="flex:1"></span>
+        <button class="chip" data-v2="hist">查看历史报告</button>
+      </div>
       <div class="asshd" id="v2hd" hidden>
         <span class="pill core" id="v2no"></span>
         <span class="ver-t mono" id="v2at"></span>
         <span class="ver-d" id="v2desc"></span>
         <span style="flex:1"></span>
         <button class="chip" id="v2Overlay" data-v2="overlay">叠加到行业全景</button>
-        <button class="chip" data-v2="hist">历史</button>
-        <button class="chip" data-v2="export">导出报告</button>
       </div>
       <div id="v2steps"></div>
       <div id="v2report"></div>
@@ -1321,17 +1327,15 @@ function buildWedges(ids){
   const full = !ids;
   const inScope = pid => full || ids.has(pid);
   const subsOf = s => s.positionIds.filter(inScope);
-  const shown = D.subIndustries.filter(s => full ? true : subsOf(s).length);
-  const pend = shown.filter(s=>!s.built);
-  const pendSpan = pend.length * 0.10;
-  const avail = (1 - pendSpan) * Math.PI*2;
-  const totalRel = shown.filter(s=>s.built)
+  const shown = D.subIndustries.filter(s => s.built && (full ? true : subsOf(s).length));
+  const avail = Math.PI*2;
+  const totalRel = shown
     .reduce((n,s)=> n + subsOf(s).reduce((m,p)=>m+relOf(p),0), 0) || 1;
   let a = -Math.PI/2, out = [];
   shown.forEach(s=>{
-    const ps = s.built ? subsOf(s) : [];
+    const ps = subsOf(s);
     const srel = ps.reduce((m,p)=>m+relOf(p),0);
-    const span = s.built ? avail * srel / totalRel : 0.10 * Math.PI*2;
+    const span = avail * srel / totalRel;
     const w = {sub:s, a0:a, a1:a+span, positions:[]};
     let pa = a;
     ps.forEach(pid=>{ const q = span * relOf(pid) / srel;
@@ -1358,10 +1362,8 @@ function burstSVG(ids){
   // ring 1 子行业（标签沿弧排布，避免横排文字压到中心圆）
   WED.forEach(w=>{
     const s = w.sub, a0=w.a0+PAD, a1=w.a1-PAD;
-    const fill = s.built ? 'var(--brand-soft)' : 'url(#hatch)';
-    const stroke = s.built ? 'var(--brand)' : 'var(--rule)';
     g += `<path class="seg s-${s.id}" data-sub="${s.id}" d="${arcPath(R1a,R1b,a0,a1)}"
-        fill="${fill}" stroke="${stroke}" stroke-width="1"${s.built?'':' stroke-dasharray="3 3"'}></path>`;
+        fill="var(--brand-soft)" stroke="var(--brand)" stroke-width="1"></path>`;
     const mid=(w.a0+w.a1)/2, lr=(R1a+R1b)/2 - 4;
     const flip = Math.sin(mid) > 0.02;
     const pa0 = flip ? a1 : a0, pa1 = flip ? a0 : a1, sweep = flip ? 0 : 1;
@@ -1369,17 +1371,8 @@ function burstSVG(ids){
     const pt = (a)=>`${(lr*Math.cos(a)).toFixed(2)} ${(lr*Math.sin(a)).toFixed(2)}`;
     defs += `<path id="sp-${s.id}" fill="none" d="M ${pt(pa0)} A ${lr} ${lr} 0 ${big} ${sweep} ${pt(pa1)}"></path>`;
     const arcLen = lr * (a1-a0);
-    if(s.built){
-      g += `<text class="slabel" dy="4"><textPath href="#sp-${s.id}" startOffset="50%"
-          text-anchor="middle">${esc(fit(s.name, arcLen-10, 12))}</textPath></text>`;
-    } else {
-      // 未建图子行业：外侧楔形是空的，标签横排放在那里，比塞进窄弧更清楚
-      const rr = 186;
-      g += `<text class="slabel pend" x="${(rr*Math.cos(mid)).toFixed(1)}" y="${(rr*Math.sin(mid)).toFixed(1)}"
-          text-anchor="middle" dominant-baseline="central">${esc(s.name)}</text>
-        <text class="slabel pend" x="${(rr*Math.cos(mid)).toFixed(1)}" y="${(rr*Math.sin(mid)+15).toFixed(1)}"
-          text-anchor="middle" dominant-baseline="central" style="font-size:10px">未纳入本期</text>`;
-    }
+    g += `<text class="slabel" dy="4"><textPath href="#sp-${s.id}" startOffset="50%"
+        text-anchor="middle">${esc(fit(s.name, arcLen-10, 12))}</textPath></text>`;
   });
   // ring 2 岗位 + ring 3 关系
   WED.forEach(w=> w.positions.forEach(pw=>{
@@ -1658,8 +1651,6 @@ builtSubs.forEach(sid=>{
   const ys = sub[sid].positionIds.map(p=>posY[p]);
   subY[sid] = (Math.min(...ys)+Math.max(...ys))/2;
 });
-const pendSubs = D.subIndustries.filter(s=>!s.built);
-pendSubs.forEach((s,i)=>{ subY[s.id] = GH - 26 - i*30; });
 const indY = GH/2;
 
 /* ---- 选中与联动 ---- */
@@ -1694,7 +1685,7 @@ function renderGraph(){
   let links = '', nodes = '';
 
   // 行业 → 子行业
-  D.subIndustries.forEach(s=>{
+  D.subIndustries.filter(s=>s.built).forEach(s=>{
     links += `<path class="glink base${cls(sOn(s.id))}" d="${link(XI[1], indY, XS[0], subY[s.id])}"></path>`;
   });
   // 子行业 → 岗位
@@ -1719,15 +1710,14 @@ function renderGraph(){
       class="gt gt-ind">${esc(I.name)}</text></g>`;
 
   // 子行业节点
-  D.subIndustries.forEach(s=>{
+  D.subIndustries.filter(s=>s.built).forEach(s=>{
     const on = sOn(s.id), w = XS[1]-XS[0];
     nodes += `<g class="gnode${cls(on)}${sel&&sel.type==='sub'&&sel.id===s.id?' sel':''}" data-n="sub|${s.id}">
       <rect x="${XS[0]}" y="${subY[s.id]-15}" width="${w}" height="30" rx="8"
-        fill="${s.built?'var(--card-2)':'var(--card)'}" stroke="${s.built?'var(--rule)':'var(--rule)'}"
-        ${s.built?'':'stroke-dasharray="3 3"'}></rect>
+        fill="var(--card-2)" stroke="var(--rule)"></rect>
       <text x="${XS[0]+11}" y="${subY[s.id]}" dominant-baseline="central" class="gt">${esc(fit(s.name, w-38, 11.5))}</text>
       <text x="${XS[1]-10}" y="${subY[s.id]}" text-anchor="end" dominant-baseline="central"
-        class="gt gt-n">${s.built? s.positionIds.length : '—'}</text></g>`;
+        class="gt gt-n">${s.positionIds.length}</text></g>`;
   });
 
   // 岗位节点
@@ -1761,7 +1751,7 @@ function renderGraph(){
     role="img" aria-label="四层能力全景树形图：行业、子行业、岗位、能力项四列，连线表示归属与能力要求">
     <g class="colhead">
       <text x="${XI[0]}" y="8" class="gch">行业</text>
-      <text x="${XS[0]}" y="8" class="gch">子行业 ${D.subIndustries.length}</text>
+      <text x="${XS[0]}" y="8" class="gch">子行业 ${builtSubs.length}</text>
       <text x="${XP[0]}" y="8" class="gch">岗位 ${D.positions.length}</text>
       <text x="${XA[0]}" y="8" class="gch">能力项 ${D.abilities.length}</text>
     </g>
@@ -1837,8 +1827,7 @@ $('#posTree').addEventListener('mouseover', e=>{
   const g = e.target.closest('[data-n]'); if(!g){ tip.classList.remove('on'); return; }
   const [t,id] = g.dataset.n.split('|');
   if(t==='sub'){ const s=sub[id];
-    tip.innerHTML = `<b>${esc(s.name)}</b><span class="tk">${s.built?
-      `${s.positionIds.length} 个岗位 · ${s.distinctAbilityCount} 条去重能力项`:'未纳入本期范围'}</span>`;
+    tip.innerHTML = `<b>${esc(s.name)}</b><span class="tk">${s.positionIds.length} 个岗位 · ${s.distinctAbilityCount} 条去重能力项</span>`;
   } else if(t==='pos'){ const p=pos[id], b=breakdown(id);
     tip.innerHTML = `<b>${esc(p.name)}</b><span class="tk">${esc(p.aliases.join(' / '))}</span>
       <span class="tk">通用 ${b.ind} · 岗位专项 ${b.sh + b.own}　${p.l3Count} 条需 L3</span>`;
@@ -3496,9 +3485,6 @@ function abilityHTML(a){
 }
 function positionHTML(p){
   let h = `<div class="dr-s"><div class="dr-st">岗位职责</div><div class="dr-def">${esc(p.desc)}</div></div>`;
-  h += `<div class="dr-s"><div class="dr-st">检索查询（用于语料采集）</div>
-    <div class="ev-u" style="margin-top:0">主查询　${esc(p.merged_query)}</div>
-    <div class="ev-u">备用　　${esc(p.fallback_query)}</div></div>`;
   const byLv = {L3:[],L2:[],L1:[]};
   p.abilities.forEach(r=>byLv[r.level].push(r));
   h += `<div class="dr-s"><div class="dr-st">能力要求 ${p.abilityCount} 条（按要求等级分组）</div>` +
@@ -3542,8 +3528,7 @@ document.addEventListener('mouseover', e=>{
     tip.classList.add('on'); return; }
   const sp = e.target.closest('#burst [data-sub]');
   if(sp){ const s=sub[sp.dataset.sub];
-    tip.innerHTML = `<b>${esc(s.name)}</b><span class="tk">${s.built?
-      `${s.positionCount} 个岗位 · ${s.distinctAbilityCount} 条去重能力项`:'未纳入本期图谱范围'}</span>
+    tip.innerHTML = `<b>${esc(s.name)}</b><span class="tk">${s.positionCount} 个岗位 · ${s.distinctAbilityCount} 条去重能力项</span>
       <span class="tk">用人单位：${esc(s.typicalEmployers.slice(0,3).join('、'))}</span>`;
     tip.classList.add('on'); return; }
   const pp = e.target.closest('#burst [data-pos]');
@@ -4047,11 +4032,9 @@ function v2PathBody(g){
     }).join('');
     gapHTML = `<div class="pc-zero">本校暂无课程承接，从零开始——按 L1 → L2 → L3 分级递进，不一步到位：</div>${steps}`;
   }
-  B.push(`<div class="pc-b"><div class="pc-k">① 差在哪
-      <span class="pc-src">观测点差集 · 原样取自 levels[].points，未改写</span></div>${gapHTML}</div>`);
+  B.push(`<div class="pc-b"><div class="pc-k">① 差在哪</div>${gapHTML}</div>`);
   /* ② 在哪教 */
-  B.push(`<div class="pc-b"><div class="pc-k">② 在哪教
-      <span class="pc-src">来自课程映射边</span></div>${v2WhereHTML(aid, req)}</div>`);
+  B.push(`<div class="pc-b"><div class="pc-k">② 在哪教</div>${v2WhereHTML(aid, req)}</div>`);
   /* ③ 怎么教 */
   const rules = v2RulesFor(tgtLv.assess);
   let howHTML = `<div class="pc-assess"><b>考核方式（目标等级原文）</b>：${esc(tgtLv.assess)}</div>`;
@@ -4063,18 +4046,14 @@ function v2PathBody(g){
     howHTML += `<div class="pc-rule-none">该考核方式未命中已有规则，教学形式由任课教师判断。</div>`;
   }
   howHTML += `<div class="mono" style="font-size:10.5px;color:var(--muted);margin-top:6px">教学形式提示由考核方式按规则反推，非图谱原生数据</div>`;
-  B.push(`<div class="pc-b"><div class="pc-k">③ 怎么教
-      <span class="pc-src">由目标等级考核方式反推</span></div>${howHTML}</div>`);
+  B.push(`<div class="pc-b"><div class="pc-k">③ 怎么教</div>${howHTML}</div>`);
   /* ④ 需要什么条件 */
-  B.push(`<div class="pc-b"><div class="pc-k">④ 需要什么条件
-      <span class="pc-src">实训条件比对 · 来自课程 practiceReq</span></div>${v2CondHTML(aid, att, req)}</div>`);
+  B.push(`<div class="pc-b"><div class="pc-k">④ 需要什么条件</div>${v2CondHTML(aid, att, req)}</div>`);
   /* ⑤ 先补什么 */
-  B.push(`<div class="pc-b"><div class="pc-k">⑤ 先补什么
-      <span class="pc-src">前置关系 · prerequisites</span></div>
+  B.push(`<div class="pc-b"><div class="pc-k">⑤ 先补什么</div>
     ${v2PreHTML(aid) || '<div class="pc-none">该能力没有前置依赖。</div>'}</div>`);
   /* ⑥ 为什么值得补 */
-  B.push(`<div class="pc-b"><div class="pc-k">⑥ 为什么值得补
-      <span class="pc-src">优先级依据，不替你打分</span></div>${v2WhyHTML(a)}</div>`);
+  B.push(`<div class="pc-b"><div class="pc-k">⑥ 为什么值得补</div>${v2WhyHTML(a)}</div>`);
   return B.join('');
 }
 function v2PathCard(g){
@@ -4163,8 +4142,6 @@ function v2Step2Body(){
 }
 
 function v2Step3Body(){
-  const unmap = new Set();
-  v2SelMajors().forEach(m=>(m.coursesUnmapped||[]).forEach(u=>unmap.add(u)));
   const courseRow = c=>{
     const st = v2CourseSt(c.id);
     const n = c.leaves.filter(l=>V2.leaves.has(l.id)).length;
@@ -4190,7 +4167,6 @@ function v2Step3Body(){
     </div>`;
   };
   return `${CLIB.map(courseRow).join('')}
-    ${unmap.size ? `<div class="rx-warn" style="margin-top:14px"><b>标准要求、但课程体系暂无对应课程：</b>${[...unmap].map(esc).join('、')}。只作展示，不参与计算。</div>` : ''}
     <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button class="chip" data-v2courseall="1">全部勾上</button>
       <button class="chip" data-v2courseall="0">全部取消</button>
@@ -4394,7 +4370,7 @@ function v2Overview(){
   const n = v2Numbers();
   const has3 = V2.layer >= 3;
   const pct = x=>`${Math.round(x*100)}%`;
-  const industryTxt = `${I.name} · ${I.version} · ${S.subIndustries} 个子行业 / ${S.positions} 个岗位 / ${S.abilities} 条能力项`;
+  const industryTxt = `${I.name} · ${S.subIndustries} 个子行业 / ${S.positions} 个岗位 / ${S.abilities} 条能力项`;
   const majorHTML = v2SelMajors().map(m=>`<div class="ov-major"><span class="pill k">${esc(m.stage)} · ${esc(m.code)}</span> <b>${esc(m.name)}</b><div class="ov-goal">${esc(m.goal)}</div></div>`).join('');
   const posArr = v2PosArr();
   const posHTML = posArr.length ? posArr.map(p=>`<span class="pill core">${esc(p.name)}</span>`).join(' ') : '<span style="color:var(--muted);font-size:12px">待选择</span>';
@@ -4403,17 +4379,17 @@ function v2Overview(){
         <div class="dx-v">${n.posN}<small> / ${n.totalPos}</small></div>
         <div class="dx-s">市场 ${n.totalPos} 个岗位，你面向 ${n.posN} 个</div>
         <div class="bar"><i style="width:${pct(n.posRatio)}"></i></div>
-        <div class="dx-d">对应决策：要不要拓专业方向（要报备，最贵）</div></div>
+        <div class="dx-d">对应决策：要不要拓专业方向</div></div>
       <div class="dxnum"><div class="dx-k">内容完整</div>
         <div class="dx-v">${has3?`${n.coveredAb}<small> / ${n.totalAb}</small>`:'—'}</div>
         <div class="dx-s">${has3?`面向的岗位要 ${n.totalAb} 条能力，你覆盖 ${n.coveredAb} 条`:'完成第 3 层后出现'}</div>
         <div class="bar"><i style="width:${has3?pct(n.coverage):0}"></i></div>
-        <div class="dx-d">对应决策：要不要加课（改方案）</div></div>
+        <div class="dx-d">对应决策：要不要加课</div></div>
       <div class="dxnum"><div class="dx-k">培养深度</div>
         <div class="dx-v">${has3?`${n.depthAb}<small> / ${n.coveredAb}</small>`:'—'}</div>
         <div class="dx-s">${has3?`覆盖的 ${n.coveredAb} 条里，达到岗位要求高度的 ${n.depthAb} 条`:'完成第 3 层后出现'}</div>
         <div class="bar"><i style="width:${has3?pct(n.attainment):0}"></i></div>
-        <div class="dx-d">对应决策：要不要加实训（花钱）</div></div>
+        <div class="dx-d">对应决策：要不要加实训</div></div>
     </div>`;
   return `<div class="card pad" id="dxPage">
     <div class="rep-h" style="margin:0 0 4px"><span class="eyebrow">概况总览</span>
@@ -4578,8 +4554,11 @@ function renderV2Report(){
   if(V2.stale) html += `<div class="stalebar" style="margin-bottom:14px"><span class="ico warning">!</span>
     <span>设置已变更，报告已按当前设置重新计算，不会静默清空。</span></div>`;
   html += v2Overview();
+  if(V2.layer >= 3) html += v2PosRadars();
   if(V2.layer >= 2) html += v2AbilityList();
-  if(V2.layer >= 3) html += v2PosRadars() + v2StdSection() + v2FindingsSection() + v2RxSection();
+  if(V2.layer >= 3) html += v2StdSection() + v2FindingsSection() + v2RxSection();
+  html += `<div class="v2foot"><span class="v2foot-s">在浏览器打印对话框中可选择「另存为 PDF」</span>
+    <span style="flex:1"></span><button class="btn" data-v2="export">导出报告</button></div>`;
   z.innerHTML = html;
 }
 function v2SyncHead(){
@@ -4635,11 +4614,16 @@ function v2InitFromMajors(){
 function v2Bump(layer){
   if(layer > V2.layer){
     V2.layer = layer;
-    v2Versions.push({no:v2Versions.length+1, at:nowStr(), layer, majors:[...V2.majors],
-      posN:V2.positions.size, courses:V2.courseIntent.size});
+    if(layer === 4) v2Record();
   }
   V2.stale = false;
   renderV2();
+}
+function v2Record(){
+  const n = v2Numbers();
+  v2Versions.push({no:v2Versions.length+1, at:nowStr(), majors:[...V2.majors],
+    posN:V2.positions.size, courses:V2.courseIntent.size,
+    coverage:n.coverage, attainment:n.attainment});
 }
 function v2MarkStale(){
   if(V2.layer >= 2) V2.stale = true;
@@ -4739,119 +4723,8 @@ function v2UploadDrawer(){
     `<div class="modenote" style="margin-bottom:14px">正式版本中，上传 PDF / Word 版人才培养方案后，系统会解析出<b>培养目标</b>、<b>就业岗位</b>、<b>课程体系表</b>，让你确认后直接跳到第 4 层——不用手动走前三层。</div>
      <div class="assess">原型内不做假解析动画：这一能力尚未实现，请以手动四层流程为准。</div>`);
 }
-function v2Markdown(){
-  if(!V2.majors.length) return '';
-  const n = v2Numbers();
-  const L = [];
-  L.push(`# ${I.name} · ${V2.majors.map(c=>majorById[c].name).join('、')} 专业体检报告`);
-  L.push('');
-  L.push(`- 生成时间：${nowStr()} · 已走到第 ${V2.layer} / 4 层`);
-  L.push(`- 专业：${V2.majors.map(c=>`${majorById[c].name}（${majorById[c].stage} ${majorById[c].code}）`).join('、')}`);
-  L.push(`- 依据文件：${V2.majors.map(c=>majorById[c].source).join('；')}`);
-  L.push(`- 行业图谱：${I.name} ${I.version} · ${S.positions} 岗位 / ${S.abilities} 能力项`);
-  L.push('');
-  L.push('## 一页纸诊断');
-  L.push('');
-  L.push(`- 岗位面向：市场 ${n.totalPos} 个岗位，面向 ${n.posN} 个（${Math.round(n.posRatio*100)}%）`);
-  if(V2.layer>=3){
-    L.push(`- 内容完整：面向岗位要 ${n.totalAb} 条能力，覆盖 ${n.coveredAb} 条（${Math.round(n.coverage*100)}%）`);
-    L.push(`- 培养深度：覆盖的 ${n.coveredAb} 条里，达到岗位要求高度的 ${n.depthAb} 条（${Math.round(n.attainment*100)}%）`);
-  }
-  L.push('');
-  L.push(`结论：${v2Conclusion(n)}`);
-  L.push('');
-  L.push(`结构：${v2StructureSentence(n)}`);
-  L.push('');
-  if(V2.layer>=2){
-    L.push('## 能力要求清单');
-    L.push('');
-    L.push('| 能力项 | 核心 | 要求 | 本校 |');
-    L.push('|---|---|---|---|');
-    const reqMap = v2ReqMap(), att = v2Attained();
-    Object.keys(reqMap).map(id=>({a:abl[id],req:reqMap[id],att:att[id]||0}))
-      .sort((x,y)=>(y.a.core-x.a.core)||(y.a.positionCount-x.a.positionCount))
-      .forEach(r=>L.push(`| ${r.a.name} | ${r.a.core?'★':''} | L${r.req} | ${r.att===0?'未覆盖':r.att>=r.req?`已达标 L${r.req}`:`L${r.att}`} |`));
-    L.push('');
-  }
-  if(V2.layer>=3){
-    L.push('## 专业教学标准符合度');
-    L.push('');
-    v2StdCompliance().forEach(({m,courses,unmapped,positions})=>{
-      L.push(`### ${m.name}（${m.stage} ${m.code}）`);
-      L.push('');
-      L.push('- 标准课程：');
-      courses.forEach(c=>L.push(`  - ${c.kept?'✓ 已开':'✕ 未开'} ${c.name}`));
-      unmapped.forEach(u=>L.push(`  - △ 标准要求但课程体系暂无：${u}`));
-      L.push('- 标准对接岗位：');
-      positions.forEach(p=>L.push(`  - ${p.name} 支撑度 ${Math.round(p.cov*100)}%（标准原文「${p.stdText}」）`));
-      L.push('');
-    });
-    L.push('## 处方明细');
-    L.push('');
-    v2Prescriptions().forEach(t=>{
-      L.push(`### ${t.tier}　${t.name}（${t.cost}）`);
-      L.push('');
-      L.push(`> ${t.rule}`);
-      L.push('');
-      if(t.unfilled){ L.push('- 实训条件：未填报，无法比对'); }
-      else t.items.forEach(r=>{
-        if(t.tier===4) L.push(`- 缺实训条件「${r.name}」——${r.spec}`);
-        else if(t.tier===5) L.push(`- 岗位「${r.position.name}」覆盖率 ${Math.round(r.cov*100)}%`);
-        else {
-          const lv = r.a.levels['L'+r.req];
-          L.push(`- ${r.a.name}${r.a.core?' ★':''}：${r.att===0?'内容缺口':'L'+r.att+'→L'+r.req}${r.course?'（《'+r.course.name+'》）':''}。达标考核：${lv.assess}。依据：${v2Sources(r.a)}`);
-        }
-      });
-      L.push('');
-    });
-    L.push('## 按能力的提升路径');
-    L.push('');
-    v2GapList().forEach(g=>{
-      const a = g.a, req = g.req, att = g.att;
-      L.push(`### ${a.name}${a.core?' ★':''}（${att===0?'内容缺口':'L'+att+' → L'+req}）`);
-      L.push('');
-      if(att > 0){
-        const now = a.levels['L'+att].points, tgt = a.levels['L'+req].points;
-        const rows = Math.max(now.length, tgt.length);
-        L.push(`| 现在能做到（L${att}） | 还要能做到（L${req}） |`);
-        L.push('|---|---|');
-        for(let i=0;i<rows;i++) L.push(`| ${now[i]||''} | ${tgt[i]||''} |`);
-      } else {
-        L.push('| 等级 | 观测点 |');
-        L.push('|---|---|');
-        ['L1','L2','L3'].forEach(Lv=>{
-          const l = a.levels[Lv];
-          const tag = LV[Lv]===req ? '（目标）' : (LV[Lv]>req ? '（超出目标）' : '');
-          l.points.forEach((p,i)=>L.push(`| ${i===0 ? Lv+tag : ''} | ${p} |`));
-        });
-      }
-      L.push('');
-      L.push(`- 考核方式（目标等级）：${a.levels['L'+req].assess}`);
-      L.push(`- 依据：${v2Sources(a)}`);
-      L.push('');
-    });
-  }
-  L.push('---');
-  L.push('');
-  L.push('> 精度边界：因为还没有实际教学数据，本报告只能给到课程级；接入本校知识图谱后可精确到知识点级。本报告不与同类院校对比。');
-  return L.join('\n');
-}
 function v2Export(){
-  openDrawer('导出报告', `能力测评 · ${V2.majors.map(c=>majorById[c].name).join('、')}`, '两种带走方式',
-    `<div class="dr-s"><div class="dr-st">打印 / 另存为 PDF</div>
-      <div class="dr-def">隐藏导航与交互控件，只保留报告正文，交给浏览器打印。</div>
-      <button class="btn" id="v2doPrint" style="margin-top:11px">打开打印视图</button></div>
-     <div class="dr-s"><div class="dr-st">复制为 Markdown</div>
-      <div class="dr-def">结构化文本，可直接粘进文档或 Obsidian。</div>
-      <button class="chip" id="v2doCopy" style="margin:11px 0 8px">复制到剪贴板</button>
-      <textarea class="mdbox" id="v2mdBox" readonly>${esc(v2Markdown())}</textarea></div>
-     <div class="dr-s"><div class="assess">正式版本还会提供 Word / PDF 后端导出与分享链接；原型内以浏览器打印与文本复制替代。</div></div>`);
-  $('#v2doPrint').addEventListener('click', ()=>{ closeDrawer(); setTimeout(()=>window.print(), 220); });
-  $('#v2doCopy').addEventListener('click', async ()=>{
-    const el = $('#v2mdBox'); el.select();
-    try { await navigator.clipboard.writeText(el.value); $('#v2doCopy').textContent = '✓ 已复制'; }
-    catch { $('#v2doCopy').textContent = '请按 Ctrl/Cmd+C 复制'; }
-  });
+  window.print();
 }
 function v2PrintPage(){
   document.body.classList.add('print-dx');
@@ -4859,14 +4732,13 @@ function v2PrintPage(){
   setTimeout(()=>document.body.classList.remove('print-dx'), 300);
 }
 function v2Hist(){
-  openDrawer('版本历史', `共 ${v2Versions.length} 次快照`, '同一份行业图谱下的历次体检',
+  openDrawer('历史报告', `共 ${v2Versions.length} 份报告`, '同一份行业图谱下的历次完整测评',
     (v2Versions.length ? v2Versions.slice().reverse().map(v=>`<div class="ev">
       <div class="ev-h"><span class="pill core">#${v.no}</span>
-        <span class="ev-t">第 ${v.layer} 层</span>
         <span class="pill k mono">${v.at}</span></div>
-      <div class="ev-x">专业 ${v.majors.map(c=>majorById[c].name).join('、')} · 面向 ${v.posN} 个岗位 · 保留 ${v.courses} 门课</div></div>`).join('')
-      : '<div class="assess">还没有快照——完成任一层后会自动记录。</div>') +
-    `<div class="assess" style="margin-top:12px">正式版本中，每次「完成本层」都会生成可回看、可对比的快照；原型内仅记录本次会话内。</div>`);
+      <div class="ev-x">专业 ${v.majors.map(c=>majorById[c].name).join('、')} · 面向 ${v.posN} 个岗位 · 保留 ${v.courses} 门课 · 覆盖率 ${Math.round(v.coverage*100)}%</div></div>`).join('')
+      : '<div class="assess">还没有历史报告——完成一次完整测评（走完四层）后会自动记录。</div>') +
+    `<div class="assess" style="margin-top:12px">一次完整测评生成一条记录，可回看、可对比；原型内仅记录本次会话内。</div>`);
 }
 
 renderV2();
