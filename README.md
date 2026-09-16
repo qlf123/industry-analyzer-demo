@@ -99,10 +99,6 @@ AIGC 智慧课堂教学平台 · 管理端的「行业分析」模块。校领�
 | `vault/` | 生成结果（157 个文件） |
 | `doc_scheme.md` | 双图谱映射方案说明 |
 
-### 历史片段
-`assess.js` `compare.js` `tree_graph.js` `versions.js` `buildflow.js` —— 早期分文件开发的片段，
-内容均已并入 `panorama_template.html`，**模板是唯一的真实来源**，这些文件仅作参考。
-
 ---
 
 ## 六、怎么改

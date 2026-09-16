@@ -905,11 +905,16 @@ body.diag .nocov-tag{display:block}
 .v2foot-s{font-size:11.5px;color:var(--muted)}
 .v2step[data-state="locked"]{opacity:.55}
 .v2step[data-state="locked"] .step-h{cursor:default}
+.v2step[data-state="locked"] .step-h{margin-bottom:0}
+.step-toggle{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;
+  padding:4px 12px;border-radius:20px;border:1px solid var(--rule);background:var(--card-2);
+  color:var(--ink-2);cursor:pointer;transition:all .13s;font-family:inherit;line-height:1.4}
+.step-toggle:hover{border-color:var(--brand);color:var(--brand-ink);background:var(--brand-soft)}
+.step-toggle[data-open="1"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.v2edit{margin-top:12px}
 .v2sum{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);
   padding:10px 14px;border-radius:9px;background:var(--card-2);border:1px dashed var(--rule)}
 .v2sum .mono{font-size:11px}
-.v2unlock{font-size:11px;color:var(--muted);font-family:var(--mono)}
-.v2unlock b{color:var(--brand-ink);font-weight:600}
 .mjpick{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
 @media (max-width:980px){.mjpick{grid-template-columns:1fr}}
 .mjcard{padding:14px 16px;cursor:pointer;text-align:left;border:1px solid var(--rule)}
@@ -1233,13 +1238,6 @@ body.diag .nocov-tag{display:block}
         <span class="v2bar-s">按专业体检本校能力覆盖与培养深度</span>
         <span style="flex:1"></span>
         <button class="chip" data-v2="hist">查看历史报告</button>
-      </div>
-      <div class="asshd" id="v2hd" hidden>
-        <span class="pill core" id="v2no"></span>
-        <span class="ver-t mono" id="v2at"></span>
-        <span class="ver-d" id="v2desc"></span>
-        <span style="flex:1"></span>
-        <button class="chip" id="v2Overlay" data-v2="overlay">叠加到行业全景</button>
       </div>
       <div id="v2steps"></div>
       <div id="v2report"></div>
@@ -3764,7 +3762,7 @@ const V2C = {
 const V2 = {
   majors: [],
   positions: new Set(), courseIntent: new Set(), leaves: new Set(), labs: new Set(),
-  layer: 0, openCourse: null, stale: false, rxView: 'course', radarPos: null,
+  layer: 0, open: new Set([1]), openCourse: null, stale: false, rxView: 'course', radarPos: null,
 };
 let v2Versions = [];
 // 能力提升路径：教学形式提示规则表（数据层 ASSESS_RULES）+ 知识点归属索引
@@ -4049,11 +4047,9 @@ function v2StepState(n){
   if(n === V2.layer + 1) return 'active';
   return 'locked';
 }
-function v2Unlock(n){ return ['','岗位面向 · 第一个数','能力要求清单与优先级','内容完整 / 培养深度 · 第二、三个数','实训条件比对'][n]; }
 function v2StepTitle(n){ return ['','选专业','选择目标岗位','选择已设课程','选择已有资源'][n]; }
 
 function v2Step1Body(){
-  const sel = V2.majors.map(c=>majorById[c].name).join('、');
   const cards = MAJORS.map(m=>{
     const on = V2.majors.includes(m.code);
     return `<button class="card mjcard" data-v2major="${m.code}" aria-pressed="${on}">
@@ -4066,11 +4062,8 @@ function v2Step1Body(){
       <button class="chip" data-v2majorall="1">全选</button>
       <button class="chip" data-v2majorall="0">清空</button>
       <span style="flex:1"></span>
-      <button class="chip" data-v2="upload">上传人才培养方案（快速通道）</button>
       <button class="btn" data-v2="confirm1">确认专业，继续</button>
-    </div>
-    ${V2.majors.length ? `<div class="v2sum" style="margin-top:12px"><span class="pill core">已选</span><b>${esc(sel)}</b>
-      <span class="v2unlock">解锁：<b>${v2Unlock(1)}</b></span></div>` : ''}`;
+    </div>`;
 }
 
 function v2Step2Body(){
@@ -4083,7 +4076,6 @@ function v2Step2Body(){
   return `<div class="posgrid">${grid}</div>
     <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button class="chip" data-v2posall="1">全选</button>
-      <button class="chip" data-v2posall="0">仅保留标准对接岗位</button>
       <span style="flex:1"></span>
       <button class="btn" data-v2="confirm2">确认岗位，继续</button></div>`;
 }
@@ -4150,27 +4142,31 @@ function v2StepSummary(n){
     3: n=>`已保留 <b>${V2.courseIntent.size}</b> 门课 · 勾中 <b>${V2.leaves.size}</b> 个知识节点`,
     4: n=>`已勾 <b>${V2.labs.size}</b> 项实训资源${V2.labs.size?`：${esc([...V2.labs].map(e=>LABDICT[e]&&LABDICT[e].name).filter(Boolean).join('、'))}`:''}`,
   }[n](l);
-  return `<div class="v2sum" style="margin-bottom:0"><span class="pill good">✓ 已完成</span>${s}
-    <span class="v2unlock">已解锁：<b>${v2Unlock(n)}</b></span></div>`;
+  return `<div class="v2sum"><span class="pill good">✓ 已完成</span>${s}</div>`;
 }
 
 function renderV2Steps(){
   const html = [1,2,3,4].map(n=>{
     const st = v2StepState(n);
-    const body = st==='done' ? v2StepSummary(n) : st==='active' ? ({1:v2Step1Body,2:v2Step2Body,3:v2Step3Body,4:v2Step4Body}[n])() : '';
+    const form = ({1:v2Step1Body,2:v2Step2Body,3:v2Step3Body,4:v2Step4Body}[n])();
+    let body = '', toggle = '';
+    if(st === 'active'){
+      body = form;
+    } else if(st === 'done'){
+      const open = V2.open.has(n);
+      body = v2StepSummary(n) + (open ? `<div class="v2edit">${form}</div>` : '');
+      toggle = `<button class="step-toggle" data-open="${open?'1':'0'}" aria-expanded="${open}">${open?'收起 ▴':'展开 ▾'}</button>`;
+    }
     return `<div class="card pad stepcard v2step" data-state="${st}">
       <div class="step-h"><span class="stepno">${n}</span>
         <div class="step-tt"><b>${v2StepTitle(n)}</b></div>
-        <span style="flex:1"></span>
-        ${st==='locked'?'<span class="pill ext">待办</span>':st==='done'?'<span class="pill good">已完成</span>':`<span class="pill k">进行中</span>`}</div>
+        <span style="flex:1"></span>${toggle}</div>
       ${body}
     </div>`;
   }).join('');
   $('#v2steps').innerHTML = html;
-  // 已完成层点击摘要可重新展开
   $('#v2steps').querySelectorAll('.v2step[data-state="done"] .step-h').forEach(h=>{
     h.style.cursor = 'pointer';
-    h.title = '点击重新查看本层';
   });
 }
 
@@ -4465,38 +4461,7 @@ function renderV2Report(){
     <span style="flex:1"></span><button class="btn" data-v2="export">导出报告</button></div>`;
   z.innerHTML = html;
 }
-function v2SyncHead(){
-  const hd = $('#v2hd');
-  hd.hidden = !V2.majors.length;
-  if(!V2.majors.length) return;
-  $('#v2no').textContent = V2.majors.map(c=>majorById[c].name).join(' + ');
-  $('#v2at').textContent = nowStr();
-  $('#v2desc').textContent = `第 ${V2.layer} / 4 层 · 面向 ${V2.positions.size} 个岗位 · 保留 ${V2.courseIntent.size} 门课`;
-  const ob = $('#v2Overlay');
-  if(ob){
-    const on = OVSRC === 'v2';
-    ob.textContent = on ? '✓ 已叠加（点此取消）' : '叠加到行业全景';
-    ob.setAttribute('aria-pressed', String(on));
-  }
-}
-function renderV2(){ renderV2Steps(); renderV2Report(); v2SyncHead(); }
-
-/* ─── V2 叠加到行业全景：复用 V1 的 OVP / OVA / OVC 全局，OVSRC 记为 'v2' ─── */
-function v2ApplyOverlay(){
-  if(!V2.positions.size){ toast('请先在第 2 层确认目标岗位，再叠加到行业全景'); return; }
-  const reqMap = v2ReqMap(), att = v2Attained();
-  const A = Object.keys(reqMap).filter(id => !att[id]);   // 目标岗位要求、但本校无课程支撑的能力项
-  const P = v2PosArr().filter(p => v2PosCoverage(p.id) < V2C.POS_COV_LOW).map(p => p.id);  // 覆盖率过低的岗位
-  const C = Object.fromEntries(D.positions.map(p => [p.id, v2PosCoverage(p.id)]));
-  OVP = new Set(P); OVA = new Set(A); OVC = C;
-  OVSRC = 'v2'; OVVER = null; V2OV = { at: nowStr(), ...v2Numbers() };
-  setDiag(true);
-  toast(`能力测评 结果已叠加到「行业全景」——${A.length} 条无支撑能力项、${P.length} 个低覆盖岗位已标出`);
-}
-function v2ToggleOverlay(){
-  if(OVSRC === 'v2') clearOverlay(); else v2ApplyOverlay();
-  v2SyncHead();
-}
+function renderV2(){ renderV2Steps(); renderV2Report(); }
 
 /* ═══════ 交互 ═══════ */
 function v2SelectMajor(code){
@@ -4518,7 +4483,10 @@ function v2InitFromMajors(){
 function v2Bump(layer){
   if(layer > V2.layer){
     V2.layer = layer;
+    V2.open = layer < 4 ? new Set([layer + 1]) : new Set();
     if(layer === 4) v2Record();
+  } else {
+    V2.open.delete(layer);
   }
   V2.stale = false;
   renderV2();
@@ -4556,7 +4524,6 @@ document.addEventListener('click', e=>{
   if(ma){ V2.majors = ma.dataset.v2majorall==='1' ? MAJORS.map(m=>m.code) : []; renderV2Steps(); return; }
   const up = e.target.closest('[data-v2]');
   if(up){
-    if(up.dataset.v2==='upload'){ v2UploadDrawer(); return; }
     if(up.dataset.v2==='confirm1'){ if(V2.majors.length){ v2InitFromMajors(); v2Bump(1); } else toast('请至少选择一个专业'); return; }
     if(up.dataset.v2==='confirm2'){ if(V2.positions.size) v2Bump(2); else toast('请至少选择一个目标岗位'); return; }
     if(up.dataset.v2==='confirm3'){ v2Bump(3); return; }
@@ -4564,20 +4531,12 @@ document.addEventListener('click', e=>{
     if(up.dataset.v2==='printpage'){ v2PrintPage(); return; }
     if(up.dataset.v2==='export'){ v2Export(); return; }
     if(up.dataset.v2==='hist'){ v2Hist(); return; }
-    if(up.dataset.v2==='overlay'){ v2ToggleOverlay(); return; }
     return;
   }
   const p = e.target.closest('[data-v2pos]');
   if(p){ const id = p.dataset.v2pos; V2.positions.has(id) ? V2.positions.delete(id) : V2.positions.add(id); v2MarkStale(); return; }
   const pa = e.target.closest('[data-v2posall]');
-  if(pa){
-    if(pa.dataset.v2posall==='1') D.positions.forEach(x=>V2.positions.add(x.id));
-    else {
-      const s = new Set(); V2.majors.forEach(c=>{ (stdPosOf[c]||[]).forEach(x=>s.add(x.id)); });
-      V2.positions = s;
-    }
-    v2MarkStale(); return;
-  }
+  if(pa){ D.positions.forEach(x=>V2.positions.add(x.id)); v2MarkStale(); return; }
   // 展开按钮与知识点勾选在课程卡片内部，须先于「整门课勾选」判断，否则点击会被吞掉
   const op = e.target.closest('[data-v2open]');
   if(op){ V2.openCourse = V2.openCourse===op.dataset.v2open ? null : op.dataset.v2open; renderV2Steps(); return; }
@@ -4598,10 +4557,12 @@ document.addEventListener('click', e=>{
   if(lb){ const id = lb.dataset.v2lab; V2.labs.has(id) ? V2.labs.delete(id) : V2.labs.add(id); v2MarkStale(); return; }
   const rd = e.target.closest('[data-v2radar]');
   if(rd){ V2.radarPos = rd.dataset.v2radar || null; renderV2Report(); return; }
-  // 已完成层点击摘要重新展开
+  // 已完成步骤标题点击 → 展开 / 收起勾选内容
   const dh = e.target.closest('.v2step[data-state="done"] .step-h');
   if(dh){ const card = dh.closest('.v2step'); const n = +card.querySelector('.stepno').textContent;
-    V2.layer = n - 1; renderV2(); return; }
+    V2.open.has(n) ? V2.open.delete(n) : V2.open.add(n);
+    renderV2Steps();
+    return; }
 });
 document.addEventListener('keydown', e=>{
   if((e.key===' '||e.key==='Enter') && e.target.closest('[data-v2course],[data-v2leaf],[data-v2lab],[data-v2major],[data-v2pos]')){
@@ -4609,12 +4570,7 @@ document.addEventListener('keydown', e=>{
   }
 });
 
-/* ═══════ 快速通道 + 导出 + 历史 ═══════ */
-function v2UploadDrawer(){
-  openDrawer('快速通道 · 上传人才培养方案', '原型内未实现', '正式版会解析培养方案里的培养目标、就业岗位、课程体系表',
-    `<div class="modenote" style="margin-bottom:14px">正式版本中，上传 PDF / Word 版人才培养方案后，系统会解析出<b>培养目标</b>、<b>就业岗位</b>、<b>课程体系表</b>，让你确认后直接跳到第 4 层——不用手动走前三层。</div>
-     <div class="assess">原型内不做假解析动画：这一能力尚未实现，请以手动四层流程为准。</div>`);
-}
+/* ═══════ 导出 + 历史 ═══════ */
 function v2Export(){
   window.print();
 }

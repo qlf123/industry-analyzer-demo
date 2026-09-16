@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>旅游类专业产业对接体检</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --plane:#f5f3f9; --card:#ffffff; --card-2:#faf9fd;
+  --ink:#191524; --ink-2:#5c5670; --muted:#8e88a1;
+  --rule:#e7e3f0; --rule-2:#f0edf7;
+  --brand:#5b3fd6; --brand-soft:#ede9fb; --brand-ink:#3d29a0;
+  --good:#0ca30c; --warn:#fab219; --crit:#d03b3b; --warn-ink:#7a5a08;
+  --good-bg:#e8f6e8; --warn-bg:#fdf3de; --crit-bg:#fbeaea;
+  --seg-ok:#4a3aa7; --seg-shallow:#a493ea; --seg-none:#e0dbf0;
+  --shadow:0 1px 2px rgba(25,21,36,.05), 0 8px 24px -12px rgba(25,21,36,.14);
+  --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --plane:#0f0d16; --card:#1c1a26; --card-2:#232030;
+    --ink:#f4f2fa; --ink-2:#b0aac2; --muted:#847e96;
+    --rule:#2b2739; --rule-2:#252132;
+    --brand:#9b8bef; --brand-soft:#282343; --brand-ink:#c3b8f7;
+    --good:#3cbe3c; --warn:#fab219; --crit:#e06a6a; --warn-ink:#e8c876;
+    --good-bg:#122b12; --warn-bg:#332810; --crit-bg:#341a1a;
+    --seg-ok:#b8aaf2; --seg-shallow:#6a5aab; --seg-none:#302b42;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --plane:#0f0d16; --card:#1c1a26; --card-2:#232030;
+  --ink:#f4f2fa; --ink-2:#b0aac2; --muted:#847e96;
+  --rule:#2b2739; --rule-2:#252132;
+  --brand:#9b8bef; --brand-soft:#282343; --brand-ink:#c3b8f7;
+  --good:#3cbe3c; --warn:#fab219; --crit:#e06a6a; --warn-ink:#e8c876;
+  --good-bg:#122b12; --warn-bg:#332810; --crit-bg:#341a1a;
+  --seg-ok:#b8aaf2; --seg-shallow:#6a5aab; --seg-none:#302b42;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);font-family:var(--sans);
+  font-size:14px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding-block:34px 70px;padding-left:20px;padding-right:20px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);font-weight:500}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:700}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:14px;box-shadow:var(--shadow)}
+.pad{padding:20px 22px}
+
+/* ── 报头 ── */
+.top{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.top h1{font-size:25px;line-height:1.35;letter-spacing:-.01em}
+.top .sub{color:var(--ink-2);font-size:13px;margin-top:3px}
+.anchor{margin-left:auto;text-align:right;font-family:var(--mono);font-size:10.5px;
+  color:var(--muted);line-height:1.85;white-space:nowrap}
+.anchor b{color:var(--ink-2);font-weight:500}
+.rule{height:1px;background:var(--rule);margin:18px 0 26px}
+
+/* ── 判断 ── */
+.verdict{border-left:3px solid var(--brand);background:var(--brand-soft);
+  border-radius:0 12px 12px 0;padding:17px 20px;margin-bottom:30px}
+.verdict p{margin:0;font-size:16.5px;line-height:1.75;color:var(--brand-ink);font-weight:500}
+.verdict p + p{margin-top:9px;font-size:13.5px;font-weight:400;color:var(--ink-2);line-height:1.8}
+.verdict em{font-style:normal;font-weight:700}
+
+/* ── 章节 ── */
+section{margin-bottom:34px}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:13px;flex-wrap:wrap}
+.sec-h h2{font-size:15.5px}
+.sec-h .note{font-size:12px;color:var(--muted)}
+
+/* ── 专业横向表 ── */
+.mjrow{display:grid;grid-template-columns:210px 92px 1fr 132px;gap:18px;align-items:center;
+  padding:15px 18px;border-bottom:1px solid var(--rule-2)}
+.mjrow:last-child{border-bottom:none}
+.mjrow.head{padding-block:9px 7px;border-bottom:1px solid var(--rule)}
+.mjrow.head span{font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted)}
+.mj-n{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.mj-c{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:1px}
+.mj-face{font-family:var(--mono);font-size:15px;color:var(--ink-2)}
+.mj-face small{font-size:11px;color:var(--muted)}
+.bars{display:flex;height:22px;border-radius:5px;overflow:hidden;background:var(--seg-none)}
+.bars i{display:block;height:100%}
+.bars .ok{background:var(--seg-ok)}
+.bars .sh{background:var(--seg-shallow)}
+.bar-l{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:5px}
+.bar-l b{color:var(--ink-2);font-weight:500}
+.verdict-cell{font-size:12.5px;line-height:1.6}
+.rank{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;
+  border-radius:5px;font-family:var(--mono);font-size:10.5px;font-weight:600;
+  background:var(--ink);color:var(--card)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:13px;padding-top:13px;
+  border-top:1px solid var(--rule-2);font-size:11.5px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:3px;flex:none}
+
+/* ── 拍板项 ── */
+.dec{margin-bottom:14px;overflow:hidden}
+.dec-h{display:flex;align-items:center;gap:11px;padding:15px 20px;flex-wrap:wrap;
+  border-bottom:1px solid var(--rule-2);background:var(--card-2)}
+.dec-no{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:600}
+.dec-t{font-weight:700;font-size:15px}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:3px 9px;border-radius:20px;
+  font-weight:600;white-space:nowrap}
+.tag.first{background:var(--ink);color:var(--card)}
+.tag.go{background:var(--good-bg);color:var(--good)}
+.tag.hold{background:var(--warn-bg);color:var(--warn-ink)}
+.tag.no{background:var(--crit-bg);color:var(--crit)}
+.tag.cost{background:var(--rule-2);color:var(--ink-2)}
+.dec-b{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.dec-c{padding:16px 20px}
+.dec-c + .dec-c{border-left:1px solid var(--rule-2)}
+.dec-k{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:9px}
+.dec-c p{margin:0;font-size:13px;line-height:1.8;color:var(--ink-2)}
+.dec-c p + p{margin-top:7px}
+.dec-c strong{color:var(--ink);font-weight:600}
+.reach{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{font-size:11.5px;padding:3px 10px;border-radius:20px;background:var(--brand-soft);
+  color:var(--brand-ink);font-weight:500}
+.chip.pos{background:var(--rule-2);color:var(--ink-2);font-family:var(--mono);font-size:11px}
+.metric{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:11px}
+.metric div{display:flex;flex-direction:column}
+.metric b{font-family:var(--mono);font-size:21px;line-height:1.2;font-weight:600}
+.metric span{font-size:11px;color:var(--muted)}
+.consq{border-left:2px solid var(--crit);padding-left:12px}
+.consq.mild{border-left-color:var(--warn)}
+.consq.none{border-left-color:var(--muted)}
+.src{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.7;
+  padding:10px 20px;border-top:1px solid var(--rule-2);background:var(--card-2)}
+
+/* ── 变化 ── */
+.delta{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule-2);
+  border-radius:12px;overflow:hidden;border:1px solid var(--rule)}
+.delta > div{background:var(--card);padding:16px 18px}
+.d-k{font-size:11.5px;color:var(--muted);margin-bottom:5px}
+.d-v{font-family:var(--mono);font-size:15px;color:var(--ink-2);display:flex;align-items:baseline;gap:8px}
+.d-v .now{font-size:22px;color:var(--ink);font-weight:600}
+.d-up{font-family:var(--mono);font-size:11.5px;color:var(--good);margin-top:4px;font-weight:500}
+.d-flat{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px}
+.simnote{margin-top:10px;font-size:11.5px;color:var(--warn-ink);background:var(--warn-bg);
+  border-radius:8px;padding:8px 12px;display:flex;gap:8px;align-items:flex-start}
+
+/* ── 可带走的一页 ── */
+.takeaway{border:1px solid var(--rule);border-radius:14px;background:var(--card);overflow:hidden}
+.tk-h{display:flex;align-items:center;gap:10px;padding:13px 20px;border-bottom:1px solid var(--rule);
+  background:var(--card-2);flex-wrap:wrap}
+.tk-h .eyebrow{flex:1}
+.btn{font-family:var(--sans);font-size:12.5px;padding:6px 14px;border-radius:8px;cursor:pointer;
+  border:1px solid var(--rule);background:var(--card);color:var(--ink-2);font-weight:500}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.tk-b{padding:24px 28px;font-size:13.5px;line-height:2}
+.tk-b h3{font-size:15px;margin-bottom:10px}
+.tk-b p{margin:0 0 13px}
+.tk-b ol{margin:0 0 13px;padding-left:22px}
+.tk-b li{margin-bottom:5px}
+.tk-f{font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.9;
+  border-top:1px dashed var(--rule);padding-top:12px;margin-top:4px}
+
+.foot{margin-top:40px;padding-top:18px;border-top:1px solid var(--rule);
+  font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.9}
+
+@media (max-width:820px){
+  .mjrow{grid-template-columns:1fr;gap:9px;padding:16px 16px}
+  .mjrow.head{display:none}
+  .dec-b{grid-template-columns:1fr}
+  .dec-c + .dec-c{border-left:none;border-top:1px solid var(--rule-2)}
+  .delta{grid-template-columns:1fr}
+  .anchor{margin-left:0;text-align:left}
+}
+@media print{
+  body{background:#fff}
+  .card,.takeaway{box-shadow:none;break-inside:avoid}
+  .btn{display:none}
+  .wrap{max-width:none;padding:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <div class="eyebrow" style="margin-bottom:6px">管理视图 · 供校领导决策</div>
+      <h1>旅游类专业产业对接体检</h1>
+      <div class="sub">3 个专业 · 对照旅游业能力图谱与专业教学标准</div>
+    </div>
+    <div class="anchor">
+      批次　<b>#7</b><br>
+      生成　<b>2026-09-14 15:20</b><br>
+      图谱　<b>旅游业 v1.3</b><br>
+      口径　<b>已开课程 7 门 · 实训室 3 间</b>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- ① 一句话判断 -->
+  <div class="verdict">
+    <p>三个专业里，<em>研学旅行管理与服务</em>与产业需求的差距最大——它面向的 26 条能力中只有 9 条教到了岗位要求的高度，研学旅行指导师这个岗位是 <em>4 / 12</em>。</p>
+    <p>但今年最该先做的不是给它建实训室。导游服务专业的 9 条高阶缺口，所需的实训条件<em>学校已经全部具备</em>——设备在，课没往深里上。这件事不花钱，且牵动面最大。</p>
+  </div>
+
+  <!-- ② 三个专业横向 -->
+  <section>
+    <div class="sec-h">
+      <h2>三个专业，摆在一起看</h2>
+      <span class="note">按"最该动"排序 · 条形长度按能力条数等比，可直接比体量</span>
+    </div>
+    <div class="card">
+      <div class="mjrow head">
+        <span>专业</span><span>岗位面向</span><span>能力达成结构</span><span>判断</span>
+      </div>
+
+      <div class="mjrow">
+        <div>
+          <div class="mj-n"><span class="rank">1</span>研学旅行管理与服务</div>
+          <div class="mj-c">高职 · 570302</div>
+        </div>
+        <div class="mj-face">3<small> / 9</small></div>
+        <div>
+          <div class="bars">
+            <i class="ok"  style="width:34.6%"></i>
+            <i class="sh"  style="width:61.6%"></i>
+          </div>
+          <div class="bar-l">共 26 条 ｜ 达标 <b>9</b> · 教了没到位 <b>16</b> · 没教 <b>1</b></div>
+        </div>
+        <div class="verdict-cell">结构性偏差<br><span style="color:var(--muted);font-size:11.5px">16 条卡在 L3</span></div>
+      </div>
+
+      <div class="mjrow">
+        <div>
+          <div class="mj-n"><span class="rank">2</span>导游服务</div>
+          <div class="mj-c">中职 · 740102</div>
+        </div>
+        <div class="mj-face">3<small> / 9</small></div>
+        <div>
+          <div class="bars" style="width:69.2%">
+            <i class="ok" style="width:38.9%"></i>
+            <i class="sh" style="width:61.1%"></i>
+          </div>
+          <div class="bar-l">共 18 条 ｜ 达标 <b>7</b> · 教了没到位 <b>11</b> · 没教 <b>0</b></div>
+        </div>
+        <div class="verdict-cell">不缺内容，缺深度<br><span style="color:var(--muted);font-size:11.5px">实训条件已具备</span></div>
+      </div>
+
+      <div class="mjrow">
+        <div>
+          <div class="mj-n"><span class="rank">3</span>旅游服务与管理</div>
+          <div class="mj-c">中职 · 740101</div>
+        </div>
+        <div class="mj-face">4<small> / 9</small></div>
+        <div>
+          <div class="bars" style="width:84.6%">
+            <i class="ok" style="width:59.1%"></i>
+            <i class="sh" style="width:36.4%"></i>
+          </div>
+          <div class="bar-l">共 22 条 ｜ 达标 <b>13</b> · 教了没到位 <b>8</b> · 没教 <b>1</b></div>
+        </div>
+        <div class="verdict-cell">本校最扎实的一个<br><span style="color:var(--muted);font-size:11.5px">面向岗位也最宽</span></div>
+      </div>
+
+      <div class="legend" style="padding-left:18px;padding-right:18px;padding-bottom:14px">
+        <span><i class="sw" style="background:var(--seg-ok)"></i>达标：教到了岗位要求的高度</span>
+        <span><i class="sw" style="background:var(--seg-shallow)"></i>教了没到位：有课承接，深度不够</span>
+        <span><i class="sw" style="background:var(--seg-none)"></i>没教：现有课程里找不到落脚点</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ 要拍板的事 -->
+  <section>
+    <div class="sec-h">
+      <h2>今年要拍板的四件事</h2>
+      <span class="note">按投入产出排序 · 含一条"建议不投"</span>
+    </div>
+
+    <!-- 1 -->
+    <div class="card dec">
+      <div class="dec-h">
+        <span class="dec-no">01</span>
+        <span class="dec-t">把已有的三间实训室用起来</span>
+        <span class="tag first">先做这件</span>
+        <span class="tag cost">不花钱 · 改教学设计</span>
+      </div>
+      <div class="dec-b">
+        <div class="dec-c">
+          <div class="dec-k">影响面</div>
+          <div class="reach">
+            <span class="chip">导游服务</span>
+            <span class="chip">旅游服务与管理</span>
+            <span class="chip">研学旅行管理与服务</span>
+          </div>
+          <div class="metric">
+            <div><b>10</b><span>导游服务综合实训室牵动的缺口能力</span></div>
+            <div><b>8</b><span>其中目标为 L3</span></div>
+          </div>
+          <p>导游服务综合实训室（含急救器材，2023 年建成 40 工位）、多媒体机房（兼作讲解演练）、语言实训室——<strong>三间都在，且都已配置到位</strong>。</p>
+        </div>
+        <div class="dec-c">
+          <div class="dec-k">不做的后果</div>
+          <div class="consq">
+            <p>导游服务专业 11 条缺口全部是"教了没到位"，<strong>一条内容空白都没有</strong>。也就是说，这个专业的差距完全不在课程结构，在课上到什么深度。</p>
+            <p>不动的话，<strong>地接导游、全陪领队、景区讲解员</strong>三个岗位的高阶要求继续挂着，而设备闲置。明年再谈经费时，这会是第一个被问到的问题。</p>
+          </div>
+        </div>
+      </div>
+      <div class="src">牵动能力数取自 · 该实训室配套课程所承接、且当前仍有缺口的能力项 ｜ 实训室现状取自 · 第 4 层勾选</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card dec">
+      <div class="dec-h">
+        <span class="dec-no">02</span>
+        <span class="dec-t">旅行社综合业务实训室 + 线路成本核算工作台</span>
+        <span class="tag go">建议投</span>
+        <span class="tag cost">要花钱</span>
+      </div>
+      <div class="dec-b">
+        <div class="dec-c">
+          <div class="dec-k">影响面</div>
+          <div class="reach">
+            <span class="chip">旅游服务与管理</span>
+            <span class="chip pos">旅行社计调</span>
+            <span class="chip pos">旅游产品策划</span>
+            <span class="chip pos">定制旅行管家</span>
+          </div>
+          <div class="metric">
+            <div><b>1</b><span>专业</span></div>
+            <div><b>3</b><span>岗位</span></div>
+            <div><b>2</b><span>L3 缺口能力</span></div>
+          </div>
+          <p>配套《旅行社计调实务》。要求：业务管理系统（开团 / 报名 / 确认件 / 结算模块齐全）不少于 40 工位；报价单模板与成本测算工具。</p>
+        </div>
+        <div class="dec-c">
+          <div class="dec-k">不做的后果</div>
+          <div class="consq">
+            <p><strong>旅游产品线路设计与成本核算</strong>、<strong>目的地资源踩线与评估</strong>这两条停在 L1，两条都要求 L3。</p>
+            <p>旅游产品策划岗位目前 <strong>5 / 9</strong> 达标，是三个专业里唯一一个还有内容空白的岗位方向。不补，这个数就一直是 5 / 9。</p>
+          </div>
+        </div>
+      </div>
+      <div class="src">实训要求取自 · 中职旅游服务与管理专业教学标准 · 实训实习环境 ｜ 岗位达标数取自 · 本次诊断</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="card dec">
+      <div class="dec-h">
+        <span class="dec-no">03</span>
+        <span class="dec-t">研学活动模拟实训场地 + 研学课程设计工作坊</span>
+        <span class="tag hold">建议缓，先议方向</span>
+        <span class="tag cost">要花钱</span>
+      </div>
+      <div class="dec-b">
+        <div class="dec-c">
+          <div class="dec-k">影响面</div>
+          <div class="reach">
+            <span class="chip">研学旅行管理与服务</span>
+            <span class="chip pos">研学旅行指导师</span>
+          </div>
+          <div class="metric">
+            <div><b>3</b><span>能解决的缺口</span></div>
+            <div><b>17</b><span>该专业缺口总数</span></div>
+            <div><b>1</b><span>受益岗位</span></div>
+          </div>
+          <p>可容纳 40 人的多功能活动空间 + 课程方案模板与实施复盘工具。依据：研学旅行指导师专业培训标准、LB/T 054 研学旅行服务规范。</p>
+        </div>
+        <div class="dec-c">
+          <div class="dec-k">不做的后果</div>
+          <div class="consq mild">
+            <p>建了这两项，<strong>只解决 17 条缺口中的 3 条</strong>。这个专业的问题比一间实训室大——16 条缺口卡在 L3，说明整个培养链条的深度都没建起来。</p>
+            <p>建议顺序反过来：<strong>先定这个专业要不要继续办、办成什么定位</strong>，再谈实训投入。否则建完实训室，指导师岗位仍然是 4 / 12。</p>
+          </div>
+        </div>
+      </div>
+      <div class="src">缺口总数与 L3 占比取自 · 本次诊断 ｜ "先议方向"为排序判断，依据为受益岗位数与缺口解决率，非图谱原生结论</div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card dec">
+      <div class="dec-h">
+        <span class="dec-no">04</span>
+        <span class="dec-t">新媒体内容制作实训室 + 在线店铺运营沙盘</span>
+        <span class="tag no">建议不投</span>
+        <span class="tag cost">要花钱</span>
+      </div>
+      <div class="dec-b">
+        <div class="dec-c">
+          <div class="dec-k">影响面</div>
+          <div class="metric">
+            <div><b>0</b><span>牵动的缺口能力</span></div>
+            <div><b>0</b><span>受益岗位</span></div>
+          </div>
+          <p>配套《旅游数字营销与新媒体运营》。这门课承接的能力在本校现有课程里已经达标，实训室补的不是缺口。</p>
+        </div>
+        <div class="dec-c">
+          <div class="dec-k">什么情况下该重新考虑</div>
+          <div class="consq none">
+            <p>当前 <strong>10 个目标岗位</strong>下没有它的位置。但如果学校决定拓「旅游数字营销」方向、把<strong>讲解类短视频策划与制作</strong>这类新兴能力纳入培养目标，这两项会立刻变成必需。</p>
+            <p>那属于第 03 件事的同类问题——<strong>先定方向，再谈设备</strong>。</p>
+          </div>
+        </div>
+      </div>
+      <div class="src">"0 条缺口"口径 · 该实训室配套课程所承接的能力项在本次目标岗位范围内均已达标</div>
+    </div>
+  </section>
+
+  <!-- ④ 变化 -->
+  <section>
+    <div class="sec-h">
+      <h2>跟上次比，钱花出去有没有回音</h2>
+      <span class="note">上次诊断 2026-06-12 · 批次 #5</span>
+    </div>
+    <div class="delta">
+      <div>
+        <div class="d-k">岗位面向（三专业去重）</div>
+        <div class="d-v"><span class="now">6</span><span>/ 9　　上次 5</span></div>
+        <div class="d-up">▲ 新增面向 1 个岗位</div>
+      </div>
+      <div>
+        <div class="d-k">内容完整</div>
+        <div class="d-v"><span class="now">27</span><span>/ 28　　上次 24</span></div>
+        <div class="d-up">▲ 补上 3 条内容空白</div>
+      </div>
+      <div>
+        <div class="d-k">培养深度</div>
+        <div class="d-v"><span class="now">15</span><span>/ 27　　上次 14</span></div>
+        <div class="d-flat">＋1　深度几乎没动</div>
+      </div>
+    </div>
+    <div class="simnote">
+      <span>!</span>
+      <span>本节为原型内模拟数据。真实版本取自历史诊断批次，需系统至少完成两次完整测评后才会出现。<br>
+        它要回答的是校领导最难回答的那个问题：上一轮投入换来了什么。</span>
+    </div>
+  </section>
+
+  <!-- ⑤ 可带走的一页 -->
+  <section>
+    <div class="sec-h">
+      <h2>可以直接拿走的一页</h2>
+      <span class="note">用于申报材料「对接产业需求」一章 / 教职工大会</span>
+    </div>
+    <div class="takeaway">
+      <div class="tk-h">
+        <span class="eyebrow">导出件预览</span>
+        <button class="btn" onclick="window.print()">打印 / 另存为 PDF</button>
+      </div>
+      <div class="tk-b">
+        <h3>旅游类专业与产业需求对接情况说明</h3>
+        <p>我校旅游类共设 3 个专业，对照旅游业能力图谱（v1.3，含 4 个子行业、9 个代表岗位、28 条能力项）及相应专业教学标准，逐岗位、逐能力项比对结果如下：</p>
+        <ol>
+          <li>三个专业合计面向 9 个产业岗位中的 6 个，已开设课程 7 门，覆盖岗位所需能力 27 条（占 28 条的 96.4%）。</li>
+          <li>其中达到岗位要求等级的 15 条，占已覆盖能力的 55.6%；差距集中于 L3 综合应用级，属培养深度问题而非课程结构缺失。</li>
+          <li>经比对，导游服务专业所需实训条件已全部具备，本年度拟通过调整教学设计与考核方式提升培养深度，不新增实训投入。</li>
+          <li>旅游服务与管理专业的旅行社业务实训条件尚未建成，涉及旅行社计调、旅游产品策划、定制旅行管家 3 个岗位的 2 条 L3 能力，列入本年度实训条件建设计划。</li>
+          <li>研学旅行管理与服务专业存在 17 条能力缺口，其中 16 条为 L3，已列入专业方向论证议程。</li>
+        </ol>
+        <div class="tk-f">
+          依据数据 · 旅游业能力图谱 v1.3（含 50 条来源证据，国家级 13 / 行业标准 16 / 招聘侧 21）<br>
+          对照标准 · 中等职业学校导游服务专业教学标准（2022 年修订）· 中等职业学校旅游服务与管理专业教学标准 · 高等职业学校研学旅行管理与服务专业教学标准<br>
+          诊断批次 · #7　生成时间 · 2026-09-14 15:20　本校填报 · 已开课程 7 门、实训室 3 间
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    原型说明 · 本页为「管理视图」结构验证稿，数据取自旅游业示例图谱与一所演示学校的填报（开齐三个专业的标准课程、已有 3 间实训室）。<br>
+    第四节「跟上次比」为模拟数据，其余各节均由示例数据实算得出。
+  </div>
+
+</div>
+</body>
+</html>
