@@ -1015,6 +1015,40 @@ body.diag .nocov-tag{display:block}
 .pat-gh span{font-size:11px;color:var(--muted)}
 .pat-g .arow .pill{flex:0 0 auto;font-family:var(--mono);font-size:10.5px}
 .pat-g .arow-w{max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 诊断结论 · 能力领域分档（与导出报告一致） */
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tier-c{border-radius:10px;padding:12px 14px;border:1px solid var(--rule)}
+.tier-k{font-size:12px;font-weight:600}
+.tier-n{font-size:24px;font-weight:700;line-height:1.2;margin:4px 0 6px;font-variant-numeric:tabular-nums}
+.tier-n small{font-size:12px;font-weight:500;margin-left:4px}
+.tier-l{font-size:12px;color:var(--ink-2);line-height:1.65}
+.tier-c.priority{background:var(--crit-bg);border-color:color-mix(in srgb,var(--crit) 30%,transparent)}
+.tier-c.priority .tier-k,.tier-c.priority .tier-n{color:var(--crit)}
+.tier-c.improve{background:var(--warn-bg);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+.tier-c.improve .tier-k,.tier-c.improve .tier-n{color:var(--warn-ink)}
+.tier-c.keep{background:var(--good-bg);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.tier-c.keep .tier-k,.tier-c.keep .tier-n{color:var(--good)}
+.dtable{margin-top:12px;border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.dt-row{display:grid;grid-template-columns:minmax(150px,2.2fr) 44px 44px 44px 64px minmax(110px,2fr) 84px;gap:0 12px;align-items:center;
+  padding:9px 14px;border-top:1px solid var(--rule-2);font-size:12.5px}
+.dt-row:first-child{border-top:0}
+.dt-head{background:var(--card-2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
+.dt-name b{font-weight:600}
+.dt-name span{display:block;font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+.dt-num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.dt-tier{text-align:right}
+@media (max-width:760px){
+  .tiers{grid-template-columns:1fr}
+  .dt-head{display:none}
+  .dt-row{grid-template-columns:repeat(4,1fr);gap:6px 10px}
+  .dt-name,.dt-bar{grid-column:1/-1}
+  .dt-tier{grid-column:1/-1;text-align:left}
+  .dt-num::before{font-family:var(--sans);font-size:10.5px;color:var(--muted);margin-right:4px}
+  .dt-row .dt-num:nth-of-type(2)::before{content:"要求"}
+  .dt-row .dt-num:nth-of-type(3)::before{content:"覆盖"}
+  .dt-row .dt-num:nth-of-type(4)::before{content:"达标"}
+  .dt-row .dt-num:nth-of-type(5)::before{content:"参照"}
+}
 /* 报告未生成时的占位 */
 .v2wait{margin-top:4px}
 .v2wait-t{font-size:15px;font-weight:600}
@@ -4516,21 +4550,43 @@ function v2Findings(){
   return out;
 }
 function v2TierStrip(){
-  // 能力领域分档：与导出报告「核心结论」同一份计算
+  // 能力领域分档：与导出报告同一份计算与同样的呈现（三档卡片 + 各领域明细 + 分档说明）
+  const rows = v2DomainRows();
   const tiers = {priority:[], improve:[], keep:[]};
-  v2DomainRows().forEach(d=>tiers[d.tier].push(d.domain));
+  rows.forEach(d=>tiers[d.tier].push(d.domain));
   const pill = {priority:'crit', improve:'warn', keep:'good'};
-  return `<div class="card pad" style="margin-bottom:12px"><div class="eyebrow" style="margin-bottom:8px">能力领域分档</div>
-    ${['priority','improve','keep'].map(t=>`<div class="abli"><span class="pill ${pill[t]}">${DOC_TIER[t]} ${tiers[t].length}</span>
-      <span style="color:var(--ink-2)">${tiers[t].length?esc(tiers[t].join('、')):'暂无'}</span></div>`).join('')}
-    <div class="dxbound">尚无课程覆盖的能力超过一半，或必达领域（${v2RiskNames()}）有能力未达要求 → 优先建设；达到要求的能力占 ${Math.round(DOC.KEEP*100)}% 及以上 → 保持优势；其余 → 逐步完善。</div></div>`;
+  const cards = ['priority','improve','keep'].map(t=>`<div class="tier-c ${t}">
+      <div class="tier-k">${DOC_TIER[t]}</div>
+      <div class="tier-n">${tiers[t].length}<small>个能力领域</small></div>
+      <div class="tier-l">${tiers[t].length?esc(tiers[t].join('、')):'暂无'}</div></div>`).join('');
+  const seg = (n, cls)=> n ? `<i class="${cls}" style="flex:${n}"></i>` : '';
+  const lines = rows.map(d=>`<div class="dt-row">
+      <div class="dt-name"><b>${esc(d.domain)}</b><span>${esc(d.why)}</span></div>
+      <div class="dt-num">${d.total}</div><div class="dt-num">${d.covered}</div>
+      <div class="dt-num"><b>${d.attained}</b></div><div class="dt-num">${d.std}</div>
+      <div class="dt-bar"><span class="pa-track" style="width:100%">${seg(d.attained,'ok')}${seg(d.covered-d.attained,'part')}${seg(d.total-d.covered,'none')}</span></div>
+      <div class="dt-tier"><span class="pill ${pill[d.tier]}">${DOC_TIER[d.tier]}</span></div>
+    </div>`).join('');
+  return `<div class="card pad" style="margin-bottom:12px">
+    <div class="rep-h" style="margin:0 0 10px"><span class="eyebrow">能力领域分档</span><span style="flex:1"></span>
+      <span class="pa-legend"><span><i class="ok"></i>已达标</span><span><i class="part"></i>覆盖未达标</span><span><i class="none"></i>未覆盖</span></span></div>
+    <div class="tiers">${cards}</div>
+    <div class="dtable">
+      <div class="dt-row dt-head"><div>能力领域</div><div class="dt-num">要求</div><div class="dt-num">覆盖</div><div class="dt-num">达标</div><div class="dt-num">标准参照</div><div>对接情况</div><div class="dt-tier">档位</div></div>
+      ${lines}
+    </div>
+    <div class="dxbound">分档方法：尚无课程覆盖的能力超过一半，或必达领域（${v2RiskNames()}）有能力未达要求 → 优先建设；达到要求的能力占 ${Math.round(DOC.KEEP*100)}% 及以上 → 保持优势；其余 → 逐步完善。
+      「标准参照」为按专业教学标准完整开设课程时可达到要求的条数。</div></div>`;
 }
+// 诊断结论条目（必达领域 / 内容缺口 / 深度缺口 / 岗位达标扎实）开关：暂时隐藏，只保留能力领域分档
+const FEAT_FINDINGS = false;
 function v2FindingsSection(){
+  const head = `<div class="eyebrow" style="margin:26px 0 10px">诊断结论</div>` + v2TierStrip();
+  if(!FEAT_FINDINGS) return head;
   const finds = v2Findings();
-  if(!finds.length) return '';
   const icon = {critical:'!', warning:'!', good:'✓'};
   const label = {critical:'内容缺口', warning:'深度缺口', good:'覆盖良好'};
-  return `<div class="eyebrow" style="margin:26px 0 10px">诊断结论</div>` + v2TierStrip() +
+  return head +
     finds.map(f=>`<div class="find ${f.level}"><span class="find-s"></span><div>
       <div class="find-t"><span class="ico ${f.level}">${icon[f.level]}</span>${esc(f.title)}
         <span class="pill ${f.level==='good'?'good':f.level==='warning'?'warn':'crit'}">${f.tag||label[f.level]}</span></div>
