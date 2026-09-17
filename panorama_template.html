@@ -5300,14 +5300,14 @@ function v2Hist(){
     return `<div class="ev hist">
       <div class="ev-h"><span class="ev-t">${esc(V2_REPORT_NAME)}</span>
         <span style="flex:1"></span>
-        <button class="chip" data-v2="openver" data-verno="${v.no}">在新页面查看 ↗</button></div>
+        <button class="chip" data-v2="openver" data-verno="${v.no}">查看</button></div>
       <div class="hist-m"><span class="pill core">#${v.no}</span><span class="mono">${esc(v.at)}</span></div>
       <div class="hist-s"><span class="hist-k">所选</span>${esc(majors)} · ${esc(posNames||'—')}</div>
     </div>`;
   }).join('');
   openDrawer('历史报告', `共 ${v2Versions.length} 份报告`, '按生成时间从新到旧排列',
     (rows || '<div class="assess">还没有历史报告——完成一次完整测评后会自动记录。</div>') +
-    `<div class="assess" style="margin-top:12px">点「在新页面查看」会打开该次报告，当前测评不受影响。</div>`);
+    `<div class="assess" style="margin-top:12px">点「查看」会在新页面打开该次报告，当前测评不受影响。</div>`);
 }
 function v2OpenVersion(no){
   // 在新标签页打开同一个应用并进入「历史报告只读模式」，当前页面的测评设置与报告保持不动
