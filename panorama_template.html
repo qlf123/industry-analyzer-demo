@@ -702,9 +702,14 @@ body.diag .pos-diag{display:flex}
 .bar{flex:1;height:5px;border-radius:3px;background:var(--rule);overflow:hidden;min-width:36px}
 .bar>i{display:block;height:100%;border-radius:3px;background:var(--lv3)}
 
-.dm{display:grid;grid-template-columns:126px 1fr 40px;gap:10px;align-items:center;padding:5px 0;font-size:12.5px}
+.dm{display:grid;grid-template-columns:126px 1fr 40px;gap:10px;align-items:center;padding:5px 6px;font-size:12.5px;
+  width:100%;background:none;border:0;border-radius:7px;cursor:pointer;font-family:inherit;text-align:left;color:inherit}
+.dm:hover{background:var(--brand-soft)}
+.dm:hover .dm-n{color:var(--brand)}
+.dm:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 .dm-n{color:var(--ink-2);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dm-b{height:15px;background:var(--rule-2);border-radius:4px;overflow:hidden}
+.dm-v{text-align:left}
+.dm-b{display:block;height:15px;background:var(--rule-2);border-radius:4px;overflow:hidden}
 .dm-b>i{display:block;height:100%;background:var(--lv3);border-radius:4px}
 .dm-v{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
 
@@ -961,8 +966,21 @@ body.diag .nocov-tag{display:block}
 .tier-no{font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--brand);color:#fff}
 .ablist{display:flex;flex-direction:column;gap:6px}
 .abli{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 12px;border-radius:9px;border:1px solid var(--rule-2);font-size:12.5px}
-.abli .bar{flex:1 1 60px;max-width:110px;height:5px;border-radius:3px;background:var(--rule-2);overflow:hidden}
-.abli .bar i{display:block;height:100%;background:var(--lv2);border-radius:3px}
+.tpa{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tpa b{color:var(--ink);font-weight:600}
+.tpa-k{margin-right:2px}
+.tpa-seg{display:inline-flex;gap:2px;margin-left:5px}
+.tpa-seg i{display:block;width:14px;height:8px;border-radius:2px;background:var(--rule)}
+.tpa-seg i.ok{background:var(--lv3)}
+.abgrp{margin-bottom:14px}
+.abgrp:last-of-type{margin-bottom:0}
+.abgrp-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+.abgrp-h b{font-size:13px;font-weight:600}
+.abgrp-n{font-size:11.5px;color:var(--muted)}
+.abgrp.hl .abgrp-h{background:var(--brand-soft);border-radius:6px;padding-left:6px;padding-right:6px}
+.abgrp .abgrp-h,.abgrp.hl .abgrp-h{transition:background .3s}
+.dt-jump{font:inherit;font-weight:600;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.dt-jump:hover{color:var(--brand);text-decoration:underline}
 /* 岗位达成情况表 */
 .patable{border:1px solid var(--rule);border-radius:10px;overflow:hidden}
 .pa-row{display:grid;grid-template-columns:minmax(120px,1.5fr) 84px minmax(140px,3fr);gap:0 20px;align-items:center;
@@ -1030,7 +1048,7 @@ body.diag .nocov-tag{display:block}
 .tier-c.keep{background:var(--good-bg);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
 .tier-c.keep .tier-k,.tier-c.keep .tier-n{color:var(--good)}
 .dtable{margin-top:12px;border:1px solid var(--rule);border-radius:10px;overflow:hidden}
-.dt-row{display:grid;grid-template-columns:minmax(150px,2.2fr) 44px 44px 44px 64px minmax(110px,2fr) 84px;gap:0 12px;align-items:center;
+.dt-row{display:grid;grid-template-columns:minmax(150px,2.2fr) 44px 44px 44px minmax(110px,2fr) 84px;gap:0 12px;align-items:center;
   padding:9px 14px;border-top:1px solid var(--rule-2);font-size:12.5px}
 .dt-row:first-child{border-top:0}
 .dt-head{background:var(--card-2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
@@ -1041,14 +1059,13 @@ body.diag .nocov-tag{display:block}
 @media (max-width:760px){
   .tiers{grid-template-columns:1fr}
   .dt-head{display:none}
-  .dt-row{grid-template-columns:repeat(4,1fr);gap:6px 10px}
+  .dt-row{grid-template-columns:repeat(3,1fr);gap:6px 10px}
   .dt-name,.dt-bar{grid-column:1/-1}
   .dt-tier{grid-column:1/-1;text-align:left}
   .dt-num::before{font-family:var(--sans);font-size:10.5px;color:var(--muted);margin-right:4px}
   .dt-row .dt-num:nth-of-type(2)::before{content:"要求"}
   .dt-row .dt-num:nth-of-type(3)::before{content:"覆盖"}
   .dt-row .dt-num:nth-of-type(4)::before{content:"达标"}
-  .dt-row .dt-num:nth-of-type(5)::before{content:"参照"}
 }
 /* 诊断结论 · 按能力领域的建设建议 */
 .sg-card{border:1px solid var(--rule);border-radius:10px;padding:12px 14px;margin-top:10px}
@@ -1108,9 +1125,6 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
 .pc-assess{font-size:12.5px;color:var(--ink-2);line-height:1.6;padding:8px 11px;border-radius:8px;background:var(--card-2);border:1px dashed var(--rule);margin-bottom:8px}
 .pc-rule{font-size:12px;color:var(--ink-2);line-height:1.6;padding:7px 0}
 .pc-rule-h{color:var(--brand-ink);font-weight:500}
-.pc-rule-why{font-size:11.5px;color:var(--muted);margin-top:2px}
-.pc-rulesum{margin-top:8px}
-.pc-rulesum summary{cursor:pointer;font-size:11px;color:var(--muted);font-family:var(--mono)}
 .pc-rule-none{font-size:12px;color:var(--muted);padding:4px 0}
 .pc-cond,.pc-pre{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0;font-size:12.5px}
 .pc-pre.warn{color:var(--ink-2)}
@@ -1214,7 +1228,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
       <div class="pane" id="pane-matrix" role="tabpanel" hidden>
         <p class="sect-d"><b id="mxLead"></b>${1} 个岗位 × ${2} 条能力项，其中 ${3} 个格子有要求。格子颜色代表该岗位对该能力的要求等级，空白表示该岗位不要求这条能力。列按子行业分组。</p>
         <div class="card pad" style="margin-bottom:18px">
-          <div class="eyebrow" style="margin-bottom:11px">领域分布</div>
+          <div class="eyebrow" style="margin-bottom:11px">领域分布　<span style="text-transform:none;letter-spacing:0">点领域看它包含的能力项</span></div>
           <div id="domainChart"></div>
         </div>
         <div class="mtools" id="mtools"></div>
@@ -1948,9 +1962,10 @@ $('#mxLead') && ($('#mxLead').parentElement.innerHTML =
   `格子颜色代表该岗位对该能力的要求等级，空白表示该岗位不要求这条能力。列按子行业分组。`);
 const dmax = Math.max(...D.domains.map(d=>d.count));
 $('#domainChart').innerHTML = D.domains.slice().sort((a,b)=>b.count-a.count).map(d=>
-  `<div class="dm"><div class="dm-n" title="${esc(d.name)}">${esc(d.name)}</div>
-   <div class="dm-b"><i style="width:${(d.count/dmax*100).toFixed(1)}%"></i></div>
-   <div class="dm-v">${d.count}</div></div>`).join('');
+  `<button class="dm" data-dom="${esc(d.name)}" title="查看「${esc(d.name)}」包含的能力项">
+   <span class="dm-n">${esc(d.name)}</span>
+   <span class="dm-b"><i style="width:${(d.count/dmax*100).toFixed(1)}%"></i></span>
+   <span class="dm-v">${d.count}</span></button>`).join('');
 
 const cols = D.positions.slice().sort((a,b)=>
   (subOrder.indexOf(a.sub)-subOrder.indexOf(b.sub)) || a.id.localeCompare(b.id));
@@ -3506,8 +3521,8 @@ function v2SupportHTML(a){
   if(att === 0){
     return `<div class="dr-s">${head}
       <div class="supgap"><span class="ico critical">!</span><div>
-        <b>本校没有课程支撑这条能力。</b>目标岗位对它最高要求 L${req}，${a.positionCount} 个岗位提出要求。
-        这属于<b>内容缺口</b>——需要新增课程模块承接，调整现有课程解决不了。详见测评报告「缺口处置建议」。</div></div></div>`;
+        <b>本校没有课程支撑这条能力。</b>目标岗位对它最高要求 L${req}，${v2TpCount()[a.id]||0} 个目标岗位提出要求。
+        这属于<b>内容缺口</b>——需要新增课程模块承接，调整现有课程解决不了。详见测评报告「建设建议」。</div></div></div>`;
   }
   const gapN = req - att;
   return `<div class="dr-s">${head}
@@ -3548,6 +3563,26 @@ $('#drClose').addEventListener('click', closeDrawer);
 $('#scrim').addEventListener('click', closeDrawer);
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeDrawer(); hidePop(); } });
 
+/* 能力领域详情：该领域包含哪些能力项。从「能力矩阵 · 领域分布」点条目进入。
+   只展示图谱数据（能力项、类型、最高要求等级、被几个岗位要求），不含院校信息。 */
+function domainHTML(name){
+  const rows = D.abilities.filter(a=>a.domain===name)
+    .sort((x,y)=>(y.core-x.core)||(y.positionCount-x.positionCount));
+  const emerging = rows.filter(a=>a.flag||a.inferred);
+  let h = '';
+  if(emerging.length) h += `<div class="dr-s"><div class="warnbox"><span class="ico warning">!</span>
+    <span>其中 ${emerging.length} 条是新兴能力：岗位上新出现、国家或行业标准尚未完全覆盖。</span></div></div>`;
+  h += `<div class="dr-s"><div class="dr-st">能力项 ${rows.length} 条 · 按核心优先、被要求岗位数排序</div>` +
+    rows.map(a=>`<button class="arow" data-abl="${a.id}">
+      <span class="arow-n">${esc(a.name)}${a.core?'<span class="star" style="margin-left:4px">★</span>':''}</span>
+      <span class="pill k">${esc(a.typeCn)}</span>
+      <span class="pill k">最高要求 ${a.maxRequiredLevel}</span>
+      <span class="arow-w">${a.positionCount} 个岗位</span></button>`).join('') + `</div>`;
+  h += `<div class="dr-s"><div class="dr-st">说明</div>
+    <div class="dr-def">点能力项可查看它的定义、三级行为化描述与要求该能力的岗位。
+      ★ 为核心能力（被 2 个及以上岗位要求，且有国家法规政策依据）。</div></div>`;
+  return h;
+}
 function abilityHTML(a){
   const gap = isDiag() && OVA.has(a.id);   // 院校信息只在叠加状态下出现
   let h = '';
@@ -3649,6 +3684,13 @@ document.addEventListener('click', e=>{
   if(ab){ const a = abl[ab.dataset.abl];
     openDrawer('能力项 · '+a.id, a.name,
       `${a.typeCn} · ${a.domain} · ${a.core?'核心能力 · ':''}最高要求 ${a.maxRequiredLevel}`, abilityHTML(a)); return; }
+  const db = e.target.closest('[data-dom]');
+  if(db){ const name = db.dataset.dom;
+    const rows = D.abilities.filter(a=>a.domain===name);
+    const core = rows.filter(a=>a.core).length;
+    const posIds = new Set(); rows.forEach(a=>a.requiredBy.forEach(r=>posIds.add(r.position)));
+    openDrawer('能力领域', name,
+      `${rows.length} 条能力项 · 核心能力 ${core} 条 · 被 ${posIds.size} 个岗位要求`, domainHTML(name)); return; }
 });
 
 /* ═══ 9. tooltip ═══ */
@@ -4012,14 +4054,30 @@ function v2CoveringCourse(aid, minLv){
   });
   return best;
 }
+/* 报告里的「被几个岗位要求」一律按本次目标岗位计，不用全行业口径（a.positionCount）。
+   v2TpCount：能力 id → 目标岗位中要求它的岗位数 */
+function v2TpCount(){
+  const m = {};
+  v2PosArr().forEach(p=>p.abilities.forEach(r=>{ m[r.ability] = (m[r.ability]||0) + 1; }));
+  return m;
+}
+/* 某能力的目标岗位达标情况：每个岗位按它自己的要求等级比对（与「岗位达成情况」同口径） */
+function v2AbPosAttain(id, att){
+  const at = (att || v2Attained())[id] || 0;
+  const rows = v2PosArr().map(p=>{
+    const r = p.abilities.find(x=>x.ability===id);
+    return r ? {p, lv:LV[r.level], ok: at >= LV[r.level]} : null;
+  }).filter(Boolean);
+  return {rows, n: rows.length, ok: rows.filter(r=>r.ok).length};
+}
 function v2GapList(){
-  // 缺口清单（有缺口的能力项）：核心能力优先、被要求岗位数次之。
+  // 缺口清单（有缺口的能力项）：核心能力优先、目标岗位中被要求的岗位数次之。
   // 诊断结论与能力提升路径共用同一份排序。
-  const reqMap = v2ReqMap(), att = v2Attained();
+  const reqMap = v2ReqMap(), att = v2Attained(), tp = v2TpCount();
   return Object.keys(reqMap)
     .map(id=>({a:abl[id], req:reqMap[id], att:att[id]||0}))
     .filter(g=>g.att < g.req)
-    .sort((x,y)=>(y.a.core-x.a.core)||(y.a.positionCount-x.a.positionCount));
+    .sort((x,y)=>(y.a.core-x.a.core)||(tp[y.a.id]-tp[x.a.id]));
 }
 /* ─── 能力提升路径卡（「按能力」切法的六块） ─── */
 function v2SupportEdges(aid){
@@ -4113,13 +4171,10 @@ function v2PathBody(g){
   const rules = v2RulesFor(tgtLv.assess);
   let howHTML = `<div class="pc-assess"><b>考核方式（目标等级原文）</b>：${esc(tgtLv.assess)}</div>`;
   if(rules.length){
-    howHTML += rules.map(r=>`<div class="pc-rule"><span class="pc-rule-h">→ ${esc(r.hint)}</span>
-      <details class="pc-rulesum"><summary>这条建议按哪条规则推出</summary>
-        <div class="pc-rule-why">命中关键词：${r.keys.map(k=>`「${esc(k)}」`).join('、')}　理由：${esc(r.why)}</div></details></div>`).join('');
+    howHTML += rules.map(r=>`<div class="pc-rule"><span class="pc-rule-h">→ ${esc(r.hint)}</span></div>`).join('');
   } else {
     howHTML += `<div class="pc-rule-none">该考核方式未命中已有规则，教学形式由任课教师判断。</div>`;
   }
-  howHTML += `<div class="mono" style="font-size:10.5px;color:var(--muted);margin-top:6px">教学形式提示由考核方式按规则反推，非图谱原生数据</div>`;
   B.push(`<div class="pc-b"><div class="pc-k">③ 怎么教</div>${howHTML}</div>`);
   /* ④ 需要什么条件 */
   if(FEAT_LABS) B.push(`<div class="pc-b"><div class="pc-k">④ 需要什么条件</div>${v2CondHTML(aid, att, req)}</div>`);
@@ -4351,9 +4406,9 @@ function v2PosRadar(p){
 }
 function v2AllRadar(){
   // 「全部」= 一张雷达图，轴 = 目标岗位合并去重后的每条能力项（要求取最高等级），全部显示
-  const reqMap = v2ReqMap(), att = v2Attained();
+  const reqMap = v2ReqMap(), att = v2Attained(), tp = v2TpCount();
   const rows = Object.keys(reqMap).map(id=>({ a:abl[id], req:reqMap[id], att:att[id]||0 }))
-    .sort((x,y)=>(y.a.core-x.a.core)||(y.req-x.req)||(y.a.positionCount-x.a.positionCount));
+    .sort((x,y)=>(y.a.core-x.a.core)||(y.req-x.req)||((tp[y.a.id]||0)-(tp[x.a.id]||0)));
   const covered = rows.filter(r=>r.att>0).length;
   const attained = rows.filter(r=>r.att>=r.req).length;
   return `<div class="dxradar dxradar-all">
@@ -4461,21 +4516,35 @@ function v2PosAttainment(){
     <div class="dxbound">达标 = 课程承接等级 ≥ 该岗位对该能力的要求等级。</div>
   </div>`;
 }
+/* 能力要求清单：按能力领域分组，让「能力领域分档」里的每个领域都能看到它包含哪些能力项。
+   这里只答「领域里有哪些能力」；覆盖 / 达标数值与档位判断由下方「能力领域分档」统一呈现，不在此重复。 */
 function v2AbilityList(){
   const reqMap = v2ReqMap(), att = v2Attained();
-  const rows = Object.keys(reqMap).map(id=>({a:abl[id], req:reqMap[id], att:att[id]||0}))
-    .sort((x,y)=>(y.a.core-x.a.core)||(y.a.positionCount-x.a.positionCount));
-  const html = rows.map(r=>{
-    const cov = Math.min(1, r.att / r.req);
+  const doms = v2DomainRows();   // 分档表同一份数据与同样的领域顺序
+  const abRow = r=>{
+    // 目标岗位达标 x / y：每格一个目标岗位，按该岗位自己的要求等级判断是否达标
+    const tpa = v2AbPosAttain(r.a.id, att);
+    const cells = tpa.rows.slice().sort((x,y)=>y.ok-x.ok).map(t=>`<i class="${t.ok?'ok':''}"></i>`).join('');
+    const tip = tpa.rows.map(t=>`${t.p.name} 要求 L${t.lv} · ${t.ok?'已达标':'未达标'}`).join('\n');
     return `<div class="abli"><button class="rx-n" data-abl="${r.a.id}">${esc(r.a.name)}</button>
       ${r.a.core?'<span class="star" title="核心能力">★</span>':''}
       <span class="pill k">${esc(r.a.typeCn)}</span>
       <span class="pill ${r.att===0?'crit':r.att>=r.req?'good':'warn'}">${r.att===0?'未覆盖':r.att>=r.req?`已达标 L${r.req}`:`L${r.att} → L${r.req}`}</span>
-      <span class="mono" style="color:var(--muted);font-size:10.5px">${r.a.positionCount} 个岗位要求</span>
-      <span class="bar"><i style="width:${Math.round(cov*100)}%"></i></span></div>`;
+      <span class="tpa" title="${esc(tip)}"><span class="tpa-k">目标岗位达标</span><b>${tpa.ok}</b> / ${tpa.n}
+        <span class="tpa-seg">${cells}</span></span></div>`;
+  };
+  const tp = v2TpCount();
+  const html = doms.map((d,i)=>{
+    const rows = d.ids.map(id=>({a:abl[id], req:reqMap[id], att:att[id]||0}))
+      .sort((x,y)=>(y.a.core-x.a.core)||(tp[y.a.id]-tp[x.a.id]));
+    return `<div class="abgrp" id="abd-${i}">
+      <div class="abgrp-h"><b>${esc(d.domain)}</b><span class="abgrp-n">${d.total} 条</span></div>
+      <div class="ablist">${rows.map(abRow).join('')}</div></div>`;
   }).join('');
-  return `<div class="card pad" id="v2ablist"><div class="eyebrow" style="margin-bottom:10px">能力要求清单 · 按核心 / 被要求岗位数排序</div>
-    <div class="ablist">${html}</div></div>`;
+  return `<div class="card pad" id="v2ablist"><div class="eyebrow" style="margin-bottom:10px">能力要求清单 · 按能力领域分组</div>
+    ${html}
+    <div class="dxbound">按能力领域分组，领域顺序同下方「能力领域分档」；领域内按核心能力优先、目标岗位中被要求的岗位数从多到少排列。
+      「目标岗位达标 x / y」：本次目标岗位中有 y 个要求这条能力，其中 x 个岗位的要求等级本校已达到，每格代表一个岗位。★ 为核心能力，点击能力名可查看详情。</div></div>`;
 }
 /* ─── 诊断结论：规则生成的发现清单（与「能力测评-报告」同款 .find 卡） ─── */
 function v2Findings(){
@@ -4527,10 +4596,10 @@ function v2TierStrip(){
       <div class="tier-n">${tiers[t].length}<small>个能力领域</small></div>
       <div class="tier-l">${tiers[t].length?esc(tiers[t].join('、')):'暂无'}</div></div>`).join('');
   const seg = (n, cls)=> n ? `<i class="${cls}" style="flex:${n}"></i>` : '';
-  const lines = rows.map(d=>`<div class="dt-row">
-      <div class="dt-name"><b>${esc(d.domain)}</b><span>${esc(d.why)}</span></div>
+  const lines = rows.map((d,i)=>`<div class="dt-row">
+      <div class="dt-name"><button class="dt-jump" data-abjump="${i}" title="查看该领域包含的能力项">${esc(d.domain)}</button><span>${esc(d.why)}</span></div>
       <div class="dt-num">${d.total}</div><div class="dt-num">${d.covered}</div>
-      <div class="dt-num"><b>${d.attained}</b></div><div class="dt-num">${d.std}</div>
+      <div class="dt-num"><b>${d.attained}</b></div>
       <div class="dt-bar"><span class="pa-track" style="width:100%">${seg(d.attained,'ok')}${seg(d.covered-d.attained,'part')}${seg(d.total-d.covered,'none')}</span></div>
       <div class="dt-tier"><span class="pill ${pill[d.tier]}">${DOC_TIER[d.tier]}</span></div>
     </div>`).join('');
@@ -4539,11 +4608,11 @@ function v2TierStrip(){
       <span class="pa-legend"><span><i class="ok"></i>已达标</span><span><i class="part"></i>覆盖未达标</span><span><i class="none"></i>未覆盖</span></span></div>
     <div class="tiers">${cards}</div>
     <div class="dtable">
-      <div class="dt-row dt-head"><div>能力领域</div><div class="dt-num">要求</div><div class="dt-num">覆盖</div><div class="dt-num">达标</div><div class="dt-num">标准参照</div><div>对接情况</div><div class="dt-tier">档位</div></div>
+      <div class="dt-row dt-head"><div>能力领域</div><div class="dt-num">要求</div><div class="dt-num">覆盖</div><div class="dt-num">达标</div><div>对接情况</div><div class="dt-tier">档位</div></div>
       ${lines}
     </div>
     <div class="dxbound">分档方法：尚无课程覆盖的能力超过一半 → 优先建设；达到要求的能力占 ${Math.round(DOC.KEEP*100)}% 及以上 → 保持优势；其余 → 逐步完善。
-      「标准参照」为按专业教学标准完整开设课程时可达到要求的条数。</div></div>`;
+      点领域名可查看该领域包含的能力项。</div></div>`;
 }
 // 诊断结论条目（内容缺口 / 深度缺口 / 岗位达标扎实）开关：暂时隐藏，只保留能力领域分档
 const FEAT_FINDINGS = false;
@@ -4712,6 +4781,14 @@ document.addEventListener('click', e=>{
   if(lb){ const id = lb.dataset.v2lab; V2.labs.has(id) ? V2.labs.delete(id) : V2.labs.add(id); v2MarkStale(); return; }
   const rd = e.target.closest('[data-v2radar]');
   if(rd){ V2.radarPos = rd.dataset.v2radar || null; renderV2Report(); return; }
+  // 分档表领域名 → 跳到「能力要求清单」里该领域的分组
+  const aj = e.target.closest('[data-abjump]');
+  if(aj){
+    const g = $('#abd-' + aj.dataset.abjump);
+    if(g){ g.scrollIntoView({behavior:'smooth', block:'center'});
+      g.classList.add('hl'); setTimeout(()=>g.classList.remove('hl'), 1600); }
+    return;
+  }
   // 已完成步骤标题点击 → 展开 / 收起勾选内容
   const dh = e.target.closest('.v2step[data-state="done"] .step-h');
   if(dh){ const card = dh.closest('.v2step'); const n = +card.querySelector('.stepno').textContent;
@@ -4812,6 +4889,8 @@ const DOC_CSS = `
 .doc .sug ul{margin:0;padding-left:17px} .doc .sug li{margin:2px 0}
 .doc .apx p{margin:4px 0;font-size:12.5px;color:var(--ink2)}
 .doc .apx h4{font-size:13px;margin:14px 0 4px}
+.doc tr.apx-g td{background:#f7f6fa;font-weight:600}
+.doc tr.apx-g span{font-weight:400;color:var(--ink2);font-size:11.5px;margin-left:10px}
 .doc .foot{text-align:center;font-size:11.5px;color:var(--ink3);margin-top:18px}
 @media (max-width:720px){
   .doc{padding:10px;border-radius:0}
@@ -4912,11 +4991,11 @@ function v2LabRows(){
   return rows.sort((a,b)=>a.have-b.have).concat(extra);
 }
 function v2DocSuggestions(rows){
-  const reqMap = v2ReqMap(), att = v2Attained();
+  const reqMap = v2ReqMap(), att = v2Attained(), tp = v2TpCount();
   const maxLib = v2LibMaxLv();
   return rows.filter(d=>d.tier!=='keep').map(d=>{
     const gaps = d.ids.map(id=>({a:abl[id], req:reqMap[id], att:att[id]||0})).filter(g=>g.att<g.req)
-      .sort((x,y)=>(y.a.core-x.a.core)||(y.a.positionCount-x.a.positionCount));
+      .sort((x,y)=>(y.a.core-x.a.core)||(tp[y.a.id]-tp[x.a.id]));
     const acts = [];
     // 按「动作」分组：已开课程补齐内容 / 增开课程 / 校本开发。尚无课程覆盖的能力先要有课程，所以 L3 未覆盖也会出现在这里。
     const byAct = new Map();
@@ -5135,13 +5214,14 @@ function v2DocHTML(){
   const emergingReq = D.abilities.filter(a=>reqMap[a.id] && (a.flag||a.inferred));
   H.push(`<section><h2><span class="num">四</span>差距分析</h2>
     <h3>按能力领域</h3>
-    <div class="tscroll"><table><thead><tr><th>能力领域</th><th class="r">岗位要求</th><th style="width:28%">对接情况</th><th class="r">课程覆盖</th><th class="r">达到要求</th><th class="r">标准参照</th><th class="c">建设建议</th></tr></thead><tbody>
+    <div class="tscroll"><table><thead><tr><th>能力领域</th><th class="r">岗位要求</th><th style="width:28%">对接情况</th><th class="r">课程覆盖</th><th class="r">达到要求</th><th class="c">建设建议</th></tr></thead><tbody>
       ${rows.map(d=>`<tr><td>${esc(d.domain)}</td><td class="r">${d.total}</td>
         <td><div class="hbar"><i class="a" style="width:${pct(d.attained/d.total)}%"></i><i class="p" style="width:${pct((d.covered-d.attained)/d.total)}%"></i></div></td>
-        <td class="r">${d.covered}</td><td class="r"><b>${d.attained}</b></td><td class="r">${d.std}</td>
+        <td class="r">${d.covered}</td><td class="r"><b>${d.attained}</b></td>
         <td class="c">${tierTag(d.tier)}</td></tr>`).join('')}
     </tbody></table></div>
     <div class="legend"><span><i style="background:var(--l3)"></i>达到要求</span><span><i style="background:var(--l2)"></i>已覆盖、程度不足</span><span><i style="background:var(--l0)"></i>尚未覆盖</span></div>
+    <p class="note">各能力领域包含哪些能力项，见附录「能力明细」。</p>
     <h3>按岗位</h3>
     <div class="tscroll"><table><thead><tr><th>岗位</th><th class="r">达到要求</th><th style="width:50%">对接情况</th></tr></thead><tbody>
       ${posRows.map(r=>`<tr><td>${esc(r.p.name)}<div class="note" style="margin-top:0">${esc(sub[r.p.sub].name)}</div></td>
@@ -5178,13 +5258,18 @@ function v2DocHTML(){
 
   /* 六 附录 */
   H.push(`<section class="apx"><h2><span class="num">六</span>附录</h2>
-    <h4>能力明细</h4>
-    <div class="tscroll"><table><thead><tr><th>能力</th><th>领域</th><th class="c">岗位要求</th><th class="c">本校</th><th class="r">要求岗位数</th></tr></thead><tbody>
-      ${Object.keys(reqMap).map(id=>({a:abl[id], rq:reqMap[id], at:att[id]||0}))
-        .sort((x,y)=>x.a.domain.localeCompare(y.a.domain,'zh')||(y.a.core-x.a.core))
-        .map(r=>`<tr><td>${esc(r.a.name)}${r.a.core?' ★':''}</td><td>${esc(r.a.domain)}</td><td class="c">${DOC_LV[r.rq]}</td>
-          <td class="c">${r.at>=r.rq?tag('达到要求','good'):r.at?tag(DOC_LV[r.at],'warn'):tag('尚未覆盖','crit')}</td><td class="r">${r.a.positionCount}</td></tr>`).join('')}
+    <h4>能力明细 · 按能力领域分组</h4>
+    <div class="tscroll"><table><thead><tr><th>能力</th><th class="c">岗位要求</th><th class="c">本校</th><th class="c">目标岗位达标</th></tr></thead><tbody>
+      ${rows.map(d=>{
+        const tpc = v2TpCount();
+        const items = d.ids.map(id=>({a:abl[id], rq:reqMap[id], at:att[id]||0, tpa:v2AbPosAttain(id, att)}))
+          .sort((x,y)=>(y.a.core-x.a.core)||(tpc[y.a.id]-tpc[x.a.id]));
+        return `<tr class="apx-g"><td colspan="4">${esc(d.domain)}<span>要求 ${d.total} 条 · 覆盖 ${d.covered} 条 · 达到要求 ${d.attained} 条 · ${DOC_TIER[d.tier]}</span></td></tr>`
+          + items.map(r=>`<tr><td>${esc(r.a.name)}${r.a.core?' ★':''}</td><td class="c">${DOC_LV[r.rq]}</td>
+          <td class="c">${r.at>=r.rq?tag('达到要求','good'):r.at?tag(DOC_LV[r.at],'warn'):tag('尚未覆盖','crit')}</td><td class="c">${r.tpa.ok} / ${r.tpa.n}</td></tr>`).join('');
+      }).join('')}
     </tbody></table></div>
+    <p class="note">★ 为核心能力。「目标岗位达标 x / y」：本次目标岗位中有 y 个要求该能力，其中 x 个岗位的要求等级已达到。领域内按核心能力优先、y 从多到少排列。</p>
   </section>
   <div class="foot">本报告由平台根据学校填报信息自动生成</div>`);
   return `<div class="doc">${H.join('')}</div>`;
