@@ -4837,10 +4837,17 @@ const DOC_CSS = `
 .doc h2 .num{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:var(--brand);color:#fff;font-size:13px;font-weight:500;flex:0 0 26px}
 .doc h3{font-size:14px;font-weight:700;margin:22px 0 10px}
 .doc .lead{color:var(--ink2);margin:10px 0 0}
+.doc .cl{background:var(--brand-bg);border:1px solid #dcd4f6;border-left:4px solid var(--brand);border-radius:8px;padding:11px 14px;margin:2px 0 16px;font-size:13.5px;line-height:1.8}
+.doc .cl b{color:var(--brand-d)}
+.doc .cl .neg{color:var(--crit);font-weight:700}
 .doc .note{font-size:11.5px;color:var(--ink3);margin-top:8px;line-height:1.7}
 .doc mark{background:var(--brand-bg);color:var(--brand-d);padding:1px 6px;border-radius:4px;font-weight:500}
 .doc .verdict{font-size:15px;line-height:1.8;margin:14px 0 4px}
 .doc .verdict b{color:var(--brand-d)}
+.doc .sum{display:flex;flex-wrap:wrap;gap:8px 24px;list-style:none;margin:10px 0 2px;padding:0;font-size:13px}
+.doc .sum li{display:flex;align-items:baseline;gap:6px}
+.doc .sum li::before{content:"•";color:var(--brand);font-weight:700}
+.doc .sum b{color:var(--brand-d);font-size:16px;font-variant-numeric:tabular-nums}
 .doc .mcard{background:#faf9fd;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
 .doc .mcard .k{font-size:12px;color:var(--ink2)}
 .doc .mcard .v{font-size:26px;font-weight:700;color:var(--brand-d);line-height:1.2;margin-top:6px;font-variant-numeric:tabular-nums}
@@ -4865,6 +4872,17 @@ const DOC_CSS = `
 .doc .trow.priority .tk,.doc .trow.priority .tn b{color:var(--crit)} .doc .trow.priority .tk i{background:var(--crit)}
 .doc .trow.improve .tk,.doc .trow.improve .tn b{color:var(--warn)} .doc .trow.improve .tk i{background:var(--warn)}
 .doc .trow.keep .tk,.doc .trow.keep .tn b{color:var(--good)} .doc .trow.keep .tk i{background:var(--good)}
+.doc .fchart{display:flex;gap:14px;margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:16px 18px 14px}
+.doc .col{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+.doc .col .fpct{font-size:13px;font-weight:700;color:var(--brand-d);font-variant-numeric:tabular-nums;margin-bottom:6px}
+.doc .col .coltrack{width:100%;max-width:64px;height:150px;display:flex;align-items:flex-end;background:var(--l0);border-radius:5px;overflow:hidden}
+.doc .col .coltrack i{display:block;width:100%;background:var(--brand)}
+.doc .col .clabel{font-size:12.5px;font-weight:600;margin-top:8px;line-height:1.4;min-height:1.4em}
+.doc .col .csub{font-size:11px;color:var(--ink3);margin-top:3px;line-height:1.5;min-height:3em}
+.doc .trend{margin:10px 0 4px;padding:0;list-style:none}
+.doc .trend li{position:relative;padding:7px 0 7px 18px;border-bottom:1px dashed var(--line);font-size:13px;line-height:1.7}
+.doc .trend li:last-child{border-bottom:0}
+.doc .trend li::before{content:"";position:absolute;left:0;top:14px;width:7px;height:7px;border-radius:50%;background:var(--brand)}
 .doc .risk{margin-top:12px;border-left:3px solid var(--crit);background:#fdf6f6;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12.5px}
 .doc .risk b{color:var(--crit)}
 .doc table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
@@ -5097,29 +5115,36 @@ function v2DocHTML(){
     <h1>${esc(v2ReportName())}</h1>
     <div class="metas">
       <span>学校：<b>${esc(SC.name||'—')}</b></span>
+      <span>行业：<b>${esc(I.name||'—')}</b></span>
       <span>专业：<b>${esc(majors.map(m=>`${m.name}（${m.stage}）`).join('、'))}</b></span>
       <span>生成时间：<b>${esc(verRec ? verRec.at : nowStr())}</b></span>
       <span>报告编号：<b>${ver != null ? '#'+ver : '未保存（设置修改后尚未确认）'}</b></span>
     </div></div>`);
-  H.push(`<div class="disc"><b>关于本报告　</b>本报告对照${esc(I.name)}岗位能力要求，分析本校专业${FEAT_LABS?'在课程与实训条件上':'课程'}的对接情况，供专业建设参考，
-    <b>不作为办学水平评价或排名</b>。学时、开课学期等安排由学校在课程计划中确定，本报告不作建议。</div>`);
-
-  /* 一 核心结论 */
-  H.push(`<section><h2><span class="num">一</span>核心结论</h2>
-    <p class="verdict">${v2Verdict()}</p>
-    <div class="kstrip">
-      ${v2KpiCards(n).map(x=>`<div class="mcard"><div class="k">${x.k}</div><div class="v">${x.a}<small> / ${x.b}</small><small class="kp">（${x.p}%）</small></div>
-        <div class="s">${esc(x.s)}</div><div class="meter"><i style="width:${x.p}%"></i></div></div>`).join('')}
-      ${FEAT_LABS?`      <div class="mcard"><div class="k">实训条件具备</div><div class="v">${has4?`${labHave.length}<small>/ ${labNeed.length} 项</small>`:'—'}</div>
-        <div class="s">${has4?'已开课程所要求的实训条件中，本校已具备的数量':'实训条件未填报'}</div><div class="meter"><i style="width:${has4&&labNeed.length?pct(labHave.length/labNeed.length):0}%"></i></div></div>`:''}
+  /* 一 概览 / 摘要：主要说明学校在各基准上的覆盖占比 */
+  const stdCov = v2StdCourses();
+  const openedCov = [...stdCov].filter(id=>V2.courseIntent.has(id)).length;
+  const chart = [
+    {k:'岗位覆盖度', a:n.posN, b:n.totalPos, den:'行业'},
+    {k:'课程覆盖度', a:openedCov, b:stdCov.size, den:'标准'},
+    {k:'能力覆盖度', a:n.coveredAb, b:n.totalAb, den:'行业'},
+    {k:'能力达标度', a:n.depthAb, b:n.totalAb, den:'行业'},
+  ];
+  H.push(`<section><h2><span class="num">一</span>概览 / 摘要</h2>
+    <p class="lead" style="margin-top:0">本次评估 <b>${esc(I.name)}·${esc(majors.map(m=>m.name).join('、'))}</b> 面向的 <b>${esc(v2PosArr().map(p=>p.name).join('、'))}</b> 岗位：</p>
+    <ul class="sum">
+      <li>岗位覆盖度 <b>${pct(n.posN/n.totalPos)}%</b></li>
+      <li>课程覆盖度 <b>${pct(openedCov/stdCov.size)}%</b></li>
+      <li>能力覆盖度 <b>${pct(n.coveredAb/n.totalAb)}%</b></li>
+      <li>能力达标度 <b>${pct(n.depthAb/n.totalAb)}%</b></li>
+    </ul>
+    <div class="fchart">
+      ${chart.map(f=>`<div class="col">
+        <div class="fpct">${pct(f.a/f.b)}%</div>
+        <div class="coltrack"><i style="height:${pct(f.a/f.b)}%"></i></div>
+        <div class="clabel">${esc(f.k)}</div>
+        <div class="csub">本校 ${f.a} / ${f.den} ${f.b}</div></div>`).join('')}
     </div>
-    <div class="tlist">
-      ${['priority','improve','keep'].map(t=>`<div class="trow ${t}"><span class="tk"><i></i>${DOC_TIER[t]}</span>
-        <span class="tn"><b>${tiers[t].length}</b> 个能力领域</span>
-        <span class="tl">${tiers[t].length?esc(tiers[t].join('、')):'暂无'}</span></div>`).join('')}
-    </div>
-    <p class="note">能力领域的划分方法：尚无课程覆盖的能力占一半以上的，列为「优先建设」；
-      达到岗位要求的能力占 ${pct(DOC.KEEP)}% 及以上的，列为「保持优势」；其余列为「逐步完善」。</p>
+    <p class="note">柱高表示本校在对应指标上占基准的比例，满格为 100%。其中「课程覆盖度」的基准是专业教学标准列出的专业课，其余三项的基准是全行业总量：面向哪些岗位、这些岗位的能力要求有多少被课程覆盖、又有多少真正教到了岗位要求的等级。</p>
   </section>`);
 
   /* 二 行业现状与趋势（与本校无关，作为后文对照的基准） */
@@ -5134,13 +5159,10 @@ function v2DocHTML(){
   const emergingAll = D.abilities.filter(a=>a.flag||a.inferred)
     .sort((x,y)=>y.positionCount-x.positionCount);
   H.push(`<section><h2><span class="num">二</span>行业现状与趋势</h2>
-
     <h3>2.1 行业范围</h3>
-    <div class="tscroll"><table><thead><tr><th>子行业</th><th>代表岗位</th><th>定位</th></tr></thead><tbody>
-      ${D.subIndustries.filter(sb=>sb.built).map(sb=>`<tr><td><b>${esc(sb.name)}</b></td>
-        <td>${esc(sb.positionIds.map(id=>pos[id].name).join('、'))}</td>
-        <td>${esc(sb.desc||'')}</td></tr>`).join('')}
-    </tbody></table></div>
+    <ul class="trend">
+      ${D.subIndustries.filter(sb=>sb.built).map(sb=>`<li><b>${esc(sb.name)}</b>：${esc(sb.positionIds.map(id=>pos[id].name).join('、'))}</li>`).join('')}
+    </ul>
 
     <h3>2.2 岗位与能力结构</h3>
     <div class="kstrip">
@@ -5156,11 +5178,18 @@ function v2DocHTML(){
     <p class="note">按涉及岗位数从多到少排列。涉及岗位越多，说明这类能力越通用；L3 比例越高，说明岗位对这类能力的要求越接近真实工作中的综合运用。</p>
 
     <h3>2.3 变化趋势</h3>
-    ${emergingAll.length?`<p class="lead" style="margin-top:0">以下 ${emergingAll.length} 条是岗位上新出现的能力要求，反映行业正在发生的变化。</p>
+    <p class="lead" style="margin-top:0">行业的变化分两层看：宏观上是行业层面的 <b>${I.trends.length}</b> 个趋势，微观上是这些趋势落到岗位上的 <b>${emergingAll.length}</b> 条新能力要求。</p>
+    <h4>产业趋势</h4>
+    ${I.trends.length?`<ul class="trend">
+      ${I.trends.map(t=>`<li>${esc(t)}</li>`).join('')}
+    </ul>
+    <p class="note">产业趋势为建图模型基于公开信息给出的背景判断，<b>未逐条标注出处</b>，仅供理解行业方向；需要引用、可核对的结论，请以下方「新兴能力」为准。</p>`:'<p class="note">暂无产业趋势记录。</p>'}
+    <h4>新兴能力</h4>
+    ${emergingAll.length?`<p class="lead" style="margin-top:0">以下 ${emergingAll.length} 条是岗位上新出现的能力要求（国家或行业标准尚未完全覆盖），反映趋势落到岗位上的具体要求。</p>
     <div class="tscroll"><table><thead><tr><th>新兴能力</th><th>能力领域</th><th class="r">要求岗位数</th><th class="c">最高要求</th></tr></thead><tbody>
       ${emergingAll.map(a=>`<tr><td>${esc(a.name)}</td><td>${esc(a.domain)}</td><td class="r">${a.positionCount}</td>
         <td class="c">${esc(DOC_LV[LV[a.maxRequiredLevel]]||a.maxRequiredLevel||'—')}</td></tr>`).join('')}
-    </tbody></table></div>`:''}
+    </tbody></table></div>`:'<p class="note">暂无新兴能力记录。</p>'}
   </section>`);
 
   /* 三 本校现状 */
@@ -5171,6 +5200,7 @@ function v2DocHTML(){
   const openedStd = [...stdCs].filter(id=>V2.courseIntent.has(id)).length;
   const unmapped = [...new Set(majors.flatMap(m=>m.coursesUnmapped||[]))];
   H.push(`<section><h2><span class="num">三</span>本校专业现状</h2>
+    <p class="cl">${esc(majors.map(m=>m.name).join('、'))}专业面向 <b>${n.posN}</b> 个目标岗位，合计要求 <b>${n.totalAb}</b> 条能力；已开设标准专业课 <b>${openedStd}/${stdCs.size}</b> 门，已开展教学内容 <b>${leafOn}/${leafTot}</b> 项。与岗位要求的差距详见第四章。</p>
     <h3>3.1 专业设置</h3>
     <div class="tscroll"><table><thead><tr><th>专业</th><th>层次</th></tr></thead><tbody>
       ${majors.map(m=>`<tr><td><b>${esc(m.name)}</b></td><td>${esc(m.stage)}</td></tr>`).join('')}
@@ -5213,6 +5243,7 @@ function v2DocHTML(){
   /* 四 差距分析 */
   const emergingReq = D.abilities.filter(a=>reqMap[a.id] && (a.flag||a.inferred));
   H.push(`<section><h2><span class="num">四</span>差距分析</h2>
+    <p class="cl">${rows.length} 个能力领域中，<span class="neg">优先建设 ${tiers.priority.length} 个</span>、逐步完善 ${tiers.improve.length} 个、保持优势 ${tiers.keep.length} 个。${tiers.priority.length ? '最需要关注：<b>'+esc(tiers.priority.join('、'))+'</b>。' : ''}整体课程覆盖 <b>${n.coveredAb}/${n.totalAb}</b> 条，达到岗位要求 <b>${n.depthAb}/${n.totalAb}</b> 条。</p>
     <h3>按能力领域</h3>
     <div class="tscroll"><table><thead><tr><th>能力领域</th><th class="r">岗位要求</th><th style="width:28%">对接情况</th><th class="r">课程覆盖</th><th class="r">达到要求</th><th class="c">建设建议</th></tr></thead><tbody>
       ${rows.map(d=>`<tr><td>${esc(d.domain)}</td><td class="r">${d.total}</td>
@@ -5242,6 +5273,14 @@ function v2DocHTML(){
 
   /* 五 建设建议 */
   H.push(`<section><h2><span class="num">五</span>建设建议</h2>
+    <p class="cl">按差距从大到小给出建议：优先补齐 <span class="neg">${tiers.priority.length}</span> 个优先建设领域、完善 ${tiers.improve.length} 个逐步完善领域${tiers.keep.length ? '，「'+esc(tiers.keep.join('、'))+'」以巩固为主' : ''}。每条建议都落实到具体能力项，出处见附录。</p>
+    <div class="tlist">
+      ${['priority','improve','keep'].map(t=>`<div class="trow ${t}"><span class="tk"><i></i>${DOC_TIER[t]}</span>
+        <span class="tn"><b>${tiers[t].length}</b> 个能力领域</span>
+        <span class="tl">${tiers[t].length?esc(tiers[t].join('、')):'暂无'}</span></div>`).join('')}
+    </div>
+    <p class="note">能力领域的划分方法：尚无课程覆盖的能力占一半以上的，列为「优先建设」；
+      达到岗位要求的能力占 ${pct(DOC.KEEP)}% 及以上的，列为「保持优势」；其余列为「逐步完善」。</p>
     ${sugs.length?sugs.map(s=>`<div class="sug"><div class="sug-h">${tierTag(s.d.tier)}<b>${esc(s.d.domain)}</b>
         <span class="note" style="margin:0">${esc(s.d.why)}</span></div>
       <dl><dt>现状</dt><dd>${esc(s.now)}</dd>
@@ -5258,7 +5297,24 @@ function v2DocHTML(){
 
   /* 六 附录 */
   H.push(`<section class="apx"><h2><span class="num">六</span>附录</h2>
-    <h4>能力明细 · 按能力领域分组</h4>
+
+    <h3>6.1 阅读说明</h3>
+    <p class="lead" style="margin-top:0"><b>这份报告回答一个问题：</b>${esc(majors.map(m=>m.name).join('、'))}专业现有的课程${FEAT_LABS?'与实训条件':''}，能不能满足${esc(I.name)}行业代表岗位对能力的要求——差在哪、该怎么补。</p>
+    <h4>几个关键词</h4>
+    <div class="tscroll"><table><thead><tr><th style="width:112px">词</th><th>含义</th></tr></thead><tbody>
+      <tr><td>岗位能力要求</td><td>一个岗位对一条能力提出要求，计为 1 项；本报告以本次选定的目标岗位为准。</td></tr>
+      <tr><td>课程覆盖</td><td>本校有课程内容对应到该能力（不论教到什么程度）。</td></tr>
+      <tr><td>达到要求</td><td>教到了岗位要求的等级。</td></tr>
+      <tr><td>能力等级</td><td><b>L1 认知</b>——了解、在指导下完成；<b>L2 独立操作</b>——按规范独立完成常规任务；<b>L3 综合应用</b>——处理非常规情况、优化流程、指导他人。</td></tr>
+      <tr><td>核心能力 ★</td><td>被 2 个及以上岗位要求、且有国家法规政策依据的能力。</td></tr>
+      <tr><td>能力领域分档</td><td>尚无课程覆盖的能力占一半以上的列为「优先建设」；达到要求的能力占 ${pct(DOC.KEEP)}% 及以上的列为「保持优势」；其余列为「逐步完善」。</td></tr>
+    </tbody></table></div>
+    <h4>怎么读</h4>
+    <p class="lead" style="margin-top:0">先看<b>一 概览</b>拿总判断，再看<b>四 差距分析</b>与<b>五 建设建议</b>找具体差距和动作，各章数字的出处见本附录 6.2；二、三章分别是行业基准与本校现状，是后文判断的依据。</p>
+    <p class="note"><b>关于本报告：</b>本报告对照${esc(I.name)}岗位能力要求，分析本校专业的对接情况，供专业建设参考，<b>不作为办学水平评价或排名</b>。学时、开课学期等安排由学校在课程计划中确定，本报告不作建议。</p>
+
+    <h3>6.2 能力明细</h3>
+    <p class="cl">按能力领域列出每条能力项的本校对接情况，供核对正文各章数字的出处；<b>★ 为核心能力</b>。</p>
     <div class="tscroll"><table><thead><tr><th>能力</th><th class="c">岗位要求</th><th class="c">本校</th><th class="c">目标岗位达标</th></tr></thead><tbody>
       ${rows.map(d=>{
         const tpc = v2TpCount();
