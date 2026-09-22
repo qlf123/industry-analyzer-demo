@@ -1145,6 +1145,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
   --kg-leaf-gray:var(--rule);
   --kgt-industry:#ca8a04;
   --kgt-major:#0d9488;
+  --kgt-majorcat:#115e59;
   --kgt-position:#2563eb;
   --kgt-ability:#7c3aed;
   --kgt-course:#16a34a;
@@ -1155,6 +1156,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
   --kgt-std:#d946ef;
   --kgt-case:#f59e0b;
   --kgt-step:#64748b;
+  --kgt-sub:#0ea5e9;
 }
 .kg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
 .kg-title{font-size:20px}
@@ -1316,6 +1318,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
 .k2ct{display:inline-flex;align-items:center;font-family:var(--mono);font-size:9.5px;font-weight:600;line-height:1;padding:2px 6px;border-radius:4px;margin-right:5px;vertical-align:middle;letter-spacing:.03em;color:#fff;white-space:nowrap}
 .k2ct.bd-industry{background:var(--kgt-industry)}
 .k2ct.bd-major{background:var(--kgt-major)}
+.k2ct.bd-majorcat{background:var(--kgt-majorcat)}
 .k2ct.bd-position{background:var(--kgt-position)}
 .k2ct.bd-ability{background:var(--kgt-ability)}
 .k2ct.bd-course{background:var(--kgt-course)}
@@ -1326,6 +1329,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
 .k2ct.bd-std{background:var(--kgt-std)}
 .k2ct.bd-case{background:var(--kgt-case)}
 .k2ct.bd-step{background:var(--kgt-step)}
+.k2ct.bd-sub{background:var(--kgt-sub)}
 .k2muted{color:var(--muted)}
 .k2src{font-size:11px;color:var(--muted)}
 .k2row.k2bd,.k2zga-i.k2bd,.k2g-h.k2bd{border-left:3px solid transparent;padding-left:9px}
@@ -1345,6 +1349,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
 .k2lg i{width:3px;height:12px;border-radius:1px;flex:0 0 auto}
 .k2lg.bd-industry i{background:var(--kgt-industry)}
 .k2lg.bd-major i{background:var(--kgt-major)}
+.k2lg.bd-majorcat i{background:var(--kgt-majorcat)}
 .k2lg.bd-position i{background:var(--kgt-position)}
 .k2lg.bd-ability i{background:var(--kgt-ability)}
 .k2lg.bd-course i{background:var(--kgt-course)}
@@ -6498,11 +6503,14 @@ renderV2();
   function nl(type,id,name){ return `<span class="k2nl" role="button" tabindex="0" data-k2nav="${type}" data-k2nav-id="${esc(id)}">${esc(name)}</span>`; }
   const TAGCLS = {'专业':'major','岗位':'position','能力':'ability','课程':'course','任务':'task','流程':'flow','技能':'skill','知识点':'kp','规范':'std','案例':'case','操作步骤':'step'};
   const bd = lbl => `bd-${TAGCLS[lbl]||'x'}`;
-  const TYPELABEL = {industry:'行业',major:'专业',position:'岗位',ability:'能力',course:'课程',task:'任务',flow:'流程',skill:'技能',kp:'知识点',std:'规范',case:'案例',step:'操作步骤'};
+  const TYPELABEL = {industry:'行业',sub:'子行业',major:'专业',majorCat:'专业大类',position:'岗位',ability:'能力',course:'课程',task:'任务',flow:'流程',skill:'技能',kp:'知识点',std:'规范',case:'案例',step:'操作步骤'};
   const ct = t => `<span class="k2ct bd-${t}">${TYPELABEL[t]||t}</span>`;
-  function chainFor(parentId){
-    let courseId=null, taskId=null, flowId=null, stepId=null, p=parentId;
-    if(stepById.has(p)){ stepId=p; flowId=stepById.get(p).flow; }
+  /* 归属链：知识体系侧根=专业（无专业大类），能力侧根=行业。
+     链路 = 专业-课程-任务-流程-技能-知识点/操作步骤/规范/案例，模块、步骤不作为中间层。
+     技能层按「同父技能规范」推导：取同父下第一条技能规范；同父无技能则跳过技能层。 */
+  function locChain(parentId){
+    let courseId=null, taskId=null, flowId=null, p=parentId;
+    if(stepById.has(p)){ flowId=stepById.get(p).flow; }
     else if(flowById.has(p)) flowId=p;
     else if(taskById.has(p)) taskId=p;
     else if(moduleById.has(p)) courseId=moduleById.get(p).course;
@@ -6511,16 +6519,37 @@ renderV2();
     if(taskId && taskById.has(taskId)) courseId=moduleById.get(taskById.get(taskId).module).course;
     const out=[];
     const mc=courseId?courseMajor[courseId]:null;
-    if(mc) out.push({type:'major',id:mc,name:majorByCode.get(mc).name});
-    if(courseId) out.push({type:'course',id:courseId,name:courseById.get(courseId).name});
-    if(taskId) out.push({type:'task',id:taskId,name:taskById.get(taskId).name});
-    if(flowId) out.push({type:'flow',id:flowId,name:flowById.get(flowId).name});
-    if(stepId) out.push({type:'step',id:stepId,name:stepById.get(stepId).name});
+    if(mc){
+      const mj=majorByCode.get(mc);
+      if(mj && mj.category) out.push({type:'majorCat',nav:null,id:mc,name:mj.category});
+      out.push({type:'major',nav:'major',id:mc,name:mj.name});
+    }
+    if(courseId) out.push({type:'course',nav:'course',id:courseId,name:courseById.get(courseId).name});
+    if(taskId) out.push({type:'task',nav:'task',id:taskId,name:taskById.get(taskId).name});
+    if(flowId) out.push({type:'flow',nav:'flow',id:flowId,name:flowById.get(flowId).name});
     return out;
+  }
+  function firstSkillOf(parentId){ const arr=skillsByParent[parentId]||[]; return arr.length?arr[0]:null; }
+  const skillEntry = sid => { const s=leafById.get(sid); return {type:'skill',nav:'skill',id:sid,name:s.name}; };
+  const leafType = l => l.kind==='知识点'?'kp':(l.kind==='标准'?'std':'case');
+  function kgChain(type, id){
+    let chain=[], cur=null;
+    if(type==='major'){ const m=majorByCode.get(id); cur={type:'major',nav:'major',id,name:m.name}; if(m.category) chain=[{type:'majorCat',nav:null,id,name:m.category}]; }
+    else if(type==='course'){ const c=courseById.get(id); cur={type:'course',nav:'course',id,name:c.name}; const mc=courseMajor[id]; if(mc){ const mj=majorByCode.get(mc); if(mj.category) chain.push({type:'majorCat',nav:null,id:mc,name:mj.category}); chain.push({type:'major',nav:'major',id:mc,name:mj.name}); } }
+    else if(type==='task'){ const t=taskById.get(id); cur={type:'task',nav:'task',id,name:t.name}; chain=locChain(t.module); }
+    else if(type==='flow'){ const f=flowById.get(id); cur={type:'flow',nav:'flow',id,name:f.name}; chain=locChain(f.task); }
+    else if(type==='step'){ const s=stepById.get(id); cur={type:'step',nav:'step',id,name:s.name}; chain=locChain(s.flow); const sk=firstSkillOf(id); if(sk) chain=chain.concat([skillEntry(sk.id)]); }
+    else if(type==='skill'){ const s=leafById.get(id); cur=skillEntry(id); chain=locChain(s.parent); }
+    else if(type==='leaf'){ const l=leafById.get(id); cur={type:leafType(l),nav:'leaf',id,name:l.name}; chain=locChain(l.parent); const sk=firstSkillOf(l.parent); if(sk) chain=chain.concat([skillEntry(sk.id)]); }
+    return cur?chain.concat([cur]):chain;
   }
   function chainHTML(chain){
     if(!chain.length) return '<span class="k2muted">—</span>';
-    return '<span class="k2chain">'+chain.map((c,i)=>(i?'<span class="k2sep">›</span>':'')+ct(c.type)+nl(c.type,c.id,c.name)).join('')+'</span>';
+    return '<span class="k2chain">'+chain.map((c,i)=>{
+      const last = i===chain.length-1;
+      const link = (!last && c.nav) ? nl(c.nav,c.id,c.name) : esc(c.name);
+      return (i?'<span class="k2sep">›</span>':'')+ct(c.type)+link;
+    }).join('')+'</span>';
   }
   function zgaListHTML(zs, steps){
     steps = steps||[];
@@ -6626,7 +6655,10 @@ renderV2();
     const cs=relevantCoursesFor(pid);
     let h='';
     if(p.desc) h+=`<div class="k2s"><div class="k2st">岗位职责</div><div class="k2def">${esc(p.desc)}</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">归属链</div><div class="k2chain">${ct('industry')}${nl('industry',G.industry.id,G.industry.name)} › ${esc(sc.name)}</div></div>`;
+    const chainPos=[{type:'industry',nav:'industry',id:G.industry.id,name:G.industry.name}];
+    if(sc) chainPos.push({type:'sub',nav:null,id:p.sub,name:sc.name});
+    chainPos.push({type:'position',nav:'position',id:p.id,name:p.name});
+    h+=`<div class="k2s"><div class="k2st">归属链</div>${chainHTML(chainPos)}</div>`;
     h+=`<div class="k2tabs"><button class="k2tab${st.tab==='ability'?' on':''}" data-k2tab="ability">能力 ${p.abilities.length}</button><button class="k2tab${st.tab==='task'?' on':' dim'}" data-k2tab="task">任务 ${rel.length}</button><button class="k2tab${st.tab==='course'?' on':' dim'}" data-k2tab="course">课程 ${cs.length}</button></div>`;
     h+= st.tab==='ability' ? abilityBodyHTML(pid, courseSet, st) : (st.tab==='course' ? courseBodyHTML(pid, st) : taskBodyHTML(pid, st));
     return h;
@@ -6644,7 +6676,7 @@ renderV2();
     const deg=(m.positions||[]).filter(p=>p.degree!=='不对口');
     let h='';
     if(m.goal) h+=`<div class="k2s"><div class="k2st">培养目标</div><div class="k2def">${esc(m.goal)}</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${ct('industry')}${nl('industry',G.industry.id,G.industry.name)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属链</div>${chainHTML(kgChain('major', code))}</div>`;
     h+=`<div class="k2s"><div class="k2st">专业信息</div><div class="k2def">${esc(m.name)} · ${esc(m.stage||'')}${m.years?` · 学制 ${m.years} 年`:''}</div></div>`;
     h+=`<div class="k2s"><div class="k2st">对口岗位 ${deg.length} 个</div>`+deg.map(p=>`<div class="k2row">${nl('position',p.id,pos[p.id].name)}</div>`).join('')+`</div>`;
     const cs=m.courses||[];
@@ -6656,9 +6688,17 @@ renderV2();
     const skIds=supportSkillIdsOf(aid);
     let h='';
     if(a.definition) h+=`<div class="k2s"><div class="k2st">描述</div><div class="k2def">${esc(a.definition)}</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${ct('industry')}${nl('industry',G.industry.id,G.industry.name)} › ${esc(a.domain)}</div></div>`;
+    const prev = k2stack.length>=2 ? k2stack[k2stack.length-2] : null;
+    if(prev && prev.type==='position'){
+      const p=pos[prev.id], sc=sub[p.sub];
+      const c=[{type:'industry',nav:'industry',id:G.industry.id,name:G.industry.name}];
+      if(sc) c.push({type:'sub',nav:null,id:p.sub,name:sc.name});
+      c.push({type:'position',nav:'position',id:prev.id,name:p.name});
+      c.push({type:'ability',nav:'ability',id:aid,name:a.name});
+      h+=`<div class="k2s"><div class="k2st">归属链</div>${chainHTML(c)}</div>`;
+    }
     if(a.core) h+=`<div class="k2s"><div class="k2st">★ 核心能力</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">支撑技能 ${skIds.length} 个</div>`+(skIds.length?skIds.slice(0,6).map(sid=>skillBlockHTML(sid,{})).join('')+(skIds.length>6?`<div class="k2note">共 ${skIds.length} 个，仅展示前 6 个</div>`:''):'<div class="k2none">暂无支撑技能</div>')+`</div>`;
+    h+=`<div class="k2s"><div class="k2st">需具备技能 ${skIds.length} 个</div>`+(skIds.length?skIds.slice(0,6).map(sid=>skillBlockHTML(sid,{})).join('')+(skIds.length>6?`<div class="k2note">共 ${skIds.length} 个，仅展示前 6 个</div>`:''):'<div class="k2none">暂无相关技能</div>')+`</div>`;
     h+=`<div class="k2s"><div class="k2st">要求该能力的岗位 ${a.requiredBy.length} 个</div>`+a.requiredBy.map(r=>`<div class="k2row">${nl('position',r.position,pos[r.position].name)}<span class="k2pill ${r.level}">${r.level}</span></div>`).join('')+`</div>`;
     h+=`<div class="k2s"><div class="k2st">L1–L3 三级要求</div>`+['L1','L2','L3'].map(L=>{ const l=a.levels[L]; return `<div class="k2lvl ${L}"><div class="k2lvl-h"><span class="k2lv ${L}">${L}</span><span class="k2lv-n">${LVN[L]}</span></div><div class="k2lv-d">${esc(l.desc)}</div>${l.points&&l.points.length?`<div class="k2pts-h">观测点</div><ul class="k2pts">${l.points.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`:''}</div>`; }).join('')+`</div>`;
     return h;
@@ -6667,7 +6707,7 @@ renderV2();
     const c=courseById.get(cid), mc=courseMajor[cid];
     let h='';
     if(c.desc) h+=`<div class="k2s"><div class="k2st">描述</div><div class="k2def">${esc(c.desc)}</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${ct('industry')}${nl('industry',G.industry.id,G.industry.name)} › ${mc?ct('major')+nl('major',mc,majorByCode.get(mc).name):esc('—')}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属链</div>${chainHTML(kgChain('course', cid))}</div>`;
     h+=`<div class="k2s"><div class="k2st">课程类型</div><div class="k2def">${esc(c.type||'—')}${c.block?` · ${esc(c.block)}`:''}${c.hours?` · ${c.hours} 学时`:''}</div></div>`;
     const ts=tasksByCourse[cid]||[];
     if(ts.length) h+=`<div class="k2s"><div class="k2st">任务 ${ts.length} 个</div>`+ts.slice(0,10).map(t=>`<div class="k2row">${nl('task',t.id,t.name)}</div>`).join('')+(ts.length>10?`<div class="k2note">共 ${ts.length} 个，仅展示前 10 个</div>`:'')+`</div>`;
@@ -6677,7 +6717,7 @@ renderV2();
     const t=taskById.get(tid);
     let h='';
     if(t.result) h+=`<div class="k2s"><div class="k2st">任务结果</div><div class="k2def">${esc(t.result)}</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${chainHTML(chainFor(t.module))}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属链</div>${chainHTML(kgChain('task', tid))}</div>`;
     const fls=flowsByTask[tid]||[];
     if(fls.length) h+=`<div class="k2s"><div class="k2st">操作流程 ${fls.length} 个（按顺序）</div>`+fls.map(f=>`<div class="k2row">${nl('flow',f.id,f.name)}</div>`).join('')+`</div>`;
     else { const sk=skillsByParent[tid]||[]; if(sk.length) h+=`<div class="k2s"><div class="k2st">技能 ${sk.length} 个</div>`+sk.map(s=>skillBlockHTML(s.id,{showAbility:true})).join('')+`</div>`; }
@@ -6687,7 +6727,7 @@ renderV2();
     const f=flowById.get(fid);
     let h='';
     if(f.result) h+=`<div class="k2s"><div class="k2st">流程结果</div><div class="k2def">${esc(f.result)}</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${chainHTML(chainFor(f.task))}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属链</div>${chainHTML(kgChain('flow', fid))}</div>`;
     const stps=stepsByFlow[fid]||[];
     if(stps.length) h+=`<div class="k2s"><div class="k2st">操作步骤 ${stps.length} 个</div><div class="k2zga">${stps.map(s=>`<div class="k2zga-i k2bd bd-step">${nl('step',s.id,s.name)}</div>`).join('')}</div></div>`;
     const sk=skillsByParent[fid]||[];
@@ -6700,7 +6740,7 @@ renderV2();
     const s=stepById.get(sid);
     let h='';
     if(s.result) h+=`<div class="k2s"><div class="k2st">描述</div><div class="k2def">${esc(s.result)}</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${chainHTML(chainFor(s.flow))}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属链</div>${chainHTML(kgChain('step', sid))}</div>`;
     const sk=skillsByParent[sid]||[];
     if(sk.length) h+=`<div class="k2s"><div class="k2st">技能 ${sk.length} 个</div>`+sk.map(s=>skillBlockHTML(s.id,{showAbility:true})).join('')+`</div>`;
     const zs=zgaByParent[sid]||[];
@@ -6708,10 +6748,10 @@ renderV2();
     return h;
   }
   function skillNodeHTML(sid){
-    const s=leafById.get(sid), chain=chainFor(s.parent), aids=abilityIdsOfSkill(sid);
+    const s=leafById.get(sid), aids=abilityIdsOfSkill(sid);
     let h='';
     if(s.definition) h+=`<div class="k2s"><div class="k2st">描述</div><div class="k2def">${esc(s.definition)}</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${chainHTML(chain)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属链</div>${chainHTML(kgChain('skill', sid))}</div>`;
     h+=`<div class="k2s"><div class="k2st">对应能力 ${aids.length} 个</div>`+(aids.length?aids.map(aid=>`<div class="k2row">${nl('ability',aid,abl[aid].name)}</div>`).join(''):'<div class="k2none">—</div>')+`</div>`;
     const stps = flowOfSkill(sid) ? (stepsByFlow[flowOfSkill(sid)]||[]) : [];
     const zs=zgaByParent[s.parent]||[];
@@ -6719,11 +6759,11 @@ renderV2();
     return h;
   }
   function leafNodeHTML(lid){
-    const l=leafById.get(lid), chain=chainFor(l.parent);
+    const l=leafById.get(lid);
     const skillIds=(skillsByParent[l.parent]||[]).map(s=>s.id);
     let h='';
     if(l.definition) h+=`<div class="k2s"><div class="k2st">描述</div><div class="k2def">${esc(l.definition)}</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">所在位置</div><div class="k2chain">${chainHTML(chain)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属链</div>${chainHTML(kgChain('leaf', lid))}</div>`;
     h+=`<div class="k2s"><div class="k2st">归属技能</div>`+(skillIds.length?skillIds.map(sid=>`<div class="k2row">${nl('skill',sid,leafById.get(sid).name)}</div>`).join(''):'<div class="k2none">—</div>')+`</div>`;
     return h;
   }
@@ -6755,8 +6795,8 @@ renderV2();
     $('#k2Body').querySelectorAll('.k2ct, .k2zga-i').forEach(el=>{
       el.classList.forEach(c=>{ if(c.startsWith('bd-')) seen.add(c); });
     });
-    const order=['bd-industry','bd-major','bd-position','bd-ability','bd-course','bd-task','bd-flow','bd-step','bd-skill','bd-kp','bd-std','bd-case'];
-    const labels={'bd-industry':'行业','bd-major':'专业','bd-position':'岗位','bd-ability':'能力','bd-course':'课程','bd-task':'任务','bd-flow':'流程','bd-step':'操作步骤','bd-skill':'技能','bd-kp':'知识点','bd-std':'规范','bd-case':'案例'};
+    const order=['bd-industry','bd-sub','bd-majorcat','bd-major','bd-position','bd-ability','bd-course','bd-task','bd-flow','bd-step','bd-skill','bd-kp','bd-std','bd-case'];
+    const labels={'bd-industry':'行业','bd-sub':'子行业','bd-majorcat':'专业大类','bd-major':'专业','bd-position':'岗位','bd-ability':'能力','bd-course':'课程','bd-task':'任务','bd-flow':'流程','bd-step':'操作步骤','bd-skill':'技能','bd-kp':'知识点','bd-std':'规范','bd-case':'案例'};
     const items=order.filter(b=>seen.has(b));
     lg.innerHTML=items.map(b=>`<span class="k2lg ${b}"><i></i>${labels[b]}</span>`).join('');
     lg.style.display=items.length?'':'none';

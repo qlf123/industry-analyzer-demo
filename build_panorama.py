@@ -291,7 +291,7 @@ for kg, ab, rel, lv, cov, anchor_, conf, note in ALL_MAPPINGS:
 kgraph = {
     "industry": {"id": industry["id"], "name": industry["name"]},
     "majors": [{
-        "code": m["code"], "name": m["name"], "stage": m["stage"],
+        "code": m["code"], "name": m["name"], "stage": m["stage"], "category": m.get("category", ""),
         "years": m.get("years"), "source": m.get("source"), "goal": m.get("goal"),
         "courses": m["courses"],
         "positions": [{"id": pid, "degree": PT.MAJOR_POSITION_DEGREE.get(m["code"], {}).get(pid, "不对口")}
