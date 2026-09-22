@@ -262,6 +262,54 @@ for m in MS.MAJORS:
     ]
     majors.append(mm)
 
+# ── 全景图谱：融合双图谱的下钻树数据（教学层级 + 能力 + 映射边 + 对口表）──
+# 只新增一个 DATA 键 kgraph，不动上面任何现有键，原「行业全景」tab 不受影响。
+import data_pano_tree as PT
+
+def _leaf_definition(kind, r):
+    if kind == "技能规范": return r[3]
+    if kind == "知识点": return r[4]
+    if kind == "标准": return r[4]
+    if kind == "案例": return r[4]
+    return None
+
+_kg_leaves = []
+for rows, kind in [(K.SKILL_SPECS, "技能规范"), (K.KNOWLEDGE_POINTS, "知识点"),
+                   (K.STANDARDS, "标准"), (K.CASES, "案例"),
+                   (CL.LIB_SKILL_SPECS, "技能规范"), (CL.LIB_KNOWLEDGE_POINTS, "知识点")]:
+    for r in rows:
+        _kg_leaves.append({"id": r[0], "name": r[1], "kind": kind, "parent": r[2],
+                           "definition": _leaf_definition(kind, r)})
+
+_kg_mapping = []
+for kg, ab, rel, lv, cov, anchor_, conf, note in ALL_MAPPINGS:
+    if ab not in abl_by:
+        continue
+    _kg_mapping.append({"leaf": kg, "ability": ab, "rel": rel, "relCn": REL_CN[rel],
+                        "level": lv, "coverage": cov, "anchor": anchor_, "conf": conf, "note": note})
+
+kgraph = {
+    "industry": {"id": industry["id"], "name": industry["name"]},
+    "majors": [{
+        "code": m["code"], "name": m["name"], "stage": m["stage"],
+        "years": m.get("years"), "source": m.get("source"), "goal": m.get("goal"),
+        "courses": m["courses"],
+        "positions": [{"id": pid, "degree": PT.MAJOR_POSITION_DEGREE.get(m["code"], {}).get(pid, "不对口")}
+                      for pid in PT.ALL_POSITIONS if pid in pos_by],
+    } for m in MS.MAJORS],
+    "courses": [{"id": c["id"], "name": c["name"], "type": c["type"], "block": c.get("block", ""),
+                 "hours": c["hours"], "term": c["term"], "desc": c["desc"]}
+                for c in list(K.COURSES) + list(CL.LIB_COURSES)],
+    "modules": [{"id": m["id"], "name": m["name"], "course": m["course"], "kind": m["kind"]}
+                for m in list(K.MODULES) + list(CL.LIB_MODULES)],
+    "tasks": [{"id": t["id"], "name": t["name"], "module": t["module"], "result": t["result"]} for t in K.TASKS],
+    "flows": [{"id": f["id"], "name": f["name"], "task": f["task"], "result": f["result"]} for f in K.FLOWS],
+    "steps": [{"id": s["id"], "name": s["name"], "flow": s["flow"], "order": s["order"], "result": s["result"]} for s in K.STEPS],
+    "leaves": _kg_leaves,
+    "mapping": _kg_mapping,
+    "sample": "专业—岗位对口表为示例数据 · 待人工确认",
+}
+
 # 平台侧实训条件字典：把 equip 键的含义集中定义（V2.0 第 4 层勾选用）
 labDict = {}
 for c in course_lib:
@@ -281,6 +329,7 @@ DATA = {
     "courseLib": course_lib,
     "schoolLabs": CL.SCHOOL_LABS,
     "majors": majors,
+    "kgraph": kgraph,
     "labDict": labDict,
     "assessRules": MS.ASSESS_RULES,
     "buildDemo": X.BUILD_DEMO,

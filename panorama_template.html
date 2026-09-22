@@ -835,10 +835,10 @@ body.diag .nocov-tag{display:block}
 
 /* drawer */
 .scrim{position:fixed;inset:0;background:rgba(20,16,32,.42);opacity:0;pointer-events:none;
-  transition:opacity .2s;z-index:40}
+  transition:opacity .2s;z-index:490}
 .scrim.on{opacity:1;pointer-events:auto}
 .drawer{position:fixed;top:0;right:0;height:100vh;width:min(440px,92vw);background:var(--card);
-  border-left:1px solid var(--rule);box-shadow:-18px 0 48px -24px rgba(20,16,32,.4);z-index:50;
+  border-left:1px solid var(--rule);box-shadow:-18px 0 48px -24px rgba(20,16,32,.4);z-index:500;
   transform:translateX(100%);transition:transform .24s cubic-bezier(.4,0,.2,1);
   display:flex;flex-direction:column}
 .drawer.on{transform:none}
@@ -1133,6 +1133,281 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
 .rx-view{display:flex;gap:2px;padding:2px;background:var(--card-2);border:1px solid var(--rule);border-radius:9px}
 .rx-view .vs{padding:4px 12px;border-radius:7px;font-size:12px;color:var(--ink-2);border:none;background:none;cursor:pointer;transition:all .13s}
 .rx-view .vs[aria-pressed="true"]{background:var(--card);color:var(--brand-ink);font-weight:500;box-shadow:var(--shadow)}
+
+/* ═══ 全景图谱（双图谱融合下钻树）═══ */
+:root{
+  --kg-edge-structure:var(--rule);
+  --kg-edge-degree:#14b8a6;
+  --kg-edge-require:var(--brand);
+  --kg-edge-mapping:#8b5cf6;
+  --kg-edge-derived:var(--warn);
+  --kg-leaf-solid:var(--lv3);
+  --kg-leaf-gray:var(--rule);
+  --kgt-industry:#ca8a04;
+  --kgt-major:#0d9488;
+  --kgt-position:#2563eb;
+  --kgt-ability:#7c3aed;
+  --kgt-course:#16a34a;
+  --kgt-task:#d97706;
+  --kgt-flow:#e11d48;
+  --kgt-skill:#0891b2;
+  --kgt-kp:#6366f1;
+  --kgt-std:#d946ef;
+  --kgt-case:#f59e0b;
+  --kgt-step:#64748b;
+}
+.kg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
+.kg-title{font-size:20px}
+.kg-sub{color:var(--muted);font-size:13px;max-width:680px;margin-top:4px}
+.kg-canvas-wrap{position:relative}
+.kg-canvas{position:relative;overflow:auto;border:1px solid var(--rule);border-radius:14px;background:var(--card-2);
+  min-height:340px;max-height:calc(100vh - 250px)}
+.kg-tree{position:relative}
+#kgSvg{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+.kgnode{position:absolute;left:0;top:0;transform:translate(-50%,-50%);z-index:2;
+  display:flex;flex-direction:row;align-items:center;gap:8px;
+  background:var(--card);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);
+  padding:8px 12px;min-width:150px;max-width:230px;cursor:pointer;user-select:none;text-align:left;
+  transition:border-color .12s,box-shadow .12s}
+.kgnode:hover{border-color:var(--brand);box-shadow:var(--pop-shadow)}
+.kgnode:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.kgnode.red{border-color:var(--crit);background:var(--crit-bg);box-shadow:none}
+.kgnode.no-expand{cursor:default}
+.kgnode::before{content:"";position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:3px;background:var(--rule)}
+.kgnode[data-kgtype="industry"]::before{background:var(--kgt-industry)}
+.kgnode[data-kgtype="major"]::before{background:var(--kgt-major)}
+.kgnode[data-kgtype="position"]::before{background:var(--kgt-position)}
+.kgnode[data-kgtype="ability"]::before{background:var(--kgt-ability)}
+.kgnode[data-kgtype="course"]::before{background:var(--kgt-course)}
+.kgnode[data-kgtype="task"]::before{background:var(--kgt-task)}
+.kgnode[data-kgtype="flow"]::before{background:var(--kgt-flow)}
+.kgnode[data-kgtype="skill"]::before{background:var(--kgt-skill)}
+.kg-nm{display:flex;align-items:center;gap:6px;width:100%;font-weight:600;font-size:13px}
+.kg-nm .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0}
+.kg-main{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;flex:1 1 auto}
+.kg-star{color:var(--brand);font-size:11px;flex:0 0 auto}
+.kg-badge{flex:0 0 auto;font-size:10px;font-family:var(--mono);padding:0 6px;border-radius:20px;
+  background:var(--card-2);border:1px solid var(--rule);color:var(--ink-2);white-space:nowrap}
+.kg-badge.lv.L1{background:var(--brand-soft);border-color:transparent;color:var(--lv2)}
+.kg-badge.lv.L2{background:var(--brand-soft);border-color:transparent;color:var(--brand-ink)}
+.kg-badge.lv.L3{background:var(--lv3);border-color:transparent;color:#fff}
+.kg-badge.degree-core{background:var(--good-bg);border-color:transparent;color:var(--good)}
+.kg-badge.degree-rel{background:var(--warn-bg);border-color:transparent;color:var(--warn-ink)}
+.kg-badge.degree-mut{background:var(--card-2);border-color:var(--rule);color:var(--muted)}
+.kg-sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.kg-sub.red{color:var(--crit)}
+.kg-sub .kg-badge{margin-right:5px;vertical-align:middle}
+.kg-dirs{display:flex;flex-direction:column;align-items:stretch;gap:4px;flex:0 0 auto}
+.kg-dir{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;padding:1px 8px;border-radius:20px;
+  border:1px solid var(--rule);color:var(--ink-2);cursor:pointer;background:var(--card-2);white-space:nowrap}
+.kg-dir:hover{border-color:var(--brand);color:var(--brand-ink)}
+.kg-dir.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink)}
+.kg-dir .n{font-weight:700}
+.kg-dir .n.zero{color:var(--crit)}
+.kgdir-dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+.kgdir-dot.structure{background:var(--kg-edge-structure)}
+.kgdir-dot.degree{background:var(--kg-edge-degree)}
+.kgdir-dot.require{background:var(--kg-edge-require)}
+.kgdir-dot.mapping{background:var(--kg-edge-mapping)}
+.kgdir-dot.derived{background:var(--kg-edge-derived)}
+.kgi{flex:0 0 auto;color:var(--muted);font-size:12px;cursor:pointer;padding:0 2px;border-radius:4px}
+.kgi:hover{color:var(--brand-ink);background:var(--brand-soft)}
+.kgleaf{position:absolute;left:0;top:0;transform:translate(-50%,-50%);z-index:2;
+  display:flex;align-items:center;gap:7px;padding:4px 8px 4px 9px;border-radius:20px;
+  background:var(--card);border:1px solid var(--rule);cursor:pointer;max-width:230px;
+  transition:border-color .12s,box-shadow .12s}
+.kgleaf:hover{border-color:var(--brand);box-shadow:var(--pop-shadow)}
+.kgleaf:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.kgleaf .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.kgleaf .dot.solid{background:var(--kg-leaf-solid)}
+.kgleaf .dot.gray{background:var(--kg-leaf-gray)}
+.kgleaf::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--rule)}
+.kgleaf[data-kgkind="知识点"]::before{background:var(--kgt-kp)}
+.kgleaf[data-kgkind="标准"]::before{background:var(--kgt-std)}
+.kgleaf[data-kgkind="案例"]::before{background:var(--kgt-case)}
+.kgleaf-main{display:flex;flex-direction:column;min-width:0}
+.kgleaf-nm{display:flex;align-items:center;gap:6px;max-width:100%}
+.kgleaf-nm .nm{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.kgleaf .kb{font-size:9px;font-family:var(--mono);color:var(--muted);padding:0 5px;border:1px solid var(--rule);border-radius:20px;flex:0 0 auto}
+.kgleaf .sec{font-size:9px;color:var(--warn-ink);background:var(--warn-bg);border-radius:20px;padding:0 5px;flex:0 0 auto;white-space:nowrap}
+.kgleaf-sub{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.kg-more{position:absolute;z-index:2;padding:5px 13px;border-radius:20px;border:1px dashed var(--brand);
+  color:var(--brand-ink);background:var(--brand-soft);font-size:12px;cursor:pointer;white-space:nowrap}
+.kg-more:hover{background:var(--brand);color:#fff}
+.kg-toolbar{position:absolute;top:12px;right:12px;display:flex;gap:8px;z-index:5}
+.kgbtn{padding:6px 12px;border-radius:9px;border:1px solid var(--rule);background:var(--card);color:var(--ink-2);
+  font-size:12px;cursor:pointer;box-shadow:var(--shadow)}
+.kgbtn:hover{border-color:var(--brand);color:var(--brand-ink)}
+.kg-canvas-wrap.kg-fs{position:fixed;inset:0;z-index:400;background:var(--plane);padding:16px;display:flex;flex-direction:column}
+.kg-canvas-wrap.kg-fs .kg-canvas{flex:1;max-height:none}
+.kg-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.kg-leg-item{display:inline-flex;align-items:center;gap:6px}
+.kg-leg-line{display:inline-block;width:24px;height:0;flex:0 0 auto}
+.kg-leg-line.structure{border-top:2px solid var(--kg-edge-structure)}
+.kg-leg-line.degree{border-top:2.5px solid var(--kg-edge-degree)}
+.kg-leg-line.require{border-top:2.5px solid var(--kg-edge-require)}
+.kg-leg-line.mapping{border-top:2px dashed var(--kg-edge-mapping)}
+.kg-leg-line.derived{border-top:2px dotted var(--kg-edge-derived)}
+.kg-dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.kg-dot.solid{background:var(--kg-leaf-solid)}
+.kg-dot.gray{background:var(--kg-leaf-gray)}
+.kg-leg-bar{display:inline-block;width:3px;height:12px;border-radius:2px;flex:0 0 auto}
+.kg-leg-bar.industry{background:var(--kgt-industry)}
+.kg-leg-bar.major{background:var(--kgt-major)}
+.kg-leg-bar.position{background:var(--kgt-position)}
+.kg-leg-bar.ability{background:var(--kgt-ability)}
+.kg-leg-bar.course{background:var(--kgt-course)}
+.kg-leg-bar.task{background:var(--kgt-task)}
+.kg-leg-bar.flow{background:var(--kgt-flow)}
+.kg-leg-bar.skill{background:var(--kgt-skill)}
+.kg-leg-bar.kp{background:var(--kgt-kp)}
+.kg-leg-bar.std{background:var(--kgt-std)}
+.kg-leg-bar.case{background:var(--kgt-case)}
+.kg-leg-label{color:var(--muted);font-size:11px}
+.kg-leg-note{flex-basis:100%;color:var(--muted);font-size:11px;margin-top:2px}
+.kgjump{cursor:pointer;border-left:none;border-right:none;border-top:none;background:none;font:inherit;
+  font-size:12.5px;color:var(--ink);padding:7px 2px;border-radius:0}
+.kgjump:hover{background:var(--brand-soft)}
+.kgjump .jmp{margin-left:auto;flex:0 0 auto;color:var(--muted);font-size:15px;line-height:1;
+  transition:transform .12s,color .12s}
+.kgjump:hover .jmp{color:var(--brand);transform:translateX(2px)}
+
+/* ═══ 14. 全景图谱·（能力树 + 右侧详情）═══ */
+.k2svg{display:block;max-width:100%;height:auto}
+.k2link{fill:none;stroke:var(--rule);stroke-width:1;opacity:.5;transition:opacity .15s}
+.k2link.on{opacity:1;stroke:var(--brand);stroke-width:1.6}
+.k2link.off{opacity:.1}
+.k2node{cursor:pointer;transition:opacity .15s}
+.k2node.off{opacity:.16}
+.k2node rect{fill:var(--card-2);stroke:var(--rule);stroke-width:1}
+.k2node.on rect{stroke:var(--brand);stroke-width:1.6}
+.k2node.ind rect{fill:var(--brand-soft);stroke:var(--brand)}
+.k2node text{font-size:12px;fill:var(--ink);font-family:var(--sans)}
+.k2node.ind text{fill:var(--brand-ink);font-weight:600}
+.k2cnt{font-size:10.5px;fill:var(--muted);font-family:var(--sans)}
+.k2star{fill:var(--brand)}
+.k2gh{font-size:11px;fill:var(--muted);font-weight:600;font-family:var(--sans)}
+.k2info{cursor:pointer}
+.k2info circle{fill:var(--card);stroke:var(--rule);stroke-width:1}
+.k2info text{font-size:11px;font-weight:700;fill:var(--brand);text-anchor:middle;dominant-baseline:central;cursor:pointer;font-family:var(--sans)}
+.k2info:hover circle{fill:var(--brand);stroke:var(--brand)}
+.k2info:hover text{fill:#fff}
+
+.k2-scrim{position:fixed;inset:0;background:rgba(20,16,32,.42);opacity:0;pointer-events:none;transition:opacity .2s;z-index:490}
+.k2-scrim.on{opacity:1;pointer-events:auto}
+.k2-drawer{position:fixed;top:0;right:0;height:100vh;width:min(720px,50vw);background:var(--card);border-left:1px solid var(--rule);box-shadow:-18px 0 48px -24px rgba(20,16,32,.4);z-index:500;transform:translateX(100%);transition:transform .24s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.k2-drawer.on{transform:none}
+.k2-h{display:flex;align-items:flex-start;gap:10px;padding:16px 18px;border-bottom:1px solid var(--rule)}
+.k2-back{flex:0 0 auto;border:none;background:transparent;color:var(--muted);font-size:17px;line-height:1;cursor:pointer;padding:0 8px 0 0;margin-top:-1px}
+.k2-back:hover{border-color:var(--brand);color:var(--brand)}
+.k2-x{flex:0 0 auto;width:30px;height:30px;border-radius:8px;border:1px solid var(--rule);background:var(--card-2);color:var(--muted);font-size:13px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.k2-x:hover{border-color:var(--crit);color:var(--crit)}
+.k2-hd{flex:1;min-width:0}
+.k2-kind{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand)}
+.k2-title{font-size:17px;font-weight:700;color:var(--ink);margin-top:2px}
+.k2-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.k2-b{flex:1;overflow-y:auto;padding:16px 18px 24px}
+@media (max-width:760px){.k2-drawer{width:100vw}}
+
+.k2nl{color:var(--ink);border-bottom:1px dotted var(--muted);cursor:pointer;white-space:nowrap}
+.k2nl:hover{color:var(--brand);border-bottom-color:var(--brand)}
+.k2sep{color:var(--muted);margin:0 4px}
+.k2chain{font-size:12.5px;line-height:1.8}
+.k2ct{display:inline-flex;align-items:center;font-family:var(--mono);font-size:9.5px;font-weight:600;line-height:1;padding:2px 6px;border-radius:4px;margin-right:5px;vertical-align:middle;letter-spacing:.03em;color:#fff;white-space:nowrap}
+.k2ct.bd-industry{background:var(--kgt-industry)}
+.k2ct.bd-major{background:var(--kgt-major)}
+.k2ct.bd-position{background:var(--kgt-position)}
+.k2ct.bd-ability{background:var(--kgt-ability)}
+.k2ct.bd-course{background:var(--kgt-course)}
+.k2ct.bd-task{background:var(--kgt-task)}
+.k2ct.bd-flow{background:var(--kgt-flow)}
+.k2ct.bd-skill{background:var(--kgt-skill)}
+.k2ct.bd-kp{background:var(--kgt-kp)}
+.k2ct.bd-std{background:var(--kgt-std)}
+.k2ct.bd-case{background:var(--kgt-case)}
+.k2ct.bd-step{background:var(--kgt-step)}
+.k2muted{color:var(--muted)}
+.k2src{font-size:11px;color:var(--muted)}
+.k2row.k2bd,.k2zga-i.k2bd,.k2g-h.k2bd{border-left:3px solid transparent;padding-left:9px}
+.k2bd.bd-major{border-left-color:var(--kgt-major)}
+.k2bd.bd-position{border-left-color:var(--kgt-position)}
+.k2bd.bd-ability{border-left-color:var(--kgt-ability)}
+.k2bd.bd-course{border-left-color:var(--kgt-course)}
+.k2bd.bd-task{border-left-color:var(--kgt-task)}
+.k2bd.bd-flow{border-left-color:var(--kgt-flow)}
+.k2bd.bd-skill{border-left-color:var(--kgt-skill)}
+.k2bd.bd-kp{border-left-color:var(--kgt-kp)}
+.k2bd.bd-std{border-left-color:var(--kgt-std)}
+.k2bd.bd-case{border-left-color:var(--kgt-case)}
+.k2bd.bd-step{border-left-color:var(--kgt-step)}
+.k2legend{display:flex;flex-wrap:wrap;gap:5px 14px;padding:8px 14px;border-bottom:1px solid var(--rule-2);font-size:11px;color:var(--ink-2)}
+.k2lg{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.k2lg i{width:3px;height:12px;border-radius:1px;flex:0 0 auto}
+.k2lg.bd-industry i{background:var(--kgt-industry)}
+.k2lg.bd-major i{background:var(--kgt-major)}
+.k2lg.bd-position i{background:var(--kgt-position)}
+.k2lg.bd-ability i{background:var(--kgt-ability)}
+.k2lg.bd-course i{background:var(--kgt-course)}
+.k2lg.bd-task i{background:var(--kgt-task)}
+.k2lg.bd-flow i{background:var(--kgt-flow)}
+.k2lg.bd-skill i{background:var(--kgt-skill)}
+.k2lg.bd-kp i{background:var(--kgt-kp)}
+.k2lg.bd-std i{background:var(--kgt-std)}
+.k2lg.bd-case i{background:var(--kgt-case)}
+.k2lg.bd-step i{background:var(--kgt-step)}
+.k2s{margin-bottom:20px}
+.k2st{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.k2def{font-size:13px;line-height:1.7;color:var(--ink-2)}
+.k2row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule-2)}
+.k2row:last-child{border-bottom:none}
+.k2phead{margin-bottom:14px}
+.k2pbel{font-size:11px;color:var(--muted)}
+.k2pname{font-size:18px;font-weight:700;color:var(--ink);margin-top:2px}
+.k2pdesc{font-size:12.5px;color:var(--ink-2);line-height:1.6;margin-top:6px}
+.k2tabs{display:flex;gap:6px;margin-bottom:10px}
+.k2tab{flex:0 0 auto;padding:3px 12px;border:1px solid var(--rule);border-radius:999px;background:var(--card-2);color:var(--ink-2);font-size:12px;cursor:pointer;line-height:1.7}
+.k2tab.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.k2tab.dim{opacity:.55}
+.k2tab.dim:hover{opacity:1}
+.k2note{font-size:11px;color:var(--muted);margin:6px 0;font-family:var(--mono)}
+.k2none{font-size:12px;color:var(--muted);font-style:italic;margin:6px 0}
+.k2sk{padding:6px 0;margin:6px 0}
+.k2sk-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.k2sk-h .k2nl{font-size:12.5px}
+.k2zga{margin:6px 0 6px 10px;display:flex;flex-direction:column;gap:2px}
+.k2zga-i{font-size:11.5px;color:var(--ink-2);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.k2group{margin:6px 0}
+.k2g-h{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.k2lvl{position:relative;margin:10px 0;padding:12px 14px 12px 16px;border:1px solid var(--rule-2);border-left:3px solid var(--lv2);border-radius:9px;background:var(--card-2)}
+.k2lvl.L1{border-left-color:var(--lv1)}
+.k2lvl.L2{border-left-color:var(--lv2)}
+.k2lvl.L3{border-left-color:var(--lv3)}
+.k2lvl-h{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.k2lv-n{font-size:12px;font-weight:600;color:var(--ink);flex:0 0 auto}
+.k2lv-d{font-size:12.5px;color:var(--ink-2);line-height:1.65}
+.k2pts-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:9px 0 3px}
+.k2pts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.k2pts li{font-size:11.5px;color:var(--ink-2);position:relative;padding-left:14px;line-height:1.55}
+.k2pts li::before{content:"·";position:absolute;left:2px;color:var(--brand);font-weight:700}
+.k2pill{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid var(--rule);color:var(--ink-2);flex:0 0 auto}
+.k2pill.L1{background:var(--lv1);border-color:transparent;color:#241d3d}
+.k2pill.L2{background:var(--lv2);border-color:transparent;color:#fff}
+.k2pill.L3{background:var(--lv3);border-color:transparent;color:#fff}
+.k2lv{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:9px;font-weight:700;flex:0 0 auto;line-height:1}
+.k2lv.L1{background:var(--lv1);color:#241d3d}
+.k2lv.L2{background:var(--lv2);color:#fff}
+.k2lv.L3{background:var(--lv3);color:#fff}
+:root[data-theme="dark"] .k2lv.L1,:root:not([data-theme="light"]) .k2lv.L1{color:#e6e1f5}
+:root[data-theme="dark"] .k2lv.L3,:root:not([data-theme="light"]) .k2lv.L3{color:#1c1a26}
+.k2ab{margin-bottom:4px}
+.k2ab-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 10px;cursor:pointer;border-radius:8px}
+.k2ab-h:hover{background:var(--brand-soft)}
+.k2ab.open>.k2ab-h{border-bottom:1px solid var(--rule-2);border-radius:8px 8px 0 0}
+.k2ab-t{font-size:13px;font-weight:600;color:var(--ink)}
+.k2ab-m{font-size:11px;color:var(--muted);flex-basis:100%;margin-left:24px}
+.k2chev{color:var(--muted);font-size:11px;flex:0 0 auto}
+.k2ab-b{display:none;padding:4px 10px 10px 16px;border-left:2px solid var(--rule-2);margin-left:20px}
+.k2ab.open>.k2ab-b{display:block}
 </style>
 
 <div class="app">
@@ -1344,6 +1619,27 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
       <div id="reportZone"></div>
      </div>
 
+     <div class="l1pane" id="l1-kgraph" hidden>
+      <div class="kg-head">
+        <div>
+          <div class="eyebrow">全景图谱 · 双图谱融合下钻</div>
+          <h2 class="kg-title">全景图谱</h2>
+          <p class="kg-sub">行业 → 专业 → 岗位 / 课程 → …，教学知识体系与行业能力图谱在「技能 ↔ 能力」映射边处交汇。点胶囊逐层展开，点 ⓘ 看详情。</p>
+        </div>
+      </div>
+      <div class="kg-canvas-wrap" id="kgCanvasWrap">
+        <div class="kg-canvas" id="kgCanvas">
+          <div class="kg-tree" id="kgTree"></div>
+        </div>
+        <div class="kg-toolbar" role="toolbar" aria-label="图谱工具栏">
+          <button class="kgbtn" id="kgHome" title="平滑滚回根节点并垂直居中">⌂ 主节点</button>
+          <button class="kgbtn" id="kgCollapse" title="清空所有展开状态，回到初始层">收起全部</button>
+          <button class="kgbtn" id="kgFull" title="铺满视口；Esc 或再次点击退出">全屏</button>
+        </div>
+      </div>
+      <div class="kg-legend" id="kgLegend"></div>
+     </div>
+
      <div class="l1pane" id="l1-assess2" hidden>
       <div class="v2bar">
         <span class="v2bar-t">能力测评</span>
@@ -1371,6 +1667,20 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
   </div>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
+<div class="k2-scrim" id="k2Scrim"></div>
+<aside class="k2-drawer" id="k2Drawer" aria-hidden="true">
+  <div class="k2-h">
+    <button class="k2-back" id="k2Back" title="返回" aria-label="返回">←</button>
+    <div class="k2-hd">
+      <div class="k2-kind" id="k2Kind"></div>
+      <div class="k2-title" id="k2Title"></div>
+      <div class="k2-sub" id="k2Sub"></div>
+    </div>
+    <button class="k2-x" id="k2Close" title="关闭" aria-label="关闭">✕</button>
+  </div>
+  <div class="k2legend" id="k2Legend"></div>
+  <div class="k2-b" id="k2Body"></div>
+</aside>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drTitle" aria-hidden="true">
   <div class="dr-h">
@@ -1650,7 +1960,7 @@ document.addEventListener('click', e=>{
 });
 
 /* ═══ 3. 两级 tab ═══ */
-const L1 = [['panorama','行业全景',''],['assess','能力测评0.1','hide'],['assess2','能力测评','']];
+const L1 = [['panorama','行业全景',''],['kgraph','全景图谱','hide'],['assess','能力测评0.1','hide'],['assess2','能力测评','']];
 const TABS = [['graph','能力图谱',S.abilities],
   ['matrix','能力矩阵',`${S.positions} × ${S.abilities}`],
   ['trends','趋势与新兴',I.trends.length]];
@@ -1906,12 +2216,8 @@ $('#posTree').addEventListener('click', e=>{
 $('#selBar').addEventListener('click', e=>{
   if(e.target.id==='selClear'){ sel = null; renderGraph(); return; }
   if(e.target.id==='selDetail' && sel){
-    if(sel.type==='pos'){ const p=pos[sel.id];
-      openDrawer('岗位 · '+p.id, p.name,
-        `${sub[p.sub].name} · 别名 ${p.aliases.join(' / ')}`, positionHTML(p));
-    } else if(sel.type==='abl'){ const a=abl[sel.id];
-      openDrawer('能力项 · '+a.id, a.name,
-        `${a.typeCn} · ${a.domain} · ${a.core?'核心能力 · ':''}最高要求 ${a.maxRequiredLevel}`, abilityHTML(a));
+    if(sel.type==='pos'){ window.k2open('position', sel.id);
+    } else if(sel.type==='abl'){ window.k2open('ability', sel.id);
     } else if(sel.type==='sub'){ const s=sub[sel.id];
       openDrawer('子行业 · '+s.id, s.name, `${s.priority} · ${s.positionIds.length} 个岗位`,
         `<div class="dr-s"><div class="dr-st">定位</div><div class="dr-def">${esc(s.desc)}</div></div>
@@ -3588,7 +3894,7 @@ function abilityHTML(a){
   let h = '';
   if(a.flag||a.inferred) h += `<div class="dr-s"><div class="warnbox"><span class="ico warning">!</span>
     <span>新兴能力：岗位上新出现、国家或行业标准尚未完全覆盖的能力。</span></div></div>`;
-  h += `<div class="dr-s"><div class="dr-st">定义</div><div class="dr-def">${esc(a.definition)}</div></div>`;
+  h += `<div class="dr-s"><div class="dr-st">描述</div><div class="dr-def">${esc(a.definition)}</div></div>`;
   h += supportHTML(a);
   h += v2PathInDrawer(a);
   h += `<div class="dr-s"><div class="dr-st">三级行为化描述</div>` + ['L1','L2','L3'].map(L=>{
@@ -3674,16 +3980,25 @@ document.addEventListener('click', e=>{
   }
   const pb = e.target.closest('[data-pos]');
   if(pb){ const p = pos[pb.dataset.pos];
-    openDrawer('岗位 · '+p.id, p.name,
-      `${sub[p.sub].name} · 别名 ${p.aliases.join(' / ')}`, positionHTML(p)); return; }
+    if(drawerFromReport){
+      openDrawer('岗位 · '+p.id, p.name,
+        `${sub[p.sub].name} · 别名 ${p.aliases.join(' / ')}`, positionHTML(p));
+    } else { closeDrawer(); window.k2open('position', pb.dataset.pos); }
+    return; }
   const cb = e.target.closest('[data-cell]');
   if(cb){ const a = abl[cb.dataset.cell.split('|')[0]];
-    openDrawer('能力项 · '+a.id, a.name,
-      `${a.typeCn} · ${a.domain} · ${a.core?'核心能力 · ':''}最高要求 ${a.maxRequiredLevel}`, abilityHTML(a)); return; }
+    if(drawerFromReport){
+      openDrawer('能力项 · '+a.id, a.name,
+        `${a.typeCn} · ${a.domain} · ${a.core?'核心能力 · ':''}最高要求 ${a.maxRequiredLevel}`, abilityHTML(a));
+    } else { closeDrawer(); window.k2open('ability', a.id); }
+    return; }
   const ab = e.target.closest('[data-abl]');
   if(ab){ const a = abl[ab.dataset.abl];
-    openDrawer('能力项 · '+a.id, a.name,
-      `${a.typeCn} · ${a.domain} · ${a.core?'核心能力 · ':''}最高要求 ${a.maxRequiredLevel}`, abilityHTML(a)); return; }
+    if(drawerFromReport){
+      openDrawer('能力项 · '+a.id, a.name,
+        `${a.typeCn} · ${a.domain} · ${a.core?'核心能力 · ':''}最高要求 ${a.maxRequiredLevel}`, abilityHTML(a));
+    } else { closeDrawer(); window.k2open('ability', a.id); }
+    return; }
   const db = e.target.closest('[data-dom]');
   if(db){ const name = db.dataset.dom;
     const rows = D.abilities.filter(a=>a.domain===name);
@@ -5454,4 +5769,1028 @@ seedV2Hist();
   }
 }
 renderV2();
+
+/* ═══ 13. 全景图谱（双图谱融合下钻树）═══ */
+(function(){
+  const KG = D.kgraph;
+  if(!KG || !KG.majors){ return; }
+
+  const kgGroup = (arr, key)=>{ const o={}; for(const x of arr){ (o[x[key]] ||= []).push(x); } return o; };
+
+  const majorByCode = new Map(KG.majors.map(m=>[m.code,m]));
+  const courseById  = new Map(KG.courses.map(c=>[c.id,c]));
+  const moduleById  = new Map(KG.modules.map(m=>[m.id,m]));
+  const taskById    = new Map(KG.tasks.map(t=>[t.id,t]));
+  const flowById    = new Map(KG.flows.map(f=>[f.id,f]));
+  const stepById    = new Map(KG.steps.map(s=>[s.id,s]));
+  const leafById    = new Map(KG.leaves.map(l=>[l.id,l]));
+
+  const modulesByCourse = kgGroup(KG.modules, 'course');
+  const tasksByModule   = kgGroup(KG.tasks,   'module');
+  const flowsByTask     = kgGroup(KG.flows,   'task');
+  const stepsByFlow     = kgGroup(KG.steps,   'flow');
+  const leavesByParent  = kgGroup(KG.leaves,  'parent');
+
+  // 技能层 = 技能规范；知/规/案 = 知识点/标准/案例（三类合成一个方向，挂在技能下）
+  const isSkill = l => l.kind==='技能规范';
+  const skills = KG.leaves.filter(isSkill);
+  const zga = KG.leaves.filter(l=>!isSkill(l));
+  const skillById = new Map(skills.map(l=>[l.id,l]));
+  const skillsByParent = kgGroup(skills, 'parent');
+  const zgaByParent = kgGroup(zga, 'parent');
+
+  // 课程 → 任务（跳过「模块」层）
+  const tasksByCourse = {};
+  for(const t of KG.tasks){
+    const mod = moduleById.get(t.module);
+    if(mod) (tasksByCourse[mod.course] ||= []).push(t);
+  }
+  // 流程下的技能/知规案（直接挂流程，或挂在流程的「步骤」下）
+  function skillsUnderFlow(fid){
+    return (skillsByParent[fid]||[]).concat((stepsByFlow[fid]||[]).flatMap(s=>skillsByParent[s.id]||[]));
+  }
+  function zgaUnderFlow(fid){
+    return (zgaByParent[fid]||[]).concat((stepsByFlow[fid]||[]).flatMap(s=>zgaByParent[s.id]||[]));
+  }
+  // 无任务/流程层课程（课程→模块→技能规范/知识点）下的技能
+  function skillsUnderCourse(cid){
+    return (modulesByCourse[cid]||[]).flatMap(m=>skillsByParent[m.id]||[]);
+  }
+  // 自底向上：由叶子父节点（任务/流程/步骤/模块）解析出 课程→任务→流程 链
+  function chainOfParent(P){
+    let courseId=null, taskId=null, flowId=null;
+    if(stepById.has(P)) flowId = stepById.get(P).flow;
+    else if(flowById.has(P)) flowId = P;
+    else if(taskById.has(P)) taskId = P;
+    else if(moduleById.has(P)) courseId = moduleById.get(P).course;
+    if(flowId) taskId = flowById.get(flowId).task;
+    if(taskId) courseId = moduleById.get(taskById.get(taskId).module).course;
+    const parts=[];
+    if(courseId) parts.push(courseById.get(courseId).name);
+    if(taskId) parts.push(taskById.get(taskId).name);
+    if(flowId) parts.push(flowById.get(flowId).name);
+    return parts;
+  }
+
+  // 映射边索引 + 主归属推导（coverage 最高 = 主归属）
+  const mapByLeaf = kgGroup(KG.mapping, 'leaf');
+  const mappedLeafSet = new Set(KG.mapping.map(e=>e.leaf));
+  const primaryAbilityOf = {};
+  for(const [leaf, edges] of Object.entries(mapByLeaf)){
+    let best = edges[0];
+    for(const e of edges) if(e.coverage > best.coverage) best = e;
+    primaryAbilityOf[leaf] = best.ability;
+  }
+  const primaryLeavesByAbility = {};
+  for(const leaf in primaryAbilityOf){ (primaryLeavesByAbility[primaryAbilityOf[leaf]] ||= []).push(leaf); }
+  // 能力 → 主归属技能（技能规范）——能力路只走技能的「主归属」
+  const primarySkillsByAbility = {};
+  for(const leaf in primaryAbilityOf){
+    if(isSkill(leafById.get(leaf))) (primarySkillsByAbility[primaryAbilityOf[leaf]] ||= []).push(leaf);
+  }
+
+  const KIND_ORDER = {'技能规范':0,'知识点':1,'标准':2,'案例':3};
+  const degRank = d => d==='核心对口'?0 : d==='相关'?1 : 2;
+  const leafMapped = id => mappedLeafSet.has(id);
+
+  const directLeaves = id => leavesByParent[id] || [];
+  const directHasMapped = id => directLeaves(id).some(l=>leafMapped(l.id));
+
+  function taskAncestorOf(leafId){
+    let p = leafById.get(leafId).parent;
+    if(stepById.has(p)) p = stepById.get(p).flow;
+    if(flowById.has(p)) p = flowById.get(p).task;
+    return taskById.has(p) ? p : null;
+  }
+  // 岗位 → 推导任务：岗位要求的能力 → 主归属叶子 → 叶子所属任务，按当前专业课程范围过滤
+  function tasksForPosition(pid, majorCode){
+    const maj = majorByCode.get(majorCode);
+    const courseSet = new Set(maj ? maj.courses : []);
+    const out = new Set();
+    const p = pos[pid];
+    if(!p || !p.abilities) return [];
+    for(const r of p.abilities){
+      for(const lid of (primarySkillsByAbility[r.ability] || [])){
+        const t = taskAncestorOf(lid);
+        if(!t) continue;
+        const mod = moduleById.get(taskById.get(t).module);
+        if(mod && courseSet.has(mod.course)) out.add(t);
+      }
+    }
+    return [...out].map(id=>taskById.get(id));
+  }
+  function primaryLeavesFor(abilityId){ return primaryLeavesByAbility[abilityId] || []; }
+
+  function skillItems(arr){
+    return arr.slice().sort((a,b)=> a.id<b.id?-1:1).map(l=>({id:l.id, type:'skill'}));
+  }
+  function zgaItems(arr){
+    return arr.slice().sort((a,b)=> (KIND_ORDER[a.kind]-KIND_ORDER[b.kind]) || (a.id<b.id?-1:1))
+      .map(l=>({id:l.id, type:'leaf'}));
+  }
+
+  function dirsOf(n){
+    switch(n.type){
+      case 'industry':
+        return [{dir:'专业', edge:'structure', items: KG.majors.map(m=>({id:m.code,type:'major'}))}];
+      case 'major': {
+        const m = majorByCode.get(n.id);
+        const deg = (m.positions||[]).filter(p=>p.degree!=='不对口');
+        if(!deg.length) return [];                       // 无对口岗位：标红、不可展开（唯一不跳层例外）
+        const posItems = deg.slice().sort((a,b)=>degRank(a.degree)-degRank(b.degree))
+          .map(p=>({id:p.id, type:'position', degree:p.degree}));
+        const courseItems = (m.courses||[]).filter(cid=>courseById.has(cid)).map(cid=>({id:cid, type:'course'}));
+        const d=[];
+        if(posItems.length) d.push({dir:'岗位', edge:'degree', items:posItems});
+        if(courseItems.length) d.push({dir:'课程', edge:'structure', items:courseItems});
+        return d;
+      }
+      case 'position': {
+        const p = pos[n.id];
+        const abItems = (p.abilities||[]).map(r=>({id:r.ability, type:'ability', level:r.level}));
+        const taskItems = tasksForPosition(n.id, n.major).map(t=>({id:t.id, type:'task'}));
+        const d=[];
+        if(abItems.length) d.push({dir:'能力', edge:'require', items:abItems});
+        if(taskItems.length) d.push({dir:'任务', edge:'derived', items:taskItems});
+        return d;
+      }
+      case 'ability': {
+        const items = (primarySkillsByAbility[n.id]||[]).map(id=>({id, type:'skill'}));
+        return items.length ? [{dir:'技能', edge:'mapping', items}] : [];
+      }
+      case 'course': {
+        const tasks = tasksByCourse[n.id] || [];
+        if(tasks.length) return [{dir:'任务', edge:'structure', items:tasks.map(t=>({id:t.id,type:'task'}))}];
+        const sk = skillItems(skillsUnderCourse(n.id));
+        if(sk.length) return [{dir:'技能', edge:'structure', items:sk}];
+        return [];
+      }
+      case 'task': {
+        const flows = flowsByTask[n.id] || [];
+        if(flows.length) return [{dir:'流程', edge:'structure', items:flows.map(f=>({id:f.id,type:'flow'}))}];
+        const sk = skillItems(skillsByParent[n.id]||[]);
+        if(sk.length) return [{dir:'技能', edge:'structure', items:sk}];
+        const zg = zgaItems(zgaByParent[n.id]||[]);
+        if(zg.length) return [{dir:'知/规/案', edge:'structure', items:zg}];
+        return [];
+      }
+      case 'flow': {
+        const sk = skillItems(skillsUnderFlow(n.id));
+        if(sk.length) return [{dir:'技能', edge:'structure', items:sk}];
+        const zg = zgaItems(zgaUnderFlow(n.id));
+        if(zg.length) return [{dir:'知/规/案', edge:'structure', items:zg}];
+        return [];
+      }
+      case 'skill': {
+        const zg = zgaItems(zgaByParent[skillById.get(n.id).parent]||[]);
+        return zg.length ? [{dir:'知/规/案', edge:'structure', items:zg}] : [];
+      }
+      case 'leaf': return [];
+    }
+    return [];
+  }
+
+  function makeNode(desc, majorCode, edge){
+    return {
+      id: desc.id, type: desc.type,
+      major: desc.type==='major' ? desc.id : majorCode,
+      degree: desc.degree, level: desc.level,
+      edge: edge, dirs: null, expanded: false, activeDir: 0, shown: 0, children: null, _x:0, _y:0, _el:null
+    };
+  }
+  function dirsOfNode(n){ if(!n.dirs) n.dirs = dirsOf(n); return n.dirs; }
+  const NODE_DEFAULT_SHOWN = 10, NODE_STEP = 20;
+  function materialize(n){
+    const dir = dirsOfNode(n)[n.activeDir];
+    const items = dir.items;
+    n.shown = Math.max(n.shown || 0, Math.min(NODE_DEFAULT_SHOWN, items.length));
+    n.children = [];
+    for(let i=0;i<Math.min(n.shown, items.length);i++){
+      const d = items[i];
+      n.children.push(makeNode(d, (d.type==='major'? d.id : n.major), {dir: dir.dir, kind: dir.edge}));
+    }
+  }
+
+  const isRedMajor = n => n.type==='major' && !(majorByCode.get(n.id).positions||[]).some(p=>p.degree!=='不对口');
+
+  function subtitleOf(n){
+    switch(n.type){
+      case 'industry': return '';
+      case 'major': { const m=majorByCode.get(n.id); return m.stage; }
+      case 'position': { const p=pos[n.id]; return sub[p.sub]?sub[p.sub].name:''; }
+      case 'ability': { const a=abl[n.id]; return a.domain; }
+      case 'course': return courseById.get(n.id).type;
+      case 'task': {
+        const hasFlows = (flowsByTask[n.id]||[]).length>0;
+        if(!hasFlows) return '';
+        return courseById.get(moduleById.get(taskById.get(n.id).module).course).name;
+      }
+      case 'flow': {
+        const hasSkills = skillsUnderFlow(n.id).length>0;
+        return hasSkills ? flowById.get(n.id).result : '直接到知/规/案';
+      }
+      case 'skill': {
+        const edges = mapByLeaf[n.id] || [];
+        const prim = primaryAbilityOf[n.id];
+        if(edges.length && prim){
+          return `${abl[prim]?abl[prim].name:prim}`;
+        }
+        return '';
+      }
+      case 'leaf': return '';
+    }
+    return '';
+  }
+
+  const NODE_TYPE_CN = {industry:'行业', major:'专业', position:'岗位', ability:'能力', course:'课程', task:'任务', flow:'流程', skill:'技能'};
+  const LEAF_KIND_CN = [['知识点','kp'],['标准','std'],['案例','case']];
+  function nodeHTML(n){
+    if(n.type==='leaf'){
+      const l = leafById.get(n.id);
+      return `<span class="kgleaf-main">
+          <span class="kgleaf-nm"><span class="nm">${esc(l.name)}</span><span class="kb">${esc(l.kind)}</span></span>
+        </span><span class="kgi" data-kgi role="button" aria-label="查看详情">ⓘ</span>`;
+    }
+    let name='', star='', badges='', sub='', subCls='', subBadge='';
+    switch(n.type){
+      case 'industry': name=I.name; sub=subtitleOf(n); break;
+      case 'major': { const m=majorByCode.get(n.id); name=m.name; sub=subtitleOf(n);
+        if(isRedMajor(n)){ subCls=' red'; sub='本行业图谱内无对口岗位'; }
+        break; }
+      case 'position': {
+        name=pos[n.id].name; sub=subtitleOf(n);
+        break; }
+      case 'ability': {
+        const a=abl[n.id]; name=a.name; sub=subtitleOf(n);
+        if(a.core) star='<span class="kg-star" title="核心能力">★</span>';
+        subBadge=`<span class="kg-badge lv ${n.level}">${n.level||'—'}</span>`;
+        break; }
+      case 'course': { const c=courseById.get(n.id); name=c.name; sub=subtitleOf(n);
+        badges=`<span class="kg-badge">${esc(c.block||c.type)}</span>`; break; }
+      case 'task': { name=taskById.get(n.id).name; sub=subtitleOf(n); break; }
+      case 'flow': { name=flowById.get(n.id).name; sub=subtitleOf(n); break; }
+      case 'skill': {
+        const l=skillById.get(n.id); name=l.name; sub=subtitleOf(n);
+        const edges = mapByLeaf[n.id] || [];
+        const prim = primaryAbilityOf[n.id];
+        const sec = edges.filter(e=>e.ability!==prim);
+        if(edges.length && prim) star='<span class="kg-star" title="主归属">★</span>';
+        if(sec.length) badges=`<span class="kg-badge" title="次要关联 ${sec.length} 条">次${sec.length}</span>`;
+        break; }
+    }
+    const dirs = dirsOfNode(n);
+    const dirHtml = dirs.length>1 ? `<div class="kg-dirs">` + dirs.map((d,i)=>
+      `<button class="kg-dir ${n.expanded&&n.activeDir===i?'on':''}" data-dir="${i}" role="button">
+        <span class="kgdir-dot ${d.edge}"></span>${esc(d.dir)} <span class="n">${d.items.length}</span></button>`).join('') + `</div>` : '';
+    return `<span class="kg-main"><span class="kg-nm"><span class="t">${esc(name)}</span>${star}${badges}<span class="kgi" data-kgi role="button" aria-label="查看详情" title="查看详情">ⓘ</span></span>
+      ${(sub||subBadge)?`<span class="kg-sub${subCls}">${subBadge}${sub?esc(sub):''}</span>`:''}</span>
+      ${dirHtml}`;
+  }
+
+  const CHAIN_TYPE_CN = {course:'课程', task:'任务', flow:'流程', skill:'技能'};
+  // 叶子 → 课程的归属链（由外到内，每级可点击跳转）
+  function chainItemsOf(leafId){
+    const l = leafById.get(leafId);
+    const P = l.parent;
+    const items = [];
+    let courseId=null, taskId=null, flowId=null;
+    if(stepById.has(P)) flowId = stepById.get(P).flow;
+    else if(flowById.has(P)) flowId = P;
+    else if(taskById.has(P)) taskId = P;
+    else if(moduleById.has(P)) courseId = moduleById.get(P).course;
+    else if(courseById.has(P)) courseId = P;
+    if(flowId) taskId = flowById.get(flowId).task;
+    if(taskId) courseId = moduleById.get(taskById.get(taskId).module).course;
+    if(courseId) items.push({type:'course', id:courseId, name:courseById.get(courseId).name});
+    if(taskId) items.push({type:'task', id:taskId, name:taskById.get(taskId).name});
+    if(flowId) items.push({type:'flow', id:flowId, name:flowById.get(flowId).name});
+    const sk = (skillsByParent[P]||[]).slice().sort((a,b)=>a.id<b.id?-1:1);
+    for(const s of sk) items.push({type:'skill', id:s.id, name:s.name});
+    return items;
+  }
+
+  // ── 详情抽屉 ──
+  // 交叉引用跳转：type/id 定位目标节点，majorCode 解析岗位对口度
+  function degreeOf(pid, majorCode){
+    const m = majorByCode.get(majorCode);
+    const hit = m && (m.positions||[]).find(x=>x.id===pid);
+    return hit ? hit.degree : undefined;
+  }
+  function jumpRow(type, id, majorCode, labelHtml){
+    return `<button class="arow kgjump" type="button" data-kgjump="${type}" data-kgjump-id="${id}" data-kgjump-major="${majorCode||''}">${labelHtml}<span class="jmp">›</span></button>`;
+  }
+  function leafDetailHTML(n){
+    const id = n.id;
+    const l = leafById.get(id), edges = mapByLeaf[id] || [];
+    let h = `<div class="dr-s"><div class="dr-st">${esc(l.kind)}</div><div class="dr-def">${esc(l.name)}</div></div>`;
+    const chain = chainItemsOf(id);
+    h += `<div class="dr-s"><div class="dr-st">归属课程</div>` +
+      (chain.length ? chain.map(it=>jumpRow(it.type, it.id, n.major,
+        `<span class="arow-n">${esc(it.name)}</span><span class="pill k">${CHAIN_TYPE_CN[it.type]}</span>`)).join('') : '<span class="dr-def">—</span>') + `</div>`;
+    if(edges.length){
+      h += `<div class="dr-s"><div class="dr-st">映射命中 ${edges.length} 个能力项</div>` +
+        edges.slice().sort((a,b)=>b.coverage-a.coverage).map(e=>{
+          const a=abl[e.ability];
+          return jumpRow('ability', e.ability, n.major,
+            `<span class="arow-n">${esc(a?a.name:e.ability)}</span>`);
+        }).join('') + `</div>`;
+    } else {
+      h += `<div class="dr-s"><div class="dr-def">结构派生节点，未命中任何能力项。</div></div>`;
+    }
+    return h;
+  }
+  function skillDetailHTML(n){
+    const id = n.id;
+    const l = skillById.get(id), edges = mapByLeaf[id] || [], prim = primaryAbilityOf[id];
+    let h = `<div class="dr-s"><div class="dr-st">技能规范</div><div class="dr-def">${esc(l.name)}</div></div>`;
+    h += `<div class="dr-s"><div class="dr-st">归属链</div><div class="dr-def">${esc(chainOfParent(l.parent).join(' › ') || '—')}</div></div>`;
+    if(edges.length){
+      h += `<div class="dr-s"><div class="dr-st">映射边 ${edges.length} 条 · ★ 主归属</div>` +
+        edges.slice().sort((a,b)=>b.coverage-a.coverage).map(e=>{
+          const a=abl[e.ability]; const isPrim=e.ability===prim;
+          return jumpRow('ability', e.ability, n.major,
+            `<span class="arow-n">${esc(a?a.name:e.ability)}${isPrim?'<span class="star" style="margin-left:4px">★</span>':''}</span>`);
+        }).join('') + `</div>`;
+    } else {
+      h += `<div class="dr-s"><div class="dr-def">结构派生节点，未命中任何能力项。</div></div>`;
+    }
+    const zgs = zgaByParent[l.parent] || [];
+    if(zgs.length) h += `<div class="dr-s"><div class="dr-st">知识/规范/案例 ${zgs.length} 个</div>` +
+      zgs.map(z=>jumpRow('leaf', z.id, n.major,
+        `<span class="arow-n">${esc(z.name)}</span><span class="pill k">${esc(z.kind)}</span>`)).join('') + `</div>`;
+    return h;
+  }
+  function majorDetailHTML(code){
+    const m = majorByCode.get(code);
+    let h = `<div class="dr-s"><div class="dr-st">专业信息</div><div class="dr-def">${esc(m.name)} · ${m.stage} · 学制 ${m.years} 年</div></div>`;
+    h += `<div class="dr-s"><div class="dr-st">培养目标</div><div class="dr-def">${esc(m.goal)}</div></div>`;
+    const deg=(m.positions||[]).filter(p=>p.degree!=='不对口');
+    h += `<div class="dr-s"><div class="dr-st">对口岗位 ${deg.length} 个</div>` +
+      (deg.length? deg.map(p=>jumpRow('position', p.id, code,
+        `<span class="arow-n">${esc(pos[p.id].name)}</span>`)).join('') : '<span class="dr-def">本行业图谱内无对口岗位</span>') + `</div>`;
+    h += `<div class="dr-s"><div class="dr-st">专业课程 ${m.courses.length} 门</div>` +
+      m.courses.map(cid=>jumpRow('course', cid, code,
+        `<span class="arow-n">${esc(courseById.get(cid).name)}</span>`)).join('') + `</div>`;
+    return h;
+  }
+  function positionDetailHTML(n){
+    const p=pos[n.id];
+    let h = `<div class="dr-s"><div class="dr-st">岗位信息</div><div class="dr-def">${esc(p.name)} · ${esc(sub[p.sub].name)}</div></div>`;
+    h += `<div class="dr-s"><div class="dr-st">岗位职责</div><div class="dr-def">${esc(p.desc)}</div></div>`;
+    const tasks = tasksForPosition(n.id, n.major);
+    if(tasks.length) h += `<div class="dr-s"><div class="dr-st">任务 ${tasks.length} 个</div>` +
+      tasks.map(t=>jumpRow('task', t.id, n.major,
+        `<span class="arow-n">${esc(t.name)}</span>`)).join('') + `</div>`;
+    const byLv = {L3:[], L2:[], L1:[]};
+    p.abilities.forEach(r=>{ if(byLv[r.level]) byLv[r.level].push(r); });
+    h += `<div class="dr-s"><div class="dr-st">能力要求 ${p.abilities.length} 条（按要求等级分组）</div>` +
+      ['L3','L2','L1'].filter(L=>byLv[L].length).map(L=>
+        `<div style="margin-bottom:13px"><div class="lvl-h" style="margin-bottom:3px">
+          <span class="lvl-b ${L}">${L}</span><span class="lvl-n">${LVN[L]} · ${byLv[L].length} 条</span></div>` +
+        byLv[L].map(r=>{ const a=abl[r.ability];
+          return jumpRow('ability', a.id, n.major,
+            `<span class="tdot ${a.type}" title="${a.typeCn}类"></span>
+            <span class="arow-n">${esc(a.name)}</span>
+            ${a.core?'<span class="star" title="核心能力">★</span>':''}`); }).join('') + `</div>`).join('') +
+      `<div class="assess">★ 核心能力</div></div>`;
+    return h;
+  }
+  function abilityDetailHTML(n){
+    const a=abl[n.id];
+    let h = `<div class="dr-s"><div class="dr-st">要求等级</div>
+      <div class="lvl-h"><span class="lvl-b ${n.level}">${n.level}</span><span class="lvl-n">${LVN[n.level]||''}</span></div></div>`;
+    h += `<div class="dr-s"><div class="dr-st">描述</div><div class="dr-def">${esc(a.definition)}</div></div>`;
+    h += `<div class="dr-s"><div class="dr-st">领域 · 类型</div><div class="dr-def">${esc(a.domain)} · ${esc(a.typeCn)}${a.core?' · ★ 核心能力':''}</div></div>`;
+    const pl = primarySkillsByAbility[n.id] || [];
+    h += `<div class="dr-s"><div class="dr-st">技能 ${pl.length} 个</div>` +
+      (pl.length? pl.map(lid=>{
+        const s = skillById.get(lid);
+        return jumpRow('skill', lid, n.major,
+          `<span class="arow-n">${esc(s.name)}</span>`);
+      }).join('') : '<span class="dr-def">—</span>') + `</div>`;
+    h += `<div class="dr-s"><div class="dr-st">要求该能力的岗位 ${a.requiredBy.length} 个</div>` +
+      a.requiredBy.map(r=>jumpRow('position', r.position, n.major,
+        `<span class="arow-n">${esc(pos[r.position].name)}</span><span class="pill k lv">${r.level}</span>`)).join('') + `</div>`;
+    return h;
+  }
+  function courseDetailHTML(n){
+    const c=courseById.get(n.id);
+    let h = `<div class="dr-s"><div class="dr-st">课程信息</div><div class="dr-def">${esc(c.name)} · ${esc(c.type)} · ${esc(c.block||'')} · ${c.hours} 学时 · 第 ${c.term} 学期</div></div>`;
+    if(c.desc) h += `<div class="dr-s"><div class="dr-st">简介</div><div class="dr-def">${esc(c.desc)}</div></div>`;
+    const tasks = tasksByCourse[n.id] || [];
+    if(tasks.length) h += `<div class="dr-s"><div class="dr-st">任务 ${tasks.length} 个</div>` +
+      tasks.map(t=>jumpRow('task', t.id, n.major,
+        `<span class="arow-n">${esc(t.name)}</span>`)).join('') + `</div>`;
+    else {
+      const sk = skillsUnderCourse(n.id);
+      if(sk.length) h += `<div class="dr-s"><div class="dr-st">技能 ${sk.length} 个（无任务/流程层）</div>` +
+        sk.map(s=>jumpRow('skill', s.id, n.major,
+          `<span class="arow-n">${esc(s.name)}</span>`)).join('') + `</div>`;
+    }
+    return h;
+  }
+  function industryDetailHTML(){
+    const ind = KG.industry;
+    const aliases = I.aliases && I.aliases.length ? I.aliases.join(' / ') : '';
+    let h = `<div class="dr-s"><div class="dr-st">行业</div><div class="dr-def">${esc(ind.name)}${aliases?` · ${esc(aliases)}`:''}</div></div>`;
+    h += `<div class="dr-s"><div class="dr-st">构成</div><div class="dr-def">子行业 ${D.subIndustries.length} 个 · 代表岗位 ${D.positions.length} 个 · 能力项 ${D.abilities.length} 条 · 接入专业 ${KG.majors.length} 个</div></div>`;
+    if(I.included && I.included.length) h += `<div class="dr-s"><div class="dr-st">纳入范围</div>` + I.included.map(x=>`<span class="pill k">${esc(x)}</span>`).join('') + `</div>`;
+    if(I.boundaryNotes) h += `<div class="dr-s"><div class="dr-st">边界说明</div><div class="dr-def">${esc(I.boundaryNotes)}</div></div>`;
+    h += `<div class="dr-s"><div class="dr-st">融合说明</div><div class="dr-def">本图谱把行业能力图谱（行业→专业→岗位→能力）与专业知识体系（专业→课程→任务→流程→技能→知/规/案）在「技能↔能力」映射边处融合成同一棵树。三条规范路径：① 能力路 行业→专业→岗位→能力→技能→知/规/案；② 岗位-任务路 岗位→任务→流程→技能→知/规/案；③ 教学路 课程→任务→流程→技能→知/规/案。子行业不进主干，降级为岗位节点的「所属子行业」属性；「次 N」为次要关联，不进主干。</div></div>`;
+    return h;
+  }
+  function teachingDetailHTML(n){
+    let ent, ttl, kids=[], kidLabel='';
+    if(n.type==='task'){
+      ent=taskById.get(n.id); ttl='任务';
+      const fls = flowsByTask[n.id]||[];
+      if(fls.length){ kids=fls.map(f=>({id:f.id,type:'flow',name:f.name})); kidLabel='流程'; }
+      else { kids=(skillsByParent[n.id]||[]).map(s=>({id:s.id,type:'skill',name:s.name})); kidLabel='技能'; }
+    } else if(n.type==='flow'){
+      ent=flowById.get(n.id); ttl='流程';
+      kids=skillsUnderFlow(n.id).map(s=>({id:s.id,type:'skill',name:s.name})); kidLabel='技能';
+    } else return '';
+    let h = `<div class="dr-s"><div class="dr-st">${ttl}</div><div class="dr-def">${esc(ent.name)}</div></div>`;
+    if(ent.result) h += `<div class="dr-s"><div class="dr-st">产出/结果</div><div class="dr-def">${esc(ent.result)}</div></div>`;
+    if(kids.length) h += `<div class="dr-s"><div class="dr-st">${kidLabel} ${kids.length} 个</div>` +
+      kids.map(k=>jumpRow(k.type, k.id, n.major,
+        `<span class="arow-n">${esc(k.name)}</span>`)).join('') + `</div>`;
+    return h;
+  }
+  function openDetail(n){
+    let kind='', ttl='', sub='', html='';
+    switch(n.type){
+      case 'leaf': kind=leafById.get(n.id).kind; ttl=leafById.get(n.id).name; sub=''; html=leafDetailHTML(n); break;
+      case 'major': kind='专业'; ttl=majorByCode.get(n.id).name; sub=majorByCode.get(n.id).stage; html=majorDetailHTML(n.id); break;
+      case 'position': kind='岗位'; ttl=pos[n.id].name; sub=pos[n.id].id; html=positionDetailHTML(n); break;
+      case 'ability': kind='能力'; ttl=abl[n.id].name; sub=abl[n.id].domain; html=abilityDetailHTML(n); break;
+      case 'course': kind='课程'; ttl=courseById.get(n.id).name; sub=courseById.get(n.id).type; html=courseDetailHTML(n); break;
+      case 'industry': kind='行业'; ttl=KG.industry.name; sub=''; html=industryDetailHTML(); break;
+      case 'skill': kind='技能'; ttl=skillById.get(n.id).name; sub=subtitleOf(n); html=skillDetailHTML(n); break;
+      case 'task': kind='任务'; ttl=taskById.get(n.id).name; sub=subtitleOf(n); html=teachingDetailHTML(n); break;
+      case 'flow': kind='流程'; ttl=flowById.get(n.id).name; sub=subtitleOf(n); html=teachingDetailHTML(n); break;
+      default: kind='教学节点'; ttl=n.id; sub=''; html=teachingDetailHTML(n); break;
+    }
+    openDrawer(kind, ttl, sub, html);
+  }
+  // 交叉引用点击跳转：详情抽屉内罗列的关联节点 → 打开对应节点详情
+  function kgNodeRef(type, id, majorCode){
+    const n = {type, id, major: majorCode || null};
+    if(type==='position') n.degree = degreeOf(id, majorCode) || '—';
+    return n;
+  }
+  $('#drBody').addEventListener('click', e=>{
+    const el = e.target.closest('[data-kgjump]');
+    if(!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openDetail(kgNodeRef(el.dataset.kgjump, el.dataset.kgjumpId, el.dataset.kgjumpMajor));
+  });
+
+  // ── 渲染 ──
+  const COL_W=242, ROW_H=100, PAD_L=132, PAD_T=24;
+  const EDGE_STYLE = {
+    structure:{color:'var(--kg-edge-structure)', width:2, dash:''},
+    degree:{color:'var(--kg-edge-degree)', width:2.5, dash:''},
+    require:{color:'var(--kg-edge-require)', width:2.5, dash:''},
+    mapping:{color:'var(--kg-edge-mapping)', width:2, dash:'7 5'},
+    derived:{color:'var(--kg-edge-derived)', width:2, dash:'2 5'},
+  };
+
+  function render(scrollX){
+    const treeEl = $('#kgTree'), canvas = $('#kgCanvas');
+    treeEl.innerHTML = '';
+    if(!rootNode) return;
+    let row=0, maxCol=0;
+    (function place(n, col){
+      n._x = PAD_L + col*COL_W; maxCol=Math.max(maxCol,col);
+      const kids = n.expanded ? n.children : null;
+      if(kids && kids.length){
+        for(const k of kids) place(k, col+1);
+        n._y = (kids[0]._y + kids[kids.length-1]._y)/2;
+      } else { n._y = PAD_T + row*ROW_H + ROW_H/2; row++; }
+    })(rootNode, 0);
+    const W=PAD_L+(maxCol+1)*COL_W+80, H=PAD_T+row*ROW_H+60;
+    treeEl.style.width=W+'px'; treeEl.style.height=H+'px';
+
+    const nodes=[];
+    (function collect(n){ nodes.push(n); if(n.expanded && n.children) n.children.forEach(collect); })(rootNode);
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('id','kgSvg'); svg.setAttribute('width',W); svg.setAttribute('height',H);
+    const frag = document.createDocumentFragment();
+    for(const n of nodes){
+      const el = document.createElement('div');
+      el.className = n.type==='leaf' ? 'kgleaf' : 'kgnode';
+      if(n.type!=='leaf'){
+        if(isRedMajor(n)) el.classList.add('red','no-expand');
+        if(!dirsOfNode(n).length) el.classList.add('no-expand');
+      }
+      el.tabIndex = 0;
+      el.setAttribute('role','treeitem');
+      el.innerHTML = nodeHTML(n);
+      el.dataset.kgid = n.id; el.dataset.kgtype = n.type; el.dataset.expanded = n.expanded?'1':'0';
+      if(n.type==='leaf') el.dataset.kgkind = leafById.get(n.id).kind;
+      el.style.left = n._x+'px'; el.style.top = n._y+'px';
+      frag.appendChild(el);
+      n._el = el;
+    }
+    treeEl.appendChild(frag);
+    treeEl.appendChild(svg);
+
+    for(const n of nodes){
+      if(!n.expanded || !n.children) continue;
+      const btn = n._el ? n._el.querySelector('.kg-dir.on') : null;
+      const x1 = btn ? n._x - n._el.offsetWidth/2 + btn.offsetLeft + btn.offsetWidth : n._x + n._el.offsetWidth/2;
+      const y1 = btn ? n._y - n._el.offsetHeight/2 + btn.offsetTop + btn.offsetHeight/2 : n._y;
+      for(const k of n.children){
+        if(!n._el || !k._el) continue;
+        const x2 = k._x - k._el.offsetWidth/2, y2 = k._y;
+        const dx = Math.max(28, (x2-x1)*0.5);
+        const s = EDGE_STYLE[k.edge.kind] || EDGE_STYLE.structure;
+        const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+        p.setAttribute('d', `M ${x1} ${y1} C ${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`);
+        p.setAttribute('stroke', s.color); p.setAttribute('stroke-width', s.width);
+        if(s.dash) p.setAttribute('stroke-dasharray', s.dash);
+        p.setAttribute('fill','none');
+        svg.appendChild(p);
+      }
+    }
+    // 「+ 还有 N 项」追加按钮
+    for(const n of nodes){
+      if(!n.expanded || !n.children) continue;
+      const dir = dirsOfNode(n)[n.activeDir];
+      if(n.shown < dir.items.length){
+        const btn = document.createElement('button');
+        btn.className='kg-more'; btn.type='button';
+        btn.textContent = `+ 还有 ${dir.items.length - n.shown} 项`;
+        btn.style.left = ((n._x)+COL_W*0.55)+'px';
+        btn.style.top = (n.children[n.children.length-1]._y + ROW_H*0.62)+'px';
+        btn.addEventListener('click', e=>{ e.stopPropagation(); n.shown = Math.min(dir.items.length, n.shown + NODE_STEP); materialize(n); render(n._x + COL_W); });
+        treeEl.appendChild(btn);
+      }
+    }
+
+    if(scrollX && canvas) canvas.scrollLeft = Math.max(0, Math.min(scrollX - 48, canvas.scrollWidth - canvas.clientWidth));
+  }
+
+  function resetTree(){
+    rootNode = makeNode({id: KG.industry.id, type:'industry'}, null, null);
+    expand(rootNode);
+  }
+  function expand(n, dirIdx){
+    const dirs = dirsOfNode(n);
+    if(!dirs.length) return;
+    n.expanded = true;
+    n.activeDir = (dirIdx===undefined ? 0 : dirIdx);
+    n.shown = Math.min(NODE_DEFAULT_SHOWN, dirs[n.activeDir].items.length);
+    materialize(n);
+  }
+  function toggleDir(n, dirIdx){
+    const dirs = dirsOfNode(n);
+    if(!dirs.length) return;
+    if(n.expanded && n.activeDir===dirIdx){ n.expanded=false; render(); }
+    else { expand(n, dirIdx); render(n._x + COL_W); }
+  }
+
+  // ── 事件绑定 ──
+  let rootNode = null;
+  function bindTree(){
+    $('#kgTree').addEventListener('click', e=>{
+      const nodeEl = e.target.closest('.kgnode,.kgleaf');
+      if(!nodeEl) return;
+      const n = findNode(rootNode, nodeEl);
+      if(!n) return;
+      const dirBtn = e.target.closest('[data-dir]');
+      const gi = e.target.closest('[data-kgi]');
+      if(gi){ e.stopPropagation(); openDetail(n); return; }
+      if(dirBtn){ e.stopPropagation(); toggleDir(n, +dirBtn.dataset.dir); return; }
+      if(n.type==='leaf'){ openDetail(n); return; }
+      if(dirsOfNode(n).length) toggleDir(n, n.activeDir);
+    });
+    $('#kgTree').addEventListener('keydown', e=>{
+      if(e.key!=='Enter' && e.key!==' ') return;
+      const nodeEl = e.target.closest('.kgnode,.kgleaf');
+      if(!nodeEl) return;
+      const n = findNode(rootNode, nodeEl);
+      if(!n || n.type==='leaf') return;
+      e.preventDefault();
+      if(dirsOfNode(n).length) toggleDir(n, n.activeDir);
+    });
+  }
+  function findNode(n, el){
+    if(n._el===el) return n;
+    if(n.children) for(const k of n.children){ const r=findNode(k,el); if(r) return r; }
+    return null;
+  }
+
+  $('#kgHome').addEventListener('click', ()=>{
+    const canvas=$('#kgCanvas');
+    canvas.scrollTo({left:0, top:Math.max(0,(rootNode._y||0)-canvas.clientHeight/2), behavior:'smooth'});
+  });
+  $('#kgCollapse').addEventListener('click', ()=>{ resetTree(); render(false); });
+  $('#kgFull').addEventListener('click', ()=>{
+    const w=$('#kgCanvasWrap'); w.classList.toggle('kg-fs');
+    $('#kgFull').textContent = w.classList.contains('kg-fs') ? '退出全屏' : '全屏';
+    render(false);
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Escape' && $('#kgCanvasWrap').classList.contains('kg-fs')){
+      $('#kgCanvasWrap').classList.remove('kg-fs');
+      $('#kgFull').textContent='全屏'; render(false);
+    }
+  });
+  $('#tabs').addEventListener('click', e=>{
+    const b = e.target.closest('[data-l1]');
+    if(!b) return;
+    if(b.dataset.l1!=='kgraph' && $('#kgCanvasWrap').classList.contains('kg-fs')){
+      $('#kgCanvasWrap').classList.remove('kg-fs'); $('#kgFull').textContent='全屏';
+    }
+    if(b.dataset.l1==='kgraph'){ if(!kgShown){ kgShown=true; resetTree(); } render(false); }
+  });
+  let kgShown = false;
+
+  $('#kgLegend').innerHTML =
+    `<span class="kg-leg-item"><i class="kg-leg-line structure"></i>结构边（同图谱父子）</span>
+     <span class="kg-leg-item"><i class="kg-leg-line degree"></i>对口边（专业—岗位主数据）</span>
+     <span class="kg-leg-item"><i class="kg-leg-line require"></i>要求边（岗位—能力）</span>
+     <span class="kg-leg-item"><i class="kg-leg-line mapping"></i>映射边（能力—技能，判定得来）</span>
+     <span class="kg-leg-item"><i class="kg-leg-line derived"></i>推导边（岗位—任务）</span>
+     <span class="kg-leg-label">节点类型（左色条）</span>
+     ${Object.entries(NODE_TYPE_CN).map(([k,v])=>`<span class="kg-leg-item"><i class="kg-leg-bar ${k}"></i>${v}</span>`).join('')}
+     ${LEAF_KIND_CN.map(([v,cls])=>`<span class="kg-leg-item"><i class="kg-leg-bar ${cls}"></i>${v}</span>`).join('')}
+     <span class="kg-leg-note">技能节点 ★=主归属、「次 N」=次要关联（不进主干）。点胶囊主体展开默认方向，点多方向标签切换，点 ⓘ 看详情。</span>`;
+
+  bindTree();
+})();
+
+/* ═══ 14. 全景图谱·（能力树 + 右侧详情）═══ */
+(function(){
+  const G = D.kgraph;
+  const qa = s => Array.from(document.querySelectorAll(s));
+  const grp = (arr,key)=>{ const o={}; for(const x of arr)(o[x[key]] ||= []).push(x); return o; };
+
+  const majorByCode = new Map(G.majors.map(m=>[m.code,m]));
+  const courseById  = new Map(G.courses.map(c=>[c.id,c]));
+  const moduleById  = new Map(G.modules.map(m=>[m.id,m]));
+  const taskById    = new Map(G.tasks.map(t=>[t.id,t]));
+  const flowById    = new Map(G.flows.map(f=>[f.id,f]));
+  const stepById    = new Map(G.steps.map(s=>[s.id,s]));
+  const leafById    = new Map(G.leaves.map(l=>[l.id,l]));
+
+  const tasksByModule  = grp(G.tasks,'module');
+  const flowsByTask    = grp(G.flows,'task');
+  const stepsByFlow    = grp(G.steps,'flow');
+
+  const isSkill = l => l.kind==='技能规范';
+  const skills = G.leaves.filter(isSkill);
+  const skillsByParent = grp(skills,'parent');
+  const zgaByParent = grp(G.leaves.filter(l=>!isSkill(l)),'parent');
+
+  // 课程 → 专业（首个含该课程的专业）
+  const courseMajor = {};
+  for(const m of G.majors) for(const cid of (m.courses||[])) if(!courseMajor[cid]) courseMajor[cid]=m.code;
+
+  // 对应口径：完全 + 部分对应
+  const CORR = new Set(['covers','partially_covers']);
+  const corr = G.mapping.filter(e=>CORR.has(e.rel));
+  const corrByLeaf = grp(corr,'leaf');
+  const corrByAbility = grp(corr,'ability');
+  const supportSkillIdsOf = aid => (corrByAbility[aid]||[]).map(e=>e.leaf).filter(lid=>{const l=leafById.get(lid);return l&&isSkill(l);});
+  const abilityIdsOfSkill = sid => (corrByLeaf[sid]||[]).map(e=>e.ability).filter(Boolean);
+
+  function courseOfSkill(sid){
+    let p = leafById.get(sid).parent;
+    if(stepById.has(p)) p = stepById.get(p).flow;
+    if(flowById.has(p)) p = flowById.get(p).task;
+    if(taskById.has(p)) p = taskById.get(p).module;
+    if(moduleById.has(p)) return moduleById.get(p).course;
+    if(courseById.has(p)) return p;
+    return null;
+  }
+  function flowOfSkill(sid){
+    let p = leafById.get(sid).parent;
+    if(stepById.has(p)) return stepById.get(p).flow;
+    if(flowById.has(p)) return p;
+    return null;
+  }
+  const skillsByTask = {};
+  for(const s of skills){ let p=s.parent; if(stepById.has(p)) p=stepById.get(p).flow; if(flowById.has(p)) p=flowById.get(p).task; if(taskById.has(p)) (skillsByTask[p] ||= []).push(s.id); }
+  const skillsByFlow = {};
+  for(const s of skills){ let p=s.parent; if(stepById.has(p)) p=stepById.get(p).flow; if(flowById.has(p)) (skillsByFlow[p] ||= []).push(s.id); }
+  function skillsUnderFlow(fid){ const o=[...(skillsByParent[fid]||[])]; for(const s of (stepsByFlow[fid]||[])) o.push(...(skillsByParent[s.id]||[])); return o; }
+  const tasksByCourse = {};
+  for(const t of G.tasks){ const cid=moduleById.get(t.module).course; (tasksByCourse[cid] ||= []).push(t); }
+
+  /* ── 树范围 ── */
+  const treePositions = []; const posMajors = {};
+  for(const m of G.majors){
+    for(const p of (m.positions||[])){
+      if(p.degree==='不对口' || !pos[p.id]) continue;
+      if(!posMajors[p.id]){ posMajors[p.id]=new Set(); treePositions.push(p.id); }
+      posMajors[p.id].add(m.code);
+    }
+  }
+  /* ── 归属链 / 节点链接 ── */
+  const ZGA_KIND = {'知识点':'知识点','标准':'规范','案例':'案例'};
+  const K = { ability:6, skill:3, zga:5, task:5 };
+
+  function nl(type,id,name){ return `<span class="k2nl" role="button" tabindex="0" data-k2nav="${type}" data-k2nav-id="${esc(id)}">${esc(name)}</span>`; }
+  const TAGCLS = {'专业':'major','岗位':'position','能力':'ability','课程':'course','任务':'task','流程':'flow','技能':'skill','知识点':'kp','规范':'std','案例':'case','操作步骤':'step'};
+  const bd = lbl => `bd-${TAGCLS[lbl]||'x'}`;
+  const TYPELABEL = {industry:'行业',major:'专业',position:'岗位',ability:'能力',course:'课程',task:'任务',flow:'流程',skill:'技能',kp:'知识点',std:'规范',case:'案例',step:'操作步骤'};
+  const ct = t => `<span class="k2ct bd-${t}">${TYPELABEL[t]||t}</span>`;
+  function chainFor(parentId){
+    let courseId=null, taskId=null, flowId=null, stepId=null, p=parentId;
+    if(stepById.has(p)){ stepId=p; flowId=stepById.get(p).flow; }
+    else if(flowById.has(p)) flowId=p;
+    else if(taskById.has(p)) taskId=p;
+    else if(moduleById.has(p)) courseId=moduleById.get(p).course;
+    else if(courseById.has(p)) courseId=p;
+    if(flowId && flowById.has(flowId)) taskId=flowById.get(flowId).task;
+    if(taskId && taskById.has(taskId)) courseId=moduleById.get(taskById.get(taskId).module).course;
+    const out=[];
+    const mc=courseId?courseMajor[courseId]:null;
+    if(mc) out.push({type:'major',id:mc,name:majorByCode.get(mc).name});
+    if(courseId) out.push({type:'course',id:courseId,name:courseById.get(courseId).name});
+    if(taskId) out.push({type:'task',id:taskId,name:taskById.get(taskId).name});
+    if(flowId) out.push({type:'flow',id:flowId,name:flowById.get(flowId).name});
+    if(stepId) out.push({type:'step',id:stepId,name:stepById.get(stepId).name});
+    return out;
+  }
+  function chainHTML(chain){
+    if(!chain.length) return '<span class="k2muted">—</span>';
+    return '<span class="k2chain">'+chain.map((c,i)=>(i?'<span class="k2sep">›</span>':'')+ct(c.type)+nl(c.type,c.id,c.name)).join('')+'</span>';
+  }
+  function zgaListHTML(zs, steps){
+    steps = steps||[];
+    if(!zs.length && !steps.length) return '';
+    const by={}; for(const z of zs){ const k=ZGA_KIND[z.kind]||z.kind; (by[k] ||= []).push(z); }
+    const rows=[]; const cap=(arr,fn)=>{ for(const x of arr.slice(0,K.zga)) rows.push(fn(x)); if(arr.length>K.zga) rows.push(`<div class="k2zga-i"><span class="k2muted">共 ${arr.length} 条，仅展示前 ${K.zga} 条</span></div>`); };
+    cap(by['知识点']||[], z=>`<div class="k2zga-i k2bd bd-kp">${nl('leaf',z.id,z.name)}</div>`);
+    cap(steps, s=>`<div class="k2zga-i k2bd bd-step">${nl('step',s.id,s.name)}</div>`);
+    cap(by['规范']||[], z=>`<div class="k2zga-i k2bd bd-std">${nl('leaf',z.id,z.name)}</div>`);
+    cap(by['案例']||[], z=>`<div class="k2zga-i k2bd bd-case">${nl('leaf',z.id,z.name)}</div>`);
+    return rows.length?`<div class="k2zga">${rows.join('')}</div>`:'';
+  }
+  function zgaUnderFlow(fid){ const o=[...(zgaByParent[fid]||[])]; for(const s of (stepsByFlow[fid]||[])) o.push(...(zgaByParent[s.id]||[])); return o; }
+  function skillBlockHTML(sid, opt){
+    opt=opt||{};
+    const s=leafById.get(sid);
+    const aids=abilityIdsOfSkill(sid);
+    let h=`<div class="k2sk"><div class="k2sk-h">${nl('skill',sid,s.name)}`;
+    if(opt.showAbility){
+      h+=`<span class="k2src">对应能力 ${aids.length}</span>`;
+    }
+    h+=`</div>`;
+    if(opt.showAbility && aids.length) h+=`<div class="k2zga">${aids.map(aid=>`<div class="k2zga-i">${nl('ability',aid,abl[aid].name)}</div>`).join('')}</div>`;
+    h+=zgaListHTML(zgaByParent[s.parent]||[]);
+    h+=`</div>`;
+    return h;
+  }
+
+  /* ── 岗位详情 ── */
+  function scopeCourses(pid){ const set=new Set(); for(const mc of (posMajors[pid]||[])) for(const cid of (majorByCode.get(mc).courses||[])) set.add(cid); return set; }
+  function relevantTasksFor(pid){
+    const ablSet=new Set(pos[pid].abilities.map(r=>r.ability));
+    const courseSet=scopeCourses(pid);
+    const out=[];
+    for(const t of G.tasks){
+      if(!courseSet.has(moduleById.get(t.module).course)) continue;
+      const sk=(skillsByTask[t.id]||[]).filter(sid=>abilityIdsOfSkill(sid).some(aid=>ablSet.has(aid)));
+      if(sk.length) out.push({t, sk});
+    }
+    out.sort((a,b)=>b.sk.length-a.sk.length);
+    return out;
+  }
+  function relevantCoursesFor(pid){
+    const m=new Map();
+    for(const {t} of relevantTasksFor(pid)){
+      const cid=moduleById.get(t.module).course;
+      m.set(cid, (m.get(cid)||0)+1);
+    }
+    return [...m.entries()].sort((a,b)=>b[1]-a[1]).map(([cid,cnt])=>({cid,cnt}));
+  }
+  function abilityBodyHTML(pid, courseSet, st){
+    const p=pos[pid];
+    const inScope=sid=>{ const c=courseOfSkill(sid); return c==null||courseSet.has(c); };
+    const all=p.abilities;
+    let h='';
+    h+=all.map((r,i)=>{
+      const a=abl[r.ability];
+      const skIds=supportSkillIdsOf(r.ability).filter(inScope);
+      const open=st.openAb.has(i);
+      return `<div class="k2ab${open?' open':''}"><div class="k2ab-h" data-ab-toggle="${i}" role="button" tabindex="0"><span class="k2chev">${open?'▾':'▸'}</span><span class="k2ab-t">${nl('ability',a.id,a.name)}${a.core?'<span class="k2star"> ★</span>':''}</span><span class="k2ab-m">${esc(a.domain)} · 岗位要求 ${r.level} · 技能 ${skIds.length}</span></div><div class="k2ab-b">${
+        skIds.length
+          ? skIds.slice(0,K.skill).map(sid=>skillBlockHTML(sid,{})).join('') + (skIds.length>K.skill?`<div class="k2note">共 ${skIds.length} 个技能，仅展示前 ${K.skill} 个</div>`:'')
+          : '<div class="k2none">这条能力目前没有教学内容支撑</div>'
+      }</div></div>`;
+    }).join('');
+    return h;
+  }
+  function taskFlowsHTML(t, skIds){
+    const fls=flowsByTask[t.id]||[];
+    const direct=(skillsByParent[t.id]||[]).filter(s=>skIds.includes(s.id)).map(s=>s.id);
+    const cap=arr=>arr.slice(0,K.skill).map(sid=>skillBlockHTML(sid,{showAbility:true})).join('')+(arr.length>K.skill?`<div class="k2note">共 ${arr.length} 个技能，仅展示前 ${K.skill} 个</div>`:'');
+    let h='';
+    if(!fls.length){ if(direct.length) h+=`<div class="k2note">以下内容直接挂在任务下</div>`+cap(direct); return h; }
+    for(const f of fls){
+      const fs=(skillsByFlow[f.id]||[]).filter(sid=>skIds.includes(sid));
+      h+=`<div class="k2group"><div class="k2g-h">${nl('flow',f.id,f.name)}</div>`;
+      if(fs.length) h+=cap(fs);
+      else h+=`<div class="k2none">没有技能命中能力项，以下知识点 / 规范 / 案例直接挂在流程下</div>`+zgaListHTML(zgaUnderFlow(f.id));
+      h+=`</div>`;
+    }
+    if(direct.length) h+=`<div class="k2note">以下内容直接挂在任务下</div>`+cap(direct);
+    return h;
+  }
+  function taskBodyHTML(pid, st){
+    const rel=relevantTasksFor(pid);
+    let h='';
+    h+=rel.map((r,i)=>{
+      const t=r.t, fls=flowsByTask[t.id]||[];
+      const open=st.openTask.has(i);
+      return `<div class="k2ab${open?' open':''}"><div class="k2ab-h" data-task-toggle="${i}" role="button" tabindex="0"><span class="k2chev">${open?'▾':'▸'}</span><span class="k2ab-t">${nl('task',t.id,t.name)}</span><span class="k2ab-m">${fls.length} 个流程 · ${r.sk.length} 个技能</span></div><div class="k2ab-b">${taskFlowsHTML(t, r.sk)}</div></div>`;
+    }).join('');
+    return h;
+  }
+  function courseBodyHTML(pid, st){
+    const cs=relevantCoursesFor(pid);
+    if(!cs.length) return '<div class="k2none">—</div>';
+    return cs.map(({cid,cnt})=>`<div class="k2row">${nl('course',cid,courseById.get(cid).name)}<span class="k2muted"> · ${cnt} 个任务</span></div>`).join('');
+  }
+  function positionDetailHTML(pid, st){
+    const p=pos[pid], sc=sub[p.sub];
+    const courseSet=scopeCourses(pid);
+    const rel=relevantTasksFor(pid);
+    const cs=relevantCoursesFor(pid);
+    let h='';
+    if(p.desc) h+=`<div class="k2s"><div class="k2st">岗位职责</div><div class="k2def">${esc(p.desc)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属链</div><div class="k2chain">${ct('industry')}${nl('industry',G.industry.id,G.industry.name)} › ${esc(sc.name)}</div></div>`;
+    h+=`<div class="k2tabs"><button class="k2tab${st.tab==='ability'?' on':''}" data-k2tab="ability">能力 ${p.abilities.length}</button><button class="k2tab${st.tab==='task'?' on':' dim'}" data-k2tab="task">任务 ${rel.length}</button><button class="k2tab${st.tab==='course'?' on':' dim'}" data-k2tab="course">课程 ${cs.length}</button></div>`;
+    h+= st.tab==='ability' ? abilityBodyHTML(pid, courseSet, st) : (st.tab==='course' ? courseBodyHTML(pid, st) : taskBodyHTML(pid, st));
+    return h;
+  }
+
+  /* ── 其他节点详情 ── */
+  function industryNodeHTML(){
+    let h=`<div class="k2s"><div class="k2st">子行业 ${D.subIndustries.length} 个</div><div class="k2def">${D.subIndustries.map(s=>esc(s.name)).join('、')}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">专业 ${G.majors.length} 个</div>`+G.majors.map(m=>`<div class="k2row">${nl('major',m.code,m.name)}</div>`).join('')+`</div>`;
+    h+=`<div class="k2s"><div class="k2st">岗位 ${treePositions.length} 个</div>`+treePositions.map(pid=>`<div class="k2row">${nl('position',pid,pos[pid].name)}</div>`).join('')+`</div>`;
+    return h;
+  }
+  function majorNodeHTML(code){
+    const m=majorByCode.get(code);
+    const deg=(m.positions||[]).filter(p=>p.degree!=='不对口');
+    let h='';
+    if(m.goal) h+=`<div class="k2s"><div class="k2st">培养目标</div><div class="k2def">${esc(m.goal)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${ct('industry')}${nl('industry',G.industry.id,G.industry.name)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">专业信息</div><div class="k2def">${esc(m.name)} · ${esc(m.stage||'')}${m.years?` · 学制 ${m.years} 年`:''}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">对口岗位 ${deg.length} 个</div>`+deg.map(p=>`<div class="k2row">${nl('position',p.id,pos[p.id].name)}</div>`).join('')+`</div>`;
+    const cs=m.courses||[];
+    h+=`<div class="k2s"><div class="k2st">专业课程 ${cs.length} 门</div>`+cs.slice(0,10).map(cid=>`<div class="k2row">${nl('course',cid,courseById.get(cid).name)}</div>`).join('')+(cs.length>10?`<div class="k2note">共 ${cs.length} 门，仅展示前 10 门</div>`:'')+`</div>`;
+    return h;
+  }
+  function abilityNodeHTML(aid){
+    const a=abl[aid];
+    const skIds=supportSkillIdsOf(aid);
+    let h='';
+    if(a.definition) h+=`<div class="k2s"><div class="k2st">描述</div><div class="k2def">${esc(a.definition)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${ct('industry')}${nl('industry',G.industry.id,G.industry.name)} › ${esc(a.domain)}</div></div>`;
+    if(a.core) h+=`<div class="k2s"><div class="k2st">★ 核心能力</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">支撑技能 ${skIds.length} 个</div>`+(skIds.length?skIds.slice(0,6).map(sid=>skillBlockHTML(sid,{})).join('')+(skIds.length>6?`<div class="k2note">共 ${skIds.length} 个，仅展示前 6 个</div>`:''):'<div class="k2none">暂无支撑技能</div>')+`</div>`;
+    h+=`<div class="k2s"><div class="k2st">要求该能力的岗位 ${a.requiredBy.length} 个</div>`+a.requiredBy.map(r=>`<div class="k2row">${nl('position',r.position,pos[r.position].name)}<span class="k2pill ${r.level}">${r.level}</span></div>`).join('')+`</div>`;
+    h+=`<div class="k2s"><div class="k2st">L1–L3 三级要求</div>`+['L1','L2','L3'].map(L=>{ const l=a.levels[L]; return `<div class="k2lvl ${L}"><div class="k2lvl-h"><span class="k2lv ${L}">${L}</span><span class="k2lv-n">${LVN[L]}</span></div><div class="k2lv-d">${esc(l.desc)}</div>${l.points&&l.points.length?`<div class="k2pts-h">观测点</div><ul class="k2pts">${l.points.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`:''}</div>`; }).join('')+`</div>`;
+    return h;
+  }
+  function courseNodeHTML(cid){
+    const c=courseById.get(cid), mc=courseMajor[cid];
+    let h='';
+    if(c.desc) h+=`<div class="k2s"><div class="k2st">描述</div><div class="k2def">${esc(c.desc)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${ct('industry')}${nl('industry',G.industry.id,G.industry.name)} › ${mc?ct('major')+nl('major',mc,majorByCode.get(mc).name):esc('—')}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">课程类型</div><div class="k2def">${esc(c.type||'—')}${c.block?` · ${esc(c.block)}`:''}${c.hours?` · ${c.hours} 学时`:''}</div></div>`;
+    const ts=tasksByCourse[cid]||[];
+    if(ts.length) h+=`<div class="k2s"><div class="k2st">任务 ${ts.length} 个</div>`+ts.slice(0,10).map(t=>`<div class="k2row">${nl('task',t.id,t.name)}</div>`).join('')+(ts.length>10?`<div class="k2note">共 ${ts.length} 个，仅展示前 10 个</div>`:'')+`</div>`;
+    return h;
+  }
+  function taskNodeHTML(tid){
+    const t=taskById.get(tid);
+    let h='';
+    if(t.result) h+=`<div class="k2s"><div class="k2st">任务结果</div><div class="k2def">${esc(t.result)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${chainHTML(chainFor(t.module))}</div></div>`;
+    const fls=flowsByTask[tid]||[];
+    if(fls.length) h+=`<div class="k2s"><div class="k2st">操作流程 ${fls.length} 个（按顺序）</div>`+fls.map(f=>`<div class="k2row">${nl('flow',f.id,f.name)}</div>`).join('')+`</div>`;
+    else { const sk=skillsByParent[tid]||[]; if(sk.length) h+=`<div class="k2s"><div class="k2st">技能 ${sk.length} 个</div>`+sk.map(s=>skillBlockHTML(s.id,{showAbility:true})).join('')+`</div>`; }
+    return h;
+  }
+  function flowNodeHTML(fid){
+    const f=flowById.get(fid);
+    let h='';
+    if(f.result) h+=`<div class="k2s"><div class="k2st">流程结果</div><div class="k2def">${esc(f.result)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${chainHTML(chainFor(f.task))}</div></div>`;
+    const stps=stepsByFlow[fid]||[];
+    if(stps.length) h+=`<div class="k2s"><div class="k2st">操作步骤 ${stps.length} 个</div><div class="k2zga">${stps.map(s=>`<div class="k2zga-i k2bd bd-step">${nl('step',s.id,s.name)}</div>`).join('')}</div></div>`;
+    const sk=skillsByParent[fid]||[];
+    if(sk.length) h+=`<div class="k2s"><div class="k2st">技能 ${sk.length} 个</div>`+sk.map(s=>skillBlockHTML(s.id,{showAbility:true})).join('')+`</div>`;
+    const zs=zgaByParent[fid]||[];
+    if(zs.length) h+=`<div class="k2s"><div class="k2st">下挂知识点 / 规范 / 案例</div>${zgaListHTML(zs)}</div>`;
+    return h;
+  }
+  function stepNodeHTML(sid){
+    const s=stepById.get(sid);
+    let h='';
+    if(s.result) h+=`<div class="k2s"><div class="k2st">描述</div><div class="k2def">${esc(s.result)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${chainHTML(chainFor(s.flow))}</div></div>`;
+    const sk=skillsByParent[sid]||[];
+    if(sk.length) h+=`<div class="k2s"><div class="k2st">技能 ${sk.length} 个</div>`+sk.map(s=>skillBlockHTML(s.id,{showAbility:true})).join('')+`</div>`;
+    const zs=zgaByParent[sid]||[];
+    if(zs.length) h+=`<div class="k2s"><div class="k2st">下挂知识点 / 规范 / 案例</div>${zgaListHTML(zs)}</div>`;
+    return h;
+  }
+  function skillNodeHTML(sid){
+    const s=leafById.get(sid), chain=chainFor(s.parent), aids=abilityIdsOfSkill(sid);
+    let h='';
+    if(s.definition) h+=`<div class="k2s"><div class="k2st">描述</div><div class="k2def">${esc(s.definition)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属</div><div class="k2chain">${chainHTML(chain)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">对应能力 ${aids.length} 个</div>`+(aids.length?aids.map(aid=>`<div class="k2row">${nl('ability',aid,abl[aid].name)}</div>`).join(''):'<div class="k2none">—</div>')+`</div>`;
+    const stps = flowOfSkill(sid) ? (stepsByFlow[flowOfSkill(sid)]||[]) : [];
+    const zs=zgaByParent[s.parent]||[];
+    if(stps.length || zs.length) h+=`<div class="k2s"><div class="k2st">下挂 操作步骤 / 知识点 / 规范 / 案例</div>${zgaListHTML(zs, stps)}</div>`;
+    return h;
+  }
+  function leafNodeHTML(lid){
+    const l=leafById.get(lid), chain=chainFor(l.parent);
+    const skillIds=(skillsByParent[l.parent]||[]).map(s=>s.id);
+    let h='';
+    if(l.definition) h+=`<div class="k2s"><div class="k2st">描述</div><div class="k2def">${esc(l.definition)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">所在位置</div><div class="k2chain">${chainHTML(chain)}</div></div>`;
+    h+=`<div class="k2s"><div class="k2st">归属技能</div>`+(skillIds.length?skillIds.map(sid=>`<div class="k2row">${nl('skill',sid,leafById.get(sid).name)}</div>`).join(''):'<div class="k2none">—</div>')+`</div>`;
+    return h;
+  }
+
+  /* ── 面板调度 ── */
+  function k2detail(n){
+    switch(n.type){
+      case 'position': { const p=pos[n.id]; return {kind:'岗位', title:p.name, sub:'', html:positionDetailHTML(n.id, pstate(n.id))}; }
+      case 'ability': { const a=abl[n.id]; return {kind:'能力', title:a.name, sub:a.domain, html:abilityNodeHTML(n.id)}; }
+      case 'major': { const m=majorByCode.get(n.id); return {kind:'专业', title:m.name, sub:m.stage||'', html:majorNodeHTML(n.id)}; }
+      case 'course': { const c=courseById.get(n.id); return {kind:'课程', title:c.name, sub:c.type||'', html:courseNodeHTML(n.id)}; }
+      case 'task': { const t=taskById.get(n.id); return {kind:'任务', title:t.name, sub:'', html:taskNodeHTML(n.id)}; }
+      case 'flow': { const f=flowById.get(n.id); return {kind:'流程', title:f.name, sub:'', html:flowNodeHTML(n.id)}; }
+      case 'step': { const s=stepById.get(n.id); return {kind:'操作步骤', title:s.name, sub:'', html:stepNodeHTML(n.id)}; }
+      case 'skill': { const s=leafById.get(n.id); return {kind:'技能', title:s.name, sub:'', html:skillNodeHTML(n.id)}; }
+      case 'industry': { return {kind:'行业', title:G.industry.name, sub:'', html:industryNodeHTML()}; }
+      case 'leaf': { const l=leafById.get(n.id); return {kind:ZGA_KIND[l.kind]||l.kind, title:l.name, sub:'', html:leafNodeHTML(n.id)}; }
+      default: return {kind:'', title:'', sub:'', html:''};
+    }
+  }
+  let k2stack = [];
+  const k2viewState = {};
+  function pstate(pid){ const k='position:'+pid; if(!k2viewState[k]) k2viewState[k]={tab:'ability', openAb:new Set([0,1]), openTask:new Set([0,1])}; return k2viewState[k]; }
+  const toggleSet = (set,i)=> set.has(i)?set.delete(i):set.add(i);
+  const k2cur = ()=> k2stack[k2stack.length-1];
+  function renderLegend(){
+    const lg=$('#k2Legend'); if(!lg) return;
+    const seen=new Set();
+    $('#k2Body').querySelectorAll('.k2ct, .k2zga-i').forEach(el=>{
+      el.classList.forEach(c=>{ if(c.startsWith('bd-')) seen.add(c); });
+    });
+    const order=['bd-industry','bd-major','bd-position','bd-ability','bd-course','bd-task','bd-flow','bd-step','bd-skill','bd-kp','bd-std','bd-case'];
+    const labels={'bd-industry':'行业','bd-major':'专业','bd-position':'岗位','bd-ability':'能力','bd-course':'课程','bd-task':'任务','bd-flow':'流程','bd-step':'操作步骤','bd-skill':'技能','bd-kp':'知识点','bd-std':'规范','bd-case':'案例'};
+    const items=order.filter(b=>seen.has(b));
+    lg.innerHTML=items.map(b=>`<span class="k2lg ${b}"><i></i>${labels[b]}</span>`).join('');
+    lg.style.display=items.length?'':'none';
+  }
+  function k2render(){
+    const n=k2cur(); if(!n) return;
+    const d=k2detail(n);
+    $('#k2Kind').textContent=d.kind;
+    $('#k2Title').textContent=d.title;
+    $('#k2Sub').textContent=d.sub;
+    $('#k2Body').innerHTML=d.html;
+    $('#k2Body').scrollTop=0;
+    $('#k2Back').style.display = k2stack.length>1 ? '' : 'none';
+    renderLegend();
+  }
+  function k2push(type,id){ k2stack.push({type,id}); k2render(); $('#k2Drawer').classList.add('on'); $('#k2Scrim').classList.add('on'); }
+  function k2back(){ if(k2stack.length<=1) k2close(); else { k2stack.pop(); k2render(); } }
+  function k2close(){ k2stack=[]; $('#k2Drawer').classList.remove('on'); $('#k2Scrim').classList.remove('on'); }
+
+  $('#k2Body').addEventListener('click', e=>{
+    const nav=e.target.closest('[data-k2nav]');
+    if(nav){ k2push(nav.dataset.k2nav, nav.dataset.k2navId); return; }
+    const tab=e.target.closest('[data-k2tab]');
+    if(tab){ const n=k2cur(); if(n&&n.type==='position'){ pstate(n.id).tab=tab.dataset.k2tab; k2render(); } return; }
+    const abt=e.target.closest('[data-ab-toggle]');
+    if(abt){ const n=k2cur(); if(n&&n.type==='position'){ toggleSet(pstate(n.id).openAb, +abt.dataset.abToggle); k2render(); } return; }
+    const tsk=e.target.closest('[data-task-toggle]');
+    if(tsk){ const n=k2cur(); if(n&&n.type==='position'){ toggleSet(pstate(n.id).openTask, +tsk.dataset.taskToggle); k2render(); } return; }
+  });
+  $('#k2Close').addEventListener('click', k2close);
+  $('#k2Scrim').addEventListener('click', k2close);
+  $('#k2Back').addEventListener('click', k2back);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#k2Drawer').classList.contains('on')) k2close(); });
+
+  window.k2open = k2push;
+})();
 </script>

@@ -1,0 +1,480 @@
+<title>导游服务岗位能力报告</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#eeecf3; --paper:#ffffff; --sunk:#f6f5fa; --line:#e4e0ee; --line2:#d3cde2;
+  --ink:#221e2e; --ink2:#575069; --ink3:#8b849c;
+  --brand:#5b3fd6; --brand-d:#3d29a0; --brand-bg:#eeeafb;
+  --ok:#3d29a0; --part:#9a86e6; --none:#e2deec;
+  --good:#1b7d47; --good-bg:#e4f3ea; --warn:#9a6207; --warn-bg:#fbf0da; --crit:#b83a3a; --crit-bg:#f9e8e8;
+  --serif:"Noto Serif SC","Songti SC",serif; --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#16141d; --paper:#1f1c28; --sunk:#262231; --line:#34304a; --line2:#453f5e;
+  --ink:#ece9f5; --ink2:#b7b0cb; --ink3:#8a839e;
+  --brand:#9c89f0; --brand-d:#b9aaf6; --brand-bg:#2d2748;
+  --ok:#8f7bea; --part:#554a86; --none:#35314a;
+  --good:#6fcf98; --good-bg:#1d3327; --warn:#e3b35c; --warn-bg:#3a2f18; --crit:#f08a8a; --crit-bg:#3c2224;
+}}
+:root[data-theme="dark"]{
+  --ground:#16141d; --paper:#1f1c28; --sunk:#262231; --line:#34304a; --line2:#453f5e;
+  --ink:#ece9f5; --ink2:#b7b0cb; --ink3:#8a839e;
+  --brand:#9c89f0; --brand-d:#b9aaf6; --brand-bg:#2d2748;
+  --ok:#8f7bea; --part:#554a86; --none:#35314a;
+  --good:#6fcf98; --good-bg:#1d3327; --warn:#e3b35c; --warn-bg:#3a2f18; --crit:#f08a8a; --crit-bg:#3c2224;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.75;padding-inline:16px;padding-block:24px 60px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+b,strong{font-weight:700}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* 改版说明（不打印） */
+.notes{background:var(--brand-bg);border:1px solid var(--line2);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--ink2)}
+.notes summary{cursor:pointer;font-weight:700;color:var(--brand-d);list-style:none}
+.notes summary::-webkit-details-marker{display:none}
+.notes summary::before{content:"▸ ";}
+.notes[open] summary::before{content:"▾ ";}
+.notes .cols{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin-top:10px}
+.notes h4{font-size:12.5px;color:var(--ink);margin:6px 0 4px}
+.notes ul{margin:0;padding-left:18px}
+.notes li{margin:2px 0}
+
+/* 纸面 */
+.sheet{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:40px 48px}
+.eyebrow{font-size:11.5px;letter-spacing:.12em;color:var(--ink3)}
+h1{font-family:var(--serif);font-size:27px;line-height:1.35;margin:4px 0 10px;text-wrap:balance}
+h2{font-family:var(--serif);font-size:19px;margin:0 0 4px;display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:var(--sans);font-size:13px;color:var(--brand);font-weight:700}
+h3{font-size:14.5px;margin:26px 0 8px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 22px;font-size:12.5px;color:var(--ink2);padding-bottom:16px;border-bottom:1px solid var(--line)}
+.meta b{color:var(--ink);font-weight:500}
+.about{font-size:12px;color:var(--ink3);margin:10px 0 0}
+p{margin:8px 0}
+.lead{font-size:16px;line-height:1.85;margin:22px 0 6px;max-width:44em}
+.lead b{color:var(--brand-d)}
+.note{font-size:12px;color:var(--ink3);line-height:1.7}
+.sect-lead{color:var(--ink2);margin:2px 0 14px;font-size:13.5px}
+
+/* 指标带 */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:20px 0 0}
+.kpi{padding:14px 18px;border-left:1px solid var(--line)}
+.kpi:first-child{border-left:0;padding-left:0}
+.kpi .k{font-size:12.5px;color:var(--ink2);font-weight:500}
+.kpi .v{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--ink);line-height:1.2;margin-top:4px}
+.kpi .v small{font-size:14px;color:var(--ink3);font-weight:400}
+.kpi .v em{font-style:normal;font-size:14px;color:var(--brand-d);margin-left:6px}
+.kpi .s{font-size:12px;color:var(--ink2);margin-top:4px;line-height:1.6}
+
+/* 18 条分解条 */
+.split{margin:24px 0 4px}
+.split-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:700}
+.split-h span{font-weight:400;color:var(--ink3);font-size:12px}
+.sbar{display:flex;height:34px;border-radius:5px;overflow:hidden;margin:8px 0 8px;gap:2px}
+.sbar i{display:flex;align-items:center;justify-content:center;font-style:normal;font-family:var(--mono);font-size:13px;font-weight:600}
+.s-ok{background:var(--ok);color:#fff}
+.s-c1{background:var(--part);color:#fff}
+.s-c2{background:repeating-linear-gradient(135deg,var(--part) 0 6px,color-mix(in srgb,var(--part) 70%,var(--paper)) 6px 12px);color:#fff}
+.s-l3{background:var(--none);color:var(--ink2)}
+.skey{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:12px;color:var(--ink2);line-height:1.5}
+.skey div{display:flex;gap:7px}
+.skey i{flex:0 0 12px;height:12px;border-radius:2px;margin-top:3px}
+.skey b{color:var(--ink)}
+
+/* 三件事 */
+.todo{margin:26px 0 0;border-top:2px solid var(--ink)}
+.todo-h{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;padding:10px 0 4px}
+.todo-h b{font-size:15px}
+.todo-h span{font-size:12px;color:var(--ink3)}
+.todo ol{list-style:none;margin:0;padding:0;counter-reset:t}
+.todo li{counter-increment:t;display:grid;grid-template-columns:30px 1fr auto;gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.todo li::before{content:counter(t);font-family:var(--mono);font-weight:600;color:var(--brand);font-size:18px;line-height:1.3}
+.todo .t{font-weight:700;font-size:14.5px;line-height:1.5}
+.todo .d{grid-column:2;font-size:12.5px;color:var(--ink2);line-height:1.65}
+.todo .eff{grid-row:1/3;grid-column:3;text-align:right;font-size:11.5px;color:var(--ink3);white-space:nowrap}
+.todo .eff b{display:block;font-family:var(--mono);font-size:16px;color:var(--ink)}
+.after{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--ink2)}
+.after .pillnum{font-family:var(--mono);font-weight:600;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:4px;padding:1px 7px}
+.tierline{margin-top:18px;font-size:12.5px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:6px 16px}
+.lvnote{margin-top:14px;padding-top:10px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--ink3)}
+
+/* 表格 */
+.tw{overflow-x:auto;margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11.5px;font-weight:500;color:var(--ink3);text-align:left;padding:7px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.r,th.r{text-align:right}
+td.c,th.c{text-align:center}
+td .sub{display:block;font-size:11.5px;color:var(--ink3)}
+tr.grp td{background:var(--sunk);font-weight:700;font-size:12.5px;padding-top:8px;padding-bottom:8px}
+tr.grp td span{font-weight:400;color:var(--ink2);margin-left:8px}
+.star{color:var(--brand);margin-left:3px}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;white-space:nowrap;background:var(--sunk);color:var(--ink2);border:1px solid var(--line)}
+.tag.good{background:var(--good-bg);color:var(--good);border-color:transparent}
+.tag.warn{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.tag.crit{background:var(--crit-bg);color:var(--crit);border-color:transparent}
+.lv{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.lv .ar{color:var(--ink3);margin:0 4px}
+.lv .gap{color:var(--crit);font-weight:600}
+.cells{display:inline-flex;gap:2px;vertical-align:middle;margin-left:6px}
+.cells i{width:9px;height:9px;border-radius:2px;background:var(--none)}
+.cells i.on{background:var(--ok)}
+.pbar{display:flex;height:16px;border-radius:3px;overflow:hidden;gap:1px;min-width:180px}
+.pbar i{display:flex;align-items:center;justify-content:center;font-style:normal;font-family:var(--mono);font-size:10.5px;font-weight:600}
+.rate{font-family:var(--mono);font-weight:600}
+.rate.good{color:var(--good)} .rate.crit{color:var(--crit)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11.5px;color:var(--ink3);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:2px;display:inline-block}
+
+/* 动作卡 */
+.acts{display:flex;flex-direction:column;gap:14px;margin-top:6px}
+.act{border:1px solid var(--line);border-radius:8px;padding:18px 20px;break-inside:avoid}
+.act-h{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.act-h b{font-size:15px}
+.act-h .who{font-size:12px;color:var(--ink3)}
+.act dl{display:grid;grid-template-columns:72px 1fr;gap:6px 12px;margin:12px 0 0;font-size:13px}
+.act dt{color:var(--ink3);font-size:12px;padding-top:1px}
+.act dd{margin:0}
+.act ul{margin:0;padding-left:17px}
+.act li{margin:2px 0}
+.hm{border-collapse:collapse;font-size:12px;margin-top:4px}
+.hm th{font-size:11px;white-space:normal;text-align:center;vertical-align:bottom;padding:4px 6px;line-height:1.35;color:var(--ink2)}
+.hm th:first-child{text-align:left}
+.hm td{padding:6px 6px;text-align:center;border-bottom:1px solid var(--line)}
+.hm td:first-child{text-align:left;white-space:nowrap}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--brand)}
+.keep{margin-top:16px;padding:12px 16px;background:var(--sunk);border-radius:6px;font-size:12.5px;color:var(--ink2)}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.foot{text-align:center;font-size:11.5px;color:var(--ink3);padding-top:6px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+@media (max-width:720px){
+  .sheet{padding:24px 18px}
+  .kpis{grid-template-columns:1fr}
+  .kpi{border-left:0;border-top:1px solid var(--line);padding-left:0}
+  .kpi:first-child{border-top:0}
+  .skey{grid-template-columns:1fr 1fr}
+  .todo li{grid-template-columns:26px 1fr}
+  .todo .eff{grid-row:auto;grid-column:2;text-align:left}
+  .todo .eff b{display:inline;margin-right:6px}
+  .notes .cols,.two{grid-template-columns:1fr}
+  h1{font-size:23px}
+}
+@page{size:A4;margin:14mm 14mm 16mm}
+@media print{
+  :root{--ground:#fff}
+  body{padding:0;background:#fff}
+  .notes{display:none}
+  .wrap{gap:0;max-width:none}
+  .sheet{border:0;border-radius:0;padding:0;break-after:page}
+  .sheet:last-of-type{break-after:auto}
+  tr,.act,.kpis,.todo li,.split{break-inside:avoid}
+  h2,h3{break-after:avoid}
+}
+</style>
+
+<div class="wrap">
+
+<details class="notes" open>
+  <summary>改版说明（demo 专用，打印时不出现）</summary>
+  <p style="margin:8px 0 0">数据是导游服务专业、默认 3 个岗位、标准课程全开时，现页面实际算出的结果。这里只改表达和结构，<b>不改计算口径</b>。</p>
+  <div class="cols">
+    <div>
+      <h4>改了什么</h4>
+      <ul>
+        <li>第 1 页改成「一页纸」：一句话结论、3 个指标（各配一句说明）、剩下 12 条差在哪、建议优先做的 3 件事</li>
+        <li>把「达标 33%」拆开讲清楚：有 9 条是 L3，课程本身教不到</li>
+        <li>建设建议改成按<b>动作</b>组织，每个动作写清补哪些能力、影响哪些岗位、做完后指标怎么变</li>
+        <li>顺序改为：结论 → 差距 → 建议 → 本校现状 → 行业参照 → 附录</li>
+        <li>领域表加了「核心能力未达标」列；去掉产业趋势文字和行业大表</li>
+        <li>结构条直接标数字，打印成黑白也能读</li>
+      </ul>
+    </div>
+    <div>
+      <h4>需要你确认</h4>
+      <ul>
+        <li><b>「做完后 → 9/18」这类推算</b>是否进报告：由现有规则直接推出，不调用大模型；但属于新增的表达</li>
+        <li><b>分档规则</b>暂按现行规则：「数字工具与新媒体」（1 条能力）仍是唯一的优先建设。是否把核心能力纳入分档，需要你决定</li>
+        <li>缺口按<b>4 种差距类型</b>分组，是新增的口径，需要写进 PRD</li>
+        <li>要不要在封面加一句评估依据（可能与 G3 冲突）</li>
+      </ul>
+    </div>
+  </div>
+</details>
+
+<!-- ============ 第 1 页 · 一页纸 ============ -->
+<section class="sheet">
+  <div class="eyebrow">岗位能力分析报告 · 报告 #3</div>
+  <h1>导游服务专业 · 旅游业岗位能力分析报告</h1>
+  <div class="meta">
+    <span>学校　<b>示例职业学院</b></span>
+    <span>专业　<b>导游服务（中职）</b></span>
+    <span>行业　<b>旅游业</b></span>
+    <span>生成时间　<b class="num">2026-09-21 10:22</b></span>
+  </div>
+  <p class="about">本报告对照旅游业代表岗位的能力要求，分析本校专业课程的对接情况，供专业建设参考，不作为办学水平评价或排名。学时、开课学期由学校在课程计划中确定，本报告不作建议。</p>
+
+  <p class="lead">导游服务专业的课程已覆盖 3 个目标岗位几乎全部的能力要求（<b>17 / 18</b>），<b>差距主要在教学深度</b>：已教到岗位要求程度的有 6 条；其余 12 条中，<b>8 条已教到 L2、只差「综合应用」</b>，需要在实训或顶岗中形成；另外 4 条要先通过增开课程或补充教学内容提升。</p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k">目标岗位</div>
+      <div class="v">3<small> / 9</small><em>33%</em></div>
+      <div class="s">行业有 9 个代表岗位，本专业面向其中 3 个：地接导游、景区讲解员、全陪领队</div></div>
+    <div class="kpi"><div class="k">能力覆盖度</div>
+      <div class="v">17<small> / 18</small><em>94%</em></div>
+      <div class="s">这 3 个岗位共要求 18 条能力，有 17 条已有课程在教</div></div>
+    <div class="kpi"><div class="k">能力达标度</div>
+      <div class="v">6<small> / 18</small><em>33%</em></div>
+      <div class="s">18 条中，有 6 条已经教到岗位要求的程度</div></div>
+  </div>
+
+  <div class="split">
+    <div class="split-h">18 条能力要求，现在处在哪一步<span>每格数字为条数</span></div>
+    <div class="sbar" role="img" aria-label="已达到要求 6 条，尚未覆盖 1 条，课程内容只到 L1 需补充 3 条，已到 L2 只差综合应用 8 条">
+      <i class="s-ok" style="flex:6">6</i><i class="s-c1" style="flex:1">1</i><i class="s-c2" style="flex:3">3</i><i class="s-l3" style="flex:8">8</i>
+    </div>
+    <div class="skey">
+      <div><i class="s-ok"></i><span><b>已达到要求</b><br>继续保持</span></div>
+      <div><i class="s-c1"></i><span><b>尚未覆盖</b><br>增开 1 门课即可补上</span></div>
+      <div><i class="s-c2"></i><span><b>课程内容只到 L1</b><br>需学校补充教学内容（其中 1 条还要求 L3）</span></div>
+      <div><i class="s-l3"></i><span><b>已到 L2，只差综合应用</b><br>课程最高到 L2，需实训或顶岗</span></div>
+    </div>
+  </div>
+
+  <div class="todo">
+    <div class="todo-h"><b>建议优先做的 3 件事</b><span>按涉及的能力条数和岗位排序</span></div>
+    <ol>
+      <li><span class="t">为 9 条「综合应用」要求安排情境实训或顶岗实习</span>
+        <span class="eff"><b>9 条</b>含核心能力 6 条</span>
+        <span class="d">涉及全部 3 个目标岗位，<b>全陪领队</b>受影响最大（13 条要求中有 6 条是 L3）。重点是突发事件处置、客诉安抚、旅游安全预警等需要在真实情境中反复练习的能力。</span></li>
+      <li><span class="t">在《导游实务》中补充 3 条能力的教学内容，教到 L2</span>
+        <span class="eff"><b>3 条</b>含核心能力 2 条</span>
+        <span class="d">现场急救基本操作、涉旅投诉受理规则与时限认知★、行程变更协调与替代方案生成★。这 3 条目前只教到 L1，现有课程里也没有更深的内容，需要学校自己补充。</span></li>
+      <li><span class="t">增开《旅游数字营销与新媒体运营》</span>
+        <span class="eff"><b>1 条</b>行业新兴能力</span>
+        <span class="d">补上唯一一条尚未覆盖的能力「讲解类短视频策划与制作」（景区讲解员要求 L2）。开设后可教到 L2，正好达到要求。</span></li>
+    </ol>
+    <div class="after">完成第 2、3 件后，能力达标度预计 <span class="pillnum">6/18</span> → <span class="pillnum">9/18</span>（50%）；剩下 9 条要求 L3，要靠第 1 件事完成。</div>
+  </div>
+
+  <div class="tierline">
+    <span>按能力领域：<b>优先建设 1 个</b>（数字工具与新媒体）</span>
+    <span><b>逐步完善 6 个</b></span>
+    <span><b>保持优势 0 个</b></span>
+    <span class="note">详见第一部分 1.3</span>
+  </div>
+  <div class="lvnote">能力分三级：<b>L1 认知</b>——了解要求、能在指导下完成；<b>L2 独立操作</b>——能按规范独立完成常规任务；<b>L3 综合应用</b>——能处理非常规情况、优化流程、指导他人。★ 为核心能力：被 2 个及以上岗位要求，且有国家法规政策依据。</div>
+</section>
+
+<!-- ============ 一 差距在哪 ============ -->
+<section class="sheet">
+  <h2><span class="no">一</span>差距在哪</h2>
+  <p class="sect-lead">先按岗位看哪个岗位最弱，再逐条看差在哪里、属于哪种差距。</p>
+
+  <h3>1.1 按岗位</h3>
+  <div class="tw"><table>
+    <thead><tr><th>岗位</th><th class="r">达标率</th><th>18 条中该岗位要求的能力</th><th class="r">其中 L3</th></tr></thead>
+    <tbody>
+      <tr><td>地接导游<span class="sub">旅行社与组团服务</span></td>
+        <td class="r"><span class="rate good">81%</span><span class="sub num">13 / 16</span></td>
+        <td><div class="pbar" style="width:100%"><i class="s-ok" style="flex:13">13</i><i class="s-c1" style="flex:3">3</i></div></td>
+        <td class="r num">2</td></tr>
+      <tr><td>景区讲解员<span class="sub">游览景区服务</span></td>
+        <td class="r"><span class="rate">75%</span><span class="sub num">9 / 12</span></td>
+        <td><div class="pbar" style="width:75%"><i class="s-ok" style="flex:9">9</i><i class="s-c1" style="flex:2">2</i><i class="s-l3" style="flex:1">1</i></div></td>
+        <td class="r num">2</td></tr>
+      <tr><td>全陪领队<span class="sub">旅行社与组团服务</span></td>
+        <td class="r"><span class="rate crit">38%</span><span class="sub num">5 / 13</span></td>
+        <td><div class="pbar" style="width:81%"><i class="s-ok" style="flex:5">5</i><i class="s-c1" style="flex:8">8</i></div></td>
+        <td class="r num">6</td></tr>
+    </tbody>
+  </table></div>
+  <div class="legend"><span><i class="s-ok"></i>已达到要求</span><span><i class="s-c1"></i>有课程在教，但程度不够</span><span><i class="s-l3"></i>尚未覆盖</span><span>条长 = 该岗位要求的能力条数</span></div>
+  <p class="note">全陪领队达标率最低，主要原因是它有 6 条要求是 L3。它的 13 条要求都有课程在教，缺的是深度，不是课程。</p>
+
+  <h3>1.2 未达标的 12 条能力，按差距类型</h3>
+  <div class="tw"><table>
+    <thead><tr><th>能力</th><th>能力领域</th><th>本校 → 要求</th><th>目标岗位达标</th></tr></thead>
+    <tbody>
+      <tr class="grp"><td colspan="4">尚未覆盖<span>现有课程没有教 · 1 条 · 解决办法：增开课程</span></td></tr>
+      <tr><td>讲解类短视频策划与制作</td><td>数字工具与新媒体</td><td class="lv"><span class="gap">未开</span><span class="ar">→</span>L2</td><td class="num">0 / 1<span class="cells"><i></i></span></td></tr>
+
+      <tr class="grp"><td colspan="4">课程内容只到 L1<span>现有课程最高只教到 L1 · 3 条 · 解决办法：学校补充教学内容</span></td></tr>
+      <tr><td>行程变更协调与替代方案生成<span class="star">★</span><span class="sub">补到 L2 后，还需实训才能到 L3</span></td><td>行程组织与调度</td><td class="lv"><span class="gap">L1</span><span class="ar">→</span>L3</td><td class="num">0 / 2<span class="cells"><i></i><i></i></span></td></tr>
+      <tr><td>涉旅投诉受理规则与时限认知<span class="star">★</span></td><td>政策法规与合规</td><td class="lv"><span class="gap">L1</span><span class="ar">→</span>L2</td><td class="num">1 / 2<span class="cells"><i class="on"></i><i></i></span></td></tr>
+      <tr><td>现场急救基本操作</td><td>安全与应急</td><td class="lv"><span class="gap">L1</span><span class="ar">→</span>L2</td><td class="num">1 / 2<span class="cells"><i class="on"></i><i></i></span></td></tr>
+
+      <tr class="grp"><td colspan="4">要求综合应用（L3）<span>课程已教到 L2，还差一级 · 8 条 · 解决办法：情境实训或顶岗实习</span></td></tr>
+      <tr><td>客诉情绪安抚与共情表达<span class="star">★</span></td><td>服务与沟通</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="num">2 / 3<span class="cells"><i class="on"></i><i class="on"></i><i></i></span></td></tr>
+      <tr><td>突发事件现场处置与上报<span class="star">★</span></td><td>安全与应急</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="num">2 / 3<span class="cells"><i class="on"></i><i class="on"></i><i></i></span></td></tr>
+      <tr><td>旅游安全风险识别与预警<span class="star">★</span></td><td>安全与应急</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="num">2 / 3<span class="cells"><i class="on"></i><i class="on"></i><i></i></span></td></tr>
+      <tr><td>文化自信与价值引导意识<span class="star">★</span></td><td>讲解与表达</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="num">2 / 3<span class="cells"><i class="on"></i><i class="on"></i><i></i></span></td></tr>
+      <tr><td>旅游法与合同条款应用<span class="star">★</span></td><td>政策法规与合规</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="num">1 / 2<span class="cells"><i class="on"></i><i></i></span></td></tr>
+      <tr><td>团队组织与集合调度</td><td>行程组织与调度</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="num">1 / 3<span class="cells"><i class="on"></i><i></i><i></i></span></td></tr>
+      <tr><td>现场讲解与节奏控制</td><td>讲解与表达</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="num">1 / 2<span class="cells"><i class="on"></i><i></i></span></td></tr>
+      <tr><td>地方历史文化与非遗知识</td><td>资源与产品</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="num">1 / 2<span class="cells"><i class="on"></i><i></i></span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">「目标岗位达标 x / y」：3 个目标岗位中有 y 个要求这条能力，其中 x 个岗位的要求本校已经达到（每个岗位按它自己的要求等级算），每格代表一个岗位。例如「客诉情绪安抚」本校为 L2，地接导游、景区讲解员已经满足，只有全陪领队要求 L3。</p>
+
+  <h3>1.3 按能力领域</h3>
+  <div class="tw"><table>
+    <thead><tr><th>能力领域</th><th class="r">要求</th><th class="r">已覆盖</th><th class="r">已达标</th><th class="r">核心能力未达标</th><th class="c">档位</th></tr></thead>
+    <tbody>
+      <tr><td>数字工具与新媒体</td><td class="r num">1</td><td class="r num">0</td><td class="r num">0</td><td class="r num">0</td><td class="c"><span class="tag crit">优先建设</span></td></tr>
+      <tr><td>安全与应急</td><td class="r num">3</td><td class="r num">3</td><td class="r num">0</td><td class="r num"><b>2</b></td><td class="c"><span class="tag warn">逐步完善</span></td></tr>
+      <tr><td>政策法规与合规</td><td class="r num">2</td><td class="r num">2</td><td class="r num">0</td><td class="r num"><b>2</b></td><td class="c"><span class="tag warn">逐步完善</span></td></tr>
+      <tr><td>行程组织与调度</td><td class="r num">2</td><td class="r num">2</td><td class="r num">0</td><td class="r num">1</td><td class="c"><span class="tag warn">逐步完善</span></td></tr>
+      <tr><td>资源与产品</td><td class="r num">2</td><td class="r num">2</td><td class="r num">1</td><td class="r num">0</td><td class="c"><span class="tag warn">逐步完善</span></td></tr>
+      <tr><td>讲解与表达</td><td class="r num">5</td><td class="r num">5</td><td class="r num">3</td><td class="r num">1</td><td class="c"><span class="tag warn">逐步完善</span></td></tr>
+      <tr><td>服务与沟通</td><td class="r num">3</td><td class="r num">3</td><td class="r num">2</td><td class="r num">1</td><td class="c"><span class="tag warn">逐步完善</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">分档方法：尚无课程覆盖的能力超过一半 → 优先建设；已达标的能力占 70% 及以上 → 保持优势；其余 → 逐步完善。同档内按达标比例从低到高排列。「安全与应急」「政策法规与合规」的核心能力都还没有达标，建议与优先建设领域一并关注。</p>
+</section>
+
+<!-- ============ 二 建设建议 ============ -->
+<section class="sheet">
+  <h2><span class="no">二</span>建设建议</h2>
+  <p class="sect-lead">按学校要做的动作来组织，同一个动作不会在多个领域里重复出现。</p>
+
+  <div class="acts">
+    <div class="act">
+      <div class="act-h"><b>1　安排情境实训或顶岗实习</b><span class="who">9 条能力 · 含核心能力 6 条 · 涉及 3 个岗位</span></div>
+      <dl>
+        <dt>为什么</dt><dd>这 9 条要求达到 L3 综合应用，现有课程内容最高只到 L2。这类能力要在真实或仿真的工作情境中反复练习才能形成，并不说明课程开得不够。</dd>
+        <dt>补哪些</dt><dd>下表列出每条能力按岗位考核要求需要的教学安排：
+          <div class="tw"><table class="hm">
+            <thead><tr><th>能力</th><th>情境模拟</th><th>有产出物</th><th>表达与被质询</th><th>真实系统或等效环境</th><th>多轮次与带教</th></tr></thead>
+            <tbody>
+              <tr><td>突发事件现场处置与上报 ★</td><td><i class="dot"></i></td><td><i class="dot"></i></td><td><i class="dot"></i></td><td></td><td></td></tr>
+              <tr><td>客诉情绪安抚与共情表达 ★</td><td><i class="dot"></i></td><td><i class="dot"></i></td><td></td><td></td><td></td></tr>
+              <tr><td>行程变更协调与替代方案生成 ★</td><td><i class="dot"></i></td><td><i class="dot"></i></td><td></td><td></td><td></td></tr>
+              <tr><td>文化自信与价值引导意识 ★</td><td><i class="dot"></i></td><td><i class="dot"></i></td><td></td><td></td><td></td></tr>
+              <tr><td>旅游安全风险识别与预警 ★</td><td></td><td><i class="dot"></i></td><td><i class="dot"></i></td><td></td><td></td></tr>
+              <tr><td>旅游法与合同条款应用 ★</td><td></td><td><i class="dot"></i></td><td><i class="dot"></i></td><td></td><td></td></tr>
+              <tr><td>现场讲解与节奏控制</td><td><i class="dot"></i></td><td></td><td></td><td><i class="dot"></i></td><td><i class="dot"></i></td></tr>
+              <tr><td>团队组织与集合调度</td><td><i class="dot"></i></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>地方历史文化与非遗知识</td><td></td><td><i class="dot"></i></td><td></td><td></td><td></td></tr>
+            </tbody>
+          </table></div></dd>
+        <dt>完成后</dt><dd>这 9 条要求可以达到 L3。全陪领队的达标率提升最明显（该岗位 13 条要求中有 6 条在这里）。</dd>
+      </dl>
+    </div>
+
+    <div class="act">
+      <div class="act-h"><b>2　在《导游实务》中补充教学内容</b><span class="who">3 条能力 · 含核心能力 2 条</span></div>
+      <dl>
+        <dt>为什么</dt><dd>这 3 条目前只教到 L1，现有课程里也没有能教到 L2 的内容，需要学校自己补充。</dd>
+        <dt>补哪些</dt><dd><ul>
+          <li>现场急救基本操作：L1 → L2（全陪领队要求 L2）</li>
+          <li>涉旅投诉受理规则与时限认知 ★：L1 → L2（全陪领队要求 L2）</li>
+          <li>行程变更协调与替代方案生成 ★：L1 → L2，可满足地接导游；全陪领队要求 L3，之后还要通过动作 1 完成</li>
+        </ul></dd>
+        <dt>完成后</dt><dd>能力达标度 <span class="num">+2</span> 条（前两条达到要求）。</dd>
+      </dl>
+    </div>
+
+    <div class="act">
+      <div class="act-h"><b>3　增开《旅游数字营销与新媒体运营》</b><span class="who">1 条能力 · 行业新兴能力</span></div>
+      <dl>
+        <dt>为什么</dt><dd>「讲解类短视频策划与制作」是本专业唯一一条尚未覆盖的能力，景区讲解员要求 L2。这门课不在导游服务专业的标准课程里，但它的内容可以教到 L2。</dd>
+        <dt>完成后</dt><dd>能力覆盖度 17/18 → 18/18，能力达标度 <span class="num">+1</span> 条。</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="keep"><b>保持现有内容：</b>已经达到要求的 6 条能力——全国旅游资源与人文景观知识 ★、补偿方案设计与权限判断 ★、服务礼仪与职业形象呈现、导游讲解词编创、分众化讲解适配、跨文化沟通与外语服务——由现有 4 门课承接，调整课程计划时建议保留相关内容。</div>
+</section>
+
+<!-- ============ 三 本校现状 + 四 行业参照 ============ -->
+<section class="sheet">
+  <h2><span class="no">三</span>本校专业现状</h2>
+  <div class="two" style="margin-top:12px">
+    <div>
+      <h3 style="margin-top:4px">专业与目标岗位</h3>
+      <div class="tw"><table>
+        <thead><tr><th>目标岗位</th><th class="r">能力要求</th><th class="r">其中 L3</th><th class="r">核心</th></tr></thead>
+        <tbody>
+          <tr><td>地接导游<span class="sub">旅行社与组团服务</span></td><td class="r num">16</td><td class="r num">2</td><td class="r num">9</td></tr>
+          <tr><td>景区讲解员<span class="sub">游览景区服务</span></td><td class="r num">12</td><td class="r num">2</td><td class="r num">5</td></tr>
+          <tr><td>全陪领队<span class="sub">旅行社与组团服务</span></td><td class="r num">13</td><td class="r num">6</td><td class="r num">9</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">导游服务（中职）。3 个岗位都是专业教学标准列出的岗位，合并去重后共要求 18 条能力，其中 9 条要求 L3。</p>
+    </div>
+    <div>
+      <h3 style="margin-top:4px">专业课程</h3>
+      <div class="tw"><table>
+        <thead><tr><th>课程</th><th class="c">本校</th><th class="r">已开展内容</th></tr></thead>
+        <tbody>
+          <tr><td>全国导游基础知识<span class="sub">理论认知类</span></td><td class="c"><span class="tag good">已开设</span></td><td class="r num">18 / 18</td></tr>
+          <tr><td>导游实务<span class="sub">岗位应用类</span></td><td class="c"><span class="tag good">已开设</span></td><td class="r num">39 / 39</td></tr>
+          <tr><td>导游词编撰实务<span class="sub">实操技能类</span></td><td class="c"><span class="tag good">已开设</span></td><td class="r num">18 / 18</td></tr>
+          <tr><td>旅游英语与跨文化服务<span class="sub">实操技能类</span></td><td class="c"><span class="tag good">已开设</span></td><td class="r num">4 / 4</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">标准专业课 4 门全部开设，教学内容 79 项全部开展。只统计可比对的专业课；标准中的《旅游政策与法规》暂不可比对，如已开设，其作用未计入本报告。</p>
+    </div>
+  </div>
+
+  <h2 style="margin-top:34px"><span class="no">四</span>行业参照</h2>
+  <p class="sect-lead" style="margin-top:8px">旅游业共 3 个子行业、9 个代表岗位、28 条能力（其中核心能力 12 条）。本专业面向其中 3 个岗位、18 条能力。</p>
+  <h3 style="margin-top:10px">行业新兴能力</h3>
+  <div class="tw"><table>
+    <thead><tr><th>新兴能力</th><th>能力领域</th><th class="r">行业要求岗位数</th><th class="c">与本专业</th></tr></thead>
+    <tbody>
+      <tr><td>分众化讲解适配</td><td>讲解与表达</td><td class="r num">4</td><td class="c"><span class="tag good">目标岗位要求 · 已达标</span></td></tr>
+      <tr><td>讲解类短视频策划与制作</td><td>数字工具与新媒体</td><td class="r num">2</td><td class="c"><span class="tag crit">目标岗位要求 · 未覆盖</span></td></tr>
+      <tr><td>研学课程方案设计</td><td>研学与教育设计</td><td class="r num">2</td><td class="c"><span class="tag">不在本专业面向内</span></td></tr>
+      <tr><td>在线产品内容与详情页运营</td><td>数字工具与新媒体</td><td class="r num">2</td><td class="c"><span class="tag">不在本专业面向内</span></td></tr>
+      <tr><td>用户评价管理与口碑修复</td><td>数字工具与新媒体</td><td class="r num">1</td><td class="c"><span class="tag">不在本专业面向内</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">新兴能力：岗位上新出现、国家或行业标准尚未完全覆盖的能力。</p>
+</section>
+
+<!-- ============ 附录 ============ -->
+<section class="sheet">
+  <h2><span class="no">附录</span>能力明细</h2>
+  <p class="sect-lead">按能力领域列出 18 条能力的对接情况，供核对正文数字。领域顺序同 1.3；领域内核心能力在前，要求它的目标岗位多的在前。</p>
+  <div class="tw"><table>
+    <thead><tr><th>能力</th><th>本校 → 要求</th><th class="c">状态</th><th>目标岗位达标</th></tr></thead>
+    <tbody>
+      <tr class="grp"><td colspan="4">数字工具与新媒体<span>要求 1 · 覆盖 0 · 达标 0 · 优先建设</span></td></tr>
+      <tr><td>讲解类短视频策划与制作</td><td class="lv">未开<span class="ar">→</span>L2</td><td class="c"><span class="tag crit">尚未覆盖</span></td><td class="num">0 / 1</td></tr>
+      <tr class="grp"><td colspan="4">安全与应急<span>要求 3 · 覆盖 3 · 达标 0 · 逐步完善</span></td></tr>
+      <tr><td>突发事件现场处置与上报 ★</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">2 / 3</td></tr>
+      <tr><td>旅游安全风险识别与预警 ★</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">2 / 3</td></tr>
+      <tr><td>现场急救基本操作</td><td class="lv">L1<span class="ar">→</span>L2</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">1 / 2</td></tr>
+      <tr class="grp"><td colspan="4">政策法规与合规<span>要求 2 · 覆盖 2 · 达标 0 · 逐步完善</span></td></tr>
+      <tr><td>旅游法与合同条款应用 ★</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">1 / 2</td></tr>
+      <tr><td>涉旅投诉受理规则与时限认知 ★</td><td class="lv">L1<span class="ar">→</span>L2</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">1 / 2</td></tr>
+      <tr class="grp"><td colspan="4">行程组织与调度<span>要求 2 · 覆盖 2 · 达标 0 · 逐步完善</span></td></tr>
+      <tr><td>行程变更协调与替代方案生成 ★</td><td class="lv">L1<span class="ar">→</span>L3</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">0 / 2</td></tr>
+      <tr><td>团队组织与集合调度</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">1 / 3</td></tr>
+      <tr class="grp"><td colspan="4">资源与产品<span>要求 2 · 覆盖 2 · 达标 1 · 逐步完善</span></td></tr>
+      <tr><td>全国旅游资源与人文景观知识 ★</td><td class="lv">L2<span class="ar">→</span>L2</td><td class="c"><span class="tag good">已达标</span></td><td class="num">3 / 3</td></tr>
+      <tr><td>地方历史文化与非遗知识</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">1 / 2</td></tr>
+      <tr class="grp"><td colspan="4">讲解与表达<span>要求 5 · 覆盖 5 · 达标 3 · 逐步完善</span></td></tr>
+      <tr><td>文化自信与价值引导意识 ★</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">2 / 3</td></tr>
+      <tr><td>现场讲解与节奏控制</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">1 / 2</td></tr>
+      <tr><td>导游讲解词编创</td><td class="lv">L2<span class="ar">→</span>L2</td><td class="c"><span class="tag good">已达标</span></td><td class="num">2 / 2</td></tr>
+      <tr><td>分众化讲解适配</td><td class="lv">L2<span class="ar">→</span>L2</td><td class="c"><span class="tag good">已达标</span></td><td class="num">2 / 2</td></tr>
+      <tr><td>跨文化沟通与外语服务</td><td class="lv">L2<span class="ar">→</span>L2</td><td class="c"><span class="tag good">已达标</span></td><td class="num">1 / 1</td></tr>
+      <tr class="grp"><td colspan="4">服务与沟通<span>要求 3 · 覆盖 3 · 达标 2 · 逐步完善</span></td></tr>
+      <tr><td>客诉情绪安抚与共情表达 ★</td><td class="lv">L2<span class="ar">→</span>L3</td><td class="c"><span class="tag warn">程度不够</span></td><td class="num">2 / 3</td></tr>
+      <tr><td>补偿方案设计与权限判断 ★</td><td class="lv">L2<span class="ar">→</span>L2</td><td class="c"><span class="tag good">已达标</span></td><td class="num">2 / 2</td></tr>
+      <tr><td>服务礼仪与职业形象呈现</td><td class="lv">L2<span class="ar">→</span>L2</td><td class="c"><span class="tag good">已达标</span></td><td class="num">3 / 3</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">「本校 → 要求」中的要求，是 3 个目标岗位里的最高要求。「目标岗位达标」按每个岗位自己的要求等级计算，所以两者可能不同。</p>
+</section>
+
+<div class="foot">本报告由平台根据学校填报信息自动生成</div>
+</div>
