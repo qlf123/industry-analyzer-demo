@@ -6675,14 +6675,15 @@ renderV2();
   }
   function majorNodeHTML(code){
     const m=majorByCode.get(code);
-    const deg=(m.positions||[]).filter(p=>p.degree!=='不对口');
     let h='';
     if(m.goal) h+=`<div class="k2s"><div class="k2st">培养目标</div><div class="k2def">${esc(m.goal)}</div></div>`;
     h+=`<div class="k2s"><div class="k2st">归属链</div>${chainHTML(kgChain('major', code))}</div>`;
-    h+=`<div class="k2s"><div class="k2st">专业信息</div><div class="k2def">${esc(m.name)} · ${esc(m.stage||'')}${m.years?` · 学制 ${m.years} 年`:''}</div></div>`;
-    h+=`<div class="k2s"><div class="k2st">对口岗位 ${deg.length} 个</div>`+deg.map(p=>`<div class="k2row">${nl('position',p.id,pos[p.id].name)}</div>`).join('')+`</div>`;
     const cs=m.courses||[];
-    h+=`<div class="k2s"><div class="k2st">专业课程 ${cs.length} 门</div>`+cs.slice(0,10).map(cid=>`<div class="k2row">${nl('course',cid,courseById.get(cid).name)}</div>`).join('')+(cs.length>10?`<div class="k2note">共 ${cs.length} 门，仅展示前 10 门</div>`:'')+`</div>`;
+    const groups={};
+    for(const cid of cs){ const c=courseById.get(cid); if(!c) continue; const b=c.block||'其他'; (groups[b]=groups[b]||[]).push(cid); }
+    const ord=['专业基础课程','专业核心课程','专业拓展课程','其他'];
+    const keys=Object.keys(groups).sort((a,b)=>{ const ra=ord.indexOf(a); const rb=ord.indexOf(b); return (ra<0?99:ra)-(rb<0?99:rb); });
+    for(const k of keys) h+=`<div class="k2s"><div class="k2st">${esc(k)} ${groups[k].length} 门</div>`+groups[k].map(cid=>`<div class="k2row">${nl('course',cid,courseById.get(cid).name)}</div>`).join('')+`</div>`;
     return h;
   }
   function abilityNodeHTML(aid){
