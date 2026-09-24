@@ -7564,7 +7564,7 @@ function a3DrawerShow() {
 function a3DrawerBack() {
   if (a3DrawerStack.length > 1) { a3DrawerStack.pop(); a3DrawerShow(); }
 }
-function a3DrawerReset() { a3DrawerStack = []; $('#drawer').classList.remove('a3-nav'); }
+function a3DrawerReset() { a3DrawerStack = []; a3MoreOpen.clear(); $('#drawer').classList.remove('a3-nav'); }
 $('#drBack').addEventListener('click', a3DrawerBack);
 $('#drClose').addEventListener('click', a3DrawerReset);
 $('#scrim').addEventListener('click', a3DrawerReset);
@@ -7922,12 +7922,11 @@ function a3LeafDrawer(lid) {
   if (!l) return;
   a3DrawerPush(l.kind, l.name, esc(l.skillName || ''), () => a3LeafHTML(lid));
 }
-function a3AbilityDrawer(aid) {
+function a3AbilityHTML(aid) {
   const a = A3_ABILITY_BY_ID[aid];
-  if (!a) return;
+  if (!a) return '';
   const req = a3ReqMap().get(aid) || 0;
   const att = a3Achieved(aid);
-  const maxReq = a3MaxReq(aid);
   const requiring = a3PosArr().filter(p => (p.abilityReqs || []).some(r => r.id === aid));
   let h = '';
   if (a.flag) h += `<div class="dr-s"><div class="warnbox"><span class="ico warning">!</span><span>${esc(a.flag)}</span></div></div>`;
@@ -7943,8 +7942,14 @@ function a3AbilityDrawer(aid) {
   if (requiring.length) h += `<div class="dr-s"><div class="dr-st">被 ${requiring.length} 个目标岗位要求</div>` +
     requiring.map(p => { const r = (p.abilityReqs || []).find(x => x.id === aid);
       return `<button class="arow" data-a3posd="${p.id}"><span class="arow-n a3ln">${esc(p.name)}</span><span class="pill k">${r.requiredLevel}</span></button>`; }).join('') + `</div>`;
+  return h;
+}
+function a3AbilityDrawer(aid) {
+  const a = A3_ABILITY_BY_ID[aid];
+  if (!a) return;
+  const maxReq = a3MaxReq(aid);
   a3DrawerPush('能力项', a.name,
-    `${esc(a.type)} · ${esc(a.domain)} · ${a.core ? '核心能力 · ' : ''}${maxReq ? '最高要求 L' + maxReq : ''}`, () => h);
+    `${esc(a.type)} · ${esc(a.domain)} · ${a.core ? '核心能力 · ' : ''}${maxReq ? '最高要求 L' + maxReq : ''}`, () => a3AbilityHTML(aid));
 }
 function a3MarkStale() {
   if (A3.layer >= 3) A3.stale = true;
