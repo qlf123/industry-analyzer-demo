@@ -7662,13 +7662,13 @@ function a3WhereHTML(aid) {
     const nm = c.cid ? `<button class="a3ln" data-a3coursed="${c.cid}">${esc(c.name)}</button>` : esc(c.name);
     const tag = (c.isCross && c.majorId) ? `<button class="a3ln a3-wmajor" data-a3majord="${c.majorId}">${esc(c.majorName)}</button>`
       : (c.isCross ? `<span class="a3-wmajor">${esc(c.majorName)}</span>` : '');
-    return `<div class="a3-wcourse${c.isCross ? ' cross' : ''}">${nm}${tag}</div>`;
+    return `<div class="a3-wcourse${c.isCross ? ' cross' : ''}">${tag}${nm}</div>`;
   };
   const skillRow = (c, s) => {
     const sl = a3Lv(s.serviceLevel);
     const sk = `<button class="a3ln" data-a3skilld="${s.skillId}">${esc(s.skillName)}</button>`;
     const task = s.taskName ? `<button class="a3ln a3-wtask" data-a3taskd="${s.taskId}">${esc(s.taskName)}</button>` : '';
-    return `<div class="a3-wskill${c.isCross ? ' cross' : ''}">${sk}${task}<span class="a3-wlv">L${sl}</span></div>`;
+    return `<div class="a3-wskill${c.isCross ? ' cross' : ''}">${task}${sk}<span class="a3-wlv">L${sl}</span></div>`;
   };
   const buildCourses = list => {
     const byCourse = new Map();
