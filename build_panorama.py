@@ -310,6 +310,223 @@ kgraph = {
     "sample": "专业—岗位对口表为示例数据 · 待人工确认",
 }
 
+# ── 能力测评2（新双图谱数据源：知识体系 + 能力图谱 + 映射）· 步骤 1–3，无报告 ──
+# 只新增一个 DATA 键 assess3，不动上面任何现有键，原「能力测评」(assess2) 不受影响。
+import data_knowledge_new as KN
+import data_graph_new as GN
+
+_A3_MAJOR_CODES = {"旅游管理（540101）", "导游（540102）"}
+
+def _a3_first(text):
+    return re.split(r"[。！？；\n]", text or "")[0].strip()
+
+_a3_children = defaultdict(list)
+for _n in KN.NODES_BY_ID.values():
+    if _n.get("parent_id"):
+        _a3_children[_n["parent_id"]].append(_n)
+
+def _a3_skill(s):
+    steps, stds, cases = [], [], []
+    step_leaves, std_leaves, case_leaves = [], [], []
+    for c in _a3_children.get(s["id"], []):
+        lv = KN.level(c)
+        if lv == "操作步骤":
+            steps.append(c["name"]); step_leaves.append({"id": c["id"], "name": c["name"]})
+        elif lv == "标准":
+            stds.append(c["name"]); std_leaves.append({"id": c["id"], "name": c["name"], "content": KN.attr(c, "标准内容")})
+        elif lv == "案例":
+            cases.append(c["name"]); case_leaves.append({"id": c["id"], "name": c["name"], "content": KN.attr(c, "案例情景")})
+    kp_leaves = [{"id": p["id"], "name": p["name"], "content": p.get("description") or ""}
+                 for p in (s.get("points") or [])]
+    by = {KN.level(n): n for n in KN.chain(s)}
+    course = by.get("课程")
+    major = by.get("专业")
+    return {
+        "id": s["id"], "name": s["name"],
+        "obs": KN.attr(s, "可观察能力要求"),
+        "result": KN.attr(s, "达成结果"),
+        "kp": [p["name"] for p in (s.get("points") or [])],
+        "steps": steps, "standards": stds, "cases": cases,
+        # 下挂叶子（含 id 与内容说明），供详情抽屉点击下钻
+        "leaves": {"kp": kp_leaves, "steps": step_leaves, "standards": std_leaves, "cases": case_leaves},
+        # 归属链定位：专业 › 课程 › 任务（不显示操作流程层）
+        "courseName": course["name"] if course else "",
+        "taskName": by.get("任务", {}).get("name", ""),
+        "majorName": major["name"].split("（")[0] if major else "",
+        "courseId": course["id"] if course else "",
+        "taskId": by.get("任务", {}).get("id", ""),
+        "majorId": major["id"] if major else "",
+    }
+
+a3_majors, a3_major_skill_ids = [], {}
+for m in KN.MAJORS:
+    if m["name"] not in _A3_MAJOR_CODES:
+        continue
+    code = m["name"].split("（")[1].rstrip("）") if "（" in m["name"] else m["name"]
+    name = m["name"].split("（")[0]
+    skill_ids, categories = [], []
+    for cat in [n for n in KN.COURSE_CATEGORIES if n.get("parent_id") == m["id"]]:
+        courses = []
+        for c in [n for n in KN.COURSES if n.get("parent_id") == cat["id"]]:
+            tasks = []
+            for t in [n for n in KN.TASKS if n.get("parent_id") == c["id"]]:
+                sks = [_a3_skill(s) for s in KN.SKILLS if s.get("parent_id") == t["id"]]
+                for f in [n for n in KN.FLOWS if n.get("parent_id") == t["id"]]:
+                    sks += [_a3_skill(s) for s in KN.SKILLS if s.get("parent_id") == f["id"]]
+                skill_ids += [x["id"] for x in sks]
+                tasks.append({"id": t["id"], "name": t["name"], "skills": sks,
+                              "courseName": c["name"], "majorName": name})
+            courses.append({"id": c["id"], "name": c["name"], "category": cat["name"],
+                            "courseType": KN.course_type(c), "majorName": name, "tasks": tasks})
+        categories.append({"name": cat["name"], "courses": courses})
+    a3_major_skill_ids[code] = skill_ids
+    a3_majors.append({"code": code, "name": name, "nameFull": m["name"],
+                      "describe": m.get("describe") or "", "categories": categories})
+
+# 全量知识索引：覆盖所有专业（含未开放选择的两专业），供详情抽屉跨专业取数。
+# 支撑技能可来自任一专业（②在哪教 里「需开设《课程名》」即跨专业技能），点开专业/课程/
+# 任务/技能/知识点/标准/案例详情都要能取到数据，不能用只含已选专业的 a3_majors 建索引。
+a3_skill_index, a3_course_index, a3_task_index, a3_major_index, a3_leaf_index = {}, {}, {}, {}, {}
+for m in KN.MAJORS:
+    major_id = m["id"]
+    major_name = m["name"].split("（")[0]
+    major_course_ids = []
+    for cat in [n for n in KN.COURSE_CATEGORIES if n.get("parent_id") == major_id]:
+        for c in [n for n in KN.COURSES if n.get("parent_id") == cat["id"]]:
+            major_course_ids.append(c["id"])
+            task_ids = []
+            for t in [n for n in KN.TASKS if n.get("parent_id") == c["id"]]:
+                skill_ids, flows = [], []
+                for s in [n for n in KN.SKILLS if n.get("parent_id") == t["id"]]:
+                    a3_skill_index[s["id"]] = _a3_skill(s)
+                    skill_ids.append(s["id"])
+                for f in [n for n in KN.FLOWS if n.get("parent_id") == t["id"]]:
+                    f_ids = []
+                    for s in [n for n in KN.SKILLS if n.get("parent_id") == f["id"]]:
+                        a3_skill_index[s["id"]] = _a3_skill(s)
+                        skill_ids.append(s["id"]); f_ids.append(s["id"])
+                    flows.append({"id": f["id"], "name": f["name"], "skillIds": f_ids})
+                a3_task_index[t["id"]] = {"id": t["id"], "name": t["name"],
+                                          "courseName": c["name"], "majorName": major_name,
+                                          "majorId": major_id, "courseId": c["id"],
+                                          "result": t.get("describe") or "",
+                                          "flows": flows, "skillIds": skill_ids}
+                task_ids.append(t["id"])
+            a3_course_index[c["id"]] = {"id": c["id"], "name": c["name"],
+                                        "category": cat["name"], "courseType": KN.course_type(c),
+                                        "majorName": major_name, "majorId": major_id,
+                                        "taskIds": task_ids}
+    a3_major_index[major_id] = {"id": major_id, "name": major_name, "nameFull": m["name"],
+                                "industryName": (GN.INDUSTRIES[0]["name"] if GN.INDUSTRIES else "旅游业"),
+                                "courseIds": major_course_ids}
+
+# 叶子索引：知识点 / 标准 / 案例 → 详情（内容说明 + 归属技能），供详情抽屉点击下钻
+for sid, sk in a3_skill_index.items():
+    for kind, key in (("知识点", "kp"), ("标准", "standards"), ("案例", "cases")):
+        for leaf in (sk.get("leaves") or {}).get(key, []):
+            a3_leaf_index[leaf["id"]] = {"id": leaf["id"], "name": leaf["name"],
+                                         "kind": kind, "content": leaf.get("content", ""),
+                                         "skillId": sid, "skillName": sk["name"]}
+
+a3_positions = []
+for p in GN.POSITIONS:
+    sub_name = ""
+    for e in GN.BELONGS_TO_EDGES:
+        if e["target_node_id"] == p["id"] and GN.NODES_BY_ID[e["source_node_id"]]["node_type"] == "子行业":
+            sub_name = GN.NODES_BY_ID[e["source_node_id"]]["name"]
+            break
+    reqs = [{"id": a["id"], "requiredLevel": info.get("requiredLevel")}
+            for a, info in GN.required_abilities(p) if not GN.ability_is_inferred(a)]
+    a3_positions.append({"id": p["id"], "name": p["name"], "sub": sub_name,
+                         "describe": p.get("describe") or "",
+                         "abilityIds": [r["id"] for r in reqs], "abilityReqs": reqs})
+
+# 能力清单（排除 inferred；原样保留领域/类型/核心/新兴标志）
+a3_abilities = []
+for a in GN.ABILITIES:
+    if GN.ability_is_inferred(a):
+        continue
+    info = GN.ability_info(a)
+    a3_abilities.append({
+        "id": a["id"], "name": a["name"], "domain": info.get("domain", ""),
+        "type": info.get("type", ""), "core": bool(info.get("core")),
+        "flag": info.get("flag") or "", "definition": info.get("definition") or "",
+        # L1–L3 的分级描述与考核方式：assess 供建议里的教学形式提示按 ASSESS_RULES 匹配，
+        # desc/points 供能力详情抽屉展示
+        "levels": {lv.get("level"): {
+            "assess": lv.get("assessMethod") or "",
+            "desc": lv.get("behaviorDesc") or "",
+            "points": lv.get("observablePoints") or [],
+        } for lv in GN.ability_levels(a) if lv.get("level")},
+    })
+
+
+def _a3_skill_loc(s):
+    """技能 → (课程名, 任务名, 课程id, 任务id)，用于报告建议定位到任务级。"""
+    by = {KN.level(n): n for n in KN.chain(s)}
+    course = by.get("课程")
+    return (course["name"] if course else "", by.get("任务", {}).get("name", ""),
+            course["id"] if course else "", by.get("任务", {}).get("id", ""))
+
+
+# 技能 → 支撑的能力（计入口径：直接支撑/部分支撑，含 service_level）
+a3_skill_support = {}
+# 能力 → 支撑它的技能（含课程/任务定位）
+a3_ability_skills = defaultdict(list)
+for r in GN.RESOLVED_MAPPINGS:
+    if r["mapping_type"] not in GN.COUNTED_MAPPING_TYPES:
+        continue
+    if GN.ability_is_inferred(r["ability"]):
+        continue
+    sid, aid = r["skill"]["id"], r["ability"]["id"]
+    sl = r["service_level"]
+    a3_skill_support.setdefault(sid, []).append({"abilityId": aid, "serviceLevel": sl})
+    cn, tn, cid, tid = _a3_skill_loc(r["skill"])
+    a3_ability_skills[aid].append({
+        "skillId": sid, "skillName": r["skill"]["name"], "serviceLevel": sl,
+        "courseName": cn, "taskName": tn, "courseId": cid, "taskId": tid,
+    })
+
+# 能力前置依赖（PREREQUISITE_FOR：源=前置，目标=本能力；两端都不含 inferred）
+a3_prerequisites = []
+for e in GN.PREREQUISITE_FOR_EDGES:
+    src = GN.NODES_BY_ID.get(e["source_node_id"])
+    dst = GN.NODES_BY_ID.get(e["target_node_id"])
+    if src is None or dst is None:
+        continue
+    if GN.ability_is_inferred(src) or GN.ability_is_inferred(dst):
+        continue
+    a3_prerequisites.append({"from": src["id"], "to": dst["id"],
+                             "note": (e.get("info") or {}).get("note", "")})
+
+assess3 = {
+    "majors": a3_majors,
+    "majorSkillIds": a3_major_skill_ids,
+    "positions": a3_positions,
+    "skillSupport": a3_skill_support,
+    "abilities": a3_abilities,
+    "abilitySkills": dict(a3_ability_skills),
+    "prerequisites": a3_prerequisites,
+    # 全量知识索引（详情抽屉取数，覆盖所有专业）
+    "skillIndex": a3_skill_index,
+    "courseIndex": a3_course_index,
+    "taskIndex": a3_task_index,
+    "majorIndex": a3_major_index,
+    "leafIndex": a3_leaf_index,
+    # 概况总览的「行业信息」一行：行业名 · 子行业数 / 岗位数 / 能力项数（按新能力图谱计）
+    # 导出报告「行业现状与趋势」章：行业节点 info 里的 trends / included / excluded / boundaryNotes
+    "meta": {
+        "industryName": GN.INDUSTRIES[0]["name"] if GN.INDUSTRIES else "旅游业",
+        "subIndustries": len(GN.SUB_INDUSTRIES),
+        "positions": len(GN.POSITIONS),
+        "abilities": len(GN.ABILITIES),
+        "trends": (GN.INDUSTRIES[0].get("info") or {}).get("trends") or [],
+        "included": (GN.INDUSTRIES[0].get("info") or {}).get("included") or [],
+        "excluded": (GN.INDUSTRIES[0].get("info") or {}).get("excluded") or [],
+        "boundaryNotes": (GN.INDUSTRIES[0].get("info") or {}).get("boundaryNotes") or "",
+    },
+}
+
 # 平台侧实训条件字典：把 equip 键的含义集中定义（V2.0 第 4 层勾选用）
 labDict = {}
 for c in course_lib:
@@ -330,6 +547,7 @@ DATA = {
     "schoolLabs": CL.SCHOOL_LABS,
     "majors": majors,
     "kgraph": kgraph,
+    "assess3": assess3,
     "labDict": labDict,
     "assessRules": MS.ASSESS_RULES,
     "buildDemo": X.BUILD_DEMO,

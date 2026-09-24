@@ -1,0 +1,3492 @@
+{
+    "code": 200,
+    "message": "success",
+    "data": {
+        "graph_id": "43846518-40a1-4a13-a377-4936f95fdb1f",
+        "name": "旅游业",
+        "describe": "全景图谱测试版本",
+        "created_at": "2026-09-16 12:05:23",
+        "nodes": [
+            {
+                "id": "b7efb606-83d6-4665-a4dd-d81981dddf65",
+                "name": "旅游业",
+                "aliases": [
+                    "旅游产业",
+                    "文旅产业"
+                ],
+                "node_type": "行业",
+                "describe": "本图谱以直接面向游客提供旅行组织、接待、导览及目的地服务的岗位体系为核心边界。判断标准是：该方向从业者的核心能力（如服务交互、行程规划、资源协调、讲解传播）是否与旅游业主体岗位群高度重合。重合则纳入，不重合即使在同一集团内也排除。酒店住宿虽常与旅游打包销售，但其前厅/客房/餐饮岗位能力标准自成体系，归属住宿业，故整体排除；仅保留旅行社和景区内的旅游专属岗位。",
+                "info": {
+                    "trends": [
+                        "文旅深度融合趋势下，景区与旅行社岗位普遍新增文化遗产解读、非遗体验指导等文化内容输出能力要求",
+                        "数字化营销成为标配，旅游从业者需掌握短视频拍摄剪辑、直播带货及小红书等内容平台的种草获客技能",
+                        "研学旅行被纳入中小学教育教学计划，催生大量对课程设计、教育心理学和安全管控有复合要求的研学导师岗位",
+                        "游客需求从标准化观光转向个性化定制，传统计调岗位正向具备资源整合与方案设计的旅行定制师转型",
+                        "智慧景区普及使得票务、导览等基础服务岗缩减，同时新增智能设备运维、旅游数据分析等技术复合型岗位",
+                        "ESG与可持续旅游理念推广，生态旅游向导和绿色旅游产品策划成为部分自然类景区的新兴能力要求"
+                    ],
+                    "excluded": [
+                        {
+                            "item": "酒店住宿服务（含前厅、客房、酒店餐饮）",
+                            "reason": "归属住宿业(GB大类61)，其前厅接待、客房清扫、收益管理等岗位能力标准自成体系，与旅行社计调或景区讲解员的核心能力要求重合度低"
+                        },
+                        {
+                            "item": "独立社会餐饮企业",
+                            "reason": "归属餐饮业(GB大类62)，厨房与前厅岗位能力标准自成体系，且不以旅游客流为唯一服务对象"
+                        },
+                        {
+                            "item": "航空客运与铁路客运",
+                            "reason": "归属交通运输业，空乘、高铁乘务等岗位由交通系统独立培养认证，与旅游服务岗位能力模型差异大"
+                        },
+                        {
+                            "item": "会展策划与执行",
+                            "reason": "归属会议展览服务业，核心能力侧重B2B项目统筹与展台搭建，与面向C端游客的旅游服务岗位重合度低"
+                        }
+                    ],
+                    "included": [
+                        "旅行社组团与地接服务",
+                        "旅游景区运营与游览服务",
+                        "研学旅行与定制旅游服务",
+                        "在线旅游平台(OTA)运营服务"
+                    ],
+                    "boundaryNotes": "本图谱以直接面向游客提供旅行组织、接待、导览及目的地服务的岗位体系为核心边界。判断标准是：该方向从业者的核心能力（如服务交互、行程规划、资源协调、讲解传播）是否与旅游业主体岗位群高度重合。重合则纳入，不重合即使在同一集团内也排除。酒店住宿虽常与旅游打包销售，但其前厅/客房/餐饮岗位能力标准自成体系，归属住宿业，故整体排除；仅保留旅行社和景区内的旅游专属岗位。",
+                    "gbClassification": null
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f4d6fbac-2e1e-42cf-8bf1-f35da1f3e30e",
+                "name": "旅行社与组团地接服务",
+                "aliases": [],
+                "node_type": "子行业",
+                "describe": "从事旅游线路策划、团队组织、地接安排及散客拼团等业务，岗位核心能力为资源采购、行程编排与带团执行",
+                "info": {
+                    "priority": "core",
+                    "typicalEmployers": [
+                        "传统旅行社",
+                        "地接社",
+                        "出境游批发商",
+                        "商旅管理公司(TMC)"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "fc986fd5-931f-4c7e-8383-6462e9241d89",
+                "name": "研学与定制旅游",
+                "aliases": [],
+                "node_type": "子行业",
+                "describe": "面向学生群体提供教育旅行，或面向中高端散客提供个性化行程设计与专属陪同服务，岗位核心能力为课程研发、需求洞察与深度体验交付",
+                "info": {
+                    "priority": "core",
+                    "typicalEmployers": [
+                        "研学旅行机构",
+                        "高端定制游公司",
+                        "亲子游俱乐部",
+                        "教育旅行社"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "c894780c-829e-4f8d-bd53-77115eeb87a4",
+                "name": "在线旅游服务(OTA)",
+                "aliases": [],
+                "node_type": "子行业",
+                "describe": "通过互联网平台提供旅游产品搜索、预订、内容营销及用户运营服务，岗位核心能力为平台操作、数字营销与数据驱动的产品优化",
+                "info": {
+                    "priority": "extended",
+                    "typicalEmployers": [
+                        "综合OTA平台(携程/飞猪等)",
+                        "旅游垂直电商",
+                        "旅游MCN机构",
+                        "目的地数字营销中心"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "name": "导游",
+                "aliases": [
+                    "全陪导游",
+                    "地接导游",
+                    "带团导游"
+                ],
+                "node_type": "岗位",
+                "describe": "负责带领游客按照行程计划完成游览，提供沿途讲解、生活照料及突发事件处理",
+                "info": {
+                    "careerLevel": "初级/中级",
+                    "alsoInSubIndustries": [
+                        "si02"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "name": "旅游计调",
+                "aliases": [
+                    "计调专员",
+                    "旅游操作员",
+                    "OP"
+                ],
+                "node_type": "岗位",
+                "describe": "负责旅游线路的成本核算、供应商采购、行程安排及团队操作落实",
+                "info": {
+                    "careerLevel": "初级/中级",
+                    "alsoInSubIndustries": []
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "name": "旅行社门市接待",
+                "aliases": [
+                    "旅游顾问",
+                    "旅游销售",
+                    "门店客服"
+                ],
+                "node_type": "岗位",
+                "describe": "在门店或呼叫中心接待游客咨询，推荐旅游产品并促成订单签约",
+                "info": {
+                    "careerLevel": "初级",
+                    "alsoInSubIndustries": []
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "name": "研学旅行指导师",
+                "aliases": [
+                    "研学导师",
+                    "研学领队",
+                    "营地导师"
+                ],
+                "node_type": "岗位",
+                "describe": "负责研学旅行活动的带队执行、课程讲授、学生管理与安全保障",
+                "info": {
+                    "careerLevel": "中级",
+                    "alsoInSubIndustries": []
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "name": "旅行定制师",
+                "aliases": [
+                    "定制游策划师",
+                    "旅游规划师",
+                    "行程设计师"
+                ],
+                "node_type": "岗位",
+                "describe": "根据客户个性化需求，独立完成目的地调研、行程方案设计、报价及行中管家式服务",
+                "info": {
+                    "careerLevel": "中级/高级",
+                    "alsoInSubIndustries": []
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "name": "旅游新媒体运营",
+                "aliases": [
+                    "旅游内容运营",
+                    "文旅新媒体专员",
+                    "旅游短视频编导"
+                ],
+                "node_type": "岗位",
+                "describe": "负责旅游企业或目的地的社交媒体账号运营、短视频内容策划及线上获客转化",
+                "info": {
+                    "careerLevel": "初级/中级",
+                    "alsoInSubIndustries": []
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "name": "OTA平台运营专员",
+                "aliases": [
+                    "旅游电商运营",
+                    "OTA运营",
+                    "旅游产品运营"
+                ],
+                "node_type": "岗位",
+                "describe": "负责旅游产品在OTA平台的上下架、页面优化、价格策略调整及用户评价管理",
+                "info": {
+                    "careerLevel": "初级/中级",
+                    "alsoInSubIndustries": []
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "e31341f6-61dc-464e-a779-0b606a2fdb8a",
+                "name": "旅游接待计划审读与行程核验",
+                "aliases": [
+                    "行程单核对",
+                    "团单要素识别",
+                    "订单审核",
+                    "接待计划解读"
+                ],
+                "node_type": "能力",
+                "describe": "能够准确读取旅行社下发的行程单或团队订单，逐项核对时间、地点、人数、服务标准等关键要素，确保信息无误。",
+                "info": {
+                    "core": true,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "产品策划与行程设计",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "给定一份含3处错误的行程单，要求在规定时间内找出全部错误",
+                            "behaviorDesc": "能够在指导下对照模板逐条勾选行程单中的出发地、目的地、人数、日期等基础字段并标记缺失项",
+                            "observablePoints": [
+                                "使用标准核对清单逐项打勾",
+                                "发现缺失字段时用红笔标注",
+                                "在30分钟内完成一份常规行程单的初核"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "提供5份不同复杂度的真实订单，要求在45分钟内全部核验完毕且零遗漏",
+                            "behaviorDesc": "能够独立完成复杂团队订单的全要素核验，识别航班时刻冲突、酒店房型不匹配等隐性矛盾并提出修正方案",
+                            "observablePoints": [
+                                "无需模板提示即能覆盖所有核对维度",
+                                "主动致电供应商确认存疑信息",
+                                "输出书面核验报告列明问题与建议"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其编写的SOP文档完整性，并追踪执行后3个月的差错率变化",
+                            "behaviorDesc": "能够建立并优化行程核验SOP，指导新人掌握常见差错类型，将团队操作失误率控制在1%以下",
+                            "observablePoints": [
+                                "编写包含检查点、责任人与时限的标准化流程文档",
+                                "组织新员工进行模拟核验训练",
+                                "定期复盘差错数据并迭代核验规则"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/ztzl/gjzynlbz/202306/t20230614_500987.html",
+                            "clause": null,
+                            "excerpt": "能根据接待计划，落实旅游车辆、住宿、餐饮、游览等服务项目",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "导游国家职业技能标准"
+                        },
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/5a9c8b6f4d2e1b3c1nJz3NW0.html",
+                            "clause": null,
+                            "excerpt": "负责旅游团队的计划调度，审核订单信息，确保行程安排合理",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "计调专员招聘JD"
+                        }
+                    ],
+                    "definition": "能够准确读取旅行社下发的行程单或团队订单，逐项核对时间、地点、人数、服务标准等关键要素，确保信息无误。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "3aa37a98-ffc5-4a57-885d-be11a3705535",
+                "name": "旅游线路规划与动线设计",
+                "aliases": [
+                    "线路节点规划",
+                    "行程编排",
+                    "个性化定制方案设计",
+                    "研学行程动线规划",
+                    "主题线路编排"
+                ],
+                "node_type": "能力",
+                "describe": "能够根据地理分布、交通条件与客群需求，合理规划游览顺序与每日行程，避免走回头路，确保车程与游玩时间比例科学。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "产品策划与行程设计",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "给定目的地素材库，要求在2小时内拼出一份3日游标准行程",
+                            "behaviorDesc": "能够在指导下按照现有模板替换景点名称和时间节点，生成一份标准跟团游行程单",
+                            "observablePoints": [
+                                "按模板格式填入景点、用餐、住宿信息",
+                                "计算各节点间车程时长误差不超过15分钟",
+                                "行程单无逻辑断点（如上午在南下午在北）"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "提交同一目的地的亲子版与银发版行程方案，由专家评审合理性",
+                            "behaviorDesc": "能够独立针对特定客群（亲子、老年、商务）设计差异化行程动线，平衡体验深度与体力消耗",
+                            "observablePoints": [
+                                "针对不同客群输出至少2套备选方案",
+                                "每套方案附带车程占比与步行强度说明",
+                                "主动规避已知拥堵路段或施工区域"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "模拟VIP客户提出3次需求变更，考核响应速度与方案质量",
+                            "behaviorDesc": "能够整合跨城市、多业态资源设计高复杂度定制路线，并根据实时反馈动态调整方案",
+                            "observablePoints": [
+                                "路线涵盖交通、住宿、特色体验、备选方案等多层结构",
+                                "能在客户临时变更需求时2小时内输出替代方案",
+                                "设计方案被客户采纳率达80%以上"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/5a9c8b6f4d2e1b3c1nJz3NW0.html",
+                            "clause": null,
+                            "excerpt": "负责旅游团队的计划调度，审核订单信息，确保行程安排合理",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "计调专员招聘JD"
+                        },
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/64b8c9f5d0b8e4a21nZ43NW4FlY~.html",
+                            "clause": null,
+                            "excerpt": "根据客户需求，进行旅游目的地的资源搜索和整合，设计个性化的旅游路线",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "旅行定制师招聘JD"
+                        }
+                    ],
+                    "definition": "能够根据地理分布、交通条件与客群需求，合理规划游览顺序与每日行程，避免走回头路，确保车程与游玩时间比例科学。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "d63414dc-062f-45f3-93d0-928610709791",
+                "name": "文旅融合内容植入与研学课程设计",
+                "aliases": [
+                    "非遗体验设计",
+                    "研学课程目标转化",
+                    "文化遗产解读",
+                    "课程内容嵌入",
+                    "探究式学习活动引导"
+                ],
+                "node_type": "能力",
+                "describe": "能够将文化遗产解读、非遗手作体验或中小学研学教育目标转化为具体的行程环节与互动活动，提升产品的文化与教育附加值。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "产品策划与行程设计",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "给定一个景区资源列表，要求在1小时内匹配一项适合的非遗体验并输出执行清单",
+                            "behaviorDesc": "能够在现有行程中插入一项标准化的非遗体验活动（如扎染、陶艺），并按教案准备所需物料清单",
+                            "observablePoints": [
+                                "从资源库中选择已验证的体验项目",
+                                "列出物料名称与数量",
+                                "注明活动时长与安全注意事项"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "提交一份面向小学四年级的半日研学课程方案，由教育专家评审",
+                            "behaviorDesc": "能够根据中小学生认知特征独立设计包含探究任务、观察记录等环节的半日研学课程模块",
+                            "observablePoints": [
+                                "课程目标与学段大纲对应",
+                                "设计至少2个互动探究环节",
+                                "配备学生任务书或研学手册"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其开发的课程体系文档及学员评价数据",
+                            "behaviorDesc": "能够构建完整的研学课程体系，制定评价量表，并培训其他导师实施教学",
+                            "observablePoints": [
+                                "课程覆盖知识、能力、态度三维目标",
+                                "设计过程性与终结性评价指标",
+                                "组织至少3场导师试讲并给予反馈改进建议"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/zwgk/gsgg/202209/t20220928_483270.html",
+                            "clause": null,
+                            "excerpt": "能根据不同学段学生的身心发展特点和认知水平，设计相应的研学旅行课程",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "研学旅行指导师国家职业技能标准"
+                        }
+                    ],
+                    "definition": "能够将文化遗产解读、非遗手作体验或中小学研学教育目标转化为具体的行程环节与互动活动，提升产品的文化与教育附加值。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f6a9f406-3fe4-4032-824d-a59183743fca",
+                "name": "旅游目的地文化与非遗知识储备",
+                "aliases": [
+                    "历史文化基础知识",
+                    "地理风貌知识",
+                    "非遗解说知识",
+                    "目的地资源知识",
+                    "文史知识体系"
+                ],
+                "node_type": "能力",
+                "describe": "掌握主要旅游目的地的历史沿革、地貌特征、民族分布、非物质文化遗产背景等支撑讲解与产品设计的核心知识体系。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "知识",
+                    "domain": "讲解导览与文化传播",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "闭卷笔试或口头快问快答",
+                            "behaviorDesc": "能够复述所负责区域内不少于10个核心景点的历史年代、文化典故或自然成因",
+                            "observablePoints": [
+                                "回答景点知识测试题正确率达80%以上",
+                                "能区分不同朝代建筑风格的典型特征",
+                                "列举当地3项以上非遗项目名称及基本形态"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "现场模拟向三类不同游客讲解同一景点，评审表达适配度",
+                            "behaviorDesc": "能够将文化知识灵活融入讲解词或行程推介中，针对不同客群调整深度与表达方式",
+                            "observablePoints": [
+                                "对儿童用故事化语言讲述历史",
+                                "对外宾补充中西文化对比视角",
+                                "在推介时引用具体典故增强说服力"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其编写的文化知识库完整度与应用转化率",
+                            "behaviorDesc": "能够开展目的地文化资源的系统性调研，形成知识库并用于新产品开发与团队培训",
+                            "observablePoints": [
+                                "编写包含文献来源的文化资料汇编",
+                                "为新产品提供至少5个独家文化卖点",
+                                "组织内部文化专题分享会"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/ztzl/gjzynlbz/202306/t20230614_500987.html",
+                            "clause": null,
+                            "excerpt": "能对景区（点）的自然和人文景观进行讲解，介绍地方文化和风土人情",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "导游国家职业技能标准"
+                        },
+                        {
+                            "url": "https://www.job592.com/zhiwei/job_3687.html",
+                            "clause": null,
+                            "excerpt": "负责景区内的导游讲解服务，熟悉景区的历史文化、自然风貌等知识",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "景区讲解员招聘JD"
+                        }
+                    ],
+                    "definition": "掌握主要旅游目的地的历史沿革、地貌特征、民族分布、非物质文化遗产背景等支撑讲解与产品设计的核心知识体系。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "337b7965-b183-4f7d-a884-c588aaa20c84",
+                "name": "现场口语化导览讲解与表达控制",
+                "aliases": [
+                    "景区景点讲解",
+                    "口语表达技巧",
+                    "沿途讲解",
+                    "车载讲解",
+                    "多语种讲解",
+                    "语音语调控制"
+                ],
+                "node_type": "能力",
+                "describe": "能够运用生动、清晰的语言在实地场景中为游客讲述自然景观成因、历史建筑背景及民俗风情，合理控制语速、音量和停顿。",
+                "info": {
+                    "core": true,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "讲解导览与文化传播",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "现场实操考核，由考官按评分表打分",
+                            "behaviorDesc": "能够按照标准讲解词背诵并在指定景点完成不少于5分钟的定点讲解，普通话发音无明显错误",
+                            "observablePoints": [
+                                "脱稿完成规定段落",
+                                "音量覆盖半径5米内听众",
+                                "无长时间卡顿（超过10秒）"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "安排真实散客团进行跟队暗访评估",
+                            "behaviorDesc": "能够脱离固定讲稿，根据游客反应即兴调整讲解内容与节奏，运用设问、悬念等手法保持听众注意力",
+                            "observablePoints": [
+                                "观察到游客走神时主动切换话题或提问",
+                                "根据团队行进速度自动增减讲解篇幅",
+                                "外语或方言讲解达到日常交流流畅度"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其带教成果记录与个人竞赛成绩",
+                            "behaviorDesc": "能够开发原创讲解体系，指导初级讲解员提升表达技巧，并代表景区参与行业讲解竞赛或文化交流",
+                            "observablePoints": [
+                                "编写不少于3万字的分主题讲解词库",
+                                "每月组织至少2次讲解员互评训练",
+                                "在市级以上讲解比赛中获奖或受邀展演"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/ztzl/gjzynlbz/202306/t20230614_500987.html",
+                            "clause": null,
+                            "excerpt": "能对景区（点）的自然和人文景观进行讲解，介绍地方文化和风土人情",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "导游国家职业技能标准"
+                        },
+                        {
+                            "url": "https://www.job592.com/zhiwei/job_3687.html",
+                            "clause": null,
+                            "excerpt": "普通话标准，口齿清晰，具备较强的语言表达能力和感染力",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "景区讲解员招聘JD"
+                        }
+                    ],
+                    "definition": "能够运用生动、清晰的语言在实地场景中为游客讲述自然景观成因、历史建筑背景及民俗风情，合理控制语速、音量和停顿。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "139fb45f-f824-45a9-8c14-2a97aa8c7060",
+                "name": "游客需求探寻与服务咨询解答",
+                "aliases": [
+                    "需求挖掘",
+                    "问询解答",
+                    "行前告知",
+                    "在线答疑",
+                    "特殊客群需求评估"
+                ],
+                "node_type": "能力",
+                "describe": "能够通过开放式与封闭式提问结合的方式获取游客深层需求，并准确解答关于行程、费用、退改政策等高频问题。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "客户服务与投诉处理",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "模拟10个高频咨询场景进行计时应答测试",
+                            "behaviorDesc": "能够使用标准话术模板回答游客关于集合时间、携带物品、天气提示等常见问题，单次响应不超过2分钟",
+                            "observablePoints": [
+                                "调用快捷回复库直接发送答案",
+                                "无法回答时立即转交上级并告知游客等待时限",
+                                "记录未命中知识库的新问题"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "角色扮演考核，由考官扮演模糊需求的游客",
+                            "behaviorDesc": "能够通过连续追问挖掘游客未明确表达的偏好（如饮食禁忌、节奏要求），并据此推荐匹配产品",
+                            "observablePoints": [
+                                "每次咨询至少提出3个引导性问题",
+                                "根据回答在系统中标注意向标签",
+                                "推荐方案的客户接受率达60%以上"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其维护的知识库版本记录与优化提案落地情况",
+                            "behaviorDesc": "能够建立并维护FAQ知识库，分析咨询数据发现产品痛点，推动前端页面或服务流程优化",
+                            "observablePoints": [
+                                "每月更新知识库条目不少于20条",
+                                "输出咨询热词分析报告",
+                                "提出的优化建议被采纳并上线"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.jobui.com/p/%E6%97%85%E8%A1%8C%E7%A4%BE%E9%97%A8%E5%B8%82%E6%8E%A5%E5%BE%85/",
+                            "clause": null,
+                            "excerpt": "负责门店客户的接待、咨询工作，为客户提供专业的旅游咨询服务",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "旅行社门市接待招聘JD"
+                        },
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/8a7c4b8f3c6d2e1a1nJz2tW4FFo~.html",
+                            "clause": null,
+                            "excerpt": "及时处理客户咨询、订单跟进及售后问题，提升客户满意度",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "OTA平台运营专员招聘JD"
+                        }
+                    ],
+                    "definition": "能够通过开放式与封闭式提问结合的方式获取游客深层需求，并准确解答关于行程、费用、退改政策等高频问题。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "b1036d70-b7a2-4b20-83f2-170944fe67d4",
+                "name": "客诉情绪安抚与补偿方案设计",
+                "aliases": [
+                    "投诉受理与处理",
+                    "不满情绪倾听",
+                    "共情表达",
+                    "行程偏差补偿",
+                    "差评回复",
+                    "异议化解"
+                ],
+                "node_type": "能力",
+                "describe": "能够运用积极倾听和共情话术降低游客对立情绪，并在职权范围内提出退费、赠送项目或补游等合理补偿方案。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "客户服务与投诉处理",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "模拟投诉电话录音回放评分",
+                            "behaviorDesc": "能够在接到投诉时按标准致歉话术回应，记录投诉人姓名、事由、诉求三要素并在10分钟内上报主管",
+                            "observablePoints": [
+                                "使用'我非常理解您的感受'等共情句式",
+                                "填写统一格式的投诉登记表",
+                                "未在权限外做出任何承诺"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "给定3个不同严重程度的投诉案例，要求现场出具处理方案",
+                            "behaviorDesc": "能够独立判断投诉责任归属，在授权额度内当场给出补偿方案并获得游客签字确认",
+                            "observablePoints": [
+                                "引用合同条款界定双方责任",
+                                "补偿金额在公司规定的阶梯标准内",
+                                "游客签署《投诉处理确认书》"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "桌面推演考核，模拟重大客诉升级场景",
+                            "behaviorDesc": "能够处理涉及媒体曝光或群体性投诉的重大危机事件，协调法务、公关等多部门制定综合解决方案",
+                            "observablePoints": [
+                                "2小时内启动危机响应机制",
+                                "输出包含事实澄清、补偿措施、舆情应对的完整方案",
+                                "事后主导复盘并形成制度补丁"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/ztzl/gjzynlbz/202306/t20230614_500987.html",
+                            "clause": null,
+                            "excerpt": "能处理旅游过程中的一般性突发事件和安全事故，保护旅游者的人身和财产安全",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "导游国家职业技能标准"
+                        },
+                        {
+                            "url": "https://www.jobui.com/p/%E6%97%85%E6%B8%B8%E9%A1%BE%E9%97%AE/",
+                            "clause": null,
+                            "excerpt": "处理客户投诉及售后问题，提升客户满意度",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "旅游顾问招聘JD"
+                        }
+                    ],
+                    "definition": "能够运用积极倾听和共情话术降低游客对立情绪，并在职权范围内提出退费、赠送项目或补游等合理补偿方案。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": true,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "31fbe100-82d8-43da-8abd-3e3431a826f8",
+                "name": "旅游安全风险识别与应急处置",
+                "aliases": [
+                    "防走失清点",
+                    "突发疾病救护",
+                    "恶劣天气避险",
+                    "交通事故报警",
+                    "危险源辨识",
+                    "应急疏散",
+                    "AED使用",
+                    "安全预案编制"
+                ],
+                "node_type": "能力",
+                "describe": "能够识别游览环境中的安全隐患，在发生游客伤病、走失、极端天气、交通事故等突发情况时按预案采取急救、疏散、报警等措施。",
+                "info": {
+                    "core": true,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "安全管理与应急处置",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "现场模拟走失场景和外伤处理实操考核",
+                            "behaviorDesc": "能够在每个景点出入口清点人数，发现异常立即通过对讲机报告；能对轻微擦伤进行消毒包扎",
+                            "observablePoints": [
+                                "每隔30分钟或在转换节点清点一次人数",
+                                "随身携带并会使用基础急救包",
+                                "知晓最近医疗点和紧急联系电话"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "红十字会急救证书查验+情景模拟考核",
+                            "behaviorDesc": "能够对中暑、心脏骤停等紧急情况实施心肺复苏或使用AED，并在暴雨预警时按预案组织团队转移至安全区域",
+                            "observablePoints": [
+                                "CPR按压频率与深度符合AHA标准",
+                                "AED贴片位置正确并按语音提示操作",
+                                "在15分钟内完成全团撤离并再次清点人数"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其编写的应急预案文本及演练记录",
+                            "behaviorDesc": "能够编制线路专属安全预案并组织演练，在重大安全事故中担任现场指挥，协调医疗、公安、保险多方联动",
+                            "observablePoints": [
+                                "预案覆盖该线路所有已知风险点并附处置流程图",
+                                "每年至少组织2次全员应急演练",
+                                "事故发生后30分钟内完成信息上报并启动理赔流程"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/ztzl/gjzynlbz/202306/t20230614_500987.html",
+                            "clause": null,
+                            "excerpt": "能处理旅游过程中的一般性突发事件和安全事故，保护旅游者的人身和财产安全",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "导游国家职业技能标准"
+                        },
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/zwgk/gsgg/202209/t20220928_483270.html",
+                            "clause": null,
+                            "excerpt": "具备研学旅行安全管理能力，能够制定安全预案，处理突发事件",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "研学旅行指导师国家职业技能标准"
+                        }
+                    ],
+                    "definition": "能够识别游览环境中的安全隐患，在发生游客伤病、走失、极端天气、交通事故等突发情况时按预案采取急救、疏散、报警等措施。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "20038e74-f474-4271-9fcc-d6ef731dbb3a",
+                "name": "旅游业务系统操作与数据分析",
+                "aliases": [
+                    "ERP系统录入",
+                    "OTA后台操作",
+                    "智慧票务系统",
+                    "客流热力图监控",
+                    "数据导出清洗",
+                    "BI看板制作",
+                    "数字资产归档"
+                ],
+                "node_type": "能力",
+                "describe": "能够熟练操作旅行社ERP、OTA商家后台或智慧景区管理系统完成订单录入、产品上下架、数据导出等操作，并将数据转化为可视化报表。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "数字化系统与数据应用",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "上机实操测试，限时完成指定录入任务",
+                            "behaviorDesc": "能够在指导下完成游客信息录入、电子合同上传或简单数据导出，操作步骤无遗漏",
+                            "observablePoints": [
+                                "按SOP截图逐步操作",
+                                "录入信息经复核零错误",
+                                "导出的Excel表格字段完整"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "给定原始数据包，要求在2小时内输出分析结论与图表",
+                            "behaviorDesc": "能够独立完成OTA产品SKU配置、价格日历批量修改或多维度运营数据清洗与透视分析",
+                            "observablePoints": [
+                                "配置参数符合各平台差异化规则",
+                                "调价操作前核对成本底线",
+                                "使用数据透视表定位转化率下滑环节"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其搭建的BI看板功能完整性与业务增长归因报告",
+                            "behaviorDesc": "能够搭建自动化数据看板，制定系统操作规范并培训团队，通过数据洞察驱动业务策略调整",
+                            "observablePoints": [
+                                "看板每日自动刷新核心指标",
+                                "编写的操作手册覆盖所有异常场景处理",
+                                "基于数据分析提出的策略使GMV提升可量化"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.liepin.com/zhaopin/?key=%E8%AE%A1%E8%B0%83",
+                            "clause": null,
+                            "excerpt": "熟练使用旅行社OP操作系统，进行团队计划的录入与流转",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "计调招聘JD"
+                        },
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/8a7c4b8f3c6d2e1a1nJz2tW4FFo~.html",
+                            "clause": null,
+                            "excerpt": "监控并分析店铺各项运营数据，如流量、转化率、客单价、评价等",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "OTA平台运营专员招聘JD"
+                        }
+                    ],
+                    "definition": "能够熟练操作旅行社ERP、OTA商家后台或智慧景区管理系统完成订单录入、产品上下架、数据导出等操作，并将数据转化为可视化报表。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "e8609f8a-74c2-4238-9d4c-7ccaccc96f56",
+                "name": "旅游产品成本核算与财务结算",
+                "aliases": [
+                    "综合报价与毛利核算",
+                    "单据审核报销",
+                    "对账请款",
+                    "动态调价",
+                    "利润复盘",
+                    "营销成本核算"
+                ],
+                "node_type": "能力",
+                "describe": "能够将交通、住宿、门票等散项成本汇总计算总成本与毛利率，完成导游备用金核销、供应商对账付款及单团利润复盘。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "成本核算与财务结算",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "给定10张票据，要求在30分钟内完成分类与总额计算",
+                            "behaviorDesc": "能够按公式将各项采购单价相加得出团队总成本，并将发票分类粘贴提交报销",
+                            "observablePoints": [
+                                "加法计算结果经复核无误",
+                                "发票按交通、住宿、餐饮分类装订",
+                                "报销单填写金额与附件一致"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "给定资源底价表，要求输出3种不同标准的报价方案",
+                            "behaviorDesc": "能够独立完成包含管理费、税金、佣金的综合报价单，并核对供应商月度账单差异",
+                            "observablePoints": [
+                                "报价单各项费率符合公司规定",
+                                "发现账单差异时主动联系供应商核实",
+                                "单团毛利误差控制在预算的±5%以内"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其提交的成本分析报告与管理层采纳记录",
+                            "behaviorDesc": "能够建立成本分析模型，识别超支根因并制定降本策略，指导团队提升整体利润率",
+                            "observablePoints": [
+                                "按月输出各线路成本波动趋势图",
+                                "提出至少2项可落地的降本措施",
+                                "实施后季度平均毛利率提升不低于2个百分点"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://baike.baidu.com/item/%E8%AE%A1%E8%B0%83",
+                            "clause": null,
+                            "excerpt": "计调人员需精通旅游线路的成本核算，控制团队利润空间",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L4_其他",
+                            "sourceTitle": "计调百科"
+                        },
+                        {
+                            "url": "https://www.liepin.com/zhaopin/?key=%E8%AE%A1%E8%B0%83",
+                            "clause": null,
+                            "excerpt": "负责团队结束后的账务结算、成本分析及资料归档工作",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "计调招聘JD"
+                        }
+                    ],
+                    "definition": "能够将交通、住宿、门票等散项成本汇总计算总成本与毛利率，完成导游备用金核销、供应商对账付款及单团利润复盘。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": true,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f8136f4c-a56a-423f-a76e-9b2cce3ccfbf",
+                "name": "旅游法规与合同合规应用",
+                "aliases": [
+                    "合同法务合规",
+                    "消保法应用",
+                    "广告法合规",
+                    "签证初审",
+                    "保险配置",
+                    "违规申诉"
+                ],
+                "node_type": "能力",
+                "describe": "掌握《旅游法》《消费者权益保护法》《广告法》中与合同签订、违约责任、虚假宣传禁止、未成年人保护相关的核心条款并能应用于实际业务。",
+                "info": {
+                    "core": true,
+                    "flag": null,
+                    "type": "知识",
+                    "domain": "法律法规与合规管理",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "给出一份残缺的旅游合同，要求标出所有不合规之处",
+                            "behaviorDesc": "能够识别合同中必须包含的法定条款（如旅行社责任险、退改规则），并向游客逐条解释含义",
+                            "observablePoints": [
+                                "指出合同模板中缺失的法定条款",
+                                "用通俗语言解释免责情形",
+                                "提醒游客购买意外险并协助投保"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "案例分析笔试，涵盖合同纠纷、不可抗力、虚假宣传三个场景",
+                            "behaviorDesc": "能够依据法律条款判定投诉责任归属，处理不可抗力导致的合同变更，并确保新媒体宣传内容不触犯广告法极限词",
+                            "observablePoints": [
+                                "引用具体法条编号作为处理依据",
+                                "在台风导致行程取消时出具合法退改方案",
+                                "审核营销文案并删除绝对化用语"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其主导的合规整改项目档案",
+                            "behaviorDesc": "能够参与企业合规体系建设，针对新出台法规及时修订业务SOP，并代表企业应对行政检查或法律诉讼",
+                            "observablePoints": [
+                                "每季度输出法规变动对业务影响的评估报告",
+                                "主导修订的合同模板通过法务审核",
+                                "在行政处罚听证会上提供有效申辩材料"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/ztzl/gjzynlbz/202306/t20230614_500987.html",
+                            "clause": null,
+                            "excerpt": "了解旅游政策与法规，能依法维护旅游者和旅行社的合法权益",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "导游国家职业技能标准"
+                        },
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/rencaiduiwu/jianshe/zhiyejinengbiaozhun/",
+                            "clause": null,
+                            "excerpt": "具备旅游政策法规知识，熟悉旅游合同的签订与履行规范",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "旅行社职业技能标准"
+                        }
+                    ],
+                    "definition": "掌握《旅游法》《消费者权益保护法》《广告法》中与合同签订、违约责任、虚假宣传禁止、未成年人保护相关的核心条款并能应用于实际业务。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": true,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "2eb51132-4346-4128-b7fe-ad62d828853b",
+                "name": "旅游短视频拍摄剪辑与新媒体内容运营",
+                "aliases": [
+                    "手机运镜拍摄",
+                    "剪映操作",
+                    "小红书种草笔记",
+                    "直播带货话术",
+                    "UGC引导",
+                    "图文排版",
+                    "脚本策划"
+                ],
+                "node_type": "能力",
+                "describe": "能够使用手机或稳定器拍摄旅游场景素材，运用剪辑软件完成卡点、字幕、配乐，并撰写符合平台调性的种草文案或直播脚本。",
+                "info": {
+                    "core": false,
+                    "flag": "新兴能力：仅有市场来源，国家与行业标准均未覆盖",
+                    "type": "技能",
+                    "domain": "营销推广与新媒体",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "现场限时拍摄剪辑一条短视频并提交成品",
+                            "behaviorDesc": "能够使用手机拍摄画面稳定的15秒风景片段，并用剪映添加一段背景音乐和一行字幕后导出",
+                            "observablePoints": [
+                                "画面无明显抖动或过曝",
+                                "音频与画面同步",
+                                "导出的视频分辨率不低于1080P"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "给定主题，要求在半天内产出1条视频+1篇图文并追踪数据",
+                            "behaviorDesc": "能够独立完成包含推拉摇移运镜、多段拼接、花字特效的60秒短视频，并撰写带热门话题标签的小红书图文笔记",
+                            "observablePoints": [
+                                "至少运用3种运镜手法",
+                                "剪辑节奏与音乐节拍吻合",
+                                "笔记发布后7天内获得不低于50次互动"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其运营的账号近3个月粉丝增长曲线与转化漏斗数据",
+                            "behaviorDesc": "能够策划系列内容矩阵，设计直播间憋单逼单话术，并通过投流工具优化ROI实现规模化获客",
+                            "observablePoints": [
+                                "月度内容排期表覆盖所有重要营销节点",
+                                "直播间场均观看人数环比增长20%以上",
+                                "CPA（单客获取成本）控制在预算范围内"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://baike.baidu.com/item/%E5%AF%BC%E6%B8%B8/174",
+                            "clause": null,
+                            "excerpt": "数字化营销成为标配，旅游从业者需掌握短视频拍摄剪辑、直播带货及小红书等内容平台的种草获客技能",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L4_其他",
+                            "sourceTitle": "百度百科-导游"
+                        },
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/1a2b3c4d5e6f7g8h.html",
+                            "clause": null,
+                            "excerpt": "负责旅游目的地短视频的实地拍摄，包括风景空镜与游客互动画面",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "旅游新媒体运营招聘JD"
+                        }
+                    ],
+                    "definition": "能够使用手机或稳定器拍摄旅游场景素材，运用剪辑软件完成卡点、字幕、配乐，并撰写符合平台调性的种草文案或直播脚本。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "03bf5e11-b62c-40cb-ad64-10cb85f99590",
+                "name": "旅游供应商寻源采购与绩效评估",
+                "aliases": [
+                    "市场询价比价",
+                    "资质审查",
+                    "谈判议价",
+                    "外包验收",
+                    "KOL筛选",
+                    "耗材采购"
+                ],
+                "node_type": "能力",
+                "describe": "能够向酒店、车队、景区等供应商发起询价与资质核查，通过谈判获取优势价格，并建立评价体系定期对供应商进行分级淘汰。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "供应链与资源协调",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "给定采购需求，要求在1个工作日内提交比价结果",
+                            "behaviorDesc": "能够按模板向不少于3家供应商发送询价函，收集报价后填入比价表并标注最低价",
+                            "observablePoints": [
+                                "询价函包含完整的需求规格",
+                                "比价表字段无遗漏",
+                                "在收到报价后24小时内完成汇总"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "模拟谈判场景，由考官扮演供应商进行对抗演练",
+                            "behaviorDesc": "能够独立核查供应商营业执照、营运证等资质文件，运用阶梯报价策略完成批量采购谈判并签订合同",
+                            "observablePoints": [
+                                "发现资质过期或造假时拒绝合作",
+                                "谈判后获取的价格低于初始报价10%以上",
+                                "合同条款经法务审核无异议"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其建立的评估体系文档及历年供应商更替记录",
+                            "behaviorDesc": "能够建立多维度供应商绩效评估模型（响应速度、投诉率、价格竞争力），主导年度招标并优化供应链结构",
+                            "observablePoints": [
+                                "评估模型包含定量指标与权重设定",
+                                "每年淘汰末位10%供应商并引入新资源",
+                                "整体采购成本同比下降可量化"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/5a9c8b6f4d2e1b3c1nJz3NW0.html",
+                            "clause": null,
+                            "excerpt": "负责对接酒店、车队、景区等供应商，进行询价、比价与采购落实",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "计调专员招聘JD"
+                        },
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/d1e2f3g4h5i6j7k8l9m0.html",
+                            "clause": null,
+                            "excerpt": "负责景区外包服务团队的日常管理、工作质量监督及绩效考核",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "景区运营管理招聘JD"
+                        }
+                    ],
+                    "definition": "能够向酒店、车队、景区等供应商发起询价与资质核查，通过谈判获取优势价格，并建立评价体系定期对供应商进行分级淘汰。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "1be7945c-d064-483d-99a1-dc4f1c9dda5e",
+                "name": "跨部门协作与信息交接流转",
+                "aliases": [
+                    "全陪地接交接",
+                    "司机沟通",
+                    "酒店对接",
+                    "客诉上报",
+                    "计调指令下发",
+                    "多方联动"
+                ],
+                "node_type": "能力",
+                "describe": "能够将订单需求、行程变更或客诉信息准确传递给导游部、车队、地接社、财务等协同方，确保信息无衰减流转与闭环。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "供应链与资源协调",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "检查其一周内的交接记录完整性",
+                            "behaviorDesc": "能够按标准模板填写交接单并通过微信群或邮件发送给指定接收人，确认对方已读",
+                            "observablePoints": [
+                                "交接单包含时间、地点、联系人、特殊事项四要素",
+                                "发送后@接收人并要求回复确认",
+                                "保留发送记录截图备查"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "模拟突发变更场景，考核响应时效与信息触达率",
+                            "behaviorDesc": "能够在多工种衔接冲突时（如航班延误导致用车时间变更）迅速重新排列组合资源，通知所有相关方并确认新方案",
+                            "observablePoints": [
+                                "在获知变更后15分钟内发出通知",
+                                "逐一确认车队、酒店、导游均已收到新指令",
+                                "更新系统内的行程状态"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其主导制定的协作流程文件及执行效果数据",
+                            "behaviorDesc": "能够建立跨部门协作SOP与信息共享机制，减少因沟通断层导致的操作失误",
+                            "observablePoints": [
+                                "绘制各部门信息流转节点图",
+                                "制定超时未响应的升级通报规则",
+                                "实施后跨部门投诉率下降可量化"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://zhuanlan.zhihu.com/p/643215879",
+                            "clause": null,
+                            "excerpt": "全陪导游负责监督地接社的接待质量，协调领队、地陪、司机等人员的关系",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L4_其他",
+                            "sourceTitle": "知乎专栏"
+                        },
+                        {
+                            "url": "https://www.liepin.com/zhaopin/?key=%E8%AE%A1%E8%B0%83",
+                            "clause": null,
+                            "excerpt": "负责团队计划的制定、下发及全程跟踪，确保接待质量",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "计调招聘JD"
+                        }
+                    ],
+                    "definition": "能够将订单需求、行程变更或客诉信息准确传递给导游部、车队、地接社、财务等协同方，确保信息无衰减流转与闭环。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": true,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "57c02df0-3c12-4986-af2a-cfe54587f0fb",
+                "name": "服务质量监控与流程优化复盘",
+                "aliases": [
+                    "SOP合规检查",
+                    "带团日志撰写",
+                    "满意度问卷",
+                    "差评预警",
+                    "流程复盘",
+                    "计调SOP编写",
+                    "A/B测试"
+                ],
+                "node_type": "能力",
+                "describe": "能够通过暗访抽检、满意度调查、数据异常分析等方式持续监控服务触点质量，总结缺陷原因并推动SOP迭代优化。",
+                "info": {
+                    "core": true,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "质量管理与流程优化",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "跟随主管完成一次巡场，比对两者记录的差异",
+                            "behaviorDesc": "能够按检查表完成售票窗口或讲解员仪容仪表的现场抽检，并如实记录不符合项",
+                            "observablePoints": [
+                                "逐项对照标准打勾或打叉",
+                                "拍照留存违规证据",
+                                "当日内提交抽检记录表"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "审查其提交的月度服务质量分析报告",
+                            "behaviorDesc": "能够独立设计满意度问卷并回收统计，针对高频差评点进行根因分析，输出书面改进建议",
+                            "observablePoints": [
+                                "问卷题目覆盖吃住行游购娱各环节",
+                                "有效样本回收率不低于80%",
+                                "改进建议包含具体措施与预期效果"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其编写的SOP手册版本演进记录与业务指标改善曲线",
+                            "behaviorDesc": "能够主导全流程SOP的编写与迭代，建立以评促改的闭环机制，并培训团队执行新标准",
+                            "observablePoints": [
+                                "SOP文档版本号管理规范",
+                                "新标准实施后客诉率环比下降",
+                                "每季度组织至少1次全员SOP宣贯会"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/ztzl/gjzynlbz/202306/t20230614_500987.html",
+                            "clause": null,
+                            "excerpt": "能总结导游服务经验，提出改进服务质量的建议",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "导游国家职业技能标准"
+                        },
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/j1k2l3m4n5o6p7q8r9s0.html",
+                            "clause": null,
+                            "excerpt": "监督景区各岗位服务质量，定期开展服务规范培训与考核评估",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "景区运营管理招聘JD"
+                        }
+                    ],
+                    "definition": "能够通过暗访抽检、满意度调查、数据异常分析等方式持续监控服务触点质量，总结缺陷原因并推动SOP迭代优化。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": true,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f6427739-d9ef-4cfe-860d-1af32b8b1207",
+                "name": "旅游产品卖点提炼与营销转化",
+                "aliases": [
+                    "线路亮点话术",
+                    "竞品对比",
+                    "OTA图文包装",
+                    "好评引导",
+                    "私域引流",
+                    "社群推送"
+                ],
+                "node_type": "能力",
+                "describe": "能够从线路特色中提取核心吸引物，转化为口语化卖点话术或OTA详情页图文，并设计激励机制促成下单或好评。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "营销推广与新媒体",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "给定5条标准线路，要求在1小时内完成卖点改写",
+                            "behaviorDesc": "能够将行程单中的景点名称改写为一句话卖点描述（如'睡到自然醒的纯玩之旅'）",
+                            "observablePoints": [
+                                "每条线路提炼不少于3个卖点",
+                                "卖点不含虚假夸大表述",
+                                "语言风格符合目标客群偏好"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "对比其包装前后的产品转化数据",
+                            "behaviorDesc": "能够独立完成OTA产品详情页的图文排版与卖点布局，使点击率和转化率高于店铺平均水平",
+                            "observablePoints": [
+                                "首图突出核心视觉吸引物",
+                                "正文前三行包含利益点而非参数",
+                                "上线后7天CTR高于均值10%以上"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其策划的营销战役全链路数据报告",
+                            "behaviorDesc": "能够构建从内容种草到私域沉淀再到复购转化的完整营销链路，并指导团队执行",
+                            "observablePoints": [
+                                "设计包含公域引流、企微承接、社群促活的三步策略",
+                                "老客户复购率季度环比提升",
+                                "输出的营销SOP被其他门店复制采用"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.jobui.com/p/%E6%97%85%E6%B8%B8%E9%94%80%E5%94%AE/",
+                            "clause": null,
+                            "excerpt": "利用社交媒体、网络平台等渠道开发新客户，维护老客户关系",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "旅游销售招聘JD"
+                        },
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/8a7c4b8f3c6d2e1a1nJz2tW4FFo~.html",
+                            "clause": null,
+                            "excerpt": "优化产品标题、详情页图文，提升产品点击率和转化率",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "OTA平台运营专员招聘JD"
+                        }
+                    ],
+                    "definition": "能够从线路特色中提取核心吸引物，转化为口语化卖点话术或OTA详情页图文，并设计激励机制促成下单或好评。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "fdaf7e0a-9945-4c91-a369-b33f8c92f024",
+                "name": "严谨细致的职业态度与责任意识",
+                "aliases": [
+                    "出团前准备态度",
+                    "成本控制意识",
+                    "安全底线意识",
+                    "精进意识",
+                    "网感素养",
+                    "销售韧性"
+                ],
+                "node_type": "能力",
+                "describe": "在处理行程细节、关键数据、游客安全及服务质量时保持高度敏感与责任心，不因赶进度而降低标准。",
+                "info": {
+                    "core": false,
+                    "flag": "AI 推断项：资料中无直接依据，必须人工确认后方可进入主干",
+                    "type": "素养",
+                    "domain": "职业素养与安全意识",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "追踪其经手的表单在3个月内的差错次数",
+                            "behaviorDesc": "能够在提交任何表单或名单前自行复核一遍关键字段（证件号、日期、金额），做到零错漏",
+                            "observablePoints": [
+                                "养成二次检查习惯",
+                                "发现他人错误时主动提醒",
+                                "未因粗心导致过操作事故"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "行为事件访谈法（BEI），追问其在压力下的决策实例",
+                            "behaviorDesc": "能够在面临成本压力或时间紧迫时坚守安全与质量底线，拒绝为追求低价或赶行程而牺牲游客体验",
+                            "observablePoints": [
+                                "主动否决不达标的供应商替换方案",
+                                "在恶劣天气下坚持暂停户外活动的决定",
+                                "向上级据理力争保障安全投入"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assestMethod": "360度评估其领导力与团队质量改善贡献",
+                            "behaviorDesc": "能够将个人严谨作风转化为团队文化，建立防错机制与奖惩制度，带动整体操作质量提升",
+                            "observablePoints": [
+                                "推行双人交叉复核制度",
+                                "设立月度零差错奖励",
+                                "团队整体失误率在其带动下显著下降"
+                            ]
+                        }
+                    ],
+                    "inferred": true,
+                    "evidences": [],
+                    "definition": "在处理行程细节、关键数据、游客安全及服务质量时保持高度敏感与责任心，不因赶进度而降低标准。",
+                    "acrossSubIndustries": [
+                        "si01",
+                        "si02",
+                        "si03"
+                    ]
+                },
+                "is_universal": true,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "268d0be4-1b43-499c-95be-957e89b0683b",
+                "name": "景区客流调度与承载量管控",
+                "aliases": [
+                    "客流预测",
+                    "分流引导",
+                    "限流执行",
+                    "热力图监控"
+                ],
+                "node_type": "能力",
+                "describe": "能够利用智慧景区系统实时监控客流密度，在高峰期通过分流引导、广播通知或触发限流机制保障游客安全与体验。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "景区运营与现场管理",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "模拟高峰场景进行现场分流实操考核",
+                            "behaviorDesc": "能够读取客流大屏数据，当某区域人数接近阈值时按指令前往现场举牌引导游客走替代路线",
+                            "observablePoints": [
+                                "准确识别大屏上的红黄绿区域",
+                                "到达指定点位后放置分流标识牌",
+                                "用扩音器播报引导话术"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "审查其编制的节假日客流调度方案",
+                            "behaviorDesc": "能够根据预订数据和天气因素预判当日分时段客流峰值，提前部署人员和物资，并在超载时启动限流程序",
+                            "observablePoints": [
+                                "晨会时提交客流预测报告",
+                                "在瓶颈路段增派疏导人员",
+                                "按法定程序上报并执行暂停售票"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "对比其优化前后的景区日均接待量与游客满意度变化",
+                            "behaviorDesc": "能够优化景区动线设计与票务预约策略，从根本上削峰填谷，提升最大承载量利用率",
+                            "observablePoints": [
+                                "提出单向循环动线改造方案并被采纳",
+                                "调整分时段预约比例使排队时间缩短30%",
+                                "输出年度客流管理白皮书"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://baike.baidu.com/item/%E6%99%BA%E6%85%A7%E6%99%AF%E5%8C%BA/12345678",
+                            "clause": null,
+                            "excerpt": "通过智慧景区平台实现客流实时监控、智能预警与动态分流管理",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L4_其他",
+                            "sourceTitle": "百度百科-智慧景区"
+                        },
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/m1n2o3p4q5r6s7t8u9v0.html",
+                            "clause": null,
+                            "excerpt": "节假日期间负责游客中心及周边区域的客流疏导与秩序维护",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "景区运营管理招聘JD"
+                        }
+                    ],
+                    "definition": "能够利用智慧景区系统实时监控客流密度，在高峰期通过分流引导、广播通知或触发限流机制保障游客安全与体验。",
+                    "acrossSubIndustries": []
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "9269af77-fbe1-4599-934a-5d63709dd0ca",
+                "name": "研学带队管理与学生纪律维持",
+                "aliases": [
+                    "学生分组管理",
+                    "口令积分管理",
+                    "队伍秩序管控",
+                    "活动现场纪律管控"
+                ],
+                "node_type": "能力",
+                "describe": "能够通过口令、积分、角色分配等手段有效管理数十名中小学生的队伍秩序与注意力，确保研学活动安全有序进行。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "研学教育与课程实施",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "现场带领10名学生完成30分钟户外活动观察记录",
+                            "behaviorDesc": "能够在助教配合下使用统一口令（如'1-2-3静下来'）维持10人以内的学生小组纪律",
+                            "observablePoints": [
+                                "口令发出后5秒内学生停止交谈",
+                                "清点人数与实际一致",
+                                "无学生脱离视线范围"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "跟队暗访评估其一整天的控场表现",
+                            "behaviorDesc": "能够独立管理30人以上学生团队，运用积分激励与组长负责制维持全天活动秩序",
+                            "observablePoints": [
+                                "开营时宣布积分规则并张贴公示",
+                                "每半天公布各组得分排名",
+                                "全天无学生走失或严重违纪事件"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其编写的管理手册及助教培训考核通过率",
+                            "behaviorDesc": "能够设计适用于不同年龄段的学生管理体系，培训助教掌握纪律维持技巧，并处理严重行为偏差个案",
+                            "observablePoints": [
+                                "编写《研学带队管理手册》",
+                                "对助教进行岗前控场培训",
+                                "成功干预并转化多次扰乱课堂的学生"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/zwgk/gsgg/202209/t20220928_483270.html",
+                            "clause": null,
+                            "excerpt": "具备研学旅行安全管理能力，能够制定安全预案，处理突发事件",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "研学旅行指导师国家职业技能标准"
+                        }
+                    ],
+                    "definition": "能够通过口令、积分、角色分配等手段有效管理数十名中小学生的队伍秩序与注意力，确保研学活动安全有序进行。",
+                    "acrossSubIndustries": [
+                        "si02"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "d8475f9b-e3c8-46ae-b505-fa14fb6adf6c",
+                "name": "青少年心理认知与教育激励",
+                "aliases": [
+                    "学段认知特征分析",
+                    "教育心理学基础",
+                    "分层讲解策略",
+                    "学生激励"
+                ],
+                "node_type": "能力",
+                "describe": "了解不同年龄段青少年的认知规律和心理特点，采用游戏化、故事化等适龄方式传递知识，并运用正向强化方法激发学习动机。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "知识",
+                    "domain": "研学教育与课程实施",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "口头问答测试",
+                            "behaviorDesc": "能够说出小学低段（1-3年级）与高段（4-6年级）学生在注意力时长和抽象思维上的两项核心差异",
+                            "observablePoints": [
+                                "回答测试题正确",
+                                "能举例说明差异在活动设计中的体现",
+                                "不使用超出低龄学生理解力的专业术语"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "提交两份教案并进行模拟试讲评审",
+                            "behaviorDesc": "能够针对同一知识点分别设计面向小学生和中学生的两种讲解方案，并运用表扬、积分等激励手段维持参与度",
+                            "observablePoints": [
+                                "两套方案在深度和互动形式上有明显区分",
+                                "活动中每分钟至少给予1次正向反馈",
+                                "学生主动举手参与率不低于60%"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其开发的激励体系文档及实施前后对比数据",
+                            "behaviorDesc": "能够基于教育心理学理论构建研学课程的激励体系，指导其他导师掌握因材施教的方法",
+                            "observablePoints": [
+                                "激励体系包含内在动机激发与外在奖励机制",
+                                "编写《分龄讲解策略指南》",
+                                "受训导师的学员满意度评分显著提升"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.mohrss.gov.cn/SYrlzyhshbzb/zwgk/gsgg/202209/t20220928_483270.html",
+                            "clause": null,
+                            "excerpt": "能根据不同学段学生的身心发展特点和认知水平，设计相应的研学旅行课程",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L1_国家",
+                            "sourceTitle": "研学旅行指导师国家职业技能标准"
+                        }
+                    ],
+                    "definition": "了解不同年龄段青少年的认知规律和心理特点，采用游戏化、故事化等适龄方式传递知识，并运用正向强化方法激发学习动机。",
+                    "acrossSubIndustries": [
+                        "si02"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "1f7e557e-0fd8-4895-a11b-f9a5d783f5ae",
+                "name": "旅游平台算法规则与流量机制认知",
+                "aliases": [
+                    "OTA平台规则",
+                    "主流平台算法",
+                    "推荐机制知识",
+                    "搜索权重理解"
+                ],
+                "node_type": "能力",
+                "describe": "了解主流OTA平台或社交媒体（抖音、小红书等）的排名算法、搜索权重、流量分发规则与标签体系。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "知识",
+                    "domain": "数字化系统与数据应用",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "闭卷简答题测试",
+                            "behaviorDesc": "能够列举携程、飞猪、抖音三个平台各自影响产品或内容排名的至少2个核心因子",
+                            "observablePoints": [
+                                "回答内容准确（如携程看转化率、抖音看完播率）",
+                                "能区分付费流量与自然流量的差异",
+                                "知道标签体系对内容分发的作用"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "对比其优化前后的后台流量数据",
+                            "behaviorDesc": "能够根据平台算法规则调整产品标题关键词或内容发布时间，使曝光量获得可观测的提升",
+                            "observablePoints": [
+                                "标题包含平台热搜词且语句通顺",
+                                "选择目标用户活跃时段发布",
+                                "调整后7天内自然流量环比增长15%以上"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其输出的平台规则跟踪日志与策略调整记录",
+                            "behaviorDesc": "能够追踪平台算法更新动态，提前调整运营策略，并为团队输出平台规则变化应对指南",
+                            "observablePoints": [
+                                "订阅并研读平台官方公告",
+                                "在算法调整后48小时内完成策略切换",
+                                "编写的应对指南被管理层采纳推广"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/1a2b3c4d5e6f7g8h.html",
+                            "clause": null,
+                            "excerpt": "熟悉小红书、抖音等新媒体平台的底层逻辑与推荐算法机制",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "旅游新媒体运营招聘JD"
+                        },
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/8a7c4b8f3c6d2e1a1nJz2tW4FFo~.html",
+                            "clause": null,
+                            "excerpt": "负责公司在携程、美团、飞猪等OTA平台的店铺日常运营，熟悉各平台规则",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "OTA平台运营专员招聘JD"
+                        }
+                    ],
+                    "definition": "了解主流OTA平台或社交媒体（抖音、小红书等）的排名算法、搜索权重、流量分发规则与标签体系。",
+                    "acrossSubIndustries": [
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "65274860-210b-4255-9fb4-0984428b7ee1",
+                "name": "带团物资核查与设备调试",
+                "aliases": [
+                    "物资清单核查",
+                    "导览设备调试",
+                    "无线讲解器排查",
+                    "教学物料统筹"
+                ],
+                "node_type": "能力",
+                "describe": "能够按标准清单清点导游旗、扩音器、急救包、研学手册等带团物资，并熟练调试无线讲解器、闸机等智慧景区设备。",
+                "info": {
+                    "core": false,
+                    "flag": "AI 推断项：资料中无直接依据，必须人工确认后方可进入主干",
+                    "type": "技能",
+                    "domain": "供应链与资源协调",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "给定一套含2件缺失物品的物资箱，要求在10分钟内查出",
+                            "behaviorDesc": "能够对照物资清单逐一清点物品数量，检查电池电量及设备外观完好性，发现缺损立即登记上报",
+                            "observablePoints": [
+                                "每项物资核对后打勾确认",
+                                "使用万用表或试电笔检测电池",
+                                "填写《物资领用/归还登记表》"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "现场设置3种设备故障，要求逐一排除",
+                            "behaviorDesc": "能够独立完成无线导览系统的频道配对与信号测试，排除蓝牙断连、杂音干扰等常见故障",
+                            "observablePoints": [
+                                "在出发前30分钟完成全团耳机配对",
+                                "遇到杂音时更换频道或重置设备",
+                                "备用设备随时处于可用状态"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其管理的物资台账与损耗统计数据",
+                            "behaviorDesc": "能够制定物资管理台账与设备维保计划，优化领用流程以减少损耗率",
+                            "observablePoints": [
+                                "建立电子化物资出入库台账",
+                                "每季度安排设备深度保养",
+                                "年度物资损耗率同比下降"
+                            ]
+                        }
+                    ],
+                    "inferred": true,
+                    "evidences": [
+                        {
+                            "url": "https://www.job592.com/zhiwei/job_3687.html",
+                            "clause": null,
+                            "excerpt": "做好带团记录，及时反馈游客的意见和建议",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "景区讲解员招聘JD"
+                        }
+                    ],
+                    "definition": "能够按标准清单清点导游旗、扩音器、急救包、研学手册等带团物资，并熟练调试无线讲解器、闸机等智慧景区设备。",
+                    "acrossSubIndustries": [
+                        "si01"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "c374d340-06d1-4d46-b403-26703f8c2e00",
+                "name": "负面舆情监测与危机公关应对",
+                "aliases": [
+                    "网络舆情监测",
+                    "负面评论上报",
+                    "舆情口径统一",
+                    "危机公关应对"
+                ],
+                "node_type": "能力",
+                "describe": "能够监控OTA平台及社交媒体上关于本企业的游客评价，第一时间识别涉及安全或服务的负面舆情，并按预案上报与回应。",
+                "info": {
+                    "core": false,
+                    "flag": "新兴能力：仅有市场来源，国家与行业标准均未覆盖",
+                    "type": "技能",
+                    "domain": "营销推广与新媒体",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "检查其一周的舆情巡查日志完整性",
+                            "behaviorDesc": "能够每日定时巡查指定平台评论区，发现差评或负面帖子后立即截图并通过工单系统上报",
+                            "observablePoints": [
+                                "巡查覆盖携程、小红书、抖音三个平台",
+                                "截图包含发帖人ID、时间、内容全文",
+                                "上报时间在发现后15分钟以内"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "给定3条真实差评，要求撰写回复话术并模拟电话沟通",
+                            "behaviorDesc": "能够根据负面舆情严重程度分级响应，在授权范围内撰写公开回复并线下联系游客协商撤诉",
+                            "observablePoints": [
+                                "一般差评在2小时内公开回复",
+                                "回复内容包含致歉、事实澄清与补救措施",
+                                "成功和解率达到70%以上"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "桌面推演考核，模拟大规模负面舆情爆发场景",
+                            "behaviorDesc": "能够制定企业级网络舆情应急预案，在重大危机事件中统一对外口径并协调媒体关系",
+                            "observablePoints": [
+                                "预案明确各级别事件的响应链路与发言人",
+                                "危机发生后1小时内发布官方声明",
+                                "事后输出舆情复盘报告并修补管理漏洞"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/5e6f7g8h9i0j1k2l.html",
+                            "clause": null,
+                            "excerpt": "监控涉旅网络舆情，发现负面评价及时启动危机公关预案进行处理",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "旅游新媒体运营招聘JD"
+                        }
+                    ],
+                    "definition": "能够监控OTA平台及社交媒体上关于本企业的游客评价，第一时间识别涉及安全或服务的负面舆情，并按预案上报与回应。",
+                    "acrossSubIndustries": [
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "0fc450ae-d4ff-4785-a003-f6097d305d0d",
+                "name": "旅游电商定价策略与促销活动配置",
+                "aliases": [
+                    "淡旺季动态调价",
+                    "营销活动报名",
+                    "优惠券配置",
+                    "竞品价格监控"
+                ],
+                "node_type": "能力",
+                "describe": "能够根据淡旺季供需变化和竞品价格动态调整OTA平台售价，并完成大促活动报名、优惠券及满减工具的配置。",
+                "info": {
+                    "core": false,
+                    "flag": null,
+                    "type": "技能",
+                    "domain": "成本核算与财务结算",
+                    "levels": [
+                        {
+                            "level": "L1",
+                            "assessMethod": "上机操作测试，限时完成10个SKU的改价",
+                            "behaviorDesc": "能够按主管指令在OTA后台修改指定产品的价格日历，并核对修改结果是否生效",
+                            "observablePoints": [
+                                "输入的新价格与指令完全一致",
+                                "保存后在前台搜索验证显示正确",
+                                "未发现价格倒挂（儿童价高于成人价）"
+                            ]
+                        },
+                        {
+                            "level": "L2",
+                            "assessMethod": "给定市场环境数据，要求输出定价策略并实操配置",
+                            "behaviorDesc": "能够独立分析竞品价格趋势，制定有竞争力的定价方案，并按平台规则完成大促活动报名与营销工具配置",
+                            "observablePoints": [
+                                "定价方案附带竞品对比分析表",
+                                "活动报名材料一次性通过平台审核",
+                                "优惠券叠加规则不与底价冲突"
+                            ]
+                        },
+                        {
+                            "level": "L3",
+                            "assessMethod": "审查其搭建的定价模型逻辑文档与收益对比报告",
+                            "behaviorDesc": "能够建立动态定价模型，根据库存余量、距出发天数等变量自动触发调价规则，最大化收益",
+                            "observablePoints": [
+                                "模型覆盖淡旺季与节假日多种场景",
+                                "实施后RevPAR或单票收益提升可量化",
+                                "定期回测模型准确率并迭代参数"
+                            ]
+                        }
+                    ],
+                    "inferred": false,
+                    "evidences": [
+                        {
+                            "url": "https://www.zhipin.com/gongsi/job/8a7c4b8f3c6d2e1a1nJz2tW4FFo~.html",
+                            "clause": null,
+                            "excerpt": "根据市场情况和公司策略，制定并调整产品价格和促销方案",
+                            "sourceType": "web",
+                            "extractedAt": "2026-09-08",
+                            "sourceLevel": "L3_招聘",
+                            "sourceTitle": "OTA平台运营专员招聘JD"
+                        }
+                    ],
+                    "definition": "能够根据淡旺季供需变化和竞品价格动态调整OTA平台售价，并完成大促活动报名、优惠券及满减工具的配置。",
+                    "acrossSubIndustries": [
+                        "si03"
+                    ]
+                },
+                "is_universal": false,
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            }
+        ],
+        "edges": [
+            {
+                "id": "6a1462e1-11f8-4609-8b90-8cf991a884c1",
+                "source_node_id": "b7efb606-83d6-4665-a4dd-d81981dddf65",
+                "target_node_id": "f4d6fbac-2e1e-42cf-8bf1-f35da1f3e30e",
+                "relation_type": "BELONGS_TO",
+                "info": {
+                    "direction": "industry_to_sub_industry"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "b1a5637f-b367-4036-9b1a-7719f7830489",
+                "source_node_id": "b7efb606-83d6-4665-a4dd-d81981dddf65",
+                "target_node_id": "fc986fd5-931f-4c7e-8383-6462e9241d89",
+                "relation_type": "BELONGS_TO",
+                "info": {
+                    "direction": "industry_to_sub_industry"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "fd45d538-cc4d-4e27-8f18-b15801978ecc",
+                "source_node_id": "b7efb606-83d6-4665-a4dd-d81981dddf65",
+                "target_node_id": "c894780c-829e-4f8d-bd53-77115eeb87a4",
+                "relation_type": "BELONGS_TO",
+                "info": {
+                    "direction": "industry_to_sub_industry"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "0f3c69c3-72e0-4b1b-91e2-ee865753951b",
+                "source_node_id": "f4d6fbac-2e1e-42cf-8bf1-f35da1f3e30e",
+                "target_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "relation_type": "BELONGS_TO",
+                "info": {
+                    "direction": "sub_industry_to_position"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "90e1f099-ac90-4a0f-b7c6-99544e559a53",
+                "source_node_id": "f4d6fbac-2e1e-42cf-8bf1-f35da1f3e30e",
+                "target_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "relation_type": "BELONGS_TO",
+                "info": {
+                    "direction": "sub_industry_to_position"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "4c536564-87fe-4c15-b5d9-d7ec865d5472",
+                "source_node_id": "f4d6fbac-2e1e-42cf-8bf1-f35da1f3e30e",
+                "target_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "relation_type": "BELONGS_TO",
+                "info": {
+                    "direction": "sub_industry_to_position"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "e8938892-e589-453f-87e6-9eda23310eb0",
+                "source_node_id": "fc986fd5-931f-4c7e-8383-6462e9241d89",
+                "target_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "relation_type": "BELONGS_TO",
+                "info": {
+                    "direction": "sub_industry_to_position"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f0a55280-35b9-4b87-82ad-9f6b75cd3818",
+                "source_node_id": "fc986fd5-931f-4c7e-8383-6462e9241d89",
+                "target_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "relation_type": "BELONGS_TO",
+                "info": {
+                    "direction": "sub_industry_to_position"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "8de3914b-0f20-45d3-9711-1816126820a9",
+                "source_node_id": "c894780c-829e-4f8d-bd53-77115eeb87a4",
+                "target_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "relation_type": "BELONGS_TO",
+                "info": {
+                    "direction": "sub_industry_to_position"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "00a06a6e-0fb8-45e6-9e88-eb7687bb3cbb",
+                "source_node_id": "c894780c-829e-4f8d-bd53-77115eeb87a4",
+                "target_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "relation_type": "BELONGS_TO",
+                "info": {
+                    "direction": "sub_industry_to_position"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "3e32b5d1-75ed-4de4-8195-e5b9cf4ed96c",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "e31341f6-61dc-464e-a779-0b606a2fdb8a",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "62054472-ac40-429e-a45d-baaa151246ed",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "f6a9f406-3fe4-4032-824d-a59183743fca",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.1,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "a71884dd-1674-439b-a04a-e19bb484510c",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "337b7965-b183-4f7d-a884-c588aaa20c84",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "2ac690c1-8f5b-49b3-8110-7b5cf228d6cd",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "139fb45f-f824-45a9-8c14-2a97aa8c7060",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.15,
+                    "requiredLevel": "L1"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "b6db2359-3968-4caa-99f8-2d5a336323bc",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "b1036d70-b7a2-4b20-83f2-170944fe67d4",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "768b4474-decb-46cf-9b55-f5259ea9a30f",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "31fbe100-82d8-43da-8abd-3e3431a826f8",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "2e9427f8-ede5-4ef7-8898-31158873c225",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "e8609f8a-74c2-4238-9d4c-7ccaccc96f56",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "45041637-e82a-44d9-ad24-5c7e39698218",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "f8136f4c-a56a-423f-a76e-9b2cce3ccfbf",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "2ac8f562-b3b6-4a19-ab0d-8cc354f4b986",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "2eb51132-4346-4128-b7fe-ad62d828853b",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "aa2b77a5-94d2-4267-92b7-eaabe0fb97bc",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "1be7945c-d064-483d-99a1-dc4f1c9dda5e",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "839dc575-c702-443d-918a-401b2a19368b",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "57c02df0-3c12-4986-af2a-cfe54587f0fb",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "06b5aa20-4dc0-4419-8aec-2e33e5b09de6",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "fdaf7e0a-9945-4c91-a369-b33f8c92f024",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.1,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "20689cff-e986-4a9b-bc87-037cea89dff3",
+                "source_node_id": "4f7e4109-bb50-4496-a05f-1ec739c915ff",
+                "target_node_id": "65274860-210b-4255-9fb4-0984428b7ee1",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.15,
+                    "requiredLevel": "L1"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "e5bece4a-da18-4175-9faa-9700c56859e1",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "e31341f6-61dc-464e-a779-0b606a2fdb8a",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "305fc268-ea59-442e-a34e-b46bac907cf8",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "3aa37a98-ffc5-4a57-885d-be11a3705535",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "a34da893-b475-4d9c-b95d-3540d9c0deac",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "d63414dc-062f-45f3-93d0-928610709791",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "e6c7abd3-9e71-49b9-96d9-41cf632167df",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "f6a9f406-3fe4-4032-824d-a59183743fca",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.15,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f79e2297-7074-44c0-8657-e8a9e4acba49",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "139fb45f-f824-45a9-8c14-2a97aa8c7060",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "ecbf9972-6bea-44ec-9c5b-3959e2ef3cda",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "b1036d70-b7a2-4b20-83f2-170944fe67d4",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "c78711e4-3ae0-45d8-9e75-ed6b9b2af82d",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "31fbe100-82d8-43da-8abd-3e3431a826f8",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "908ab98d-9e38-4090-88ce-25dd0e9adf08",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "20038e74-f474-4271-9fcc-d6ef731dbb3a",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "2c0f2236-c46c-46c3-940f-ee7304a41049",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "e8609f8a-74c2-4238-9d4c-7ccaccc96f56",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "06576e60-5ff0-4583-a491-f25f7efc9b8a",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "f8136f4c-a56a-423f-a76e-9b2cce3ccfbf",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "57b21a31-c3ba-4e75-9eb1-ae142de6d378",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "2eb51132-4346-4128-b7fe-ad62d828853b",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "06fd068f-fdb0-449b-9909-c7923a9ce1d4",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "03bf5e11-b62c-40cb-ad64-10cb85f99590",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "c1ae6470-0ec2-4ccb-aefb-38775866d088",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "1be7945c-d064-483d-99a1-dc4f1c9dda5e",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "0ec397d5-e48c-44eb-9b65-6a681d27bee1",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "57c02df0-3c12-4986-af2a-cfe54587f0fb",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "59c5e29f-3da7-41a5-80fd-c9825b700ae2",
+                "source_node_id": "1655c668-7ee3-4703-9ce8-19bf7630ce3a",
+                "target_node_id": "fdaf7e0a-9945-4c91-a369-b33f8c92f024",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.1,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "af2dff79-30fc-4105-9557-41a0bd8bfd61",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "f6a9f406-3fe4-4032-824d-a59183743fca",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.15,
+                    "requiredLevel": "L1"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "669a91ca-b37c-4b8d-8f64-4bad5da2b762",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "139fb45f-f824-45a9-8c14-2a97aa8c7060",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "6ca564db-8bdc-4619-ab04-d029c39ba361",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "b1036d70-b7a2-4b20-83f2-170944fe67d4",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "b9420d28-fe02-4944-9c13-7559ea97dec9",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "31fbe100-82d8-43da-8abd-3e3431a826f8",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "50e1fe54-c154-4255-b7a1-da3e7da20999",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "20038e74-f474-4271-9fcc-d6ef731dbb3a",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L1"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "64198b0b-1023-4625-aa14-19a387ca77b8",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "e8609f8a-74c2-4238-9d4c-7ccaccc96f56",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "aae9d36b-2699-4fc1-8003-e22e05264b3b",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "f8136f4c-a56a-423f-a76e-9b2cce3ccfbf",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "b31ce35e-1e3d-429c-af04-84d3acf04450",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "2eb51132-4346-4128-b7fe-ad62d828853b",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L1"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "d4dcb3f0-1d07-4f00-9520-f1bda77770f3",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "1be7945c-d064-483d-99a1-dc4f1c9dda5e",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "bab1bb11-f79f-4ed7-91c9-be27b42e78b3",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "57c02df0-3c12-4986-af2a-cfe54587f0fb",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L1"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "5c32cd3e-a9c8-4327-be46-597455e901c7",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "f6427739-d9ef-4cfe-860d-1af32b8b1207",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "b931274a-b718-4844-957a-478556489647",
+                "source_node_id": "aece966f-72e1-488e-a584-1a8c548204b6",
+                "target_node_id": "fdaf7e0a-9945-4c91-a369-b33f8c92f024",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.1,
+                    "requiredLevel": "L1"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "5be02ac9-b313-4d26-b78d-15428727947a",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "d63414dc-062f-45f3-93d0-928610709791",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "08561815-7bd3-45fd-a096-76b3be0b5ecf",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "337b7965-b183-4f7d-a884-c588aaa20c84",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "ae31e75f-24d3-44bd-a857-8319d04ef064",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "b1036d70-b7a2-4b20-83f2-170944fe67d4",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "8a75dc15-d926-42d4-b8da-d2368d274a7e",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "31fbe100-82d8-43da-8abd-3e3431a826f8",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "b9fddb26-a26a-4607-b43d-62fdb3b688fb",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "20038e74-f474-4271-9fcc-d6ef731dbb3a",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "765dee73-f087-4d62-b25f-f43a773c5b73",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "e8609f8a-74c2-4238-9d4c-7ccaccc96f56",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.35,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "03af29a8-e9d8-4c25-b030-ef9481189017",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "f8136f4c-a56a-423f-a76e-9b2cce3ccfbf",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "bd410402-fe6c-4fbf-b3a9-2cfab4c320a2",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "2eb51132-4346-4128-b7fe-ad62d828853b",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.1,
+                    "requiredLevel": "L1"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "9813c4e2-19dd-4edb-adf0-86cbe1fa4304",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "03bf5e11-b62c-40cb-ad64-10cb85f99590",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "8aa55281-764c-41c4-b4c9-38ee4aad965a",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "1be7945c-d064-483d-99a1-dc4f1c9dda5e",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "daedd6c8-0949-46a8-b6a0-09705cadf3e0",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "57c02df0-3c12-4986-af2a-cfe54587f0fb",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "3fe7e5c6-ba63-48c3-9235-a7703441de02",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "fdaf7e0a-9945-4c91-a369-b33f8c92f024",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.1,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "af266237-6090-4eef-942f-8da5edce07da",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "9269af77-fbe1-4599-934a-5d63709dd0ca",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "c6a09213-d062-4c32-9ec8-4dedba6b4475",
+                "source_node_id": "c129f42f-0b74-466b-b42f-04678e0be37d",
+                "target_node_id": "d8475f9b-e3c8-46ae-b505-fa14fb6adf6c",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "664cc1ff-8ad3-4c42-8c7d-6e44b4fe83c5",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "3aa37a98-ffc5-4a57-885d-be11a3705535",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "17910352-4820-4c68-98e7-3497f1d3e25b",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "f6a9f406-3fe4-4032-824d-a59183743fca",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "175252e6-ab11-4355-847f-142fb73790ce",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "337b7965-b183-4f7d-a884-c588aaa20c84",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.15,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "3e644352-4073-4445-8056-cf4b8b6fdf3d",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "139fb45f-f824-45a9-8c14-2a97aa8c7060",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "3994181e-717f-4195-81dc-43de2a5d9ce5",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "b1036d70-b7a2-4b20-83f2-170944fe67d4",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "27b12a71-e0fb-4d0a-bd00-a4f9a996ff82",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "31fbe100-82d8-43da-8abd-3e3431a826f8",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f28959bc-2d10-49fb-a8f8-0906949746d4",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "20038e74-f474-4271-9fcc-d6ef731dbb3a",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.15,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "6f0f6777-bc63-4d12-89c8-3b4a8758c4cb",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "e8609f8a-74c2-4238-9d4c-7ccaccc96f56",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "3d506464-02e3-4c6e-8165-21c0460c5bf8",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "f8136f4c-a56a-423f-a76e-9b2cce3ccfbf",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "aa67f6db-76b2-4351-8538-2d0838de9df5",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "2eb51132-4346-4128-b7fe-ad62d828853b",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.15,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "8f9b5323-8128-4e47-9fe8-f9444e0b013a",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "03bf5e11-b62c-40cb-ad64-10cb85f99590",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "cf0fa81f-3ca4-4ff2-94bf-40b3d097567a",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "1be7945c-d064-483d-99a1-dc4f1c9dda5e",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "e41cf64e-57f9-4504-9941-f416b4b05ddf",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "57c02df0-3c12-4986-af2a-cfe54587f0fb",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "99b4b6b4-0881-4063-8de4-7d33ffc074b9",
+                "source_node_id": "f15b9a85-bb22-485a-ae0c-905a51725489",
+                "target_node_id": "fdaf7e0a-9945-4c91-a369-b33f8c92f024",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.15,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f8ece214-320b-4979-99dc-a5914c8aa332",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "3aa37a98-ffc5-4a57-885d-be11a3705535",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "26b6ebf2-b670-4b80-b04c-c0a2992f9a56",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "f6a9f406-3fe4-4032-824d-a59183743fca",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "013c017c-066f-4908-b867-14b1c848497e",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "139fb45f-f824-45a9-8c14-2a97aa8c7060",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.35,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "4fd7302a-6bd3-4d92-8303-f3292dad7380",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "b1036d70-b7a2-4b20-83f2-170944fe67d4",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "bc2a571f-6564-4a28-ae77-e600e7935618",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "20038e74-f474-4271-9fcc-d6ef731dbb3a",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.4,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "d69f2e97-b9b0-4caa-8f5f-1499a1ef2c49",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "e8609f8a-74c2-4238-9d4c-7ccaccc96f56",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.4,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "37be0712-2c49-4128-805d-2d8b74ae82fe",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "f8136f4c-a56a-423f-a76e-9b2cce3ccfbf",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.15,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "6b677c98-279b-40fe-a4da-c642a83e1d09",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "2eb51132-4346-4128-b7fe-ad62d828853b",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "9090f58f-4881-4463-ae0f-851edb869a57",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "03bf5e11-b62c-40cb-ad64-10cb85f99590",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "b29db02f-5f3a-441c-98df-3b23fb7169d4",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "1be7945c-d064-483d-99a1-dc4f1c9dda5e",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "bc95c7f1-58c8-4695-ba41-2788b5167ab4",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "57c02df0-3c12-4986-af2a-cfe54587f0fb",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "1b003151-ef13-48ba-a0dd-9c6d6e934a51",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "f6427739-d9ef-4cfe-860d-1af32b8b1207",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "aee9f69a-07fd-4979-a350-63324f276c2d",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "fdaf7e0a-9945-4c91-a369-b33f8c92f024",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "57000070-a872-4930-a3a3-6449a5065bc1",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "1f7e557e-0fd8-4895-a11b-f9a5d783f5ae",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "17f66d34-ec8a-4d39-9fd6-35b610341c8e",
+                "source_node_id": "4ea4649d-db0d-40f5-b026-672f7c0f214a",
+                "target_node_id": "c374d340-06d1-4d46-b403-26703f8c2e00",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.35,
+                    "requiredLevel": "L3"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "c4c7e293-52f0-4ac7-9cd0-cdaba63eb90e",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "e31341f6-61dc-464e-a779-0b606a2fdb8a",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "a4725184-fd3c-4abc-9092-cd1492d50f9d",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "139fb45f-f824-45a9-8c14-2a97aa8c7060",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "6942ad39-8b2f-4275-83b8-4e1df18fceb5",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "b1036d70-b7a2-4b20-83f2-170944fe67d4",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "ad1b74fc-5fb9-4de8-ba8c-966dce904b6e",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "31fbe100-82d8-43da-8abd-3e3431a826f8",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "470c1c27-b7e5-4554-8ff6-f5b05a4c9517",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "20038e74-f474-4271-9fcc-d6ef731dbb3a",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f975781c-06de-4ce7-9d11-f2f5dc607b1d",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "e8609f8a-74c2-4238-9d4c-7ccaccc96f56",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "de19af13-1851-4626-9f24-877dc21e838f",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "f8136f4c-a56a-423f-a76e-9b2cce3ccfbf",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "c272f128-f01b-496c-930e-8aaeb73c7e32",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "03bf5e11-b62c-40cb-ad64-10cb85f99590",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.2,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "c1134493-d8a1-45f3-9665-19473faefadf",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "1be7945c-d064-483d-99a1-dc4f1c9dda5e",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "bd50f37f-db87-405b-b924-1590e353796c",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "57c02df0-3c12-4986-af2a-cfe54587f0fb",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f28b952e-3f12-4d9f-a1b8-ed016c314e19",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "f6427739-d9ef-4cfe-860d-1af32b8b1207",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "0f7440eb-4234-4542-8c76-1a31f81be03b",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "fdaf7e0a-9945-4c91-a369-b33f8c92f024",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.1,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "1252f884-51a2-4afa-a432-7dcde2a13228",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "1f7e557e-0fd8-4895-a11b-f9a5d783f5ae",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.25,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "abbc3f34-1950-4460-b4ae-916d81c17810",
+                "source_node_id": "a15a2be1-1479-4661-b659-40ed5c8fe6ad",
+                "target_node_id": "0fc450ae-d4ff-4785-a003-f6097d305d0d",
+                "relation_type": "REQUIRES_ABILITY",
+                "info": {
+                    "weight": 0.3,
+                    "requiredLevel": "L2"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f7ff4717-e6a7-4302-b225-dc46e172e7d9",
+                "source_node_id": "f6a9f406-3fe4-4032-824d-a59183743fca",
+                "target_node_id": "337b7965-b183-4f7d-a884-c588aaa20c84",
+                "relation_type": "PREREQUISITE_FOR",
+                "info": {
+                    "note": "必须先掌握目的地文化与历史知识，才能在此基础上进行生动的口语化讲解。依据：讲解员岗位要求'熟悉景区历史文化知识'为讲解的前提条件。"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "ee1cbe88-4158-4c9f-bece-925c26d9fc94",
+                "source_node_id": "f6a9f406-3fe4-4032-824d-a59183743fca",
+                "target_node_id": "d63414dc-062f-45f3-93d0-928610709791",
+                "relation_type": "PREREQUISITE_FOR",
+                "info": {
+                    "note": "文旅融合内容植入需要以扎实的目的地文化知识为基础，否则无法设计出有深度的体验环节。依据：计调与研学导师均需'目的地知识'支撑'内容设计'。"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "0d271d5b-372b-46d1-b54b-dc59d8ebbd14",
+                "source_node_id": "e31341f6-61dc-464e-a779-0b606a2fdb8a",
+                "target_node_id": "3aa37a98-ffc5-4a57-885d-be11a3705535",
+                "relation_type": "PREREQUISITE_FOR",
+                "info": {
+                    "note": "只有先准确审读和核验了接待计划的基础要素，才能在此基础上进行合理的线路规划与动线设计。依据：计调工作流程为先审核订单再编排行程。"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "c37c62e2-679a-4ee5-b4ad-1e1036a558a4",
+                "source_node_id": "03bf5e11-b62c-40cb-ad64-10cb85f99590",
+                "target_node_id": "1be7945c-d064-483d-99a1-dc4f1c9dda5e",
+                "relation_type": "PREREQUISITE_FOR",
+                "info": {
+                    "note": "供应商寻源采购完成后，才涉及与已确定的供应商进行跨部门信息交接与协作。依据：业务链条上采购在先、协调在后。"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "17d2fb45-2bcf-40a3-9e1a-760f0426d2c3",
+                "source_node_id": "2eb51132-4346-4128-b7fe-ad62d828853b",
+                "target_node_id": "f6427739-d9ef-4cfe-860d-1af32b8b1207",
+                "relation_type": "PREREQUISITE_FOR",
+                "info": {
+                    "note": "短视频拍摄剪辑是内容载体，产品卖点提炼是内容灵魂，通常需要先掌握基础剪辑能力才能更好地呈现营销卖点。依据：新媒体运营岗同时要求两项能力但剪辑为基础操作。"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "f9388079-eeeb-4d75-b9e7-b7c360e17060",
+                "source_node_id": "2eb51132-4346-4128-b7fe-ad62d828853b",
+                "target_node_id": "c374d340-06d1-4d46-b403-26703f8c2e00",
+                "relation_type": "PREREQUISITE_FOR",
+                "info": {
+                    "note": "舆情监测往往需要通过新媒体平台进行，掌握平台操作和内容发布逻辑是识别负面舆情的技术前提。依据：新媒体运营岗将舆情监测列为进阶职责。"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "290380b1-51c6-4865-bb48-4cfd8c1adfd8",
+                "source_node_id": "d63414dc-062f-45f3-93d0-928610709791",
+                "target_node_id": "9269af77-fbe1-4599-934a-5d63709dd0ca",
+                "relation_type": "PREREQUISITE_FOR",
+                "info": {
+                    "note": "研学课程设计完成后，才涉及在现场执行时的学生纪律维持与带队管理。依据：研学导师先策划课程再带队执行。"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "bc428279-94ee-4a61-890c-c546f14d249d",
+                "source_node_id": "d63414dc-062f-45f3-93d0-928610709791",
+                "target_node_id": "d8475f9b-e3c8-46ae-b505-fa14fb6adf6c",
+                "relation_type": "PREREQUISITE_FOR",
+                "info": {
+                    "note": "了解青少年心理认知特征是设计研学课程和进行分层讲解的理论基础。依据：国家标准要求'根据不同学段身心发展特点设计课程'。"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "1bd5002c-e45a-46eb-b092-2f0060c9cfdb",
+                "source_node_id": "1f7e557e-0fd8-4895-a11b-f9a5d783f5ae",
+                "target_node_id": "0fc450ae-d4ff-4785-a003-f6097d305d0d",
+                "relation_type": "PREREQUISITE_FOR",
+                "info": {
+                    "note": "只有理解了平台算法与流量规则，才能制定出有效的动态定价与促销配置策略。依据：OTA运营专员需先'熟悉平台规则'再'调整价格和促销方案'。"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            },
+            {
+                "id": "8f56abe1-a8ba-4e78-8fbf-202aadfc0a04",
+                "source_node_id": "e8609f8a-74c2-4238-9d4c-7ccaccc96f56",
+                "target_node_id": "0fc450ae-d4ff-4785-a003-f6097d305d0d",
+                "relation_type": "PREREQUISITE_FOR",
+                "info": {
+                    "note": "动态定价必须以成本核算与毛利底线为前提，否则可能导致亏损售卖。依据：OTA运营强调'调价前复核成本底线'。"
+                },
+                "created_at": "2026-09-16 12:12:33",
+                "updated_at": "2026-09-16 12:12:33"
+            }
+        ]
+    }
+}

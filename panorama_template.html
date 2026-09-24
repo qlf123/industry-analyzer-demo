@@ -930,6 +930,8 @@ body.diag .nocov-tag{display:block}
 .mjcard[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);box-shadow:0 0 0 1px var(--brand)}
 .mjcard .mj-n{font-size:14px;font-weight:700}
 .mjcard .mj-c{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
+.mjcard .mj-d{font-size:12px;color:var(--ink-2);line-height:1.6;margin-top:6px}
+.mjcard .mj-ph{color:var(--muted)}
 .mjcard .mj-g{font-size:12px;color:var(--ink-2);line-height:1.6;margin-top:7px}
 .posgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
 @media (max-width:980px){.posgrid{grid-template-columns:1fr 1fr}}
@@ -1083,7 +1085,7 @@ body.diag .nocov-tag{display:block}
 .v2wait-t{font-size:15px;font-weight:600}
 .v2wait-s{font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.7}
 /* 历史报告只读模式（新标签页打开） */
-body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmode #v2steps,body.histmode .stalebar{display:none!important}
+body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmode #v2steps,body.histmode #a3steps,body.histmode .stalebar{display:none!important}
 .histbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 15px;margin-bottom:14px;border-radius:11px;
   background:var(--brand-soft);border:1px solid var(--brand);font-size:12.5px;color:var(--ink-2)}
 .histbar b{color:var(--ink)}
@@ -1122,6 +1124,18 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
 .pc-where-chain{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
 .pc-none,.pc-where-none{font-size:12px;color:var(--muted);padding:4px 0}
 .pc-where-none{color:var(--ink-2)}
+/* ② 在哪教 重构：结论 + 状态分组 + 课程收拢 */
+.pc-where-concl{font-size:12.5px;color:var(--ink-2);line-height:1.6;padding:4px 0 2px}
+.pc-where-concl b{color:var(--brand-ink)}
+.a3-wgroup{margin-top:11px}
+.a3-wgroup-h{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.a3-wcourse{font-size:12.5px;font-weight:600;color:var(--ink);padding:7px 0 3px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.a3-wcourse.cross,.a3-wskill.cross{opacity:.5}
+.a3-wmajor{font-size:11px;color:var(--muted);font-weight:400}
+.a3-wskill{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);padding:3px 0 3px 16px}
+.a3-wtask{font-size:11px;color:var(--muted)}
+.a3-wlv{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--brand-ink);background:var(--brand-soft);border-radius:4px;padding:1px 5px}
+.a3-wmore-btn{border:none;background:none;padding:0;margin:7px 0 3px 16px;font-size:11.5px;color:var(--brand-ink);cursor:pointer;border-bottom:1px dashed var(--brand)}
 .pc-assess{font-size:12.5px;color:var(--ink-2);line-height:1.6;padding:8px 11px;border-radius:8px;background:var(--card-2);border:1px dashed var(--rule);margin-bottom:8px}
 .pc-rule{font-size:12px;color:var(--ink-2);line-height:1.6;padding:7px 0}
 .pc-rule-h{color:var(--brand-ink);font-weight:500}
@@ -1146,6 +1160,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
   --kgt-industry:#ca8a04;
   --kgt-major:#0d9488;
   --kgt-majorcat:#115e59;
+  --kgt-category:#15803d;
   --kgt-position:#2563eb;
   --kgt-ability:#7c3aed;
   --kgt-course:#16a34a;
@@ -1319,6 +1334,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
 .k2ct.bd-industry{background:var(--kgt-industry)}
 .k2ct.bd-major{background:var(--kgt-major)}
 .k2ct.bd-majorcat{background:var(--kgt-majorcat)}
+.k2ct.bd-category{background:var(--kgt-category)}
 .k2ct.bd-position{background:var(--kgt-position)}
 .k2ct.bd-ability{background:var(--kgt-ability)}
 .k2ct.bd-course{background:var(--kgt-course)}
@@ -1656,6 +1672,17 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
       <div id="v2report"></div>
      </div>
 
+     <div class="l1pane" id="l1-assess3" hidden>
+      <div class="v2bar">
+        <span class="v2bar-t">能力测评2</span>
+        <span class="v2bar-s">按新双图谱数据源评估专业课程覆盖与岗位支撑情况</span>
+        <span style="flex:1"></span>
+        <button class="chip" data-a3="hist">查看历史报告</button>
+      </div>
+      <div id="a3steps"></div>
+      <div id="a3report"></div>
+     </div>
+
     </div>
   </div>
 </div>
@@ -1689,7 +1716,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drTitle" aria-hidden="true">
   <div class="dr-h">
-    <div class="dr-k"><span class="eyebrow" id="drKind"></span>
+    <div class="dr-k"><div class="dr-k-l"><button class="x dr-back" id="drBack" aria-label="返回">←</button><span class="eyebrow" id="drKind"></span></div>
       <button class="x" id="drClose" aria-label="关闭">✕</button></div>
     <h3 class="dr-t" id="drTitle"></h3>
     <div class="dr-sub" id="drSub"></div>
@@ -1697,6 +1724,50 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
   <div class="dr-b" id="drBody"></div>
 </aside>
 <div id="tip" role="status"></div>
+
+<style>
+/* ═══ 能力测评2（新双图谱数据源）═══ */
+/* A3 详情抽屉：可点名称虚线下划线 + 返回按钮 */
+.a3ln{cursor:pointer;text-decoration:underline dashed;text-underline-offset:3px}
+.a3ln:hover{color:var(--brand);text-decoration-style:solid}
+.rlab[data-a3abl]{cursor:pointer}
+.rlab[data-a3abl]:hover{fill:var(--brand)}
+.dr-k-l{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+.dr-back{display:none}
+.drawer.a3-nav .dr-back{display:grid}
+.a3step[data-state="locked"]{opacity:.55}
+.a3step[data-state="locked"] .step-h{cursor:default;margin-bottom:0}
+.a3basis{color:var(--brand-ink);font-weight:500}
+.a3bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.a3courses{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.a3course{border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.a3course-h{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 12px;cursor:pointer}
+.a3course-h:hover{background:var(--card-2)}
+.a3course-n{font-size:13px;font-weight:600}
+.a3course-c{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.a3tasks{border-top:1px solid var(--rule-2);background:var(--card-2)}
+.a3task-h{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 12px 3px 30px;font-size:12px;font-weight:600;color:var(--ink-2)}
+.a3skills{background:var(--card)}
+.a3sk{display:flex;align-items:flex-start;gap:9px;padding:8px 12px 8px 48px;border-top:1px solid var(--rule-2);cursor:pointer}
+.a3sk:hover{background:var(--card-2)}
+.a3sk-b{min-width:0;flex:1}
+.a3sk-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.a3sk-h b{font-size:12.5px;font-weight:500}
+.a3sk-obs{font-size:11.5px;color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.a3x{flex:0 0 auto;font:inherit;font-size:11px;color:var(--ink-2);background:none;border:1px solid var(--rule);
+  border-radius:14px;padding:2px 10px;cursor:pointer}
+.a3x:hover{border-color:var(--brand);color:var(--brand-ink)}
+.a3det-b{margin-top:7px;display:flex;flex-direction:column;gap:5px;cursor:default}
+.a3det{font-size:11.5px;line-height:1.65;color:var(--ink-2)}
+.a3det-k{font-family:var(--mono);font-size:10px;color:var(--muted);margin-right:6px;letter-spacing:.03em}
+.a3det-v{color:var(--ink-2)}
+/* 三态勾选框：与 .pc-x 一致，部分勾显示 – */
+[data-a3course] .pc-x,[data-a3skill] .pc-x{flex:0 0 auto;width:17px;height:17px;border-radius:5px;
+  border:1px solid var(--rule);display:grid;place-items:center;color:#fff;font-size:11px}
+[data-a3course][aria-checked="true"] .pc-x,[data-a3course][aria-checked="mixed"] .pc-x,
+[data-a3skill][aria-checked="true"] .pc-x{background:var(--brand);border-color:var(--brand)}
+[data-a3course][aria-checked="mixed"] .pc-x{background:var(--lv2);border-color:var(--lv2)}
+</style>
 
 <script>
 const D = /*__DATA__*/;
@@ -1965,7 +2036,7 @@ document.addEventListener('click', e=>{
 });
 
 /* ═══ 3. 两级 tab ═══ */
-const L1 = [['panorama','行业全景',''],['kgraph','全景图谱','hide'],['assess','能力测评0.1','hide'],['assess2','能力测评','']];
+const L1 = [['panorama','行业全景',''],['kgraph','全景图谱','hide'],['assess','能力测评0.1','hide'],['assess2','能力测评',''],['assess3','能力测评2','']];
 const TABS = [['graph','能力图谱',S.abilities],
   ['matrix','能力矩阵',`${S.positions} × ${S.abilities}`],
   ['trends','趋势与新兴',I.trends.length]];
@@ -6836,4 +6907,1395 @@ renderV2();
 
   window.k2open = k2push;
 })();
+
+/* ════════════════════════════════════════════════════════════════
+   10. 能力测评2（新双图谱数据源：知识体系 + 能力图谱 + 映射）
+   步骤 1 选专业 → 2 选目标岗位（反向映射推荐）→ 3 选择已设课程。无报告。
+   与「能力测评」(assess2) 并行存在，互不共享状态。
+   ════════════════════════════════════════════════════════════════ */
+const A3D = D.assess3 || {majors:[], majorSkillIds:{}, positions:[], skillSupport:{}};
+const A3_POS_ORDER = Object.fromEntries(A3D.positions.map((p,i)=>[p.id,i]));
+
+const A3 = {
+  majors: [],             // 选中的专业 code（多选）
+  positions: new Set(),   // 选中的岗位 id
+  skills: new Set(),      // 选中的技能 id（默认全选）
+  openCourse: null,       // 展开的课程 id（单开手风琴，默认收起）
+  openSkill: new Set(),   // 展开技能详情的技能 id
+  layer: 0,               // 已完成步骤 0..3
+  open: new Set([1]),     // 已完成步骤里被点开编辑的步骤
+  confirmedMajors: '',    // 最近一次「确认专业」时的专业 key
+  stale: false,           // 报告生成后设置已变更
+  radarPos: null,         // 雷达图选中的岗位 id（null = 全部）
+  readonly: false,        // 历史报告只读模式
+  viewingVer: null,       // 只读模式下正在查看的版本号
+};
+
+const A3_MAJOR_BY_CODE = Object.fromEntries(A3D.majors.map(m=>[m.code, m]));
+const A3_SKILL_BY_ID = A3D.skillIndex || {};
+const A3_COURSE_BY_ID = A3D.courseIndex || {};
+const A3_TASK_BY_ID = A3D.taskIndex || {};
+const A3_MAJOR_BY_ID = A3D.majorIndex || {};
+const A3_LEAF_BY_ID = A3D.leafIndex || {};
+const A3_COURSE_SKILLS = {}, A3_TASK_SKILLS = {};
+Object.keys(A3_TASK_BY_ID).forEach(tid => { A3_TASK_SKILLS[tid] = A3_TASK_BY_ID[tid].skillIds || []; });
+Object.keys(A3_COURSE_BY_ID).forEach(cid => {
+  A3_COURSE_SKILLS[cid] = (A3_COURSE_BY_ID[cid].taskIds || []).flatMap(tid => A3_TASK_SKILLS[tid] || []);
+});
+
+const a3Toggle = (set, i) => set.has(i) ? set.delete(i) : set.add(i);
+const a3SelMajors = () => A3.majors.map(c => A3_MAJOR_BY_CODE[c]).filter(Boolean);
+const a3SelectedSkillIds = () => A3.majors.flatMap(c => A3D.majorSkillIds[c] || []);
+const a3CountOf = ids => { let n = 0; ids.forEach(id => { if (A3.skills.has(id)) n++; }); return n; };
+const a3Tri = ids => { const n = a3CountOf(ids); return n === 0 ? 'off' : (n === ids.length ? 'on' : 'part'); };
+const a3ToggleIds = ids => { const st = a3Tri(ids); ids.forEach(id => { if (st === 'on') A3.skills.delete(id); else A3.skills.add(id); }); a3MarkStale(); renderA3Steps(); };
+const a3OpenedCourses = () => {
+  let n = 0;
+  a3SelMajors().forEach(m => m.categories.forEach(cat => cat.courses.forEach(c => {
+    if (a3CountOf(A3_COURSE_SKILLS[c.id] || []) > 0) n++;
+  })));
+  return n;
+};
+
+function a3SupportedAbilities() {
+  const map = new Map();
+  A3.majors.forEach(code => {
+    (A3D.majorSkillIds[code] || []).forEach(sid => {
+      (A3D.skillSupport[sid] || []).forEach(e => {
+        if (!map.has(e.abilityId)) map.set(e.abilityId, new Set());
+        map.get(e.abilityId).add(sid);
+      });
+    });
+  });
+  return map;
+}
+function a3PosRows() {
+  const sup = a3SupportedAbilities();
+  return A3D.positions.map(p => {
+    const k = p.abilityIds.length;
+    const supported = p.abilityIds.filter(aid => sup.has(aid));
+    const m = supported.length;
+    const n = supported.reduce((s, aid) => s + sup.get(aid).size, 0);
+    return { p, k, m, n };
+  }).sort((x, y) => (y.m - x.m) || (y.n - x.n) || (A3_POS_ORDER[x.p.id] - A3_POS_ORDER[y.p.id]));
+}
+
+const a3StepTitle = n => ['', '选专业', '选目标岗位', '选择已设课程'][n];
+const a3StepState = n => n <= A3.layer ? 'done' : (n === A3.layer + 1 ? 'active' : 'locked');
+
+function a3Step1Body() {
+  const cards = A3D.majors.map(m => {
+    const on = A3.majors.includes(m.code);
+    const desc = m.describe ? esc(m.describe) : '<span class="mj-ph">描述</span>';
+    return `<button class="card mjcard" data-a3major="${m.code}" aria-pressed="${on}">
+      <div class="mj-n">${esc(m.name)}</div>
+      <div class="mj-d">${desc}</div></button>`;
+  }).join('');
+  return `<div class="mjpick">${cards}</div>
+    <div style="margin-top:11px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="chip" data-a3majorall="1">全选</button>
+      <button class="chip" data-a3majorall="0">清空</button>
+      <span style="flex:1"></span>
+      <button class="btn" data-a3="confirm1">确认专业，继续</button></div>`;
+}
+
+function a3Step2Body() {
+  const rows = a3PosRows();
+  const grid = rows.map(r => {
+    const on = A3.positions.has(r.p.id);
+    return `<button class="pospick" data-a3pos="${r.p.id}" aria-pressed="${on}">
+      <div class="pp-n">${esc(r.p.name)}</div>
+      <div class="pp-d">${esc(r.p.describe)}</div>
+    </button>`;
+  }).join('');
+  return `<div class="posgrid">${grid}</div>
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="chip" data-a3posall="1">全选岗位</button>
+      <span style="flex:1"></span>
+      <button class="btn" data-a3="confirm2">确认岗位，继续</button></div>`;
+}
+
+function a3SkillDetail(s) {
+  const blk = (label, names) => names.length
+    ? `<div class="a3det"><span class="a3det-k">${label} ${names.length} 条</span><span class="a3det-v">${esc(names.slice(0, 5).join('、'))}${names.length > 5 ? ` 等 ${names.length} 条` : ''}</span></div>`
+    : '';
+  return `<div class="a3det-b">
+    ${blk('知识点', s.kp)}
+    ${blk('操作步骤', s.steps)}
+    ${blk('标准', s.standards)}
+    ${blk('案例', s.cases)}
+  </div>`;
+}
+function a3SkillRow(s) {
+  const on = A3.skills.has(s.id);
+  const open = A3.openSkill.has(s.id);
+  return `<div class="a3sk" data-a3skill="${s.id}" role="checkbox" aria-checked="${on}">
+    <span class="pc-x">${on ? '✓' : ''}</span>
+    <div class="a3sk-b">
+      <div class="a3sk-h"><b>${esc(s.name)}</b>${s.obs ? `<span class="a3sk-obs">${esc(s.obs)}</span>` : ''}
+        <button class="a3x" data-a3skillopen="${s.id}">${open ? '收起' : '展开'}</button></div>
+      ${open ? a3SkillDetail(s) : ''}
+    </div></div>`;
+}
+function a3TaskRow(t) {
+  const ids = A3_TASK_SKILLS[t.id] || [];
+  return `<div class="a3task">
+    <div class="a3task-h">${esc(t.name)}</div>
+    <div class="a3skills">${ids.map(id => a3SkillRow(A3_SKILL_BY_ID[id])).join('')}</div>
+  </div>`;
+}
+function a3CourseRow(c) {
+  const ids = A3_COURSE_SKILLS[c.id] || [];
+  const st = a3Tri(ids), n = a3CountOf(ids);
+  const open = A3.openCourse === c.id;
+  return `<div class="a3course">
+    <div class="a3course-h" data-a3course="${c.id}" role="checkbox" aria-checked="${st === 'on' ? 'true' : (st === 'part' ? 'mixed' : 'false')}">
+      <span class="pc-x">${st === 'part' ? '–' : '✓'}</span>
+      <span class="a3course-n">${esc(c.name)}</span>
+      <span class="pill k">${esc(c.category)}</span>
+      <span class="a3course-c">已勾 ${n} / 共 ${ids.length} 条技能</span>
+      <button class="a3x" data-a3courseopen="${c.id}">${open ? '收起' : '展开'}</button>
+    </div>
+    ${open ? `<div class="a3tasks">${c.tasks.map(t => a3TaskRow(t)).join('')}</div>` : ''}
+  </div>`;
+}
+function a3Step3Body() {
+  const catOrder = ['专业基础课程', '专业核心课程', '专业拓展课程'];
+  const courses = a3SelMajors().flatMap(m => m.categories.flatMap(cat => cat.courses))
+    .sort((a, b) => (catOrder.indexOf(a.category) - catOrder.indexOf(b.category)));
+  return `<div class="a3bar">
+      <span class="pill good">已开设 ${a3OpenedCourses()} 门课 · 已开展 ${A3.skills.size} 条技能</span>
+    </div>
+    <div class="a3courses">${courses.map(a3CourseRow).join('')}</div>
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="chip" data-a3all="1">全部勾上</button>
+      <button class="chip" data-a3all="0">全部取消</button>
+      <span style="flex:1"></span>
+      <button class="btn" data-a3="confirm3">确认，生成报告</button></div>`;
+}
+
+function a3StepSummary(n) {
+  if (n === 1) return `<div class="v2sum"><span class="pill good">✓ 已完成</span>已选专业 <b>${esc(a3SelMajors().map(m => m.name).join('、'))}</b></div>`;
+  if (n === 2) return `<div class="v2sum"><span class="pill good">✓ 已完成</span>目标岗位 <b>${A3.positions.size}</b> 个：${esc(a3PosRows().filter(r => A3.positions.has(r.p.id)).map(r => r.p.name).join('、'))}</div>`;
+  if (n === 3) return `<div class="v2sum"><span class="pill good">✓ 已完成</span>已开设 <b>${a3OpenedCourses()}</b> 门课 · 已开展 <b>${A3.skills.size}</b> 条技能</div>`;
+  return '';
+}
+function renderA3Steps() {
+  const html = [1, 2, 3].map(n => {
+    const st = a3StepState(n);
+    const form = ({ 1: a3Step1Body, 2: a3Step2Body, 3: a3Step3Body }[n])();
+    let body = '', toggle = '';
+    if (st === 'active') body = form;
+    else if (st === 'done') {
+      const open = A3.open.has(n);
+      body = a3StepSummary(n) + (open ? `<div class="v2edit">${form}</div>` : '');
+      toggle = `<button class="step-toggle" data-open="${open ? '1' : '0'}" aria-expanded="${open}">${open ? '收起 ▴' : '展开 ▾'}</button>`;
+    }
+    return `<div class="card pad stepcard a3step" data-state="${st}">
+      <div class="step-h"><span class="stepno">${n}</span>
+        <div class="step-tt"><b>${a3StepTitle(n)}</b></div>
+        <span style="flex:1"></span>${toggle}</div>
+      ${body}
+    </div>`;
+  }).join('');
+  $('#a3steps').innerHTML = html;
+  $('#a3steps').querySelectorAll('.a3step[data-state="done"] .step-h').forEach(h => { h.style.cursor = 'pointer'; });
+  renderA3Report();
+}
+
+/* ═══════════ 报告（能力测评2）═══════════
+   整段复制「能力测评」(assess2) 的报告实现，仅把取数换成 A3D（新能力图谱 + 技能→能力映射）。
+   模块、顺序、布局、文案与 assess2 一致；因数据变动省略「专业定位 / 培养目标」与「标准参照」两处。 */
+const A3_ABILITY_BY_ID = Object.fromEntries(A3D.abilities.map(a => [a.id, a]));
+const A3_LV = { L1: 1, L2: 2, L3: 3 };
+const A3_DOC = { KEEP: 0.70, LOW_COV: 0.50 };
+const A3_DOC_TIER = { keep: '保持优势', improve: '逐步完善', priority: '优先建设' };
+const A3_TIER_CLS = { priority: 'priority', improve: 'improve', keep: 'keep' };
+const A3_TIER_PILL = { priority: 'crit', improve: 'warn', keep: 'good' };
+const A3C = {
+  COVERAGE_OK: 0.70, ATTAIN_OK: 0.50, COVERAGE_LOW: 0.50, POS_NARROW: 0.40,
+  POS_RATE_GOOD: 0.80, POS_RATE_LOW: 0.50,
+};
+const a3Lv = s => A3_LV[s] || 0;
+const a3SelPositions = () => [...A3.positions].map(id => A3D.positions.find(p => p.id === id)).filter(Boolean);
+const a3PosArr = a3SelPositions;
+const a3OpenedCourseIds = () => {
+  const s = new Set();
+  a3SelMajors().forEach(m => m.categories.forEach(cat => cat.courses.forEach(c => {
+    if (a3CountOf(A3_COURSE_SKILLS[c.id] || []) > 0) s.add(c.id);
+  })));
+  return s;
+};
+const a3RulesFor = assess => ASSESS_RULES.filter(r => r.keys.some(k => (assess || '').includes(k)));
+let a3Versions = [];
+const A3HIST_KEY = 'industryA3Hist';
+function saveA3Hist(){ if(A3.readonly) return; try{ localStorage.setItem(A3HIST_KEY, JSON.stringify(a3Versions)); }catch(e){} }
+function loadA3Hist(){ try{ const s = localStorage.getItem(A3HIST_KEY); if(s){ const a = JSON.parse(s); if(Array.isArray(a)) a3Versions = a; } }catch(e){} }
+
+function a3ReqMap() {
+  const m = new Map();
+  a3SelPositions().forEach(p => (p.abilityReqs || []).forEach(r => {
+    const lv = a3Lv(r.requiredLevel);
+    if (lv > (m.get(r.id) || 0)) m.set(r.id, lv);
+  }));
+  return m;
+}
+/* 本校达成等级：已勾技能经「直接支撑 / 部分支撑」映射，取最高 service_level */
+function a3Achieved(aid) {
+  let lv = 0;
+  A3.skills.forEach(sid => (A3D.skillSupport[sid] || []).forEach(e => {
+    if (e.abilityId === aid) lv = Math.max(lv, a3Lv(e.serviceLevel));
+  }));
+  return lv;
+}
+function a3TpCount() {
+  const m = {};
+  a3SelPositions().forEach(p => (p.abilityReqs || []).forEach(r => { m[r.id] = (m[r.id] || 0) + 1; }));
+  return m;
+}
+function a3Numbers() {
+  const reqMap = a3ReqMap();
+  const totalAb = reqMap.size;
+  let coveredAb = 0, depthAb = 0, coreGap = 0;
+  reqMap.forEach((reqLv, id) => {
+    const att = a3Achieved(id);
+    if (att > 0) coveredAb++;
+    if (att >= reqLv) depthAb++;
+    const a = A3_ABILITY_BY_ID[id];
+    if (a && a.core && att < reqLv) coreGap++;
+  });
+  return {
+    posN: A3.positions.size, totalPos: A3D.positions.length,
+    posRatio: A3D.positions.length ? A3.positions.size / A3D.positions.length : 0,
+    totalAb, coveredAb, depthAb, coreGap,
+    coverage: totalAb ? coveredAb / totalAb : 0,
+    attainment: totalAb ? depthAb / totalAb : 0,
+  };
+}
+/* 某能力的目标岗位达标情况：每个岗位按它自己的要求等级比对（与「岗位达成情况」同口径） */
+function a3AbPosAttain(id) {
+  const at = a3Achieved(id);
+  const rows = a3SelPositions().map(p => {
+    const r = (p.abilityReqs || []).find(x => x.id === id);
+    return r ? { p, lv: a3Lv(r.requiredLevel), ok: at >= a3Lv(r.requiredLevel) } : null;
+  }).filter(Boolean);
+  return { rows, n: rows.length, ok: rows.filter(r => r.ok).length };
+}
+function a3DomainRows() {
+  const reqMap = a3ReqMap();
+  const doms = {};
+  reqMap.forEach((reqLv, id) => {
+    const a = A3_ABILITY_BY_ID[id] || { id, name: id, domain: '未分类', core: false };
+    const d = doms[a.domain] = doms[a.domain] || { domain: a.domain, ids: [], total: 0, covered: 0, attained: 0, l3gap: 0, coreGap: 0 };
+    const at = a3Achieved(id);
+    d.ids.push(id); d.total++;
+    if (at > 0) d.covered++;
+    if (at >= reqLv) d.attained++;
+    if (reqLv === 3 && at < 3) d.l3gap++;
+    if (a.core && at < reqLv) d.coreGap++;
+  });
+  const order = { priority: 0, improve: 1, keep: 2 };
+  return Object.values(doms).map(d => {
+    d.cov = d.covered / d.total; d.rate = d.attained / d.total;
+    d.tier = d.cov < A3_DOC.LOW_COV ? 'priority' : d.rate >= A3_DOC.KEEP ? 'keep' : 'improve';
+    d.why = d.cov < A3_DOC.LOW_COV ? `${d.total - d.covered} 条能力尚无技能支撑`
+      : d.tier === 'keep' ? '技能支撑完整，多数能力已达到岗位要求'
+      : d.l3gap ? `已有技能支撑，其中 ${d.l3gap} 条需加深教学达到综合应用要求` : '已有技能支撑，教学深度有待加强';
+    return d;
+  }).sort((x, y) => (order[x.tier] - order[y.tier]) || (x.rate - y.rate));
+}
+function a3DocSuggestions(rows, interactive) {
+  const tp = a3TpCount();
+  const opened = a3OpenedCourseIds();
+  return rows.filter(d => d.tier !== 'keep').map(d => {
+    const gaps = d.ids.map(id => ({ a: A3_ABILITY_BY_ID[id], req: a3ReqMap().get(id), att: a3Achieved(id) }))
+      .filter(g => g.att < g.req)
+      .sort((x, y) => (y.a.core - x.a.core) || (tp[y.a.id] - tp[x.a.id]));
+    const acts = [];
+    const byAct = new Map();
+    const push = (k, txt) => { if (!byAct.has(k)) byAct.set(k, []); byAct.get(k).push(txt); };
+    const ablBtn = g => interactive
+      ? `<button class="a3ln" data-a3abl="${g.a.id}">${esc(g.a.name)}</button>`
+      : esc(g.a.name);
+    gaps.forEach(g => {
+      const need = g.att === 0 ? 1 : g.req;
+      const now = g.att ? `现为 L${g.att}` : '尚未覆盖';
+      const mapped = A3D.abilitySkills[g.a.id] || [];
+      // 已开设（已勾选）课程里能支撑到 need 级、但尚未勾选的技能 → 任务级补齐
+      const openedSkills = mapped.filter(s => a3Lv(s.serviceLevel) >= need && opened.has(s.courseId) && !A3.skills.has(s.skillId));
+      if (openedSkills.length) {
+        const items = openedSkills.slice().sort((x, y) => a3Lv(y.serviceLevel) - a3Lv(x.serviceLevel))
+          .map(s => `在《${esc(s.courseName)}》的《${esc(s.taskName)}》下补齐技能：${esc(s.skillName)}（${now}，补齐后可达 L${a3Lv(s.serviceLevel)}）`);
+        push('在已开设课程中补齐尚未开展的技能', items.join('、'));
+        return;
+      }
+      // 未勾选的课程里能支撑到 need 级的技能 → 增开课程
+      const unopenedSkills = mapped.filter(s => a3Lv(s.serviceLevel) >= need && !opened.has(s.courseId));
+      if (unopenedSkills.length) {
+        const top = unopenedSkills.slice().sort((x, y) => a3Lv(y.serviceLevel) - a3Lv(x.serviceLevel))[0];
+        push('增开课程', `开设《${esc(top.courseName)}》：${ablBtn(g)}（${now}，开设后可达 L${a3Lv(top.serviceLevel)}）`);
+        return;
+      }
+      push(g.att === 0 ? '暂无可对应的现成课程，需学校自主开发教学内容' : '现有技能均支撑不到要求程度，需学校自主补充教学内容',
+        `${ablBtn(g)}（${now}，目标 L${g.req}）`);
+    });
+    byAct.forEach((v, k) => acts.push(`${esc(k)}：${v.join('、')}`));
+    // L3 综合应用要求：教学形式提示按目标等级考核方式（assessMethod）匹配 ASSESS_RULES
+    const deep = gaps.filter(g => g.req === 3 && g.att < 3);
+    if (deep.length) {
+      const hints = [...new Set(deep.flatMap(g => a3RulesFor(((A3_ABILITY_BY_ID[g.a.id].levels || {})['L3'] || {}).assess).map(r => r.hint)))];
+      acts.push(`达到 L3 综合应用要求的${deep.map(g => ablBtn(g)).join('、')}`
+        + (hints.length ? `，从岗位考核要求看，教学安排中${esc(hints.join('；'))}` : ''));
+    }
+    return {
+      d, acts,
+      now: `岗位要求 ${d.total} 条，已有技能支撑 ${d.covered} 条，达到要求 ${d.attained} 条`
+        + (d.coreGap ? `；其中核心能力未达要求 ${d.coreGap} 条` : ''),
+      target: `${d.total} 条全部达到岗位要求`,
+    };
+  });
+}
+function a3Verdict() {
+  const n = a3Numbers(), rows = a3DomainRows();
+  const majors = a3SelMajors().map(m => m.name).join('、');
+  const keep = rows.filter(d => d.tier === 'keep').map(d => d.domain);
+  const best = rows.slice().sort((x, y) => y.rate - x.rate)[0];
+  const s = [];
+  s.push(`本次评估${esc(majors)}专业面向的 <b>${n.posN}</b> 个岗位，共涉及 <b>${n.totalAb}</b> 条岗位能力要求。`);
+  s.push(`现有技能覆盖其中 <b>${n.coveredAb}</b> 条，达到岗位要求程度的 <b>${n.depthAb}</b> 条。`);
+  if (n.coverage >= A3C.COVERAGE_OK && n.attainment < A3C.ATTAIN_OK)
+    s.push('技能覆盖面基本完整，主要差距在于教学深度，而非技能缺失。');
+  else if (n.coverage < A3C.COVERAGE_LOW)
+    s.push('仍有较多能力要求没有技能支撑，课程设置需要补充。');
+  if (n.posRatio < A3C.POS_NARROW)
+    s.push(`专业面向 ${n.posN}/${n.totalPos} 个行业代表岗位，面向较窄，是否拓宽属于专业定位的选择。`);
+  s.push(keep.length ? `表现较好的领域：${esc(keep.join('、'))}。`
+    : best && best.attained ? `相对较好的领域是「${esc(best.domain)}」（${best.attained}/${best.total} 条达到要求），目前尚无领域达到「保持优势」标准。` : '');
+  return s.join('');
+}
+function a3KpiCards(n) {
+  const r = (a, b) => b ? Math.round(a / b * 100) : 0;
+  return [
+    { k: '目标岗位', a: n.posN, b: n.totalPos, p: r(n.posN, n.totalPos), s: `行业代表岗位 ${n.totalPos} 个，本校专业面向 ${n.posN} 个` },
+    { k: '能力覆盖度', a: n.coveredAb, b: n.totalAb, p: r(n.coveredAb, n.totalAb), s: `${n.totalAb} 条岗位能力要求中，有技能支撑 ${n.coveredAb} 条` },
+    { k: '能力达标度', a: n.depthAb, b: n.totalAb, p: r(n.depthAb, n.totalAb), s: `${n.totalAb} 条岗位能力要求中，教到岗位要求程度的 ${n.depthAb} 条` },
+  ];
+}
+function a3Overview() {
+  if (!A3.majors.length) return '';
+  const n = a3Numbers();
+  const meta = A3D.meta || {};
+  const industryTxt = `${esc(meta.industryName || '旅游业')} · ${meta.subIndustries} 个子行业 / ${meta.positions} 个岗位 / ${meta.abilities} 条能力项`;
+  const posHTML = a3PosArr().length ? a3PosArr().map(p => `<span class="pill core">${esc(p.name)}</span>`).join(' ') : '<span style="color:var(--muted);font-size:12px">待选择</span>';
+  const cards = `<div class="dxgrid">${a3KpiCards(n).map(x => `<div class="dxnum"><div class="dx-k">${x.k}</div>
+        <div class="dx-v">${x.a}<small> / ${x.b}</small><small class="dx-p">（${x.p}%）</small></div>
+        <div class="dx-s">${esc(x.s)}</div>
+        <div class="bar"><i style="width:${x.p}%"></i></div></div>`).join('')}
+    </div>`;
+  return `<div class="card pad" id="dxPage">
+    <div class="rep-h" style="margin:0 0 4px"><span class="eyebrow">概况总览</span>
+      ${a3ReportNo() != null ? `<span class="pill k mono">报告 #${a3ReportNo()}</span>` : ''}
+      </div>
+    <div class="ovline"><span class="ovk">行业</span><span class="ovv">${industryTxt}</span></div>
+    <div class="ovline"><span class="ovk">目标岗位</span><div class="ovv">${posHTML}</div></div>
+    ${cards}
+    <div class="ov-sum">${a3Verdict()}</div>
+  </div>`;
+}
+function a3PosAttainment() {
+  const rows = a3PosArr().map(p => {
+    let covered = 0, attained = 0;
+    (p.abilityReqs || []).forEach(r => {
+      const a = a3Achieved(r.id);
+      if (a > 0) covered++;
+      if (a >= a3Lv(r.requiredLevel)) attained++;
+    });
+    const total = (p.abilityReqs || []).length;
+    return { p, total, covered, attained, rate: total ? attained / total : 0 };
+  }).sort((x, y) => (y.rate - x.rate) || (y.total - x.total));
+  if (!rows.length) return '';
+  const maxTotal = Math.max(...rows.map(r => r.total), 1);
+  const items = rows.map(r => {
+    const pct = Math.round(r.rate * 100);
+    const tone = r.rate >= A3C.POS_RATE_GOOD ? 'good' : (r.rate <= A3C.POS_RATE_LOW ? 'crit' : '');
+    const seg = (n, cls) => n ? `<i class="${cls}" style="flex:${n}"></i>` : '';
+    return `<div class="pa-row">
+      <div class="pa-name"><button class="rx-n a3ln" data-a3posd="${r.p.id}">${esc(r.p.name)}</button>
+        <span class="pa-sub">${esc(r.p.sub)}</span></div>
+      <div class="pa-rate"><b class="${tone}">${pct}%</b><span>${r.attained} / ${r.total}</span></div>
+      <div class="pa-bar"><span class="pa-track" style="width:${(r.total / maxTotal * 100).toFixed(1)}%"
+          title="已达标 ${r.attained} · 覆盖未达标 ${r.covered - r.attained} · 未覆盖 ${r.total - r.covered}">
+        ${seg(r.attained, 'ok')}${seg(r.covered - r.attained, 'part')}${seg(r.total - r.covered, 'none')}</span></div>
+    </div>`;
+  }).join('');
+  return `<div class="card pad" id="a3posatt">
+    <div class="rep-h" style="margin:0 0 10px"><span class="eyebrow">岗位达成情况 · 按达标率从高到低</span>
+      <span style="flex:1"></span>
+      <span class="pa-legend"><span><i class="ok"></i>已达标</span><span><i class="part"></i>覆盖未达标</span><span><i class="none"></i>未覆盖</span></span></div>
+    <div class="patable">
+      <div class="pa-row pa-head"><div>岗位</div><div class="pa-rate">达标率</div><div>能力达成结构</div></div>
+      ${items}
+    </div>
+    <div class="dxbound">达标 = 本校所选技能对该能力的支撑等级 ≥ 该岗位对该能力的要求等级。</div>
+  </div>`;
+}
+function a3RadarSVG(rows, aria) {
+  const N = rows.length;
+  if (N < 3) return `<div class="pc-none">能力项少于 3 条，无法绘制雷达图。</div>`;
+  const R = Math.max(118, Math.min(230, N * 8.2));
+  const LR = R + 30;
+  const ang = i => -Math.PI / 2 + i * 2 * Math.PI / N;
+  const pt = (i, v, r) => [((r || v / 3 * R) * Math.cos(ang(i))).toFixed(1), ((r || v / 3 * R) * Math.sin(ang(i))).toFixed(1)];
+  const poly = ps => ps.map(x => x.join(',')).join(' ');
+  const wrap = name => { const k = 7; return name.length <= k ? [name] : [name.slice(0, Math.ceil(name.length / 2)), name.slice(Math.ceil(name.length / 2))]; };
+  let g = '';
+  for (let v = 1; v <= 3; v++) {
+    g += `<polygon class="rgrid" points="${poly(rows.map((_, i) => pt(i, v)))}"></polygon>`;
+    g += `<text class="rtick" x="4" y="${(-v / 3 * R).toFixed(1)}" dy="3">L${v}</text>`;
+  }
+  rows.forEach((_, i) => { const q = pt(i, 3); g += `<line class="raxis" x1="0" y1="0" x2="${q[0]}" y2="${q[1]}"></line>`; });
+  g += `<polygon class="rreq" points="${poly(rows.map((r, i) => pt(i, r.req)))}"></polygon>`;
+  g += `<polygon class="ratt" points="${poly(rows.map((r, i) => pt(i, r.att)))}"></polygon>`;
+  const lh = 12, cw = 11, GAP = 5;
+  const labs = rows.map((r, i) => {
+    const q = pt(i, r.att), gap = r.req - r.att >= 0.4;
+    g += gap ? `<circle class="rgap" cx="${q[0]}" cy="${q[1]}" r="3.4"></circle>`
+             : `<circle class="rok" cx="${q[0]}" cy="${q[1]}" r="2.4"></circle>`;
+    const c = Math.cos(ang(i)), sn = Math.sin(ang(i));
+    const x = LR * c, y0 = LR * sn;
+    const anchor = Math.abs(c) < 0.12 ? 'middle' : (c > 0 ? 'start' : 'end');
+    const lines = wrap(r.a.name + (r.a.core ? ' ★' : ''));
+    const h = (lines.length + 1) * lh;
+    const w = Math.max(52, Math.max(...lines.map(t => t.length)) * cw);
+    const top = sn < -0.2 ? y0 - h + 2 : sn > 0.2 ? y0 - 2 : y0 - h / 2;
+    const x1 = anchor === 'start' ? x : anchor === 'end' ? x - w : x - w / 2;
+    return { r, gap, c, sn, x, anchor, lines, h, w, top, x1, x2: x1 + w };
+  });
+  const hit = (p, q) => Math.min(p.x2, q.x2) - Math.max(p.x1, q.x1) > 0;
+  [[l => l.sn <= 0, -1], [l => l.sn > 0, 1]].forEach(([inHalf, dir]) => {
+    const grp = labs.filter(inHalf).sort((p, q) => dir < 0 ? q.top - p.top : p.top - q.top);
+    const placed = [];
+    grp.forEach(l => {
+      placed.forEach(p => {
+        if (!hit(l, p)) return;
+        if (dir < 0 && l.top + l.h > p.top - GAP) l.top = p.top - GAP - l.h;
+        if (dir > 0 && l.top < p.top + p.h + GAP) l.top = p.top + p.h + GAP;
+      });
+      placed.push(l);
+    });
+  });
+  labs.forEach(l => {
+    const x = l.x.toFixed(1), r = l.r;
+    g += `<text class="rlab${l.gap ? ' gap' : ''}" text-anchor="${l.anchor}" data-a3abl="${r.a.id}"><title>${esc(r.a.name)}</title>`
+      + l.lines.map((t, k) => `<tspan x="${x}" y="${(l.top + (k + 1) * lh - 2).toFixed(1)}">${esc(t)}</tspan>`).join('') + `</text>`;
+    g += `<text class="rlab2" x="${x}" y="${(l.top + (l.lines.length + 1) * lh - 2).toFixed(1)}" text-anchor="${l.anchor}">${r.att === 0 ? '未开' : 'L' + r.att} / L${r.req}</text>`;
+  });
+  const pad = 12;
+  const minX = Math.min(-R, ...labs.map(l => l.x1)) - pad, maxX = Math.max(R, ...labs.map(l => l.x2)) + pad;
+  const minY = Math.min(-R, ...labs.map(l => l.top)) - pad, maxY = Math.max(R, ...labs.map(l => l.top + l.h)) + pad;
+  return `<svg viewBox="${minX.toFixed(0)} ${minY.toFixed(0)} ${(maxX - minX).toFixed(0)} ${(maxY - minY).toFixed(0)}" class="radar" role="img" aria-label="${esc(aria)}">${g}</svg>`;
+}
+function a3PosRadar(p) {
+  const rows = (p.abilityReqs || []).map(r => ({ a: A3_ABILITY_BY_ID[r.id], req: a3Lv(r.requiredLevel), att: a3Achieved(r.id) }))
+    .sort((x, y) => (y.a.core - x.a.core) || (y.req - x.req));
+  const covered = rows.filter(r => r.att > 0).length;
+  const attained = rows.filter(r => r.att >= r.req).length;
+  const none = rows.filter(r => r.att === 0);
+  const shallow = rows.filter(r => r.att > 0 && r.att < r.req);
+  const nameList = arr => { const n = arr.map(r => r.a.name); return n.length <= 4 ? n.join('、') : n.slice(0, 4).join('、') + ' 等'; };
+  const supp = `<div class="dxradar-supp">
+      <div>该岗位要求 <b>${rows.length}</b> 条能力，本校覆盖 <b>${covered}</b> 条、达标 <b>${attained}</b> 条。</div>
+      ${none.length ? `<div>还有 <b>${none.length}</b> 条完全没开：${nameList(none)}。</div>`
+                    : '<div>没有完全没开的能力。</div>'}
+      ${shallow.length ? `<div>另有 <b>${shallow.length}</b> 条开了但没到要求高度：${nameList(shallow)}。</div>` : ''}
+    </div>`;
+  return `<div class="dxradar dxradar-all">
+    <div class="dxradar-h"><button class="dr-n a3ln" data-a3posd="${p.id}">${esc(p.name)}</button>
+      <span class="pill ${attained === rows.length ? 'good' : covered === rows.length ? 'warn' : 'crit'}">${attained}/${rows.length} 达标</span>
+      <span class="mono" style="color:var(--muted);font-size:10px">覆盖 ${covered}/${rows.length}</span></div>
+    ${a3RadarSVG(rows, p.name + ' 岗位能力雷达图')}
+    ${supp}
+  </div>`;
+}
+function a3AllRadar() {
+  const reqMap = a3ReqMap(), tp = a3TpCount();
+  const rows = [...reqMap.entries()].map(([id, reqLv]) => ({ a: A3_ABILITY_BY_ID[id], req: reqLv, att: a3Achieved(id) }))
+    .sort((x, y) => (y.a.core - x.a.core) || (y.req - x.req) || ((tp[y.a.id] || 0) - (tp[x.a.id] || 0)));
+  const covered = rows.filter(r => r.att > 0).length;
+  const attained = rows.filter(r => r.att >= r.req).length;
+  return `<div class="dxradar dxradar-all">
+    <div class="dxradar-h"><span class="dr-n">全部目标岗位</span>
+      <span class="pill ${attained === rows.length ? 'good' : covered === rows.length ? 'warn' : 'crit'}">${attained}/${rows.length} 达标</span>
+      <span class="mono" style="color:var(--muted);font-size:10px">覆盖 ${covered}/${rows.length}</span></div>
+    ${a3RadarSVG(rows, '全部目标岗位能力雷达图')}
+  </div>`;
+}
+function a3PosRadars() {
+  const ps = a3PosArr().slice().sort((a, b) => (b.abilityReqs || []).length - (a.abilityReqs || []).length);
+  if (!ps.length) return '';
+  const cur = A3.radarPos && ps.some(p => p.id === A3.radarPos) ? A3.radarPos : null;
+  const curP = cur ? ps.find(p => p.id === cur) : null;
+  const sw = `<div class="rx-view" style="flex-wrap:wrap"><button class="vs" data-a3radar="" aria-pressed="${!cur}">全部</button>
+    ${ps.map(p => `<button class="vs" data-a3radar="${p.id}" aria-pressed="${cur === p.id}">${esc(p.name)}</button>`).join('')}</div>`;
+  const body = curP ? a3PosRadar(curP) : a3AllRadar();
+  const totalAb = a3ReqMap().size;
+  const note = curP
+    ? `每根轴是该岗位要求的一条能力项，灰虚线是<b>岗位要求等级</b>，紫块是<b>本校达成</b>（本校所选技能的支撑等级），红点是缺口轴。共 ${(curP.abilityReqs || []).length} 条，按核心优先、要求等级从高到低排列。★ 为核心能力。`
+    : `每根轴是一条能力项，灰虚线是<b>目标岗位要求的最高等级</b>，紫块是<b>本校达成</b>（本校所选技能的支撑等级），两圈越贴合越到位；红点是缺口轴。合并全部目标岗位共 ${totalAb} 条能力，按核心优先、要求等级从高到低排列。★ 为核心能力。`;
+  return `<div class="dxradars-wrap">
+    <div class="rep-h" style="margin:14px 0 8px"><span class="eyebrow">能力雷达图</span>
+      <span style="flex:1"></span>${sw}</div>
+    <div class="dxradars">${body}</div>
+    <div class="dxradar-note">${note}</div>
+  </div>`;
+}
+function a3TierStrip() {
+  const rows = a3DomainRows();
+  const tiers = { priority: [], improve: [], keep: [] };
+  rows.forEach(d => tiers[d.tier].push(d.domain));
+  const pill = { priority: 'crit', improve: 'warn', keep: 'good' };
+  const cards = ['priority', 'improve', 'keep'].map(t => `<div class="tier-c ${t}">
+      <div class="tier-k">${A3_DOC_TIER[t]}</div>
+      <div class="tier-n">${tiers[t].length}<small>个能力领域</small></div>
+      <div class="tier-l">${tiers[t].length ? esc(tiers[t].join('、')) : '暂无'}</div></div>`).join('');
+  const seg = (n, cls) => n ? `<i class="${cls}" style="flex:${n}"></i>` : '';
+  const lines = rows.map((d, i) => `<div class="dt-row">
+      <div class="dt-name"><button class="dt-jump" data-a3abjump="${i}" title="查看该领域包含的能力项">${esc(d.domain)}</button><span>${esc(d.why)}</span></div>
+      <div class="dt-num">${d.total}</div><div class="dt-num">${d.covered}</div>
+      <div class="dt-num"><b>${d.attained}</b></div>
+      <div class="dt-bar"><span class="pa-track" style="width:100%">${seg(d.attained, 'ok')}${seg(d.covered - d.attained, 'part')}${seg(d.total - d.covered, 'none')}</span></div>
+      <div class="dt-tier"><span class="pill ${pill[d.tier]}">${A3_DOC_TIER[d.tier]}</span></div>
+    </div>`).join('');
+  return `<div class="card pad" style="margin-bottom:12px">
+    <div class="rep-h" style="margin:0 0 10px"><span class="eyebrow">能力领域分档</span><span style="flex:1"></span>
+      <span class="pa-legend"><span><i class="ok"></i>已达标</span><span><i class="part"></i>覆盖未达标</span><span><i class="none"></i>未覆盖</span></span></div>
+    <div class="tiers">${cards}</div>
+    <div class="dtable">
+      <div class="dt-row dt-head"><div>能力领域</div><div class="dt-num">要求</div><div class="dt-num">覆盖</div><div class="dt-num">达标</div><div>对接情况</div><div class="dt-tier">档位</div></div>
+      ${lines}
+    </div>
+    <div class="dxbound">分档方法：尚无技能支撑的能力超过一半 → 优先建设；达到要求的能力占 ${Math.round(A3_DOC.KEEP * 100)}% 及以上 → 保持优势；其余 → 逐步完善。
+      点领域名可查看该领域包含的能力项。</div></div>`;
+}
+function a3SuggestCards() {
+  const rows = a3DomainRows();
+  const sugs = a3DocSuggestions(rows, true);
+  const keep = rows.filter(d => d.tier === 'keep').map(d => d.domain);
+  const pill = { priority: 'crit', improve: 'warn' };
+  const cards = sugs.map(x => `<div class="sg-card">
+      <div class="sg-h"><span class="pill ${pill[x.d.tier]}">${A3_DOC_TIER[x.d.tier]}</span><b>${esc(x.d.domain)}</b>
+        <span class="sg-why">${esc(x.d.why)}</span></div>
+      <dl class="sg-dl"><dt>现状</dt><dd>${esc(x.now)}</dd>
+        <dt>目标</dt><dd>${esc(x.target)}</dd>
+        <dt>建议</dt><dd><ul>${x.acts.map(a => `<li>${a}</li>`).join('') || '<li>—</li>'}</ul></dd></dl></div>`).join('');
+  return `<div class="card pad" style="margin-bottom:12px">
+    <div class="eyebrow" style="margin-bottom:10px">建设建议 · 按能力领域</div>
+    ${cards || '<div class="dxbound" style="margin-top:0">各领域均达到「保持优势」，建议以巩固为主，调整课程时注意保留支撑这些领域的教学内容。</div>'}
+    ${keep.length ? `<div class="dxbound">保持优势的领域（${esc(keep.join('、'))}）正在支撑岗位要求，调整课程时建议保留相关教学内容。</div>` : ''}
+  </div>`;
+}
+function a3FindingsSection() {
+  return `<div class="eyebrow" style="margin:26px 0 10px">诊断结论</div>` + a3TierStrip() + a3SuggestCards();
+}
+function a3AbilityList() {
+  const reqMap = a3ReqMap(), tp = a3TpCount();
+  const doms = a3DomainRows();
+  const abRow = r => {
+    const tpa = a3AbPosAttain(r.a.id);
+    const cells = tpa.rows.slice().sort((x, y) => y.ok - x.ok).map(t => `<i class="${t.ok ? 'ok' : ''}"></i>`).join('');
+    const tip = tpa.rows.map(t => `${t.p.name} 要求 L${t.lv} · ${t.ok ? '已达标' : '未达标'}`).join('\n');
+    return `<div class="abli"><button class="rx-n a3ln" data-a3abl="${r.a.id}">${esc(r.a.name)}</button>
+      ${r.a.core ? '<span class="star" title="核心能力">★</span>' : ''}
+      <span class="pill k">${esc(r.a.type)}</span>
+      <span class="pill ${r.att === 0 ? 'crit' : r.att >= r.req ? 'good' : 'warn'}">${r.att === 0 ? '未覆盖' : r.att >= r.req ? `已达标 L${r.req}` : `L${r.att} → L${r.req}`}</span>
+      <span class="tpa" title="${esc(tip)}"><span class="tpa-k">目标岗位达标</span><b>${tpa.ok}</b> / ${tpa.n}
+        <span class="tpa-seg">${cells}</span></span></div>`;
+  };
+  const html = doms.map((d, i) => {
+    const rows = d.ids.map(id => ({ a: A3_ABILITY_BY_ID[id], req: reqMap.get(id), att: a3Achieved(id) }))
+      .sort((x, y) => (y.a.core - x.a.core) || (tp[y.a.id] - tp[x.a.id]));
+    return `<div class="abgrp" id="a3abd-${i}">
+      <div class="abgrp-h"><b>${esc(d.domain)}</b><span class="abgrp-n">${d.total} 条</span></div>
+      <div class="ablist">${rows.map(abRow).join('')}</div></div>`;
+  }).join('');
+  return `<div class="card pad" id="a3ablist"><div class="eyebrow" style="margin-bottom:10px">能力要求清单 · 按能力领域分组</div>
+    ${html}
+    <div class="dxbound">按能力领域分组，领域顺序同下方「能力领域分档」；领域内按核心能力优先、目标岗位中被要求的岗位数从多到少排列。
+      「目标岗位达标 x / y」：本次目标岗位中有 y 个要求这条能力，其中 x 个岗位的要求等级本校已达到，每格代表一个岗位。★ 为核心能力，点击能力名可查看详情。</div></div>`;
+}
+function a3ReportName(codes) {
+  const names = (codes || A3.majors).map(c => A3_MAJOR_BY_CODE[c] ? A3_MAJOR_BY_CODE[c].name : c);
+  const who = names.length >= 3 ? `${names[0]}等 ${names.length} 个专业` : `${names.join('、')}专业`;
+  return `${who} · ${A3D.meta.industryName || '旅游业'}岗位能力分析报告`;
+}
+function renderA3Report() {
+  const z = $('#a3report');
+  if (!A3.majors.length) { z.innerHTML = ''; return; }
+  if (A3.layer < 3) {
+    z.innerHTML = `<div class="card pad v2wait"><div class="eyebrow" style="margin-bottom:6px">测评报告</div>
+      <div class="v2wait-t">完成全部 3 步后生成报告</div>
+      <div class="v2wait-s">已完成 <b>${A3.layer}</b> / 3 步，下一步：${a3StepTitle(A3.layer + 1)}。报告需要综合专业、目标岗位和已设课程，信息不全时不出结论。</div></div>`;
+    return;
+  }
+  let html = '';
+  if (A3.stale) html += `<div class="stalebar" style="margin-bottom:14px"><span class="ico warning">!</span>
+    <span>设置已变更，报告已按当前设置重新计算。确认修改的步骤后将保存为新的报告记录。</span></div>`;
+  html += `<h2 class="rpt-title">${esc(a3ReportName())}</h2>`;
+  html += a3Overview();
+  html += a3PosAttainment();
+  html += a3PosRadars();
+  html += a3AbilityList();
+  html += a3FindingsSection();
+  html += `<div class="v2foot"><button class="btn" data-a3export>导出报告</button></div>`;
+  z.innerHTML = html;
+}
+/* ── A3 详情抽屉：返回栈导航（不干扰 V2 的 openDrawer/closeDrawer）── */
+let a3DrawerStack = [];
+function a3DrawerPush(kind, title, subt, render) {
+  a3DrawerStack.push({ kind, title, subt, render });
+  a3DrawerShow();
+}
+function a3DrawerShow() {
+  const top = a3DrawerStack[a3DrawerStack.length - 1];
+  if (!top) return;
+  openDrawer(top.kind, top.title, top.subt, top.render());
+  $('#drawer').classList.toggle('a3-nav', a3DrawerStack.length > 1);
+}
+function a3DrawerBack() {
+  if (a3DrawerStack.length > 1) { a3DrawerStack.pop(); a3DrawerShow(); }
+}
+function a3DrawerReset() { a3DrawerStack = []; $('#drawer').classList.remove('a3-nav'); }
+$('#drBack').addEventListener('click', a3DrawerBack);
+$('#drClose').addEventListener('click', a3DrawerReset);
+$('#scrim').addEventListener('click', a3DrawerReset);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') a3DrawerReset(); });
+
+/* ═══ 节点详情（复制行业全景 openDrawer 下钻，只换数据源）═══
+   分段 / 归属链写法 / 类型徽章 / 截断规则沿用行业全景的 k2 系列样式。
+   归属链 = 专业 › 课程 › 任务（跳过课程分类与操作流程层），链上每段可点，节点自己不上链。
+   知识点/标准/案例作为叶子节点，详情 = 内容说明 + 归属技能（可点）。 */
+const A3_CAP = 5;
+const A3_NODE_LABEL = { major: '专业', course: '课程', task: '任务', skill: '技能', kp: '知识点', std: '标准', case: '案例' };
+const a3Ct = t => `<span class="k2ct bd-${t}">${A3_NODE_LABEL[t] || t}</span>`;
+const a3Sec = (title, inner) => `<div class="k2s"><div class="k2st">${title}</div>${inner}</div>`;
+const A3_NAV_ATTR = { major: 'data-a3majord', course: 'data-a3coursed', task: 'data-a3taskd', skill: 'data-a3skilld', leaf: 'data-a3leafd' };
+const a3Nl = (type, id, name) => `<span class="k2nl" role="button" tabindex="0" ${A3_NAV_ATTR[type]}="${esc(id)}">${esc(name)}</span>`;
+const a3Abl = (aid, name) => `<span class="k2nl" role="button" tabindex="0" data-a3abl="${esc(aid)}">${esc(name)}</span>`;
+function a3ChainHTML(chain) {
+  if (!chain || !chain.length) return '<span class="k2muted">—</span>';
+  return '<span class="k2chain">' + chain.map((c, i) =>
+    (i ? '<span class="k2sep">›</span>' : '') + a3Ct(c.type) + a3Nl(c.type, c.id, c.name)).join('') + '</span>';
+}
+function a3Cap(arr, fn) {
+  if (!arr.length) return '';
+  const vis = arr.slice(0, A3_CAP);
+  return vis.map(fn).join('') + (arr.length > A3_CAP ? `<div class="k2note">等 ${arr.length - A3_CAP} 条</div>` : '');
+}
+/* 归属链（上溯祖先，不含自己） */
+function a3CourseChain(cid) { const c = A3_COURSE_BY_ID[cid]; return c && c.majorId ? [{ type: 'major', id: c.majorId, name: c.majorName }] : []; }
+function a3TaskChain(tid) {
+  const t = A3_TASK_BY_ID[tid]; if (!t) return [];
+  const c = [];
+  if (t.majorId) c.push({ type: 'major', id: t.majorId, name: t.majorName });
+  if (t.courseId) c.push({ type: 'course', id: t.courseId, name: t.courseName });
+  return c;
+}
+function a3SkillChain(sid) {
+  const s = A3_SKILL_BY_ID[sid]; if (!s) return [];
+  const c = [];
+  if (s.majorId) c.push({ type: 'major', id: s.majorId, name: s.majorName });
+  if (s.courseId) c.push({ type: 'course', id: s.courseId, name: s.courseName });
+  if (s.taskId) c.push({ type: 'task', id: s.taskId, name: s.taskName });
+  return c;
+}
+/* ②在哪教「等 n 条」展开状态（返回上一层时保留） */
+const a3MoreOpen = new Set();
+
+/* 某能力在全行业的最高要求等级（对齐旧版「最高要求」口径） */
+function a3MaxReq(aid) {
+  let m = 0;
+  A3D.positions.forEach(p => (p.abilityReqs || []).forEach(r => {
+    if (r.id === aid) m = Math.max(m, a3Lv(r.requiredLevel));
+  }));
+  return m;
+}
+/* ④ 先补什么：前置依赖（PREREQUISITE_FOR，源=前置，目标=本能力） */
+function a3PreHTML(aid) {
+  const pres = (A3D.prerequisites || []).filter(p => p.to === aid);
+  if (!pres.length) return '';
+  const reqMap = a3ReqMap();
+  return pres.map(p => {
+    const pre = A3_ABILITY_BY_ID[p.from];
+    const preName = pre ? pre.name : '（未知能力）';
+    const preReq = reqMap.get(p.from) || 0;
+    const preAtt = a3Achieved(p.from);
+    let line;
+    if (!preReq) line = `<span>前置〈${esc(preName)}〉不在当前目标岗位要求内，无需处理。</span>`;
+    else if (preAtt >= preReq) line = `<span>前置条件已满足：</span>
+      <button class="pc-jump" data-a3abl="${p.from}">${esc(preName)}</button>
+      <span class="pill good">已达标 L${preReq}</span>`;
+    else line = `<span class="ico critical">!</span><span>需先补齐：</span>
+      <button class="pc-jump" data-a3abl="${p.from}">${esc(preName)}</button>
+      <span class="pill warn">前置也在缺口 · L${preAtt} → L${preReq}</span>`;
+    return `<div class="pc-pre">${line}${p.note ? `<span class="mono" style="color:var(--muted);font-size:10.5px">${esc(p.note)}</span>` : ''}</div>`;
+  }).join('');
+}
+/* ② 在哪教：支撑这条能力的技能，按状态分组、按课程收拢（结论 + 已开展 / 尚未开展 / 需开设） */
+function a3WhereHTML(aid) {
+  const mapped = A3D.abilitySkills[aid] || [];
+  if (!mapped.length) return `<div class="pc-where-none">目前没有教学内容支撑这条能力。</div>`;
+  const att = a3Achieved(aid);
+  const req = a3ReqMap().get(aid) || 0;
+  const ok = att >= req;
+  const concl = `<div class="pc-where-concl">现有技能最高支撑 L${att}，${ok ? '<b>达到</b>' : '<b>达不到</b>'}要求的 L${req}</div>`;
+
+  const opened = a3OpenedCourseIds();
+  const selMajors = new Set(a3SelMajors().map(m => m.name));
+  const groups = [[], [], []];
+  mapped.forEach(s => {
+    const on = A3.skills.has(s.skillId);
+    const courseOpened = opened.has(s.courseId);
+    groups[on ? 0 : (courseOpened ? 1 : 2)].push(s);
+  });
+
+  const courseHead = c => {
+    const nm = c.cid ? `<button class="a3ln" data-a3coursed="${c.cid}">${esc(c.name)}</button>` : esc(c.name);
+    const tag = (c.isCross && c.majorId) ? `<button class="a3ln a3-wmajor" data-a3majord="${c.majorId}">${esc(c.majorName)}</button>`
+      : (c.isCross ? `<span class="a3-wmajor">${esc(c.majorName)}</span>` : '');
+    return `<div class="a3-wcourse${c.isCross ? ' cross' : ''}">${nm}${tag}</div>`;
+  };
+  const skillRow = (c, s) => {
+    const sl = a3Lv(s.serviceLevel);
+    const sk = `<button class="a3ln" data-a3skilld="${s.skillId}">${esc(s.skillName)}</button>`;
+    const task = s.taskName ? `<button class="a3ln a3-wtask" data-a3taskd="${s.taskId}">${esc(s.taskName)}</button>` : '';
+    return `<div class="a3-wskill${c.isCross ? ' cross' : ''}">${sk}${task}<span class="a3-wlv">L${sl}</span></div>`;
+  };
+  const buildCourses = list => {
+    const byCourse = new Map();
+    list.forEach(s => { if (!byCourse.has(s.courseId)) byCourse.set(s.courseId, []); byCourse.get(s.courseId).push(s); });
+    return [...byCourse.entries()].map(([cid, skills]) => {
+      const c = A3_COURSE_BY_ID[cid] || {};
+      const majorName = c.majorName || '';
+      return { cid, name: c.name || skills[0].courseName || '（未知课程）', majorName, majorId: c.majorId || '',
+               isCross: !selMajors.has(majorName), skills };
+    }).sort((x, y) => (x.isCross ? 1 : 0) - (y.isCross ? 1 : 0));
+  };
+  const renderRows = (list, lastCid) => {
+    let html = '', lc = lastCid;
+    list.forEach(({ c, s }) => {
+      if (c.cid !== lc) { html += courseHead(c); lc = c.cid; }
+      html += skillRow(c, s);
+    });
+    return html;
+  };
+  const LIMIT = 5;
+  const renderGroup = (title, list, gi) => {
+    if (!list.length) return '';
+    const courses = buildCourses(list);
+    const rows = [];
+    courses.forEach(c => c.skills.forEach(s => rows.push({ c, s })));
+    const total = rows.length;
+    const key = `${aid}:${gi}`;
+    const expanded = a3MoreOpen.has(key);
+    let body;
+    if (total <= LIMIT) {
+      body = renderRows(rows, null);
+    } else {
+      const vis = rows.slice(0, LIMIT), more = rows.slice(LIMIT);
+      body = renderRows(vis, null)
+        + `<button class="a3-wmore-btn" data-a3-more="${more.length}" data-a3-more-key="${key}">${expanded ? '收起' : `等 ${more.length} 条`}</button>`
+        + `<div class="a3-wmore"${expanded ? '' : ' hidden'}>${renderRows(more, vis[vis.length - 1].c.cid)}</div>`;
+    }
+    return `<div class="a3-wgroup"><div class="a3-wgroup-h">${title} · ${total} 条技能</div>${body}</div>`;
+  };
+
+  return concl
+    + renderGroup('已开展', groups[0], 0)
+    + renderGroup('已开设课程中尚未开展', groups[1], 1)
+    + renderGroup('需开设课程', groups[2], 2);
+}
+/* 能力提升路径四段（仅缺口能力显示） */
+function a3PathInDrawer(a, req, att) {
+  const aid = a.id;
+  const tgtLv = (a.levels || {})['L' + req];
+  const B = [];
+  let gapHTML;
+  if (att > 0) {
+    const now = (a.levels || {})['L' + att];
+    gapHTML = `<div class="pc-now"><span class="pc-now-h">现在能做到 · L${att} ${LVN['L' + att]}</span>
+        <ul class="pts">${(now ? now.points || [] : []).map(p => `<li>${esc(p)}</li>`).join('')}</ul></div>
+      <div class="pc-target"><span class="pc-target-h">还要能做到 · L${req} ${LVN['L' + req]}（要补的教学目标）</span>
+        <ul class="pts">${(tgtLv ? tgtLv.points || [] : []).map(p => `<li>${esc(p)}</li>`).join('')}</ul></div>`;
+  } else {
+    const steps = ['L1', 'L2', 'L3'].map(L => {
+      const l = (a.levels || {})[L], n = a3Lv(L);
+      const cls = n === req ? 'target' : (n > req ? 'above' : '');
+      const tag = n === req ? ' · 目标停在这一级' : (n > req ? ' · 超出目标，仅参考' : '');
+      return `<div class="pc-prog ${cls}"><div class="pc-prog-h">
+        <span class="lvtag ${L}">${L}</span><span class="pc-prog-n">${LVN[L]}${tag}</span></div>
+        <ul class="pts">${(l ? l.points || [] : []).map(p => `<li>${esc(p)}</li>`).join('')}</ul></div>`;
+    }).join('');
+    gapHTML = `<div class="pc-zero">本校暂无技能承接，从零开始——按 L1 → L2 → L3 分级递进，不一步到位：</div>${steps}`;
+  }
+  B.push(`<div class="pc-b"><div class="pc-k">① 差在哪</div>${gapHTML}</div>`);
+  B.push(`<div class="pc-b"><div class="pc-k">② 在哪教</div>${a3WhereHTML(aid)}</div>`);
+  const rules = a3RulesFor(tgtLv ? tgtLv.assess : '');
+  let howHTML = `<div class="pc-assess"><b>考核方式（目标等级原文）</b>：${esc(tgtLv ? tgtLv.assess : '')}</div>`;
+  if (rules.length) howHTML += rules.map(r => `<div class="pc-rule"><span class="pc-rule-h">→ ${esc(r.hint)}</span></div>`).join('');
+  else howHTML += `<div class="pc-rule-none">该考核方式未命中已有规则，教学形式由任课教师判断。</div>`;
+  B.push(`<div class="pc-b"><div class="pc-k">③ 怎么教</div>${howHTML}</div>`);
+  B.push(`<div class="pc-b"><div class="pc-k">④ 先补什么</div>${a3PreHTML(aid) || '<div class="pc-none">该能力没有前置依赖。</div>'}</div>`);
+  return `<div class="dr-s"><div class="dr-st">能力提升路径</div><div class="pathcard">${B.join('')}</div></div>`;
+}
+/* 岗位详情 · 本校达成情况（镜像 V2 v2PosAttainHTML，取数换成本校技能支撑等级） */
+function a3PosAttainHTML(p) {
+  const rows = (p.abilityReqs || []).map(r => ({ a: A3_ABILITY_BY_ID[r.id], req: a3Lv(r.requiredLevel), at: a3Achieved(r.id) }))
+    .sort((x, y) => (y.a.core - x.a.core) || (y.req - x.req));
+  const grp = {
+    ok: rows.filter(r => r.at >= r.req),
+    part: rows.filter(r => r.at > 0 && r.at < r.req),
+    none: rows.filter(r => r.at === 0),
+  };
+  const total = rows.length, pct = total ? Math.round(grp.ok.length / total * 100) : 0;
+  const tone = total && grp.ok.length / total >= A3C.POS_RATE_GOOD ? 'good' : (total && grp.ok.length / total <= A3C.POS_RATE_LOW ? 'crit' : '');
+  const seg = (n, cls) => n ? `<i class="${cls}" style="flex:${n}"></i>` : '';
+  const skillOf = r => {
+    // 只取本次已勾选的技能，按「课程 › 任务 › 技能」列出并按课程去重，超过 5 条写「等 n 条」
+    const sup = (A3D.abilitySkills[r.a.id] || []).filter(x => A3.skills.has(x.skillId));
+    const seen = new Set(), rows = [];
+    for (const x of sup) {
+      if (seen.has(x.courseName)) continue;
+      seen.add(x.courseName);
+      rows.push(`${x.courseName} › ${x.taskName} › ${x.skillName}`);
+    }
+    if (!rows.length) return '';
+    return rows.slice(0, 5).map(s => '《' + s + '》').join('　') + (rows.length > 5 ? ` 等 ${rows.length} 条` : '');
+  };
+  const line = (r, kind) => `<button class="arow" data-a3abl="${r.a.id}">
+      <span class="arow-n a3ln">${esc(r.a.name)}${r.a.core ? ' <span class="star" title="核心能力">★</span>' : ''}</span>
+      <span class="pill ${kind === 'ok' ? 'good' : kind === 'part' ? 'warn' : 'crit'}">${kind === 'none' ? '未覆盖' : '本校 L' + r.at}　要求 L${r.req}</span>
+      <span class="arow-w">${kind === 'none' ? '无已勾选内容对应' : esc(skillOf(r))}</span></button>`;
+  const block = (kind, title, desc) => grp[kind].length ? `<div class="pat-g">
+      <div class="pat-gh"><i class="${kind}"></i><b>${title} ${grp[kind].length} 条</b><span>${desc}</span></div>
+      ${grp[kind].map(r => line(r, kind)).join('')}</div>` : '';
+  return `<div class="dr-s"><div class="dr-st">本校达成情况
+      <span class="pill k" style="margin-left:7px;text-transform:none;letter-spacing:0">${a3ReportNo() != null ? '报告 #' + a3ReportNo() : '测评报告'}</span></div>
+    <div class="pat-sum">
+      <div class="pat-rate"><b class="${tone}">${pct}%</b><span>达标率</span></div>
+      <div class="pat-f">达标率 = 已达标 <b>${grp.ok.length}</b> 条 ÷ 该岗位要求 <b>${total}</b> 条</div>
+    </div>
+    <span class="pa-track" style="width:100%">${seg(grp.ok.length, 'ok')}${seg(grp.part.length, 'part')}${seg(grp.none.length, 'none')}</span>
+    <div class="pa-legend" style="margin:7px 0 4px">
+      <span><i class="ok"></i>已达标 ${grp.ok.length}</span><span><i class="part"></i>覆盖未达标 ${grp.part.length}</span><span><i class="none"></i>未覆盖 ${grp.none.length}</span></div>
+    <div class="assess" style="margin:6px 0 12px">按<b>本岗位</b>对每条能力的要求等级逐条判断（不是多个目标岗位合并后的最高等级）。
+      本校达成等级 = 已勾选技能中对应该能力的最高支撑等级。</div>
+    ${block('ok', '已达标', '本校达成等级 ≥ 要求等级')}
+    ${block('part', '覆盖未达标', '有已勾选技能对应，但等级低于要求')}
+    ${block('none', '未覆盖', '没有任何已勾选技能对应')}
+  </div>`;
+}
+function a3PositionDrawer(pid) {
+  const p = A3D.positions.find(x => x.id === pid);
+  if (!p) return;
+  let h = a3PosAttainHTML(p);
+  h += `<div class="dr-s"><div class="dr-st">岗位职责</div><div class="dr-def">${esc(p.describe || '—')}</div></div>`;
+  const byLv = { L3: [], L2: [], L1: [] };
+  (p.abilityReqs || []).forEach(r => { if (byLv[r.requiredLevel]) byLv[r.requiredLevel].push(r); });
+  h += `<div class="dr-s"><div class="dr-st">能力要求 ${(p.abilityReqs || []).length} 条（按要求等级分组）</div>` +
+    ['L3', 'L2', 'L1'].filter(L => byLv[L].length).map(L =>
+      `<div style="margin-bottom:13px"><div class="lvl-h" style="margin-bottom:3px">
+        <span class="lvl-b ${L}">${L}</span><span class="lvl-n">${LVN[L]} · ${byLv[L].length} 条</span></div>` +
+      byLv[L].map(r => { const a = A3_ABILITY_BY_ID[r.id];
+        return `<button class="arow" data-a3abl="${r.id}">
+          <span class="arow-n a3ln">${esc(a.name)}</span>
+          ${a.core ? '<span class="star" title="核心能力">★</span>' : ''}
+          <span class="pill k">${esc(a.type)}</span>
+        </button>`; }).join('') + `</div>`).join('') +
+    `<div class="assess">★ 核心能力　点击能力名查看详情</div></div>`;
+  a3DrawerPush('岗位', p.name, esc(p.sub), h);
+}
+/* 技能详情：可观察能力要求 / 达成结果 / 归属链 / 对应能力 / 下挂内容 */
+function a3SkillDepsHTML(s) {
+  const blk = (label, names, omitEmpty) => {
+    if (omitEmpty && !names.length) return '';
+    return `<div class="a3det"><span class="a3det-k">${label} ${names.length} 条</span>
+      <span class="a3det-v">${names.length ? esc(names.slice(0, 5).join('、')) + (names.length > 5 ? ` 等 ${names.length} 条` : '') : '无'}</span></div>`;
+  };
+  return `<div class="a3det-b">
+    ${blk('知识点', s.kp || [], false)}
+    ${blk('操作步骤', s.steps || [], true)}
+    ${blk('标准', s.standards || [], false)}
+    ${blk('案例', s.cases || [], false)}
+  </div>`;
+}
+function a3SkillDrawer(sid) {
+  const s = A3_SKILL_BY_ID[sid];
+  if (!s) return;
+  let h = '';
+  h += `<div class="dr-s"><div class="dr-st">可观察能力要求</div><div class="dr-def">${esc(s.obs || '—')}</div></div>`;
+  h += `<div class="dr-s"><div class="dr-st">达成结果</div><div class="dr-def">${esc(s.result || '—')}</div></div>`;
+  const courseLnk = s.courseId ? `<button class="a3ln" data-a3coursed="${s.courseId}">${esc(s.courseName || '—')}</button>` : esc(s.courseName || '—');
+  const taskLnk = s.taskId ? `<button class="a3ln" data-a3taskd="${s.taskId}">${esc(s.taskName || '—')}</button>` : esc(s.taskName || '—');
+  h += `<div class="dr-s"><div class="dr-st">归属链</div><div class="dr-def">${esc(s.majorName || '—')} › ${courseLnk} › ${taskLnk}</div></div>`;
+  const abIds = A3D.skillSupport[sid] || [];
+  h += `<div class="dr-s"><div class="dr-st">对应能力 ${abIds.length} 条</div>` +
+    (abIds.length ? abIds.map(e => {
+      const a = A3_ABILITY_BY_ID[e.abilityId];
+      return `<button class="arow" data-a3abl="${e.abilityId}"><span class="arow-n a3ln">${esc(a ? a.name : e.abilityId)}</span><span class="pill k">L${a3Lv(e.serviceLevel)}</span></button>`;
+    }).join('') : '<div class="pc-none">无</div>') + `</div>`;
+  h += `<div class="dr-s"><div class="dr-st">下挂内容</div>${a3SkillDepsHTML(s)}</div>`;
+  a3DrawerPush('技能', s.name, `${esc(s.courseName || '')} › ${esc(s.taskName || '')}`, h);
+}
+/* 课程详情：归属 + 课程类型 + 任务列表（每项可点 → 任务详情） */
+function a3CourseDrawer(cid) {
+  const c = A3_COURSE_BY_ID[cid];
+  if (!c) return;
+  let h = '';
+  h += `<div class="dr-s"><div class="dr-st">归属</div><div class="dr-def">${esc(c.majorName || '—')} › ${esc(c.category || '—')}</div></div>`;
+  if (c.courseType) h += `<div class="dr-s"><div class="dr-st">课程类型</div><div class="dr-def">${esc(c.courseType)}</div></div>`;
+  const taskIds = c.taskIds || [];
+  h += `<div class="dr-s"><div class="dr-st">任务 ${taskIds.length} 个</div>` +
+    taskIds.map(tid => { const t = A3_TASK_BY_ID[tid];
+      return `<button class="arow" data-a3taskd="${tid}"><span class="arow-n a3ln">${esc(t ? t.name : tid)}</span><span class="pill k">${(A3_TASK_SKILLS[tid] || []).length} 条技能</span></button>`; }).join('') + `</div>`;
+  a3DrawerPush('课程', c.name, esc(c.category || ''), h);
+}
+/* 任务详情：归属 + 技能列表（每项可点 → 技能详情） */
+function a3TaskDrawer(tid) {
+  const t = A3_TASK_BY_ID[tid];
+  if (!t) return;
+  let h = '';
+  h += `<div class="dr-s"><div class="dr-st">归属</div><div class="dr-def">${esc(t.majorName || '—')} › ${esc(t.courseName || '—')} › ${esc(t.name)}</div></div>`;
+  const ids = A3_TASK_SKILLS[tid] || [];
+  h += `<div class="dr-s"><div class="dr-st">技能 ${ids.length} 条</div>` +
+    ids.map(id => { const s = A3_SKILL_BY_ID[id]; return `<button class="arow" data-a3skilld="${id}"><span class="arow-n a3ln">${esc(s ? s.name : id)}</span></button>`; }).join('') + `</div>`;
+  a3DrawerPush('任务', t.name, esc(t.courseName || ''), h);
+}
+function a3AbilityDrawer(aid) {
+  const a = A3_ABILITY_BY_ID[aid];
+  if (!a) return;
+  const req = a3ReqMap().get(aid) || 0;
+  const att = a3Achieved(aid);
+  const maxReq = a3MaxReq(aid);
+  const requiring = a3PosArr().filter(p => (p.abilityReqs || []).some(r => r.id === aid));
+  let h = '';
+  if (a.flag) h += `<div class="dr-s"><div class="warnbox"><span class="ico warning">!</span><span>${esc(a.flag)}</span></div></div>`;
+  h += `<div class="dr-s"><div class="dr-st">描述</div><div class="dr-def">${esc(a.definition || '—')}</div></div>`;
+  if (att < req) h += a3PathInDrawer(a, req, att);
+  h += `<div class="dr-s"><div class="dr-st">三级行为化描述</div>` + ['L1', 'L2', 'L3'].map(L => {
+    const l = (a.levels || {})[L];
+    if (!l) return '';
+    return `<div class="lvl"><div class="lvl-h"><span class="lvl-b ${L}">${L}</span><span class="lvl-n">${LVN[L]}</span></div>
+      <div class="lvl-d">${esc(l.desc)}</div><ul class="pts">${(l.points || []).map(p => `<li>${esc(p)}</li>`).join('')}</ul>
+      <div class="assess">考核：${esc(l.assess)}</div></div>`;
+  }).join('') + `</div>`;
+  if (requiring.length) h += `<div class="dr-s"><div class="dr-st">被 ${requiring.length} 个目标岗位要求</div>` +
+    requiring.map(p => { const r = (p.abilityReqs || []).find(x => x.id === aid);
+      return `<button class="arow" data-a3posd="${p.id}"><span class="arow-n a3ln">${esc(p.name)}</span><span class="pill k">${r.requiredLevel}</span></button>`; }).join('') + `</div>`;
+  a3DrawerPush('能力项', a.name,
+    `${esc(a.type)} · ${esc(a.domain)} · ${a.core ? '核心能力 · ' : ''}${maxReq ? '最高要求 L' + maxReq : ''}`, h);
+}
+function a3MarkStale() {
+  if (A3.layer >= 3) A3.stale = true;
+}
+function a3Record() {
+  a3Versions.push({ no: a3Versions.length + 1, at: nowStr(),
+    majors: [...A3.majors], positions: [...A3.positions], skills: [...A3.skills], n: a3Numbers() });
+  saveA3Hist();
+}
+function a3ReportNo() {
+  if (A3.stale) return null;   // 修改后未确认：内容已与上一份记录不同，不沿用旧编号
+  return A3.layer >= 3 && a3Versions.length ? a3Versions[a3Versions.length - 1].no : null;
+}
+function a3HistCounts(majors, skillIds) {
+  const skills = new Set(skillIds || []);
+  let totalCourses = 0, openedCourses = 0, totalSkills = 0;
+  majors.forEach(code => {
+    const m = A3_MAJOR_BY_CODE[code];
+    if (!m) return;
+    m.categories.forEach(cat => cat.courses.forEach(c => {
+      totalCourses++;
+      if ((A3_COURSE_SKILLS[c.id] || []).some(id => skills.has(id))) openedCourses++;
+    }));
+    totalSkills += (A3D.majorSkillIds[code] || []).length;
+  });
+  return { totalCourses, openedCourses, totalSkills, openedSkills: skills.size };
+}
+function a3Hist(){
+  // 每条记录：编号、生成时间、专业、目标岗位、已开设课程与已开展技能数、当时的汇总指标；最新在前
+  const rows = a3Versions.slice().reverse().map(v=>{
+    const majors = (v.majors||[]).map(c=>A3_MAJOR_BY_CODE[c]?A3_MAJOR_BY_CODE[c].name:c).join('、');
+    const ps = new Set(v.positions||[]);
+    const posNames = A3D.positions.filter(p=>ps.has(p.id)).map(p=>p.name).join('、');
+    const c = a3HistCounts(v.majors||[], v.skills||[]);
+    const n = v.n || {};
+    return `<div class="ev hist">
+      <div class="ev-h"><span class="ev-t">${esc(a3ReportName(v.majors||[]))}</span>
+        <span style="flex:1"></span>
+        <button class="chip" data-a3="openver" data-verno="${v.no}">查看</button></div>
+      <div class="hist-m"><span class="pill core">#${v.no}</span><span class="mono">${esc(v.at)}</span></div>
+      <div class="hist-s"><span class="hist-k">所选</span>${esc(majors)} · ${esc(posNames||'—')}</div>
+      <div class="hist-s"><span class="hist-k">课程</span>已开设 ${c.openedCourses}/${c.totalCourses} 门　<span class="hist-k">技能</span>已开展 ${c.openedSkills}/${c.totalSkills} 条</div>
+      <div class="hist-s"><span class="hist-k">指标</span>覆盖 ${n.coveredAb}/${n.totalAb} · 达标 ${n.depthAb}/${n.totalAb}</div>
+    </div>`;
+  }).join('');
+  openDrawer('历史报告', `共 ${a3Versions.length} 份报告`, '按生成时间从新到旧排列',
+    (rows || '<div class="assess">还没有历史报告——完成一次完整测评后会自动记录。</div>') +
+    `<div class="assess" style="margin-top:12px">点「查看」会在新页面打开该次报告，当前测评不受影响。</div>`);
+}
+function a3OpenVersion(no){
+  // 在新标签页打开同一个应用并进入「历史报告只读模式」，当前页面的测评设置与报告保持不动
+  const rec = a3Versions.find(v=>v.no===no);
+  if(!rec) return;
+  const pack = {no:rec.no, at:rec.at, majors:rec.majors, positions:rec.positions, skills:rec.skills, n:rec.n};
+  const win = window.open(location.href.split('#')[0] + '#a3rec=' + encodeURIComponent(JSON.stringify(pack)), '_blank');
+  if(!win) toast('浏览器拦截了新窗口，请允许本页面打开弹出窗口后重试');
+}
+function a3EnterHistMode(rec){
+  if(!rec || !Array.isArray(rec.majors)) return false;
+  const no = rec.no;
+  A3.majors = (rec.majors||[]).slice();
+  A3.positions = new Set(rec.positions||[]);
+  A3.skills = new Set(rec.skills||[]);
+  A3.layer = 3;
+  A3.open = new Set();
+  A3.confirmedMajors = A3.majors.slice().sort().join(',');
+  A3.stale = false;
+  A3.viewingVer = no;
+  A3.readonly = true;
+  document.body.classList.add('histmode');
+  selL1('assess3');
+  const majors = A3.majors.map(c=>A3_MAJOR_BY_CODE[c]?A3_MAJOR_BY_CODE[c].name:c).join('、');
+  document.title = `${a3ReportName(rec.majors)}（#${no}）`;
+  $('.pt-t').textContent = `历史报告 #${no}`;
+  $('.pt-d').textContent = `${majors} · 生成于 ${rec.at} · 只读`;
+  const bar = document.createElement('div');
+  bar.className = 'histbar';
+  bar.innerHTML = `<span>◷ 这是 <b>${esc(rec.at)}</b> 生成的历史报告，内容按当时的填报信息计算，不可修改。</span>
+    <span style="flex:1"></span><button class="btn" data-a3export>导出这份报告</button>`;
+  $('#l1-assess3').prepend(bar);
+  return true;
+}
+
+function a3InitFromMajors() {
+  A3.skills = new Set(a3SelectedSkillIds());
+  A3.positions = new Set(a3PosRows().slice(0, 3).map(r => r.p.id));
+  A3.openCourse = null;
+  A3.openSkill = new Set();
+}
+function a3SelectMajor(code) {
+  const i = A3.majors.indexOf(code);
+  if (i >= 0) A3.majors.splice(i, 1); else A3.majors.push(code);
+  a3MarkStale();
+  renderA3Steps();
+}
+function a3Bump(layer) {
+  if (layer > A3.layer) {
+    A3.layer = layer;
+    A3.open = layer < 3 ? new Set([layer + 1]) : new Set();
+    if (layer === 3) a3Record();
+  } else {
+    A3.open.delete(layer);
+    if (A3.layer >= 3 && A3.stale) a3Record();
+  }
+  A3.stale = false;
+  renderA3Steps();
+}
+
+$('#a3steps').addEventListener('click', e => {
+  const b = e.target.closest('[data-a3]');
+  if (b) {
+    const v = b.dataset.a3;
+    if (v === 'confirm1') {
+      if (!A3.majors.length) { toast('请至少选择一个专业'); return; }
+      const key = A3.majors.slice().sort().join(',');
+      if (key !== A3.confirmedMajors) { a3InitFromMajors(); A3.confirmedMajors = key; }
+      a3Bump(1); return;
+    }
+    if (v === 'confirm2') { A3.positions.size ? a3Bump(2) : toast('请至少选择一个目标岗位'); return; }
+    if (v === 'confirm3') { a3Bump(3); return; }
+    return;
+  }
+  const mj = e.target.closest('[data-a3major]');
+  if (mj) { a3SelectMajor(mj.dataset.a3major); return; }
+  const ma = e.target.closest('[data-a3majorall]');
+  if (ma) { A3.majors = ma.dataset.a3majorall === '1' ? A3D.majors.map(m => m.code) : []; a3MarkStale(); renderA3Steps(); return; }
+  const p = e.target.closest('[data-a3pos]');
+  if (p) { a3Toggle(A3.positions, p.dataset.a3pos); a3MarkStale(); renderA3Steps(); return; }
+  const pa = e.target.closest('[data-a3posall]');
+  if (pa) { A3.positions = new Set(A3D.positions.map(x => x.id)); a3MarkStale(); renderA3Steps(); return; }
+  const co = e.target.closest('[data-a3courseopen]');
+  if (co) { A3.openCourse = A3.openCourse === co.dataset.a3courseopen ? null : co.dataset.a3courseopen; renderA3Steps(); return; }
+  const so = e.target.closest('[data-a3skillopen]');
+  if (so) { a3Toggle(A3.openSkill, so.dataset.a3skillopen); renderA3Steps(); return; }
+  if (e.target.closest('.a3det-b')) return;
+  const sk = e.target.closest('[data-a3skill]');
+  if (sk) { a3Toggle(A3.skills, sk.dataset.a3skill); a3MarkStale(); renderA3Steps(); return; }
+  const ck = e.target.closest('[data-a3course]');
+  if (ck) { a3ToggleIds(A3_COURSE_SKILLS[ck.dataset.a3course] || []); return; }
+  const all = e.target.closest('[data-a3all]');
+  if (all) { const ids = a3SelectedSkillIds(); if (all.dataset.a3all === '1') ids.forEach(id => A3.skills.add(id)); else A3.skills = new Set(); a3MarkStale(); renderA3Steps(); return; }
+  const dh = e.target.closest('.a3step[data-state="done"] .step-h');
+  if (dh) { const card = dh.closest('.a3step'); const n = +card.querySelector('.stepno').textContent; a3Toggle(A3.open, n); renderA3Steps(); return; }
+});
+
+document.addEventListener('click', e => {
+  const rd = e.target.closest('[data-a3radar]');
+  if (rd) { A3.radarPos = rd.dataset.a3radar || null; renderA3Report(); return; }
+  const ab = e.target.closest('[data-a3abl]');
+  if (ab) { a3AbilityDrawer(ab.dataset.a3abl); return; }
+  const aj = e.target.closest('[data-a3abjump]');
+  if (aj) { const g = $('#a3abd-' + aj.dataset.a3abjump); if (g) { g.scrollIntoView({ behavior: 'smooth', block: 'center' }); g.classList.add('hl'); setTimeout(() => g.classList.remove('hl'), 1600); } return; }
+  const pd = e.target.closest('[data-a3posd]');
+  if (pd) { a3PositionDrawer(pd.dataset.a3posd); return; }
+  const sd = e.target.closest('[data-a3skilld]');
+  if (sd) { a3SkillDrawer(sd.dataset.a3skilld); return; }
+  const cd = e.target.closest('[data-a3coursed]');
+  if (cd) { a3CourseDrawer(cd.dataset.a3coursed); return; }
+  const td = e.target.closest('[data-a3taskd]');
+  if (td) { a3TaskDrawer(td.dataset.a3taskd); return; }
+  const ex = e.target.closest('[data-a3export]');
+  if (ex) { a3Export(); return; }
+  const hb = e.target.closest('[data-a3="hist"]');
+  if (hb) { a3Hist(); return; }
+  const ov = e.target.closest('[data-a3="openver"]');
+  if (ov) { a3OpenVersion(+ov.dataset.verno); return; }
+  const mo = e.target.closest('[data-a3-more]');
+  if (mo) {
+    const more = mo.nextElementSibling;
+    if (more && more.classList.contains('a3-wmore')) {
+      const expand = more.hidden;
+      more.hidden = !expand;
+      mo.textContent = expand ? '收起' : `等 ${mo.dataset.a3More} 条`;
+    }
+    return;
+  }
+});
+
+/* ── 导出报告（复用 DOC_CSS 的 .doc 样式，独立叠加层 #a3docov）── */
+function a3DocTitle() { return a3ReportName(); }
+function a3DocPage(title, inner, withBar) {
+  const bar = withBar ? `<div class="doc-bar"><b>${esc(title)}</b><span style="opacity:.7">历史报告 · 只读</span>
+    <span style="flex:1"></span><button class="pri" onclick="window.print()">打印 / 另存为 PDF</button></div>` : '';
+  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(title)}</title><style>body{margin:0;background:#f5f3f9}${DOC_CSS}
+body>.doc-bar{position:sticky;top:0;z-index:2}.page{padding:24px 16px 60px}
+@media print{body>.doc-bar{display:none}.page{padding:0}}</style></head>
+<body>${bar}<div class="page">${inner}</div></body></html>`;
+}
+function a3DocHTML() {
+  const n = a3Numbers();
+  const majors = a3SelMajors();
+  const rows = a3DomainRows();
+  const posRows = a3PosArr().map(p => {
+    let covered = 0, attained = 0;
+    (p.abilityReqs || []).forEach(r => { const a = a3Achieved(r.id); if (a > 0) covered++; if (a >= a3Lv(r.requiredLevel)) attained++; });
+    const total = (p.abilityReqs || []).length;
+    return { p, total, covered, attained, rate: total ? attained / total : 0 };
+  }).sort((a, b) => b.rate - a.rate);
+  const sugs = a3DocSuggestions(rows);
+  const reqMap = a3ReqMap();
+  const pct = x => Math.round(x * 100);
+  const ver = a3ReportNo();
+  const verRec = ver != null ? a3Versions.find(v => v.no === ver) : null;
+  const tiers = { keep: [], improve: [], priority: [] };
+  rows.forEach(d => tiers[d.tier].push(d.domain));
+  const tag = (t, c) => `<span class="tag ${c || ''}">${esc(t)}</span>`;
+  const tierTag = t => tag(A3_DOC_TIER[t], { keep: 'good', improve: 'warn', priority: 'crit' }[t]);
+  const H = [];
+
+  H.push(`<div class="cover">
+    <h1>${esc(a3ReportName())}</h1>
+    <div class="metas">
+      <span>学校：<b>${esc(SC.name || '—')}</b></span>
+      <span>行业：<b>${esc(A3D.meta.industryName || '—')}</b></span>
+      <span>专业：<b>${esc(majors.map(m => m.name).join('、'))}</b></span>
+      <span>生成时间：<b>${esc(verRec ? verRec.at : nowStr())}</b></span>
+      <span>报告编号：<b>${ver != null ? '#' + ver : '未保存（设置修改后尚未确认）'}</b></span>
+    </div></div>`);
+
+  const chart = [
+    { k: '岗位覆盖度', a: n.posN, b: n.totalPos, den: '行业' },
+    { k: '能力覆盖度', a: n.coveredAb, b: n.totalAb, den: '行业' },
+    { k: '能力达标度', a: n.depthAb, b: n.totalAb, den: '行业' },
+  ];
+  H.push(`<section><h2><span class="num">一</span>概览 / 摘要</h2>
+    <p class="lead" style="margin-top:0">本次评估 <b>${esc(A3D.meta.industryName)}·${esc(majors.map(m => m.name).join('、'))}</b> 面向的 <b>${esc(a3PosArr().map(p => p.name).join('、'))}</b> 岗位：</p>
+    <ul class="sum">
+      <li>岗位覆盖度 <b>${pct(n.posN / n.totalPos)}%</b></li>
+      <li>能力覆盖度 <b>${pct(n.coveredAb / n.totalAb)}%</b></li>
+      <li>能力达标度 <b>${pct(n.depthAb / n.totalAb)}%</b></li>
+    </ul>
+    <div class="fchart">
+      ${chart.map(f => `<div class="col">
+        <div class="fpct">${pct(f.a / f.b)}%</div>
+        <div class="coltrack"><i style="height:${pct(f.a / f.b)}%"></i></div>
+        <div class="clabel">${esc(f.k)}</div>
+        <div class="csub">本校 ${f.a} / ${f.den} ${f.b}</div></div>`).join('')}
+    </div>
+    <p class="note">柱高表示本校在对应指标上占基准的比例，满格为 100%。「能力覆盖度」「能力达标度」的基准是本次目标岗位的能力要求总量：有多少被本校所选技能支撑、又有多少真正支撑到了岗位要求的等级。</p>
+  </section>`);
+
+  /* 二 行业现状与趋势（与本校无关，作为后文对照的基准；取新能力图谱行业节点 info） */
+  const ameta = A3D.meta || {};
+  H.push(`<section><h2><span class="num">二</span>行业现状与趋势</h2>
+    <h3>2.1 行业范围</h3>
+    <div class="kstrip">
+      <div class="mcard"><div class="k">子行业</div><div class="v">${ameta.subIndustries}<small>个</small></div><div class="s">按新能力图谱计</div></div>
+      <div class="mcard"><div class="k">岗位</div><div class="v">${ameta.positions}<small>个</small></div><div class="s">行业代表岗位</div></div>
+      <div class="mcard"><div class="k">能力项</div><div class="v">${ameta.abilities}<small>条</small></div><div class="s">岗位能力要求总量</div></div>
+    </div>
+    <h3>2.2 纳入建图的方向</h3>
+    ${(ameta.included || []).length ? `<ul class="trend">${ameta.included.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p class="note">暂无纳入方向记录。</p>'}
+    <h3>2.3 排除项与理由</h3>
+    ${(ameta.excluded || []).length ? `<div class="tscroll"><table><thead><tr><th>排除项</th><th>理由</th></tr></thead><tbody>
+      ${ameta.excluded.map(e => `<tr><td>${esc(e.item)}</td><td>${esc(e.reason)}</td></tr>`).join('')}
+    </tbody></table></div>` : '<p class="note">暂无排除项。</p>'}
+    <h3>2.4 边界说明</h3>
+    <p class="note">${esc(ameta.boundaryNotes || '—')}</p>
+    <h3>2.5 变化趋势</h3>
+    ${(ameta.trends || []).length ? `<ul class="trend">${ameta.trends.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+    <p class="note">产业趋势为建图模型基于公开信息给出的背景判断，<b>未逐条标注出处</b>，仅供理解行业方向。</p>` : '<p class="note">暂无产业趋势记录。</p>'}
+  </section>`);
+
+  /* 三 本校专业现状（已开设课程 / 已开展技能，按课程展开到任务级；旧版专业定位、标准课程对比无数据来源，整段省略） */
+  const a3AllCourses = [];
+  majors.forEach(m => m.categories.forEach(cat => cat.courses.forEach(c => a3AllCourses.push(c))));
+  const a3TotalCourses = a3AllCourses.length;
+  const a3OpenedCourseCnt = a3AllCourses.filter(c => a3CountOf(A3_COURSE_SKILLS[c.id] || []) > 0).length;
+  const a3TotalSkills = a3SelectedSkillIds().length;
+  const a3OpenedSkillCnt = A3.skills.size;
+  H.push(`<section><h2><span class="num">三</span>本校专业现状</h2>
+    <p class="cl">${esc(majors.map(m => m.name).join('、'))}专业面向 <b>${n.posN}</b> 个目标岗位，合计要求 <b>${n.totalAb}</b> 条能力；已开设课程 <b>${a3OpenedCourseCnt}/${a3TotalCourses}</b> 门，已开展技能 <b>${a3OpenedSkillCnt}/${a3TotalSkills}</b> 条。与岗位要求的差距见第四章。</p>
+    <div class="kstrip">
+      <div class="mcard"><div class="k">已开设课程</div><div class="v">${a3OpenedCourseCnt}<small>/ ${a3TotalCourses} 门</small></div><div class="s">所选专业下已开展至少 1 条技能的课程</div></div>
+      <div class="mcard"><div class="k">已开展技能</div><div class="v">${a3OpenedSkillCnt}<small>/ ${a3TotalSkills} 条</small></div><div class="s">所选专业课程下已勾选的技能</div></div>
+    </div>
+    <h3>3.1 课程与任务</h3>
+    ${a3AllCourses.map(c => {
+      const cids = A3_COURSE_SKILLS[c.id] || [];
+      const con = a3CountOf(cids);
+      const tasks = c.tasks || [];
+      return `<h4>${esc(c.name)} <span style="font-weight:400;font-size:12px;color:var(--ink3)">${esc(c.category)} · 技能开展 ${con}/${cids.length}</span></h4>
+      ${tasks.length ? `<div class="tscroll"><table><thead><tr><th>任务</th><th class="r">技能开展</th><th style="width:46%">已开展技能</th></tr></thead><tbody>
+        ${tasks.map(t => { const tids = t.skills.map(s => s.id); const ton = a3CountOf(tids);
+          const tonNames = t.skills.filter(s => A3.skills.has(s.id)).map(s => esc(s.name));
+          return `<tr><td>${esc(t.name)}</td><td class="r">${ton}/${tids.length}</td>
+            <td>${tonNames.length ? tonNames.slice(0, 5).join('、') + (tonNames.length > 5 ? ` 等 ${tonNames.length} 条` : '') : '<span class="dash">—</span>'}</td></tr>`; }).join('')}
+      </tbody></table></div>` : '<p class="note">该课程暂无任务。</p>'}`;
+    }).join('')}
+  </section>`);
+
+  H.push(`<section><h2><span class="num">四</span>差距分析</h2>
+    <p class="cl">${rows.length} 个能力领域中，<span class="neg">优先建设 ${tiers.priority.length} 个</span>、逐步完善 ${tiers.improve.length} 个、保持优势 ${tiers.keep.length} 个。${tiers.priority.length ? '最需要关注：<b>' + esc(tiers.priority.join('、')) + '</b>。' : ''}整体技能支撑 <b>${n.coveredAb}/${n.totalAb}</b> 条，达到岗位要求 <b>${n.depthAb}/${n.totalAb}</b> 条。</p>
+    <h3>按能力领域</h3>
+    <div class="tscroll"><table><thead><tr><th>能力领域</th><th class="r">岗位要求</th><th style="width:28%">对接情况</th><th class="r">技能支撑</th><th class="r">达到要求</th><th class="c">建设建议</th></tr></thead><tbody>
+      ${rows.map(d => `<tr><td>${esc(d.domain)}</td><td class="r">${d.total}</td>
+        <td><div class="hbar"><i class="a" style="width:${pct(d.attained / d.total)}%"></i><i class="p" style="width:${pct((d.covered - d.attained) / d.total)}%"></i></div></td>
+        <td class="r">${d.covered}</td><td class="r"><b>${d.attained}</b></td>
+        <td class="c">${tierTag(d.tier)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="legend"><span><i style="background:var(--l3)"></i>达到要求</span><span><i style="background:var(--l2)"></i>已覆盖、程度不足</span><span><i style="background:var(--l0)"></i>尚未覆盖</span></div>
+    <p class="note">各能力领域包含哪些能力项，见附录「能力明细」。</p>
+    <h3>按岗位</h3>
+    <div class="tscroll"><table><thead><tr><th>岗位</th><th class="r">达到要求</th><th style="width:50%">对接情况</th></tr></thead><tbody>
+      ${posRows.map(r => `<tr><td>${esc(r.p.name)}<div class="note" style="margin-top:0">${esc(r.p.sub)}</div></td>
+        <td class="r"><b style="color:${r.rate >= A3C.POS_RATE_GOOD ? 'var(--good)' : r.rate <= A3C.POS_RATE_LOW ? 'var(--crit)' : 'inherit'}">${pct(r.rate)}%</b><div class="note" style="margin-top:0">${r.attained} / ${r.total} 条</div></td>
+        <td><div class="hbar"><i class="a" style="width:${pct(r.attained / r.total)}%"></i><i class="p" style="width:${pct((r.covered - r.attained) / r.total)}%"></i></div></td></tr>`).join('')}
+    </tbody></table></div>
+  </section>`);
+
+  H.push(`<section><h2><span class="num">五</span>建设建议</h2>
+    <p class="cl">按差距从大到小给出建议：优先补齐 <span class="neg">${tiers.priority.length}</span> 个优先建设领域、完善 ${tiers.improve.length} 个逐步完善领域${tiers.keep.length ? '，「' + esc(tiers.keep.join('、')) + '」以巩固为主' : ''}。每条建议都落实到具体能力项，出处见附录。</p>
+    <div class="tlist">
+      ${['priority', 'improve', 'keep'].map(t => `<div class="trow ${t}"><span class="tk"><i></i>${A3_DOC_TIER[t]}</span>
+        <span class="tn"><b>${tiers[t].length}</b> 个能力领域</span>
+        <span class="tl">${tiers[t].length ? esc(tiers[t].join('、')) : '暂无'}</span></div>`).join('')}
+    </div>
+    <p class="note">能力领域的划分方法：尚无技能支撑的能力占一半以上的，列为「优先建设」；
+      达到岗位要求的能力占 ${pct(A3_DOC.KEEP)}% 及以上的，列为「保持优势」；其余列为「逐步完善」。</p>
+    ${sugs.length ? sugs.map(s => `<div class="sug"><div class="sug-h">${tierTag(s.d.tier)}<b>${esc(s.d.domain)}</b>
+        <span class="note" style="margin:0">${esc(s.d.why)}</span></div>
+      <dl><dt>现状</dt><dd>${esc(s.now)}</dd>
+        <dt>目标</dt><dd>${esc(s.target)}</dd>
+        <dt>建议</dt><dd><ul>${s.acts.map(a => `<li>${a}</li>`).join('') || '<li>—</li>'}</ul></dd></dl></div>`).join('')
+      : '<p class="lead">各领域均达到「保持优势」，建议以巩固为主，调整课程时注意保留支撑这些领域的教学内容。</p>'}
+    ${tiers.keep.length ? `<p class="note">保持优势的领域（${esc(tiers.keep.join('、'))}）正在支撑岗位要求，调整课程时建议保留相关教学内容。</p>` : ''}
+  </section>`);
+
+  H.push(`<section class="apx"><h2><span class="num">六</span>附录</h2>
+    <h3>6.1 阅读说明</h3>
+    <p class="lead" style="margin-top:0"><b>这份报告回答一个问题：</b>${esc(majors.map(m => m.name).join('、'))}专业现有的课程内容（技能），能不能满足${esc(A3D.meta.industryName)}行业代表岗位对能力的要求——差在哪、该怎么补。</p>
+    <div class="tscroll"><table><thead><tr><th style="width:112px">词</th><th>含义</th></tr></thead><tbody>
+      <tr><td>岗位能力要求</td><td>一个岗位对一条能力提出要求，计为 1 项；本报告以本次选定的目标岗位为准。</td></tr>
+      <tr><td>技能支撑</td><td>本校所选技能通过「直接支撑 / 部分支撑」映射到该能力（不论支撑到什么等级）。</td></tr>
+      <tr><td>达到要求</td><td>支撑到了岗位要求的等级。</td></tr>
+      <tr><td>能力等级</td><td><b>L1 认知</b>——了解、在指导下完成；<b>L2 独立操作</b>——按规范独立完成常规任务；<b>L3 综合应用</b>——处理非常规情况、优化流程、指导他人。</td></tr>
+      <tr><td>核心能力 ★</td><td>被 2 个及以上岗位要求、且有国家法规政策依据的能力。</td></tr>
+      <tr><td>能力领域分档</td><td>尚无技能支撑的能力占一半以上的列为「优先建设」；达到要求的能力占 ${pct(A3_DOC.KEEP)}% 及以上的列为「保持优势」；其余列为「逐步完善」。</td></tr>
+    </tbody></table></div>
+    <h3>6.2 能力明细</h3>
+    <p class="cl">按能力领域列出每条能力项的本校对接情况，供核对正文各章数字的出处；<b>★ 为核心能力</b>。</p>
+    <div class="tscroll"><table><thead><tr><th>能力</th><th class="c">岗位要求</th><th class="c">本校</th><th class="c">目标岗位达标</th></tr></thead><tbody>
+      ${rows.map(d => {
+        const tpc = a3TpCount();
+        const items = d.ids.map(id => ({ a: A3_ABILITY_BY_ID[id], rq: reqMap.get(id), at: a3Achieved(id), tpa: a3AbPosAttain(id) }))
+          .sort((x, y) => (y.a.core - x.a.core) || (tpc[y.a.id] - tpc[x.a.id]));
+        return `<tr class="apx-g"><td colspan="4">${esc(d.domain)}<span>要求 ${d.total} 条 · 覆盖 ${d.covered} 条 · 达到要求 ${d.attained} 条 · ${A3_DOC_TIER[d.tier]}</span></td></tr>`
+          + items.map(r => `<tr><td>${esc(r.a.name)}${r.a.core ? ' ★' : ''}</td><td class="c">${DOC_LV[r.rq]}</td>
+          <td class="c">${r.at >= r.rq ? tag('达到要求', 'good') : r.at ? tag(DOC_LV[r.at], 'warn') : tag('尚未覆盖', 'crit')}</td><td class="c">${r.tpa.ok} / ${r.tpa.n}</td></tr>`).join('');
+      }).join('')}
+    </tbody></table></div>
+    <p class="note">★ 为核心能力。「目标岗位达标 x / y」：本次目标岗位中有 y 个要求该能力，其中 x 个岗位的要求等级已达到。领域内按核心能力优先、y 从多到少排列。</p>
+  </section>
+  <div class="foot">本报告由平台根据学校填报信息自动生成</div>`);
+  return `<div class="doc">${H.join('')}</div>`;
+}
+function a3Export() {
+  if (!A3.majors.length || A3.layer < 3) { toast('请先完成全部 3 步，再导出报告'); return; }
+  if (!$('#docCss')) { const s = document.createElement('style'); s.id = 'docCss'; s.textContent = DOC_CSS; document.head.appendChild(s); }
+  if (!$('#a3docovCss')) { const s = document.createElement('style'); s.id = 'a3docovCss'; s.textContent = `#a3docov{position:fixed;inset:0;z-index:80;background:rgba(20,17,30,.55);display:flex;flex-direction:column}#a3docov[hidden]{display:none}`; document.head.appendChild(s); }
+  let ov = $('#a3docov');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'a3docov';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', '导出报告预览');
+    document.body.appendChild(ov);
+    ov.addEventListener('click', e => {
+      const b = e.target.closest('[data-a3doc]');
+      if (!b) return;
+      if (b.dataset.a3doc === 'close') { ov.hidden = true; document.body.style.overflow = ''; }
+      if (b.dataset.a3doc === 'print') { document.body.classList.add('print-doc'); window.print(); setTimeout(() => document.body.classList.remove('print-doc'), 300); }
+      if (b.dataset.a3doc === 'html') {
+        const title = a3DocTitle();
+        const html = a3DocPage(title, $('#a3docBody').innerHTML, false);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+        a.download = title + '.html';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      }
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !ov.hidden) { ov.hidden = true; document.body.style.overflow = ''; } });
+  }
+  ov.innerHTML = `<div class="doc-bar"><b>导出报告预览</b><span style="opacity:.7">供学校负责人阅读的正式版本</span>
+      <span style="flex:1"></span>
+      <button class="pri" data-a3doc="print">打印 / 另存为 PDF</button>
+      <button data-a3doc="html">下载 HTML</button>
+      <button data-a3doc="close" aria-label="关闭">关闭</button></div>
+    <div class="doc-scroll"><div id="a3docBody">${a3DocHTML()}</div></div>`;
+  ov.hidden = false;
+  document.body.style.overflow = 'hidden';
+  ov.querySelector('.doc-scroll').scrollTop = 0;
+}
+
+loadA3Hist();
+{
+  const m = location.hash.match(/a3rec=([^&]+)/);
+  if(m){
+    let rec = null;
+    try { rec = JSON.parse(decodeURIComponent(m[1])); } catch(e){}
+    if(!a3EnterHistMode(rec)) toast('历史报告的地址不完整，请回到原页面重新打开');
+  }
+}
+renderA3Steps();
 </script>
