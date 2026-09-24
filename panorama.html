@@ -6935,6 +6935,8 @@ const A3_MAJOR_BY_CODE = Object.fromEntries(A3D.majors.map(m=>[m.code, m]));
 const A3_SKILL_BY_ID = A3D.skillIndex || {};
 const A3_COURSE_BY_ID = A3D.courseIndex || {};
 const A3_TASK_BY_ID = A3D.taskIndex || {};
+const A3_MAJOR_BY_ID = A3D.majorIndex || {};
+const A3_LEAF_BY_ID = A3D.leafIndex || {};
 const A3_COURSE_SKILLS = {}, A3_TASK_SKILLS = {};
 Object.keys(A3_TASK_BY_ID).forEach(tid => { A3_TASK_SKILLS[tid] = A3_TASK_BY_ID[tid].skillIds || []; });
 Object.keys(A3_COURSE_BY_ID).forEach(cid => {
@@ -7549,14 +7551,14 @@ function renderA3Report() {
 }
 /* ── A3 详情抽屉：返回栈导航（不干扰 V2 的 openDrawer/closeDrawer）── */
 let a3DrawerStack = [];
-function a3DrawerPush(kind, title, subt, html) {
-  a3DrawerStack.push({ kind, title, subt, html });
+function a3DrawerPush(kind, title, subt, render) {
+  a3DrawerStack.push({ kind, title, subt, render });
   a3DrawerShow();
 }
 function a3DrawerShow() {
   const top = a3DrawerStack[a3DrawerStack.length - 1];
   if (!top) return;
-  openDrawer(top.kind, top.title, top.subt, top.html);
+  openDrawer(top.kind, top.title, top.subt, top.render());
   $('#drawer').classList.toggle('a3-nav', a3DrawerStack.length > 1);
 }
 function a3DrawerBack() {
@@ -7567,6 +7569,47 @@ $('#drBack').addEventListener('click', a3DrawerBack);
 $('#drClose').addEventListener('click', a3DrawerReset);
 $('#scrim').addEventListener('click', a3DrawerReset);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') a3DrawerReset(); });
+
+/* ═══ 节点详情（复制行业全景 openDrawer 下钻，只换数据源）═══
+   分段 / 归属链写法 / 类型徽章 / 截断规则沿用行业全景的 k2 系列样式。
+   归属链 = 专业 › 课程 › 任务（跳过课程分类与操作流程层），链上每段可点，节点自己不上链。
+   知识点/标准/案例作为叶子节点，详情 = 内容说明 + 归属技能（可点）。 */
+const A3_CAP = 5;
+const A3_NODE_LABEL = { major: '专业', course: '课程', task: '任务', skill: '技能', kp: '知识点', std: '标准', case: '案例' };
+const a3Ct = t => `<span class="k2ct bd-${t}">${A3_NODE_LABEL[t] || t}</span>`;
+const a3Sec = (title, inner) => `<div class="k2s"><div class="k2st">${title}</div>${inner}</div>`;
+const A3_NAV_ATTR = { major: 'data-a3majord', course: 'data-a3coursed', task: 'data-a3taskd', skill: 'data-a3skilld', leaf: 'data-a3leafd' };
+const a3Nl = (type, id, name) => `<span class="k2nl" role="button" tabindex="0" ${A3_NAV_ATTR[type]}="${esc(id)}">${esc(name)}</span>`;
+const a3Abl = (aid, name) => `<span class="k2nl" role="button" tabindex="0" data-a3abl="${esc(aid)}">${esc(name)}</span>`;
+function a3ChainHTML(chain) {
+  if (!chain || !chain.length) return '<span class="k2muted">—</span>';
+  return '<span class="k2chain">' + chain.map((c, i) =>
+    (i ? '<span class="k2sep">›</span>' : '') + a3Ct(c.type) + a3Nl(c.type, c.id, c.name)).join('') + '</span>';
+}
+function a3Cap(arr, fn) {
+  if (!arr.length) return '';
+  const vis = arr.slice(0, A3_CAP);
+  return vis.map(fn).join('') + (arr.length > A3_CAP ? `<div class="k2note">等 ${arr.length - A3_CAP} 条</div>` : '');
+}
+/* 归属链（上溯祖先，不含自己） */
+function a3CourseChain(cid) { const c = A3_COURSE_BY_ID[cid]; return c && c.majorId ? [{ type: 'major', id: c.majorId, name: c.majorName }] : []; }
+function a3TaskChain(tid) {
+  const t = A3_TASK_BY_ID[tid]; if (!t) return [];
+  const c = [];
+  if (t.majorId) c.push({ type: 'major', id: t.majorId, name: t.majorName });
+  if (t.courseId) c.push({ type: 'course', id: t.courseId, name: t.courseName });
+  return c;
+}
+function a3SkillChain(sid) {
+  const s = A3_SKILL_BY_ID[sid]; if (!s) return [];
+  const c = [];
+  if (s.majorId) c.push({ type: 'major', id: s.majorId, name: s.majorName });
+  if (s.courseId) c.push({ type: 'course', id: s.courseId, name: s.courseName });
+  if (s.taskId) c.push({ type: 'task', id: s.taskId, name: s.taskName });
+  return c;
+}
+/* ②在哪教「等 n 条」展开状态（返回上一层时保留） */
+const a3MoreOpen = new Set();
 
 /* 某能力在全行业的最高要求等级（对齐旧版「最高要求」口径） */
 function a3MaxReq(aid) {
@@ -7617,7 +7660,8 @@ function a3WhereHTML(aid) {
 
   const courseHead = c => {
     const nm = c.cid ? `<button class="a3ln" data-a3coursed="${c.cid}">${esc(c.name)}</button>` : esc(c.name);
-    const tag = c.isCross ? `<span class="a3-wmajor">${esc(c.majorName)}</span>` : '';
+    const tag = (c.isCross && c.majorId) ? `<button class="a3ln a3-wmajor" data-a3majord="${c.majorId}">${esc(c.majorName)}</button>`
+      : (c.isCross ? `<span class="a3-wmajor">${esc(c.majorName)}</span>` : '');
     return `<div class="a3-wcourse${c.isCross ? ' cross' : ''}">${nm}${tag}</div>`;
   };
   const skillRow = (c, s) => {
@@ -7632,7 +7676,7 @@ function a3WhereHTML(aid) {
     return [...byCourse.entries()].map(([cid, skills]) => {
       const c = A3_COURSE_BY_ID[cid] || {};
       const majorName = c.majorName || '';
-      return { cid, name: c.name || skills[0].courseName || '（未知课程）', majorName,
+      return { cid, name: c.name || skills[0].courseName || '（未知课程）', majorName, majorId: c.majorId || '',
                isCross: !selMajors.has(majorName), skills };
     }).sort((x, y) => (x.isCross ? 1 : 0) - (y.isCross ? 1 : 0));
   };
@@ -7645,28 +7689,30 @@ function a3WhereHTML(aid) {
     return html;
   };
   const LIMIT = 5;
-  const renderGroup = (title, list) => {
+  const renderGroup = (title, list, gi) => {
     if (!list.length) return '';
     const courses = buildCourses(list);
     const rows = [];
     courses.forEach(c => c.skills.forEach(s => rows.push({ c, s })));
     const total = rows.length;
+    const key = `${aid}:${gi}`;
+    const expanded = a3MoreOpen.has(key);
     let body;
     if (total <= LIMIT) {
       body = renderRows(rows, null);
     } else {
       const vis = rows.slice(0, LIMIT), more = rows.slice(LIMIT);
       body = renderRows(vis, null)
-        + `<button class="a3-wmore-btn" data-a3-more="${more.length}">等 ${more.length} 条</button>`
-        + `<div class="a3-wmore" hidden>${renderRows(more, vis[vis.length - 1].c.cid)}</div>`;
+        + `<button class="a3-wmore-btn" data-a3-more="${more.length}" data-a3-more-key="${key}">${expanded ? '收起' : `等 ${more.length} 条`}</button>`
+        + `<div class="a3-wmore"${expanded ? '' : ' hidden'}>${renderRows(more, vis[vis.length - 1].c.cid)}</div>`;
     }
     return `<div class="a3-wgroup"><div class="a3-wgroup-h">${title} · ${total} 条技能</div>${body}</div>`;
   };
 
   return concl
-    + renderGroup('已开展', groups[0])
-    + renderGroup('已开设课程中尚未开展', groups[1])
-    + renderGroup('需开设课程', groups[2]);
+    + renderGroup('已开展', groups[0], 0)
+    + renderGroup('已开设课程中尚未开展', groups[1], 1)
+    + renderGroup('需开设课程', groups[2], 2);
 }
 /* 能力提升路径四段（仅缺口能力显示） */
 function a3PathInDrawer(a, req, att) {
@@ -7766,63 +7812,115 @@ function a3PositionDrawer(pid) {
           <span class="pill k">${esc(a.type)}</span>
         </button>`; }).join('') + `</div>`).join('') +
     `<div class="assess">★ 核心能力　点击能力名查看详情</div></div>`;
-  a3DrawerPush('岗位', p.name, esc(p.sub), h);
+  a3DrawerPush('岗位', p.name, esc(p.sub), () => h);
 }
-/* 技能详情：可观察能力要求 / 达成结果 / 归属链 / 对应能力 / 下挂内容 */
-function a3SkillDepsHTML(s) {
-  const blk = (label, names, omitEmpty) => {
-    if (omitEmpty && !names.length) return '';
-    return `<div class="a3det"><span class="a3det-k">${label} ${names.length} 条</span>
-      <span class="a3det-v">${names.length ? esc(names.slice(0, 5).join('、')) + (names.length > 5 ? ` 等 ${names.length} 条` : '') : '无'}</span></div>`;
-  };
-  return `<div class="a3det-b">
-    ${blk('知识点', s.kp || [], false)}
-    ${blk('操作步骤', s.steps || [], true)}
-    ${blk('标准', s.standards || [], false)}
-    ${blk('案例', s.cases || [], false)}
-  </div>`;
+/* 技能详情：归属链 / 可观察能力要求 / 达成结果 / 对应能力 / 下挂内容（k2 系列样式，对齐行业全景） */
+function a3SkillHTML(sid) {
+  const s = A3_SKILL_BY_ID[sid];
+  if (!s) return '';
+  let h = '';
+  h += `<div class="k2s"><div class="k2st">归属链</div>${a3ChainHTML(a3SkillChain(sid))}</div>`;
+  h += `<div class="k2s"><div class="k2st">可观察能力要求</div><div class="k2def">${esc(s.obs || '—')}</div></div>`;
+  h += `<div class="k2s"><div class="k2st">达成结果</div><div class="k2def">${esc(s.result || '—')}</div></div>`;
+  const abIds = A3D.skillSupport[sid] || [];
+  h += `<div class="k2s"><div class="k2st">对应能力 ${abIds.length} 个</div>` +
+    (abIds.length ? a3Cap(abIds, e => {
+      const a = A3_ABILITY_BY_ID[e.abilityId];
+      return `<div class="k2row">${a3Abl(e.abilityId, a ? a.name : e.abilityId)}</div>`;
+    }) : '<div class="k2none">—</div>') + `</div>`;
+  const lv = s.leaves || {};
+  const zga = (() => {
+    const rows = [];
+    const cap = (arr, fn) => { rows.push(...arr.slice(0, A3_CAP).map(fn)); if (arr.length > A3_CAP) rows.push(`<div class="k2zga-i"><span class="k2muted">等 ${arr.length - A3_CAP} 条</span></div>`); };
+    cap(lv.kp || [], z => `<div class="k2zga-i k2bd bd-kp">${a3Nl('leaf', z.id, z.name)}</div>`);
+    cap(lv.steps || [], z => `<div class="k2zga-i k2bd bd-step">${esc(z.name)}</div>`);
+    cap(lv.standards || [], z => `<div class="k2zga-i k2bd bd-std">${a3Nl('leaf', z.id, z.name)}</div>`);
+    cap(lv.cases || [], z => `<div class="k2zga-i k2bd bd-case">${a3Nl('leaf', z.id, z.name)}</div>`);
+    return rows.length ? `<div class="k2zga">${rows.join('')}</div>` : '';
+  })();
+  if (zga) h += `<div class="k2s"><div class="k2st">下挂内容</div>${zga}</div>`;
+  return h;
 }
 function a3SkillDrawer(sid) {
   const s = A3_SKILL_BY_ID[sid];
   if (!s) return;
-  let h = '';
-  h += `<div class="dr-s"><div class="dr-st">可观察能力要求</div><div class="dr-def">${esc(s.obs || '—')}</div></div>`;
-  h += `<div class="dr-s"><div class="dr-st">达成结果</div><div class="dr-def">${esc(s.result || '—')}</div></div>`;
-  const courseLnk = s.courseId ? `<button class="a3ln" data-a3coursed="${s.courseId}">${esc(s.courseName || '—')}</button>` : esc(s.courseName || '—');
-  const taskLnk = s.taskId ? `<button class="a3ln" data-a3taskd="${s.taskId}">${esc(s.taskName || '—')}</button>` : esc(s.taskName || '—');
-  h += `<div class="dr-s"><div class="dr-st">归属链</div><div class="dr-def">${esc(s.majorName || '—')} › ${courseLnk} › ${taskLnk}</div></div>`;
-  const abIds = A3D.skillSupport[sid] || [];
-  h += `<div class="dr-s"><div class="dr-st">对应能力 ${abIds.length} 条</div>` +
-    (abIds.length ? abIds.map(e => {
-      const a = A3_ABILITY_BY_ID[e.abilityId];
-      return `<button class="arow" data-a3abl="${e.abilityId}"><span class="arow-n a3ln">${esc(a ? a.name : e.abilityId)}</span><span class="pill k">L${a3Lv(e.serviceLevel)}</span></button>`;
-    }).join('') : '<div class="pc-none">无</div>') + `</div>`;
-  h += `<div class="dr-s"><div class="dr-st">下挂内容</div>${a3SkillDepsHTML(s)}</div>`;
-  a3DrawerPush('技能', s.name, `${esc(s.courseName || '')} › ${esc(s.taskName || '')}`, h);
+  a3DrawerPush('技能', s.name, `${esc(s.courseName || '')} › ${esc(s.taskName || '')}`, () => a3SkillHTML(sid));
 }
-/* 课程详情：归属 + 课程类型 + 任务列表（每项可点 → 任务详情） */
+/* 课程详情：归属链 / 课程类型 / 任务列表（每项可点 → 任务详情） */
+function a3CourseHTML(cid) {
+  const c = A3_COURSE_BY_ID[cid];
+  if (!c) return '';
+  let h = '';
+  h += `<div class="k2s"><div class="k2st">归属链</div>${a3ChainHTML(a3CourseChain(cid))}</div>`;
+  h += `<div class="k2s"><div class="k2st">课程类型</div><div class="k2def">${esc(c.courseType || '—')}</div></div>`;
+  const taskIds = c.taskIds || [];
+  if (taskIds.length) h += `<div class="k2s"><div class="k2st">任务 ${taskIds.length} 个</div>` +
+    a3Cap(taskIds, tid => { const t = A3_TASK_BY_ID[tid]; return `<div class="k2row">${a3Nl('task', tid, t ? t.name : tid)}</div>`; }) + `</div>`;
+  return h;
+}
 function a3CourseDrawer(cid) {
   const c = A3_COURSE_BY_ID[cid];
   if (!c) return;
-  let h = '';
-  h += `<div class="dr-s"><div class="dr-st">归属</div><div class="dr-def">${esc(c.majorName || '—')} › ${esc(c.category || '—')}</div></div>`;
-  if (c.courseType) h += `<div class="dr-s"><div class="dr-st">课程类型</div><div class="dr-def">${esc(c.courseType)}</div></div>`;
-  const taskIds = c.taskIds || [];
-  h += `<div class="dr-s"><div class="dr-st">任务 ${taskIds.length} 个</div>` +
-    taskIds.map(tid => { const t = A3_TASK_BY_ID[tid];
-      return `<button class="arow" data-a3taskd="${tid}"><span class="arow-n a3ln">${esc(t ? t.name : tid)}</span><span class="pill k">${(A3_TASK_SKILLS[tid] || []).length} 条技能</span></button>`; }).join('') + `</div>`;
-  a3DrawerPush('课程', c.name, esc(c.category || ''), h);
+  a3DrawerPush('课程', c.name, esc(c.courseType || c.category || ''), () => a3CourseHTML(cid));
 }
-/* 任务详情：归属 + 技能列表（每项可点 → 技能详情） */
+/* 任务详情：归属链 / 任务结果 / 操作流程与技能（每项可点 → 技能详情） */
+function a3TaskHTML(tid) {
+  const t = A3_TASK_BY_ID[tid];
+  if (!t) return '';
+  let h = '';
+  h += `<div class="k2s"><div class="k2st">归属链</div>${a3ChainHTML(a3TaskChain(tid))}</div>`;
+  h += `<div class="k2s"><div class="k2st">任务结果</div><div class="k2def">${esc(t.result || '—')}</div></div>`;
+  const flows = t.flows || [];
+  const inFlow = new Set();
+  flows.forEach(f => (f.skillIds || []).forEach(id => inFlow.add(id)));
+  const direct = (t.skillIds || []).filter(id => !inFlow.has(id));
+  const skillRow = id => { const s = A3_SKILL_BY_ID[id]; return `<div class="k2row">${a3Nl('skill', id, s ? s.name : id)}</div>`; };
+  if (flows.length) {
+    flows.forEach(f => {
+      const ids = f.skillIds || [];
+      h += `<div class="k2s"><div class="k2st">操作流程 · ${esc(f.name)}</div>` +
+        (ids.length ? a3Cap(ids, skillRow) : '<div class="k2none">—</div>') + `</div>`;
+    });
+    if (direct.length) h += `<div class="k2s"><div class="k2st">直接挂任务下的技能 ${direct.length} 个</div>` + a3Cap(direct, skillRow) + `</div>`;
+  } else if (direct.length) {
+    h += `<div class="k2s"><div class="k2st">技能 ${direct.length} 个</div>` + a3Cap(direct, skillRow) + `</div>`;
+  }
+  return h;
+}
 function a3TaskDrawer(tid) {
   const t = A3_TASK_BY_ID[tid];
   if (!t) return;
+  a3DrawerPush('任务', t.name, esc(t.courseName || ''), () => a3TaskHTML(tid));
+}
+/* 专业详情：归属行业 / 课程列表（每项可点 → 课程详情） */
+function a3MajorHTML(mid) {
+  const m = A3_MAJOR_BY_ID[mid];
+  if (!m) return '';
   let h = '';
-  h += `<div class="dr-s"><div class="dr-st">归属</div><div class="dr-def">${esc(t.majorName || '—')} › ${esc(t.courseName || '—')} › ${esc(t.name)}</div></div>`;
-  const ids = A3_TASK_SKILLS[tid] || [];
-  h += `<div class="dr-s"><div class="dr-st">技能 ${ids.length} 条</div>` +
-    ids.map(id => { const s = A3_SKILL_BY_ID[id]; return `<button class="arow" data-a3skilld="${id}"><span class="arow-n a3ln">${esc(s ? s.name : id)}</span></button>`; }).join('') + `</div>`;
-  a3DrawerPush('任务', t.name, esc(t.courseName || ''), h);
+  h += `<div class="k2s"><div class="k2st">归属行业</div><div class="k2def">${esc(m.industryName || '—')}</div></div>`;
+  const courseIds = m.courseIds || [];
+  if (courseIds.length) h += `<div class="k2s"><div class="k2st">课程 ${courseIds.length} 门</div>` +
+    a3Cap(courseIds, cid => { const c = A3_COURSE_BY_ID[cid]; return `<div class="k2row">${a3Nl('course', cid, c ? c.name : cid)}</div>`; }) + `</div>`;
+  return h;
+}
+function a3MajorDrawer(mid) {
+  const m = A3_MAJOR_BY_ID[mid];
+  if (!m) return;
+  a3DrawerPush('专业', m.name, esc(m.industryName || ''), () => a3MajorHTML(mid));
+}
+/* 知识点 / 标准 / 案例详情：内容说明 / 归属技能（可点 → 技能详情） */
+function a3LeafHTML(lid) {
+  const l = A3_LEAF_BY_ID[lid];
+  if (!l) return '';
+  let h = '';
+  h += `<div class="k2s"><div class="k2st">内容说明</div><div class="k2def">${esc(l.content || '—')}</div></div>`;
+  h += `<div class="k2s"><div class="k2st">归属技能</div>${a3Nl('skill', l.skillId, l.skillName)}</div>`;
+  return h;
+}
+function a3LeafDrawer(lid) {
+  const l = A3_LEAF_BY_ID[lid];
+  if (!l) return;
+  a3DrawerPush(l.kind, l.name, esc(l.skillName || ''), () => a3LeafHTML(lid));
 }
 function a3AbilityDrawer(aid) {
   const a = A3_ABILITY_BY_ID[aid];
@@ -7846,7 +7944,7 @@ function a3AbilityDrawer(aid) {
     requiring.map(p => { const r = (p.abilityReqs || []).find(x => x.id === aid);
       return `<button class="arow" data-a3posd="${p.id}"><span class="arow-n a3ln">${esc(p.name)}</span><span class="pill k">${r.requiredLevel}</span></button>`; }).join('') + `</div>`;
   a3DrawerPush('能力项', a.name,
-    `${esc(a.type)} · ${esc(a.domain)} · ${a.core ? '核心能力 · ' : ''}${maxReq ? '最高要求 L' + maxReq : ''}`, h);
+    `${esc(a.type)} · ${esc(a.domain)} · ${a.core ? '核心能力 · ' : ''}${maxReq ? '最高要求 L' + maxReq : ''}`, () => h);
 }
 function a3MarkStale() {
   if (A3.layer >= 3) A3.stale = true;
@@ -8007,6 +8105,10 @@ document.addEventListener('click', e => {
   if (cd) { a3CourseDrawer(cd.dataset.a3coursed); return; }
   const td = e.target.closest('[data-a3taskd]');
   if (td) { a3TaskDrawer(td.dataset.a3taskd); return; }
+  const md = e.target.closest('[data-a3majord]');
+  if (md) { a3MajorDrawer(md.dataset.a3majord); return; }
+  const ld = e.target.closest('[data-a3leafd]');
+  if (ld) { a3LeafDrawer(ld.dataset.a3leafd); return; }
   const ex = e.target.closest('[data-a3export]');
   if (ex) { a3Export(); return; }
   const hb = e.target.closest('[data-a3="hist"]');
@@ -8015,11 +8117,15 @@ document.addEventListener('click', e => {
   if (ov) { a3OpenVersion(+ov.dataset.verno); return; }
   const mo = e.target.closest('[data-a3-more]');
   if (mo) {
-    const more = mo.nextElementSibling;
-    if (more && more.classList.contains('a3-wmore')) {
-      const expand = more.hidden;
-      more.hidden = !expand;
-      mo.textContent = expand ? '收起' : `等 ${mo.dataset.a3More} 条`;
+    const key = mo.dataset.a3MoreKey;
+    if (key) {
+      const wasOpen = a3MoreOpen.has(key);
+      if (wasOpen) a3MoreOpen.delete(key); else a3MoreOpen.add(key);
+      const more = mo.nextElementSibling;
+      if (more && more.classList.contains('a3-wmore')) {
+        more.hidden = wasOpen;
+        mo.textContent = wasOpen ? `等 ${mo.dataset.a3More} 条` : '收起';
+      }
     }
     return;
   }
