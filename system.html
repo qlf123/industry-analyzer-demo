@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>组织管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<style>
+/* 组织管理页业务布局（组织树 + 详情、字典表） */
+.org-grid{display:grid;grid-template-columns:330px 1fr;gap:18px;align-items:start}
+@media(max-width:920px){.org-grid{grid-template-columns:1fr}}
+.ots{display:flex;gap:8px;margin-bottom:12px}
+.ots-in{flex:1;height:32px;padding:0 11px;border:1px solid var(--rule);border-radius:8px;
+  background:var(--card-2);color:var(--ink);font-size:12.5px;min-width:0}
+.ots-in:focus{outline:none;border-color:var(--brand)}
+.otree{max-height:560px;overflow-y:auto;margin:0 -6px}
+.tnode>.trow{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:8px;
+  cursor:pointer;font-size:13px;color:var(--ink-2)}
+.tnode>.trow:hover{background:var(--rule-2);color:var(--ink)}
+.tnode.on>.trow{background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
+.tg{width:16px;height:16px;flex:0 0 16px;font-size:11px;color:var(--muted);
+  display:grid;place-items:center;padding:0;border-radius:4px}
+.tg:hover{background:var(--rule);color:var(--ink)}
+.tg.gap{pointer-events:none}
+.tname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttype{font-size:10.5px;font-family:var(--mono);color:var(--muted);flex:0 0 auto}
+.tnode .pill{flex:0 0 auto}
+.odh{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.odt{font-size:16px;font-weight:700}
+.odsub{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 18px;margin-bottom:18px}
+.kv .kk{color:var(--muted);font-size:11.5px}
+.kv .vv{font-size:13px;color:var(--ink);word-break:break-all}
+.kv .vv.full{grid-column:1/-1}
+.oacts{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--rule-2);padding-top:14px;align-items:center}
+.dacts{display:flex;gap:6px;justify-content:flex-end;align-items:center}
+.cell-t{font-size:12.5px;color:var(--ink)}
+.cell-s{display:block;font-size:10.5px;font-family:var(--mono);color:var(--muted);margin-top:2px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="demobar" id="demobar"></div>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">组织管理</h1>
+          <div class="pt-d">组织管理 · 字典管理</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body">
+      <div class="tabs l2" id="sysTabs" role="tablist"></div>
+      <div class="pane" id="paneOrg"></div>
+      <div class="pane" id="paneDict" hidden></div>
+    </div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var ctx = null, identity = null, ui = null;
+  var activeTab = 'org';
+  var selectedOrgId = null;
+  var searchText = '';
+  var expanded = {};
+
+  var TABS = [
+    { key: 'org',   label: '组织管理',   perm: 'org:node:view' },
+    { key: 'dict',  label: '组织类型字典', perm: 'org:node:view' }
+  ];
+  var ACT_LABEL = { add: '新增下级', edit: '编辑', move: '移动', toggle: '停用/启用', del: '删除' };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function byId(col, id) { return (ctx[col] || []).find(function (o) { return o.id === id; }); }
+  function orgById(id) { return byId('orgs', id); }
+  function typeById(id) { return byId('orgTypes', id); }
+
+  function reload() {
+    ctx = DEMO.getState();
+    ui = UI.ui();
+    identity = Perm.getIdentity(ctx, ui.accountId);
+  }
+
+  /* ── 审计：所有操作（含被拒绝 / 越权尝试）都落库 ── */
+  function audit(action, object, before, after, result, orgId) {
+    var rec = DEMO.addAudit(ctx, identity.account.id, action, object, before, after, result);
+    if (orgId != null) rec.orgId = orgId; // 组织作用域（字典类 = null 全局）
+    DEMO.saveState(ctx);
+  }
+
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2600);
+  }
+
+  function genId(prefix) {
+    return prefix + '-N' + Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6);
+  }
+
+  /* ── 组织树：可见 / 可编辑 判定 ── */
+  function childrenOf(orgId) {
+    return ctx.orgs.filter(function (o) { return o.parentId === orgId; })
+      .sort(function (a, b) { return (a.sort || 0) - (b.sort || 0) || a.name.localeCompare(b.name); });
+  }
+  function ancestorsOf(orgId) {
+    var m = {}; ctx.orgs.forEach(function (o) { m[o.id] = o; });
+    var out = [], cur = m[orgId];
+    while (cur && cur.parentId) { cur = m[cur.parentId]; out.unshift(cur.id); }
+    return out;
+  }
+  function orgScopeIds() {
+    var ids = [];
+    Perm.activeAssignments(ctx, identity).forEach(function (a) {
+      (a.scopeOrgIds || []).forEach(function (oid) { if (ids.indexOf(oid) < 0) ids.push(oid); });
+    });
+    return ids;
+  }
+  function isScopeNode(orgId) { return orgScopeIds().indexOf(orgId) >= 0; }
+
+  function orgVisibleIds() {
+    // 所有具有「组织节点查看」权限的人都能看到本校完整组织架构；编辑仍按各自范围（见 orgEditState / canAddChild）
+    var canView = Perm.activeAssignments(ctx, identity).some(function (a) {
+      return Perm.hasPermInAssignment(ctx, a, 'org:node:view');
+    });
+    if (!canView) return new Set();
+    return new Set(ctx.orgs.map(function (o) { return o.id; }));
+  }
+
+  /* 组织节点「维护范围」判定（7.1：组织管理员只能操作本节点的下级，本节点及其上级只读） */
+  function orgEditState(node) {
+    if (Perm.isSuper(ctx, identity)) {
+      if (node.parentId == null) return { editable: false, reason: '根节点唯一：不能编辑、移动、停用、删除，仅可新增下级' };
+      return { editable: true, reason: '' };
+    }
+    if (Perm.orgCanEdit(ctx, identity, node)) return { editable: true, reason: '' };
+    if (isScopeNode(node.id)) return { editable: false, reason: '本节点为授权范围节点（只读），只能操作其下级' };
+    if (orgScopeIds().some(function (oid) { return ancestorsOf(oid).indexOf(node.id) >= 0; })) {
+      return { editable: false, reason: '授权范围的上级节点（只读）' };
+    }
+    return { editable: false, reason: '无该节点维护权限（不在授权范围内）' };
+  }
+  function canAddChild(node) {
+    if (Perm.isSuper(ctx, identity)) return true;
+    // 组织管理员可给「授权范围节点及其下级」新增下级（本节点本身也可新增，见 7.1 / D-25）
+    return orgScopeIds().some(function (oid) {
+      return oid === node.id || Perm.descendants(ctx, oid).has(node.id);
+    });
+  }
+
+  function orgFullName(o) {
+    var path = ancestorsOf(o.id).map(function (id) { return orgById(id).name; });
+    path.push(o.name);
+    return path.join(' / ');
+  }
+
+  /* ── 渲染：入口 ── */
+  function render() {
+    reload();
+    renderTabs();
+    $('#paneOrg').hidden = activeTab !== 'org';
+    $('#paneDict').hidden = activeTab !== 'dict';
+    if (activeTab === 'org') renderOrg();
+    else if (activeTab === 'dict') renderDict();
+  }
+
+  function renderTabs() {
+    var el = $('#sysTabs');
+    var visible = TABS.filter(function (t) { return Perm.check(ctx, identity, t.perm, null, null).allowed; });
+    if (!visible.find(function (t) { return t.key === activeTab; })) activeTab = visible.length ? visible[0].key : null;
+    el.innerHTML = visible.map(function (t) {
+      return '<button class="tab" data-tab="' + t.key + '" role="tab"'
+        + (t.key === activeTab ? ' aria-selected="true"' : '') + '>' + esc(t.label) + '</button>';
+    }).join('');
+    if (!visible.length) {
+      $('#paneOrg').hidden = false;
+      $('#paneDict').hidden = true;
+      $('#paneOrg').innerHTML = '<div class="empty">当前身份无权访问组织管理（需「组织节点查看」权限）。</div>';
+    }
+  }
+
+  /* ── Tab1：组织管理 ── */
+  function searchFilter(text) {
+    var t = text.trim().toLowerCase();
+    var vis = orgVisibleIds();
+    if (!t) return vis;
+    var ids = new Set();
+    ctx.orgs.forEach(function (o) {
+      if (o.name.toLowerCase().indexOf(t) >= 0 || o.code.toLowerCase().indexOf(t) >= 0) {
+        ids.add(o.id);
+        ancestorsOf(o.id).forEach(function (a) { ids.add(a); });
+        Perm.descendants(ctx, o.id).forEach(function (d) { ids.add(d); });
+      }
+    });
+    var out = new Set();
+    ids.forEach(function (id) { if (vis.has(id)) out.add(id); });
+    return out;
+  }
+
+  function nodeHtml(node, vis, depth, forceExpand) {
+    var kids = ctx.orgs.filter(function (o) { return o.parentId === node.id && vis.has(o.id); })
+      .sort(function (a, b) { return (a.sort || 0) - (b.sort || 0) || a.name.localeCompare(b.name); });
+    var hasKids = kids.length > 0;
+    var isExp = forceExpand || expanded[node.id] !== false;
+    var sel = node.id === selectedOrgId;
+    var typeName = typeById(node.typeId) ? typeById(node.typeId).name : '';
+    var status = node.status === 'disabled' ? '<span class="pill warn">已停用</span>' : '';
+    var html = '<div class="tnode' + (sel ? ' on' : '') + '">'
+      + '<div class="trow" data-node="' + esc(node.id) + '" style="padding-left:' + (depth * 16 + 6) + 'px">'
+      + (hasKids ? '<button class="tg" data-tg="' + esc(node.id) + '" title="展开/收起">' + (isExp ? '▾' : '▸') + '</button>' : '<span class="tg gap"></span>')
+      + '<span class="tname">' + esc(node.name) + '</span>'
+      + '<span class="ttype">' + esc(typeName) + '</span>' + status
+      + '</div>'
+      + (hasKids && isExp ? '<div class="tchildren">' + kids.map(function (k) { return nodeHtml(k, vis, depth + 1, forceExpand); }).join('') + '</div>' : '')
+      + '</div>';
+    return html;
+  }
+
+  function renderOrg() {
+    var pane = $('#paneOrg');
+    var vis = searchFilter(searchText);
+    var forceExpand = !!searchText.trim();
+    if (!vis.has(selectedOrgId)) {
+      var root = ctx.orgs.find(function (o) { return o.parentId == null && vis.has(o.id); });
+      selectedOrgId = root ? root.id : (ctx.orgs.find(function (o) { return vis.has(o.id); }) || {}).id || null;
+    }
+    var roots = ctx.orgs.filter(function (o) { return o.parentId == null && vis.has(o.id); });
+    var tree = roots.map(function (r) { return nodeHtml(r, vis, 0, forceExpand); }).join('');
+    if (!tree) tree = '<div class="empty">无可见组织节点</div>';
+
+    pane.innerHTML = '<div class="org-grid">'
+      + '<div class="card pad">'
+      +   '<div class="ots"><input id="orgSearch" class="ots-in" placeholder="搜索节点名称 / 编码"></div>'
+      +   '<div class="otree">' + tree + '</div>'
+      + '</div>'
+      + '<div class="card pad" id="orgDetail">' + renderDetail() + '</div>'
+      + '</div>';
+
+    var inp = pane.querySelector('#orgSearch');
+    inp.value = searchText;
+    inp.addEventListener('input', function () { searchText = inp.value; renderOrg(); });
+  }
+
+  function renderDetail() {
+    var node = orgById(selectedOrgId);
+    if (!node) return '<div class="empty">请选择左侧组织节点</div>';
+    var parent = node.parentId ? orgById(node.parentId) : null;
+    var es = orgEditState(node);
+    var typeName = typeById(node.typeId) ? typeById(node.typeId).name : '—';
+    var statusPill = node.status === 'disabled' ? '<span class="pill warn">已停用</span>' : '<span class="pill good">启用中</span>';
+    var html = '<div class="odh"><div class="odt">' + esc(node.name) + '</div>'
+      + statusPill + '<span class="odsub">' + esc(node.code) + '</span></div>'
+      + '<div class="kv">'
+      +   kv('名称', node.name) + kv('编码', node.code)
+      +   kv('组织类型', typeName) + kv('上级节点', parent ? parent.name : '—（根节点）')
+      +   kv('排序', node.sort) + kv('状态', node.status === 'disabled' ? '已停用' : '启用中')
+      +   kv('说明', node.desc || '—', true)
+      + '</div>'
+      + '<div class="oacts">'
+      +   actionBtn('add', '新增下级', canAddChild(node), node)
+      +   actionBtn('edit', '编辑', es.editable, node)
+      +   actionBtn('move', '移动', es.editable, node)
+      +   actionBtn('toggle', node.status === 'disabled' ? '启用' : '停用', es.editable, node)
+      +   actionBtn('del', '删除', es.editable, node)
+      + '</div>';
+    return html;
+  }
+
+  function kv(k, v, full) {
+    return '<div><div class="kk">' + esc(k) + '</div><div class="vv' + (full ? ' full' : '') + '">' + esc(v) + '</div></div>';
+  }
+
+  function actionBtn(kind, label, allowed, node) {
+    if (!allowed) return '';
+    return '<button class="btn-s oact" data-act="' + kind + '" data-id="' + esc(node.id) + '">' + esc(label) + '</button>';
+  }
+
+  /* ── Tab2：组织类型字典 ── */
+  function renderDict() {
+    var pane = $('#paneDict');
+    var canEdit = Perm.check(ctx, identity, 'org:node:edit', null, null).allowed;
+    var rows = ctx.orgTypes.map(function (t) {
+      var refs = ctx.orgs.filter(function (o) { return o.typeId === t.id; });
+      return '<div class="dt-row" style="grid-template-columns:1fr 110px 150px">'
+        + '<div class="cell-t">' + esc(t.name) + '<span class="cell-s">' + esc(t.id) + '</span></div>'
+        + '<div class="dt-num">' + refs.length + '</div>'
+        + '<div class="dacts">' + dictBtn('edit', '编辑', canEdit, t) + dictBtn('del', '删除', canEdit, t) + '</div>'
+        + '</div>';
+    }).join('');
+    pane.innerHTML = '<div class="scbar"><b>组织类型字典</b>　被组织节点引用的类型不可删除。</div>'
+      + '<div class="card"><div class="dtable">'
+      + '<div class="dt-row dt-head" style="grid-template-columns:1fr 110px 150px"><div>名称</div><div class="dt-num">引用节点数</div><div class="dt-num">操作</div></div>'
+      + rows
+      + '<div class="pad" style="border-top:1px solid var(--rule-2)">' + dictBtn('add', '新增组织类型', canEdit, null) + '</div>'
+      + '</div></div>';
+  }
+
+  function dictBtn(kind, label, allowed, t) {
+    if (!allowed) return '';
+    var id = t ? t.id : '';
+    return '<button class="btn-s" data-dact="' + kind + '" data-id="' + esc(id) + '">' + esc(label) + '</button>';
+  }
+
+  /* ── 操作：组织节点 ── */
+  function onAction(kind, nodeId) {
+    var node = orgById(nodeId);
+    if (!node) return;
+    var es = orgEditState(node);
+    var allowed = kind === 'add' ? canAddChild(node) : es.editable;
+    if (!allowed) {
+      var reason = kind === 'add' ? es.reason : es.reason;
+      audit('越权尝试·' + ACT_LABEL[kind], node.name, null, { reason: reason || '无该操作权限' }, '被拒绝', node.id);
+      toast('越权尝试已记录：' + (reason || '无该操作权限'));
+      return;
+    }
+    if (kind === 'add') openOrgForm(null, node);
+    else if (kind === 'edit') openOrgForm(node, null);
+    else if (kind === 'move') openMove(node);
+    else if (kind === 'toggle') doToggle(node);
+    else if (kind === 'del') doDelete(node);
+  }
+
+  function openOrgForm(node, parentNode) {
+    var isAdd = !node;
+    var editing = node || { name: '', code: '', typeId: ctx.orgTypes[0] ? ctx.orgTypes[0].id : '', sort: 0, desc: '' };
+    var typeOptions = ctx.orgTypes.map(function (t) {
+      return '<option value="' + esc(t.id) + '"' + (editing.typeId === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
+    }).join('');
+    var title = isAdd ? '新增下级 · ' + parentNode.name : '编辑 · ' + node.name;
+    var dlg = openDialog('<form><h2>' + esc(title) + '</h2>'
+      + (isAdd ? '<label>上级节点<input value="' + esc(parentNode.name) + '" disabled></label>' : '')
+      + '<label>名称<input name="name" value="' + esc(editing.name) + '" required></label>'
+      + '<label>编码<input name="code" value="' + esc(editing.code) + '" required></label>'
+      + '<label>组织类型<select name="typeId">' + typeOptions + '</select></label>'
+      + '<label>排序<input name="sort" type="number" value="' + (editing.sort || 0) + '"></label>'
+      + '<label>说明<textarea name="desc" rows="2">' + esc(editing.desc || '') + '</textarea></label>'
+      + '<div class="note" id="formErr" style="color:var(--crit)"></div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div></form>');
+    var err = dlg.querySelector('#formErr');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var name = dlg.querySelector('[name=name]').value.trim();
+      var code = dlg.querySelector('[name=code]').value.trim();
+      var typeId = dlg.querySelector('[name=typeId]').value;
+      var sort = parseInt(dlg.querySelector('[name=sort]').value || '0', 10) || 0;
+      var desc = dlg.querySelector('[name=desc]').value.trim();
+      if (!name) { err.textContent = '名称不能为空'; return; }
+      if (!code) { err.textContent = '编码不能为空'; return; }
+      var dupCode = ctx.orgs.find(function (o) { return o.code === code && o !== node; });
+      if (dupCode) { err.textContent = '编码已存在：' + dupCode.name; return; }
+      var parentId = isAdd ? parentNode.id : node.parentId;
+      var dupName = ctx.orgs.find(function (o) { return o.parentId === parentId && o.name === name && o !== node; });
+      if (dupName) { err.textContent = '同一上级下已存在同名节点：' + dupName.name; return; }
+      dlg.close();
+      if (isAdd) {
+        var nid = genId('ORG');
+        ctx.orgs.push({ id: nid, name: name, code: code, typeId: typeId, parentId: parentNode.id, sort: sort, status: 'enabled', desc: desc });
+        audit('新增组织节点', name, null, { name: name, code: code, typeId: typeId, parentId: parentNode.id }, '成功', nid);
+        selectedOrgId = nid;
+        toast('已新增下级「' + name + '」');
+      } else {
+        var before = { name: node.name, code: node.code, typeId: node.typeId, sort: node.sort, desc: node.desc };
+        node.name = name; node.code = code; node.typeId = typeId; node.sort = sort; node.desc = desc;
+        audit('编辑组织节点', name, before, { name: name, code: code, typeId: typeId, sort: sort, desc: desc }, '成功', node.id);
+        toast('已保存「' + name + '」');
+      }
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function openMove(node) {
+    var cands = ctx.orgs.filter(function (o) {
+      return orgVisibleIds().has(o.id) && canAddChild(o) && o.status === 'enabled'
+        && o.id !== node.id && !Perm.descendants(ctx, node.id).has(o.id);
+    });
+    if (!cands.length) { toast('没有可移动到的上级节点'); return; }
+    var opts = cands.map(function (o) { return '<option value="' + esc(o.id) + '">' + esc(orgFullName(o)) + '</option>'; }).join('');
+    var dlg = openDialog('<form><h2>移动 · ' + esc(node.name) + '</h2>'
+      + '<div class="note">移动后其下级节点与挂载专业随之一同移动。</div>'
+      + '<label>新上级节点<select name="parent">' + opts + '</select></label>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">确定移动</button></div></form>');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var newParent = dlg.querySelector('[name=parent]').value;
+      if (newParent === node.parentId) { dlg.close(); return; }
+      var before = { parentId: node.parentId, parentName: node.parentId ? orgById(node.parentId).name : null };
+      node.parentId = newParent;
+      audit('移动组织节点', node.name, before, { parentId: newParent, parentName: orgById(newParent).name }, '成功', node.id);
+      dlg.close();
+      toast('已移动「' + node.name + '」');
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function doToggle(node) {
+    if (node.status === 'enabled') {
+      node.status = 'disabled';
+      audit('停用组织节点', node.name, { status: 'enabled' }, { status: 'disabled' }, '成功', node.id);
+      toast('已停用「' + node.name + '」（不再出现在数据范围 / 所属组织选择中）');
+    } else {
+      node.status = 'enabled';
+      audit('启用组织节点', node.name, { status: 'disabled' }, { status: 'enabled' }, '成功', node.id);
+      toast('已启用「' + node.name + '」');
+    }
+    render();
+  }
+
+  function doDelete(node) {
+    var r = Perm.checkDeleteOrg(ctx, identity, node.id);
+    if (!r.allowed) {
+      audit('删除组织节点', node.name, null, { blockers: r.blockers.map(function (b) { return b.type + ':' + b.name; }) }, '被拒绝', node.id);
+      showDeleteBlocked(node, r);
+      return;
+    }
+    confirmDialog('删除节点', '确定删除「' + esc(node.name) + '」？该节点无子节点、专业、账号引用，删除后不可恢复。', function () {
+      var i = ctx.orgs.indexOf(node);
+      ctx.orgs.splice(i, 1);
+      audit('删除组织节点', node.name, { name: node.name }, null, '成功', node.id);
+      selectedOrgId = null;
+      render();
+      toast('已删除「' + node.name + '」');
+    });
+  }
+
+  function showDeleteBlocked(node, r) {
+    var list = r.blockers.map(function (b) {
+      return '<div style="padding:5px 0;border-bottom:1px solid var(--rule-2)"><span class="pill ' + (b.type === '下级节点' ? 'warn' : 'k') + '">' + esc(b.type) + '</span>　' + esc(b.name) + '</div>';
+    }).join('');
+    var dlg = openDialog('<form><h2>无法删除「' + esc(node.name) + '」</h2>'
+      + '<div class="note">' + esc(r.denyReason) + '</div>'
+      + '<div style="margin:6px 0">' + list + '</div>'
+      + '<div class="acts"><button type="submit" class="btn">知道了</button></div></form>');
+    dlg.addEventListener('submit', function (ev) { ev.preventDefault(); dlg.close(); });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  /* ── 操作：组织类型 ── */
+  function onDictAction(kind, id) {
+    var canEdit = Perm.check(ctx, identity, 'org:node:edit', null, null).allowed;
+    var t = id ? typeById(id) : null;
+    if (!canEdit) {
+      audit('越权尝试·组织类型' + (kind === 'add' ? '新增' : kind === 'del' ? '删除' : '编辑'), t ? t.name : '新类型', null, { reason: '无组织节点维护权限' }, '被拒绝', null);
+      toast('越权尝试已记录：无组织节点维护权限');
+      return;
+    }
+    if (kind === 'add') openDictForm(null);
+    else if (kind === 'edit') openDictForm(t);
+    else if (kind === 'del') doDictDelete(t);
+  }
+
+  function openDictForm(t) {
+    var isAdd = !t;
+    var dlg = openDialog('<form><h2>' + (isAdd ? '新增组织类型' : '编辑组织类型') + '</h2>'
+      + '<label>名称<input name="name" value="' + (t ? esc(t.name) : '') + '" required></label>'
+      + '<div class="note" id="formErr" style="color:var(--crit)"></div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div></form>');
+    var err = dlg.querySelector('#formErr');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var name = dlg.querySelector('[name=name]').value.trim();
+      if (!name) { err.textContent = '名称不能为空'; return; }
+      var dup = ctx.orgTypes.find(function (o) { return o.name === name && o !== t; });
+      if (dup) { err.textContent = '已存在同名组织类型：' + dup.name; return; }
+      dlg.close();
+      if (isAdd) {
+        var nid = genId('OT');
+        ctx.orgTypes.push({ id: nid, name: name });
+        audit('新增组织类型', name, null, { name: name }, '成功', null);
+        toast('已新增组织类型「' + name + '」');
+      } else {
+        var before = { name: t.name };
+        t.name = name;
+        audit('编辑组织类型', name, before, { name: name }, '成功', null);
+        toast('已保存「' + name + '」');
+      }
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function doDictDelete(t) {
+    var refs = ctx.orgs.filter(function (o) { return o.typeId === t.id; });
+    if (refs.length) {
+      audit('删除组织类型', t.name, null, { refs: refs.map(function (o) { return o.name; }) }, '被拒绝', null);
+      var list = refs.map(function (o) { return '<div style="padding:5px 0;border-bottom:1px solid var(--rule-2)">' + esc(o.name) + '</div>'; }).join('');
+      var dlg = openDialog('<form><h2>无法删除「' + esc(t.name) + '」</h2>'
+        + '<div class="note">该类型被 ' + refs.length + ' 个组织节点引用：</div>'
+        + '<div style="margin:6px 0">' + list + '</div>'
+        + '<div class="acts"><button type="submit" class="btn">知道了</button></div></form>');
+      dlg.addEventListener('submit', function (ev) { ev.preventDefault(); dlg.close(); });
+      dlg.addEventListener('close', function () { dlg.remove(); });
+      return;
+    }
+    confirmDialog('删除组织类型', '确定删除「' + esc(t.name) + '」？', function () {
+      var i = ctx.orgTypes.indexOf(t);
+      ctx.orgTypes.splice(i, 1);
+      audit('删除组织类型', t.name, { name: t.name }, null, '成功', null);
+      render();
+      toast('已删除「' + t.name + '」');
+    });
+  }
+
+  /* ── 弹层 / 确认 / 提示 ── */
+  function openDialog(html) {
+    var dlg = document.createElement('dialog');
+    dlg.className = 'aidlg';
+    dlg.innerHTML = html;
+    document.body.appendChild(dlg);
+    dlg.showModal();
+    return dlg;
+  }
+  function confirmDialog(title, bodyHtml, onOk) {
+    var dlg = openDialog('<form><h2>' + esc(title) + '</h2><div class="note">' + bodyHtml + '</div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">确定</button></div></form>');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) { ev.preventDefault(); dlg.close(); onOk(); });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  /* ── 事件（委托到 #body，随重渲染仍生效） ── */
+  function bindEvents() {
+    $('#body').addEventListener('click', function (e) {
+      var tab = e.target.closest('[data-tab]');
+      if (tab) { activeTab = tab.getAttribute('data-tab'); render(); return; }
+      var tg = e.target.closest('[data-tg]');
+      if (tg) { var id = tg.getAttribute('data-tg'); expanded[id] = expanded[id] !== false ? false : true; renderOrg(); return; }
+      var node = e.target.closest('[data-node]');
+      if (node) { selectedOrgId = node.getAttribute('data-node'); renderOrg(); return; }
+      var act = e.target.closest('[data-act]');
+      if (act) { onAction(act.getAttribute('data-act'), act.getAttribute('data-id')); return; }
+      var dact = e.target.closest('[data-dact]');
+      if (dact) { onDictAction(dact.getAttribute('data-dact'), dact.getAttribute('data-id')); return; }
+    });
+  }
+
+  /* ── 启动 ── */
+  UI.boot({ portal: 'admin', active: 'system' });
+  UI.onChange(function () { render(); });
+  bindEvents();
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的班级</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<style>
+/* 我的班级页业务布局 */
+.sec-h{font-size:12.5px;font-weight:700;margin:16px 0 8px}
+.cell-t b{font-weight:600}
+.g3{display:grid;grid-template-columns:minmax(110px,1fr) 96px minmax(150px,1.5fr);gap:0 12px;align-items:center;padding:8px 14px;border-top:1px solid var(--rule-2);font-size:12.5px}
+.g3:first-child{border-top:0}
+.g4{display:grid;grid-template-columns:minmax(104px,1fr) minmax(170px,1.7fr) 70px;gap:0 12px;align-items:center;padding:8px 14px;border-top:1px solid var(--rule-2);font-size:12.5px}
+.g4:first-child{border-top:0}
+.g5{display:grid;grid-template-columns:minmax(104px,1fr) 96px minmax(150px,1.4fr) minmax(120px,1fr) minmax(150px,1.5fr);gap:0 12px;align-items:center;padding:8px 14px;border-top:1px solid var(--rule-2);font-size:12.5px}
+.g5:first-child{border-top:0}
+.gh{background:var(--card-2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="demobar" id="demobar"></div>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t" id="ptTitle">我的班级</h1>
+          <div class="pt-d" id="ptDesc">教学范围内的班级 · 作业与成绩</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body">
+      <div class="pane" id="pane"></div>
+    </div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var ctx = null, identity = null, ui = null;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function byId(col, id) { return (ctx[col] || []).find(function (o) { return o.id === id; }); }
+  function klassById(id) { return byId('klasses', id); }
+  function majorById(id) { return byId('majors', id); }
+  function gradeById(id) { return byId('grades', id); }
+  function studentById(id) { return byId('students', id); }
+  function roleById(id) { return byId('roles', id); }
+
+  function reload() {
+    ctx = DEMO.getState();
+    ui = UI.ui();
+    identity = Perm.getIdentity(ctx, ui.accountId);
+  }
+
+  function isEnterprise() {
+    return (identity.assignments || []).some(function (a) {
+      var r = roleById(a.roleId);
+      return r && r.key === 'enterprise';
+    });
+  }
+
+  /* 教师教学范围内的班级（教学范围 = classIds ∪ majorIds 覆盖的班级） */
+  function teachingKlasses() {
+    var set = new Set();
+    (identity.assignments || []).forEach(function (a) {
+      var r = roleById(a.roleId);
+      if (!r || r.key !== 'teacher') return;
+      var ts = a.teachingScope || {};
+      (ts.classIds || []).forEach(function (id) { set.add(id); });
+      (ts.majorIds || []).forEach(function (mid) {
+        ctx.klasses.forEach(function (k) { if (k.majorId === mid) set.add(k.id); });
+      });
+    });
+    return Array.from(set).map(function (id) { return klassById(id); }).filter(Boolean);
+  }
+
+  function scoreText(student) {
+    var m = Perm.maskField(ctx, identity, 'score', student, 'score');
+    if (m.value == null || m.mode === 'hidden') return '—';
+    if (m.mode === 'sum') return '平均 ' + m.value.average + '（' + m.value.count + ' 门）';
+    if (!m.value.length) return '—';
+    return m.value.map(function (s) { return s.course + ' ' + s.score; }).join('　');
+  }
+
+  function scoreTable(students) {
+    var rows = students.map(function (s) {
+      return '<div class="g3"><div class="cell-t"><b>' + esc(s.name) + '</b></div><div class="mono">' + esc(s.sno) + '</div><div>' + scoreText(s) + '</div></div>';
+    }).join('');
+    return '<div class="dtable"><div class="g3 gh"><div>姓名</div><div>学号</div><div>成绩</div></div>' + (rows || '<div class="empty">无学生</div>') + '</div>';
+  }
+
+  function homeworkTable(homeworks) {
+    var rows = homeworks.map(function (h) {
+      var stu = studentById(h.studentId);
+      var st = h.submitted ? '<span class="pill good">已交</span>' : '<span class="pill warn">未交</span>';
+      return '<div class="g4"><div>' + esc(stu ? stu.name : h.studentId) + '</div><div class="cell-t">' + esc(h.title) + '</div><div class="dt-num">' + st + '</div></div>';
+    }).join('');
+    return '<div class="dtable"><div class="g4 gh"><div>学生</div><div>作业</div><div class="dt-num">状态</div></div>' + (rows || '<div class="empty">无作业</div>') + '</div>';
+  }
+
+  function classCard(klass) {
+    var students = ctx.students.filter(function (s) { return s.klassId === klass.id; });
+    var homeworks = ctx.homeworks.filter(function (h) { return h.klassId === klass.id; });
+    var major = majorById(klass.majorId);
+    var grade = gradeById(klass.gradeId);
+    return '<div class="card" style="margin-bottom:16px">'
+      + '<div class="pad" style="border-bottom:1px solid var(--rule-2)">'
+      + '<div class="dr-k"><h2 style="font-size:14px">' + esc(klass.name) + '</h2>'
+      + '<span class="pill k">' + esc(major ? major.name : '') + '</span><span class="pill ext">' + esc(grade ? grade.name : '') + '</span></div>'
+      + '<div class="pt-d" style="margin-top:4px">' + students.length + ' 名学生 · ' + homeworks.length + ' 条作业</div>'
+      + '</div>'
+      + '<div class="pad">'
+      + '<div class="sec-h">成绩（' + students.length + '）</div>' + scoreTable(students)
+      + '<div class="sec-h">作业（' + homeworks.length + '）</div>' + homeworkTable(homeworks)
+      + '</div></div>';
+  }
+
+  function renderTeacher() {
+    var klasses = teachingKlasses();
+    var quota = Perm.effectiveAiQuota(ctx, identity);
+    var html = '<div class="scbar"><b>我的班级</b>　教学范围 ' + klasses.length + ' 个班　<span class="pill k">AI 配额 ' + quota + '</span></div>';
+    html += klasses.map(classCard).join('') || '<div class="card"><div class="empty">教学范围内暂无班级</div></div>';
+    $('#ptTitle').textContent = '我的班级';
+    $('#ptDesc').textContent = '教学范围内的班级 · 作业与成绩';
+    $('#pane').innerHTML = html;
+  }
+
+  function renderEnterprise() {
+    var base = byId('bases', identity.account.baseId);
+    var students = ctx.students.filter(function (s) { return s.internshipBaseId === identity.account.baseId; });
+    var quota = Perm.effectiveAiQuota(ctx, identity);
+    var rows = students.map(function (s) {
+      var m = Perm.maskStudent(ctx, identity, s, 'student');
+      var klass = klassById(s.klassId);
+      return '<div class="g5"><div class="cell-t"><b>' + esc(s.name) + '</b></div><div class="mono">' + esc(s.sno) + '</div><div>' + esc(klass ? klass.name : '') + '</div><div class="mono">' + esc(m.phone.value == null ? '—' : m.phone.value) + '</div><div>' + scoreText(s) + '</div></div>';
+    }).join('');
+    $('#ptTitle').textContent = '实习学生';
+    $('#ptDesc').textContent = '本基地实习学生 · AI 配额可见';
+    $('#pane').innerHTML = '<div class="scbar"><b>实习学生</b>　基地：' + esc(base ? base.name : '—') + '　共 ' + students.length + ' 名　<span class="pill k">AI 配额 ' + quota + '</span></div>'
+      + '<div class="card"><div class="dtable">'
+      + '<div class="g5 gh"><div>姓名</div><div>学号</div><div>班级</div><div>手机号</div><div>成绩</div></div>'
+      + (rows || '<div class="empty">本基地暂无实习学生</div>')
+      + '</div></div>';
+  }
+
+  function render() {
+    reload();
+    if (isEnterprise()) renderEnterprise();
+    else renderTeacher();
+  }
+
+  var c0 = DEMO.getState();
+  var id0 = Perm.getIdentity(c0, UI.ui().accountId);
+  var p0 = UI.portalOf(c0, id0);
+  if (p0 !== 'teacher' && p0 !== 'admin') { location.replace(UI.firstPage(c0, id0)); return; }
+  UI.boot({ portal: p0, active: 'myclasses' });
+  UI.onChange(function () { render(); });
+  render();
+})();
+</script>
+</body>
+</html>

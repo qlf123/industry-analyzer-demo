@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>教师档案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<style>
+/* 教师档案页业务布局 */
+.kv2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 18px}
+.kv2 .kk{color:var(--muted);font-size:11.5px}
+.kv2 .vv{font-size:13px;color:var(--ink);word-break:break-all}
+.sec-h{font-size:12.5px;font-weight:700;margin:16px 0 8px}
+.sw{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--card);color:var(--ink);min-width:260px}
+.sw:focus{outline:none;border-color:var(--brand)}
+</style>
+</head>
+<body>
+<div class="demobar" id="demobar"></div>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">教师档案</h1>
+          <div class="pt-d">默认显示本人档案 · 有范围的身份可切换教师</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body">
+      <div class="pane" id="pane"></div>
+    </div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var ctx = null, identity = null, ui = null, portal = 'teacher';
+  var selected = '';
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function byId(col, id) { return (ctx[col] || []).find(function (o) { return o.id === id; }); }
+  function accountById(id) { return byId('accounts', id); }
+  function orgById(id) { return byId('orgs', id); }
+
+  function reload() {
+    ctx = DEMO.getState();
+    ui = UI.ui();
+    identity = Perm.getIdentity(ctx, ui.accountId);
+    portal = UI.portalOf(ctx, identity);
+  }
+
+  function visibleProfiles() {
+    return ctx.teacherProfiles.filter(function (p) {
+      return Perm.check(ctx, identity, 'teaching:profile:view', p, 'teacherProfile').allowed;
+    });
+  }
+
+  function profileCard(p) {
+    var ac = accountById(p.accountId);
+    var orgNames = ac ? (Perm.accountOrgIds(ctx, ac) || []).map(function (id) { var o = orgById(id); return o ? o.name : id; }).join('、') : '';
+    return '<div class="card pad">'
+      + '<div class="dr-k"><h2 style="font-size:15px">' + esc(ac ? ac.name : p.accountId) + '</h2><span class="pill core">' + esc(p.title) + '</span></div>'
+      + '<div class="kv2">'
+      + '<div><div class="kk">所属组织</div><div class="vv">' + esc(orgNames || '—') + '</div></div>'
+      + '<div><div class="kk">账号</div><div class="vv mono">' + esc(p.accountId) + '</div></div>'
+      + '<div><div class="kk">职称</div><div class="vv">' + esc(p.title) + '</div></div>'
+      + '<div><div class="kk">档案编号</div><div class="vv mono">' + esc(p.id) + '</div></div>'
+      + '</div></div>';
+  }
+
+  function render() {
+    reload();
+    var profiles = visibleProfiles();
+    var selfProfile = ctx.teacherProfiles.find(function (p) { return p.accountId === identity.account.id; });
+    var others = profiles.filter(function (p) { return p.accountId !== identity.account.id; });
+    if (selected && !others.some(function (p) { return p.accountId === selected; })) selected = '';
+
+    var html = '<div class="scbar"><b>教师档案</b>　默认显示本人档案；有范围的身份可「切换教师」查看他人。年级筛选对教师档案不生效。</div>';
+
+    html += '<div class="sec-h">本人档案</div>';
+    if (selfProfile) html += profileCard(selfProfile);
+    else html += '<div class="card"><div class="empty">本人不是教师，无教师档案</div></div>';
+
+    if (others.length) {
+      html += '<div class="sec-h">切换教师（可查看 ' + others.length + ' 人）</div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'
+        + '<select id="switchTeacher" class="sw" aria-label="切换教师"><option value="">选择教师…</option>'
+        + others.map(function (p) {
+          var ac = accountById(p.accountId);
+          var orgNames = ac ? (Perm.accountOrgIds(ctx, ac) || []).map(function (id) { var o = orgById(id); return o ? o.name : id; }).join('、') : '';
+          return '<option value="' + esc(p.accountId) + '"' + (p.accountId === selected ? ' selected' : '') + '>' + esc(ac ? ac.name : p.accountId) + ' · ' + esc(orgNames) + '</option>';
+        }).join('')
+        + '</select></div>';
+      if (selected) {
+        var sp = others.find(function (p) { return p.accountId === selected; });
+        if (sp) html += profileCard(sp);
+      } else {
+        html += '<div class="card"><div class="empty">选择一位教师查看其档案</div></div>';
+      }
+    } else if (!selfProfile) {
+      html += '<div class="card"><div class="empty">当前身份无可查看的教师档案</div></div>';
+    }
+
+    $('#pane').innerHTML = html;
+    var sw = $('#switchTeacher');
+    if (sw) sw.addEventListener('change', function () { selected = this.value; render(); });
+  }
+
+  var c0 = DEMO.getState();
+  var id0 = Perm.getIdentity(c0, UI.ui().accountId);
+  var p0 = UI.portalOf(c0, id0);
+  if (p0 !== 'teacher' && p0 !== 'admin') { location.replace(UI.firstPage(c0, id0)); return; }
+  UI.boot({ portal: p0, active: p0 === 'teacher' ? 'profile' : 'teacherprofile' });
+  UI.onChange(function () { selected = ''; render(); });
+  render();
+})();
+</script>
+</body>
+</html>

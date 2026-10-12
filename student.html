@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的信息</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<style>
+/* 学生端业务布局 */
+.kv2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 18px}
+.kv2 .kk{color:var(--muted);font-size:11.5px}
+.kv2 .vv{font-size:13px;color:var(--ink);word-break:break-all}
+.sec-h{font-size:12.5px;font-weight:700;margin:16px 0 8px}
+.gradtip{display:flex;align-items:center;gap:8px;margin:0 6px 8px;padding:9px 13px;border:1px solid var(--rule);
+  border-radius:9px;background:var(--warn-bg);color:var(--warn-ink);font-size:12.5px}
+.hw{display:grid;grid-template-columns:minmax(150px,1.6fr) 80px minmax(90px,auto);gap:0 12px;align-items:center;padding:9px 14px;border-top:1px solid var(--rule-2);font-size:12.5px}
+.hw:first-child{border-top:0}
+.gh{background:var(--card-2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="demobar" id="demobar"></div>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">我的信息</h1>
+          <div class="pt-d">本人信息 · 本人作业</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body">
+      <div class="pane" id="pane"></div>
+    </div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var ctx = null, identity = null, ui = null;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function byId(col, id) { return (ctx[col] || []).find(function (o) { return o.id === id; }); }
+  function klassById(id) { return byId('klasses', id); }
+  function majorById(id) { return byId('majors', id); }
+
+  function reload() {
+    ctx = DEMO.getState();
+    ui = UI.ui();
+    identity = Perm.getIdentity(ctx, ui.accountId);
+  }
+
+  function audit(action, object, before, after, result, orgId) {
+    var rec = DEMO.addAudit(ctx, identity.account.id, action, object, before, after, result);
+    if (orgId != null) rec.orgId = orgId;
+    DEMO.saveState(ctx);
+  }
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2600);
+  }
+
+  function homeworkOrgId(h) {
+    var k = klassById(h.klassId);
+    var m = k ? majorById(k.majorId) : null;
+    return m ? m.orgId : null;
+  }
+
+  function render() {
+    reload();
+    var student = identity.account.studentId ? byId('students', identity.account.studentId) : null;
+    if (!student) {
+      $('#pane').innerHTML = '<div class="card"><div class="empty">未找到本人学生数据</div></div>';
+      return;
+    }
+
+    var m = Perm.maskStudent(ctx, identity, student, 'student');
+    var klass = klassById(student.klassId);
+    var graduated = student.status === '已毕业';
+    var homeworks = ctx.homeworks.filter(function (h) { return h.studentId === student.id; });
+    var canSubmit = Perm.canSubmitHomework(ctx, identity);
+
+    var html = '';
+
+    if (graduated) {
+      html += '<div class="gradtip">已毕业，仅可查看历史数据</div>';
+    }
+
+    html += '<div class="sec-h">本人信息（全量）</div>'
+      + '<div class="card pad"><div class="kv2">'
+      + '<div><div class="kk">姓名</div><div class="vv">' + esc(student.name) + '</div></div>'
+      + '<div><div class="kk">学号</div><div class="vv mono">' + esc(student.sno) + '</div></div>'
+      + '<div><div class="kk">班级</div><div class="vv">' + esc(klass ? klass.name : '') + '</div></div>'
+      + '<div><div class="kk">状态</div><div class="vv">' + esc(student.status) + '</div></div>'
+      + '<div><div class="kk">手机号</div><div class="vv mono">' + esc(m.phone.value == null ? '—' : m.phone.value) + '</div></div>'
+      + '<div><div class="kk">身份证号</div><div class="vv mono">' + esc(m.idCard.value == null ? '—' : m.idCard.value) + '</div></div>'
+      + '<div><div class="kk">家庭住址</div><div class="vv">' + esc(m.address.value == null ? '—' : m.address.value) + '</div></div>'
+      + '</div></div>';
+
+    var rows = homeworks.map(function (h) {
+      var st = h.submitted ? '<span class="pill good">已交</span>' : '<span class="pill warn">未交</span>';
+      var btn = (!h.submitted && canSubmit) ? '<button class="btn-s" data-submit="' + esc(h.id) + '">提交</button>' : '';
+      return '<div class="hw"><div class="cell-t"><b>' + esc(h.title) + '</b></div><div>' + st + '</div><div class="dt-num">' + btn + '</div></div>';
+    }).join('');
+
+    html += '<div class="sec-h">本人作业（' + homeworks.length + '）</div>'
+      + '<div class="card"><div class="dtable">'
+      + '<div class="hw gh"><div>作业</div><div>状态</div><div class="dt-num">操作</div></div>'
+      + (rows || '<div class="empty">暂无作业</div>')
+      + '</div></div>';
+
+    $('#pane').innerHTML = html;
+  }
+
+  function bindEvents() {
+    $('#body').addEventListener('click', function (e) {
+      var el = e.target.closest('[data-submit]');
+      if (!el) return;
+      var h = byId('homeworks', el.getAttribute('data-submit'));
+      if (!h) return;
+      var before = h.submitted;
+      h.submitted = true;
+      audit('提交作业', h.title, { submitted: before }, { submitted: true }, '成功', homeworkOrgId(h));
+      toast('已提交「' + h.title + '」');
+      render();
+    });
+  }
+
+  var c0 = DEMO.getState();
+  var id0 = Perm.getIdentity(c0, UI.ui().accountId);
+  var p0 = UI.portalOf(c0, id0);
+  if (p0 !== 'student') { location.replace(UI.firstPage(c0, id0)); return; }
+  UI.boot({ portal: 'student', active: 'mine' });
+  UI.onChange(function () { render(); });
+  bindEvents();
+  render();
+})();
+</script>
+</body>
+</html>

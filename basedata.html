@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>教务基础数据</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<style>
+/* 教务基础数据页业务布局 */
+.bd-scroll{overflow-x:auto}
+.m-hid{color:var(--muted);font-family:var(--mono);font-size:11.5px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.kv2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 18px}
+.kv2 .kk{color:var(--muted);font-size:11.5px}
+.kv2 .vv{font-size:13px;color:var(--ink);word-break:break-all}
+.scoreline{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 0;border-top:1px solid var(--rule-2)}
+.scoreline .sc{font-family:var(--mono);font-size:12px}
+.sec-h{font-size:12.5px;font-weight:700;margin:4px 0 8px}
+.oact.disabled{opacity:.45;cursor:not-allowed}
+.oact.disabled:hover{border-color:var(--rule);color:var(--ink-2)}
+.whyq{width:22px;height:22px;border-radius:50%;background:var(--card-2);border:1px solid var(--rule);
+  color:var(--ink-2);font-size:12px;font-weight:700;display:inline-grid;place-items:center;
+  cursor:help;flex:0 0 22px}
+.whyq:hover{border-color:var(--brand);color:var(--brand-ink)}
+</style>
+</head>
+<body>
+<div class="demobar" id="demobar"></div>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">教务基础数据</h1>
+          <div class="pt-d">专业 · 班级与年级 · 学生信息 · 内容审核</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body">
+      <div class="tabs l2" id="bdTabs" role="tablist"></div>
+      <div class="pane" id="paneMajor"></div>
+      <div class="pane" id="paneGrade" hidden></div>
+      <div class="pane" id="paneStudent" hidden></div>
+      <div class="pane" id="paneContent" hidden></div>
+    </div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var ctx = null, identity = null, ui = null;
+  var activeTab = 'major';
+
+  var TABS = [
+    { key: 'major',   label: '专业管理',   perms: ['org:node:view'] },
+    { key: 'grade',   label: '班级与年级', perms: ['org:node:view'] },
+    { key: 'student', label: '学生信息',   perms: ['student:info:view'] },
+    { key: 'content', label: '内容审核',   perms: ['teaching:content:view', 'teaching:content:audit'] }
+  ];
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function byId(col, id) { return (ctx[col] || []).find(function (o) { return o.id === id; }); }
+  function orgById(id) { return byId('orgs', id); }
+  function majorById(id) { return byId('majors', id); }
+  function klassById(id) { return byId('klasses', id); }
+  function gradeById(id) { return byId('grades', id); }
+  function accById(id) { return byId('accounts', id); }
+
+  function reload() {
+    ctx = DEMO.getState();
+    ui = UI.ui();
+    identity = Perm.getIdentity(ctx, ui.accountId);
+  }
+
+  function audit(action, object, before, after, result, orgId) {
+    var rec = DEMO.addAudit(ctx, identity.account.id, action, object, before, after, result);
+    if (orgId != null) rec.orgId = orgId;
+    DEMO.saveState(ctx);
+  }
+
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2600);
+  }
+
+  function genId(prefix) {
+    return prefix + '-N' + Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6);
+  }
+
+  /* ── 通用判定快捷 ── */
+  function can(code) { return Perm.check(ctx, identity, code, null, null).allowed; }
+  function scopeOrgIdSet() {
+    var set = new Set();
+    Perm.visibleOrgNodes(ctx, identity, { forAssign: true }).forEach(function (o) { set.add(o.id); });
+    return set;
+  }
+  function orgDepth(orgId) {
+    var m = {}; ctx.orgs.forEach(function (o) { m[o.id] = o; });
+    var d = 0, cur = orgId;
+    while (cur && m[cur] && m[cur].parentId) { d++; cur = m[cur].parentId; }
+    return d;
+  }
+  function indent(n) { return new Array(n + 1).join('　'); }
+  function klassOrgName(klass) {
+    var major = majorById(klass.majorId);
+    var org = major ? orgById(major.orgId) : null;
+    return org ? org.name : '—';
+  }
+  function studentKlass(student) { return klassById(student.klassId); }
+  function studentMajor(student) { var k = studentKlass(student); return k ? majorById(k.majorId) : null; }
+  function studentOrgId(student) { return Perm.targetOrgId(ctx, student, 'student'); }
+
+  /* ── 渲染入口 ── */
+  function render() {
+    reload();
+    renderTabs();
+    $('#paneMajor').hidden = activeTab !== 'major';
+    $('#paneGrade').hidden = activeTab !== 'grade';
+    $('#paneStudent').hidden = activeTab !== 'student';
+    $('#paneContent').hidden = activeTab !== 'content';
+    if (activeTab === 'major') renderMajor();
+    else if (activeTab === 'grade') renderGrade();
+    else if (activeTab === 'student') renderStudent();
+    else if (activeTab === 'content') renderContent();
+  }
+
+  function renderTabs() {
+    var el = $('#bdTabs');
+    var visible = TABS.filter(function (t) {
+      return t.perms.some(function (p) { return Perm.check(ctx, identity, p, null, null).allowed; });
+    });
+    if (!visible.find(function (t) { return t.key === activeTab; })) activeTab = visible.length ? visible[0].key : null;
+    el.innerHTML = visible.map(function (t) {
+      return '<button class="tab" data-tab="' + t.key + '" role="tab"'
+        + (t.key === activeTab ? ' aria-selected="true"' : '') + '>' + esc(t.label) + '</button>';
+    }).join('');
+    if (!visible.length) {
+      ['#paneMajor', '#paneGrade', '#paneStudent', '#paneContent'].forEach(function (s) { $(s).hidden = true; });
+      $('#paneMajor').hidden = false;
+      $('#paneMajor').innerHTML = '<div class="empty">当前身份无权访问教务基础数据。</div>';
+    }
+  }
+
+  /* ── Tab1：专业管理（7.3） ── */
+  function renderMajor() {
+    var pane = $('#paneMajor');
+    var canEdit = can('org:node:edit');
+    var scope = scopeOrgIdSet();
+    var majors = ctx.majors.filter(function (m) { return scope.has(m.orgId); });
+    var rows = majors.map(function (m) {
+      var org = orgById(m.orgId);
+      var orgPill = org ? (org.status === 'disabled' ? '<span class="pill warn">已停用</span>' : '') : '';
+      return '<div class="dt-row" style="grid-template-columns:1fr 1fr 120px">'
+        + '<div class="cell-t">' + esc(m.name) + '<span class="cell-s">' + esc(m.id) + '</span></div>'
+        + '<div class="cell-t">' + esc(org ? org.name : '—') + '　' + orgPill + '</div>'
+        + '<div class="dacts">' + majorEditBtn(canEdit, m) + '</div>'
+        + '</div>';
+    }).join('');
+    pane.innerHTML = '<div class="scbar"><b>专业管理</b>　所属组织为必填，只能选择启用中的节点。</div>'
+      + '<div class="card"><div class="dtable">'
+      + '<div class="dt-row dt-head" style="grid-template-columns:1fr 1fr 120px"><div>专业名称</div><div>所属组织</div><div class="dt-num">操作</div></div>'
+      + (rows || '<div class="empty">暂无专业</div>')
+      + '</div>'
+      + '<div class="pad" style="border-top:1px solid var(--rule-2)">' + majorAddBtn(canEdit) + '</div>'
+      + '</div>';
+  }
+
+  function majorAddBtn(canEdit) {
+    if (canEdit) return '<button class="btn-s" data-madd="1">新增专业</button>';
+    var q = ui.why ? '<button class="whyq" data-mwhy="add">?</button>' : '';
+    return '<button class="btn-s oact disabled" data-madd="1" aria-disabled="true">新增专业</button>' + q;
+  }
+  function majorEditBtn(canEdit, m) {
+    if (canEdit) return '<button class="btn-s" data-medit="' + esc(m.id) + '">编辑</button>';
+    var q = ui.why ? '<button class="whyq" data-mwhy="edit" data-id="' + esc(m.id) + '">?</button>' : '';
+    return '<button class="btn-s oact disabled" data-medit="' + esc(m.id) + '" aria-disabled="true">编辑</button>' + q;
+  }
+
+  function openMajorForm(major) {
+    var isAdd = !major;
+    var selOpts = Perm.visibleOrgNodes(ctx, identity, { forAssign: true }).map(function (o) {
+      return '<option value="' + esc(o.id) + '"' + (major && major.orgId === o.id ? ' selected' : '') + '>'
+        + esc(indent(orgDepth(o.id)) + o.name) + (o.status === 'disabled' ? '' : '') + '</option>';
+    }).join('');
+    var dlg = openDialog('<form><h2>' + (isAdd ? '新增专业' : '编辑专业') + '</h2>'
+      + '<label>专业名称<input name="name" value="' + (major ? esc(major.name) : '') + '" required></label>'
+      + '<label>所属组织（必填，仅启用节点）<select name="orgId">' + selOpts + '</select></label>'
+      + '<div class="note" id="formErr" style="color:var(--crit)"></div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div></form>');
+    var err = dlg.querySelector('#formErr');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var name = dlg.querySelector('[name=name]').value.trim();
+      var orgId = dlg.querySelector('[name=orgId]').value;
+      if (!name) { err.textContent = '专业名称不能为空'; return; }
+      if (!orgId) { err.textContent = '所属组织为必填'; return; }
+      var dup = ctx.majors.find(function (o) { return o.name === name && o !== major; });
+      if (dup) { err.textContent = '已存在同名专业：' + dup.name; return; }
+      dlg.close();
+      if (isAdd) {
+        var nid = genId('MAJOR');
+        ctx.majors.push({ id: nid, name: name, orgId: orgId });
+        audit('新增专业', name, null, { name: name, orgId: orgId }, '成功', orgId);
+        toast('已新增专业「' + name + '」');
+      } else {
+        var before = { name: major.name, orgId: major.orgId };
+        major.name = name; major.orgId = orgId;
+        audit('编辑专业', name, before, { name: name, orgId: orgId }, '成功', orgId);
+        toast('已保存「' + name + '」');
+      }
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  /* ── Tab2：班级与年级 ── */
+  function renderGrade() {
+    var pane = $('#paneGrade');
+    var grades = ctx.grades.map(function (g) {
+      return '<div class="dt-row" style="grid-template-columns:1fr 140px">'
+        + '<div>' + esc(g.name) + '</div>'
+        + '<div>' + (g.graduated ? '<span class="pill warn">已毕业</span>' : '<span class="pill good">在读</span>') + '</div>'
+        + '</div>';
+    }).join('');
+    var scope = scopeOrgIdSet();
+    var klasses = ctx.klasses.filter(function (k) {
+      var major = majorById(k.majorId);
+      return major && scope.has(major.orgId);
+    });
+    var krows = klasses.map(function (k) {
+      var major = majorById(k.majorId);
+      var grade = gradeById(k.gradeId);
+      return '<div class="dt-row" style="grid-template-columns:1.4fr 1fr 90px 1fr">'
+        + '<div class="cell-t">' + esc(k.name) + '<span class="cell-s">' + esc(k.id) + '</span></div>'
+        + '<div>' + esc(major ? major.name : '—') + '</div>'
+        + '<div>' + esc(grade ? grade.name : '—') + '</div>'
+        + '<div class="cell-t">' + esc(klassOrgName(k)) + '<span class="cell-s">随专业</span></div>'
+        + '</div>';
+    }).join('');
+    pane.innerHTML = '<div class="sec-h">年级（全校通用，不挂组织）</div>'
+      + '<div class="card"><div class="dtable">'
+      + '<div class="dt-row dt-head" style="grid-template-columns:1fr 140px"><div>年级</div><div>状态</div></div>'
+      + grades
+      + '</div></div>'
+      + '<div class="sec-h" style="margin-top:20px">班级（所属组织随专业）</div>'
+      + '<div class="card"><div class="dtable">'
+      + '<div class="dt-row dt-head" style="grid-template-columns:1.4fr 1fr 90px 1fr"><div>班级</div><div>专业</div><div>年级</div><div>所属组织</div></div>'
+      + (krows || '<div class="empty">暂无可见班级</div>')
+      + '</div></div>';
+  }
+
+  /* ── Tab3：学生信息（7.6） ── */
+  function maskVal(f) {
+    if (f.value == null || f.value === '') return '<span class="m-hid">—</span>';
+    return esc(f.value);
+  }
+  function scoreHtml(scoreField) {
+    var f = scoreField;
+    if (f.mode === 'hidden') return '<span class="m-hid">不可见</span>';
+    if (f.mode === 'sum') {
+      var v = f.value || {};
+      return '<span>平均 ' + v.average + ' 分 · 共 ' + v.count + ' 门</span>';
+    }
+    var list = f.value || [];
+    if (!list.length) return '<span class="m-hid">—</span>';
+    return list.map(function (s) { return '<span class="mono">' + esc(s.course) + ' ' + s.score + '</span>'; }).join('<span class="m-hid"> · </span>');
+  }
+
+  function renderStudent() {
+    var pane = $('#paneStudent');
+    var all = ctx.students;
+    var scoped = Perm.listFilter(ctx, identity, 'student:info:view', 'student', all);
+    var shown = scoped;
+    if (ui.orgId && ui.orgId !== '') {
+      var sub = Perm.descendants(ctx, ui.orgId);
+      shown = scoped.filter(function (s) { return sub.has(studentOrgId(s)); });
+    }
+    var filteredOut = scoped.length - shown.length;
+    var denied = all.length - scoped.length;
+    var rows = shown.map(function (s) {
+      var ms = Perm.maskStudent(ctx, identity, s, 'student');
+      var klass = studentKlass(s);
+      var grade = klass ? gradeById(klass.gradeId) : null;
+      var isGrad = s.status === '已毕业';
+      var stPill = isGrad ? '<span class="pill warn">已毕业</span>' : '<span class="pill good">在读</span>';
+      var op = '<button class="btn-s" data-sview="' + esc(s.id) + '">查看成绩</button> '
+        + (isGrad
+          ? '<button class="btn-s oact disabled" data-sedit="' + esc(s.id) + '" aria-disabled="true">编辑</button>' + (ui.why ? '<button class="whyq" data-swhy="' + esc(s.id) + '">?</button>' : '')
+          : '<button class="btn-s" data-sedit="' + esc(s.id) + '">编辑</button>')
+        + (ui.why ? '<button class="whyq" data-swhy="' + esc(s.id) + '">?</button>' : '');
+      return '<div class="dt-row" style="grid-template-columns:76px 110px 1.3fr 76px 110px 110px 150px 74px 200px">'
+        + '<div>' + esc(s.name) + '</div>'
+        + '<div class="mono">' + esc(s.sno) + '</div>'
+        + '<div class="cell-t">' + esc(klass ? klass.name : '—') + '</div>'
+        + '<div>' + esc(grade ? grade.name : '—') + '</div>'
+        + '<div class="cell-t">' + maskVal(ms.phone) + '</div>'
+        + '<div class="cell-t">' + maskVal(ms.idCard) + '</div>'
+        + '<div class="cell-t">' + maskVal(ms.address) + '</div>'
+        + '<div>' + stPill + '</div>'
+        + '<div class="dacts">' + op + '</div>'
+        + '</div>';
+    }).join('');
+    pane.innerHTML = '<div class="scbar"><b>学生信息</b>　可见 ' + shown.length + ' 条'
+      + (filteredOut ? ' · 被当前组织过滤 ' + filteredOut + ' 条' : '')
+      + (denied ? ' · 无权限 ' + denied + ' 条' : '')
+      + ' · 敏感字段按脱敏表展示，查看明文写审计</div>'
+      + '<div class="card"><div class="dtable bd-scroll">'
+      + '<div class="dt-row dt-head" style="grid-template-columns:76px 110px 1.3fr 76px 110px 110px 150px 74px 200px">'
+      + '<div>姓名</div><div>学号</div><div>班级</div><div>年级</div><div>手机号</div><div>身份证号</div><div>家庭住址</div><div>状态</div><div class="dt-num">操作</div></div>'
+      + (rows || '<div class="empty">暂无可见学生</div>')
+      + '</div></div>';
+  }
+
+  function openStudentDetail(student) {
+    var ms = Perm.maskStudent(ctx, identity, student, 'student');
+    var klass = studentKlass(student);
+    var grade = klass ? gradeById(klass.gradeId) : null;
+    audit('查看学生信息', student.name, null, { studentId: student.id, score: ms.score.mode, idCard: ms.idCard.mode }, '成功', studentOrgId(student));
+    var dlg = openDialog('<form><h2>' + esc(student.name) + ' · 成绩详情</h2>'
+      + '<div class="kv2">'
+      + kv('学号', student.sno) + kv('班级', klass ? klass.name : '—')
+      + kv('年级', grade ? grade.name : '—') + kv('状态', student.status)
+      + kv('手机号', ms.phone.value == null ? '不可见' : ms.phone.value)
+      + kv('身份证号', ms.idCard.value == null ? '不可见' : ms.idCard.value)
+      + kv('家庭住址', ms.address.value == null ? '不可见' : ms.address.value)
+      + '</div>'
+      + '<div class="scoreline">' + scoreHtml(ms.score) + '</div>'
+      + '<div class="note">脱敏档：手机 ' + esc(ms.phone.tier) + ' · 身份证 ' + esc(ms.idCard.tier) + ' · 成绩 ' + esc(ms.score.tier) + '</div>'
+      + '<div class="acts"><button type="submit" class="btn">关闭</button></div></form>');
+    dlg.addEventListener('submit', function (ev) { ev.preventDefault(); dlg.close(); });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function openStudentEdit(student) {
+    var dlg = openDialog('<form><h2>编辑学生 · ' + esc(student.name) + '</h2>'
+      + '<label>姓名<input name="name" value="' + esc(student.name) + '" required></label>'
+      + '<div class="note">本 Demo 学生信息编辑仅演示「已毕业只读」，其余字段不开放。</div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div></form>');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var name = dlg.querySelector('[name=name]').value.trim();
+      if (!name) { return; }
+      var before = { name: student.name };
+      student.name = name;
+      audit('编辑学生信息', name, before, { name: name }, '成功', studentOrgId(student));
+      dlg.close();
+      toast('已保存「' + name + '」');
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function kv(k, v) {
+    return '<div><div class="kk">' + esc(k) + '</div><div class="vv">' + esc(v) + '</div></div>';
+  }
+
+  /* ── Tab4：内容审核（7.11，占位） ── */
+  function contentAuditAllowed(content) {
+    return Perm.check(ctx, identity, 'teaching:content:audit', content, 'content').allowed;
+  }
+  function renderContent() {
+    var pane = $('#paneContent');
+    var rows = ctx.contents.map(function (c) {
+      var org = orgById(c.orgId);
+      var allowed = contentAuditAllowed(c);
+      var acts;
+      if (allowed) {
+        acts = '<button class="btn-s" data-cpass="' + esc(c.id) + '">通过</button> '
+          + '<button class="btn-s" data-crej="' + esc(c.id) + '">退回</button>';
+      } else {
+        acts = '<span class="m-hid">无审核权限</span>'
+          + (ui.why ? '<button class="whyq" data-cwhy="' + esc(c.id) + '">?</button>' : '');
+      }
+      return '<div class="dt-row" style="grid-template-columns:1.6fr 90px 1fr 84px 180px">'
+        + '<div class="cell-t">' + esc(c.title) + '<span class="cell-s">' + esc(c.id) + '</span></div>'
+        + '<div>' + esc(c.type) + '</div>'
+        + '<div>' + esc(org ? org.name : '—') + '</div>'
+        + '<div>' + (c.status === '待审核' ? '<span class="pill k">待审核</span>' : (c.status === '已通过' ? '<span class="pill good">已通过</span>' : '<span class="pill crit">已退回</span>')) + '</div>'
+        + '<div class="dacts">' + acts + '</div>'
+        + '</div>';
+    }).join('');
+    pane.innerHTML = '<div class="scbar"><b>内容审核（占位）</b>　「通过 / 退回」按钮按权限模块判定显示；点击只改状态并写审计。</div>'
+      + '<div class="card"><div class="dtable">'
+      + '<div class="dt-row dt-head" style="grid-template-columns:1.6fr 90px 1fr 84px 180px"><div>内容</div><div>类型</div><div>所属组织</div><div>状态</div><div class="dt-num">操作</div></div>'
+      + (rows || '<div class="empty">暂无可审内容</div>')
+      + '</div></div>';
+  }
+
+  function contentAudit(content, pass) {
+    var before = { status: content.status };
+    content.status = pass ? '已通过' : '已退回';
+    audit(pass ? '内容审核通过' : '内容审核退回', content.title, before, { status: content.status }, '成功', content.orgId);
+    toast((pass ? '已通过' : '已退回') + '「' + content.title + '」');
+    render();
+  }
+
+  /* ── 弹层 ── */
+  function openDialog(html) {
+    var dlg = document.createElement('dialog');
+    dlg.className = 'aidlg';
+    dlg.innerHTML = html;
+    document.body.appendChild(dlg);
+    dlg.showModal();
+    return dlg;
+  }
+
+  /* ── 「为什么能看到 / 看不到」 ── */
+  function ensureTip() {
+    if (!window.__tipEl) {
+      var t = document.createElement('div');
+      t.id = 'tip';
+      document.body.appendChild(t);
+      window.__tipEl = t;
+    }
+    return window.__tipEl;
+  }
+  function roleSummary() {
+    return Perm.activeAssignments(ctx, identity).map(function (a) {
+      var r = byId('roles', a.roleId);
+      var scope = (a.scopeOrgIds || []).map(function (oid) { return orgById(oid) ? orgById(oid).name : oid; }).join('、');
+      return r.name + (scope ? ' @' + scope : '');
+    }).join('；') || '无';
+  }
+  function showTip(anchor, html) {
+    var t = ensureTip();
+    t.innerHTML = html;
+    t.classList.add('on');
+    var r = anchor.getBoundingClientRect();
+    var tw = t.offsetWidth || 260;
+    var left = Math.max(8, Math.min(r.left, window.innerWidth - tw - 12));
+    var top = r.bottom + 8;
+    if (top + 140 > window.innerHeight) top = r.top - 148;
+    t.style.left = left + 'px';
+    t.style.top = Math.max(8, top) + 'px';
+  }
+  function hideTip() { if (window.__tipEl) window.__tipEl.classList.remove('on'); }
+
+  function explainStudent(student) {
+    var t = Perm.explain(ctx, identity, 'student:info:view', student, 'student', ui.orgId);
+    var lines = ['<b>' + esc(student.name) + ' · 学生信息</b>',
+      '<span class="tk">账号：' + esc(identity.account.name) + '（' + esc(identity.account.status) + '）</span>',
+      '<span class="tk">角色：' + esc(roleSummary()) + '</span>'];
+    (t.assignments || []).forEach(function (a) {
+      lines.push('<span class="tk">' + esc(a.roleName) + '：功能 ' + (a.hasPerm ? '✓' : '✗')
+        + (a.hasPerm ? ' · 范围 ' + (a.scopePass === true ? '✓' : (a.scopePass === false ? '✗' : '✓')) : '') + '</span>');
+    });
+    var ms = Perm.maskStudent(ctx, identity, student, 'student');
+    lines.push('<span class="tk">脱敏档：手机 ' + esc(ms.phone.tier) + ' · 身份证 ' + esc(ms.idCard.tier) + ' · 住址 ' + esc(ms.address.tier) + ' · 成绩 ' + esc(ms.score.tier) + '</span>');
+    if (t.orgFiltered) lines.push('<span class="tk">有权限，被当前组织过滤</span>');
+    if (t.hiddenReason && !t.allowed) lines.push('<span class="tk">不可见：' + esc(t.hiddenReason) + '</span>');
+    return lines.join('');
+  }
+  function explainMajor() {
+    return '<b>专业维护</b><span class="tk">账号：' + esc(identity.account.name) + '</span>'
+      + '<span class="tk">结果：不可操作 — 无「组织节点维护」权限</span>';
+  }
+  function explainContent(content) {
+    var t = Perm.explain(ctx, identity, 'teaching:content:audit', content, 'content');
+    var lines = ['<b>' + esc(content.title) + ' · 审核</b>',
+      '<span class="tk">账号：' + esc(identity.account.name) + '（' + esc(identity.account.status) + '）</span>',
+      '<span class="tk">角色：' + esc(roleSummary()) + '</span>'];
+    (t.assignments || []).forEach(function (a) {
+      lines.push('<span class="tk">' + esc(a.roleName) + '：功能 ' + (a.hasPerm ? '✓' : '✗')
+        + (a.hasPerm ? ' · 范围 ' + (a.scopePass === true ? '✓' : (a.scopePass === false ? '✗' : '✓')) : '') + '</span>');
+    });
+    if (!t.allowed) lines.push('<span class="tk">结果：无审核按钮 — ' + esc(t.denyReason || '范围不通过') + '</span>');
+    return lines.join('');
+  }
+
+  /* ── 事件（委托到 #body） ── */
+  function bindEvents() {
+    $('#body').addEventListener('click', function (e) {
+      var tab = e.target.closest('[data-tab]');
+      if (tab) { activeTab = tab.getAttribute('data-tab'); render(); return; }
+      var madd = e.target.closest('[data-madd]');
+      if (madd) {
+        if (can('org:node:edit')) openMajorForm(null);
+        else { audit('越权尝试·新增专业', '新专业', null, { reason: '无组织节点维护权限' }, '被拒绝', null); toast('越权尝试已记录：无组织节点维护权限'); }
+        return;
+      }
+      var medit = e.target.closest('[data-medit]');
+      if (medit) {
+        var m = majorById(medit.getAttribute('data-medit'));
+        if (can('org:node:edit')) openMajorForm(m);
+        else { audit('越权尝试·编辑专业', m ? m.name : '', null, { reason: '无组织节点维护权限' }, '被拒绝', m ? m.orgId : null); toast('越权尝试已记录：无组织节点维护权限'); }
+        return;
+      }
+      var sview = e.target.closest('[data-sview]');
+      if (sview) { var sv = ctx.students.find(function (x) { return x.id === sview.getAttribute('data-sview'); }); if (sv) openStudentDetail(sv); return; }
+      var sedit = e.target.closest('[data-sedit]');
+      if (sedit) {
+        var se = ctx.students.find(function (x) { return x.id === sedit.getAttribute('data-sedit'); });
+        if (se && se.status !== '已毕业') openStudentEdit(se);
+        return;
+      }
+      var cpass = e.target.closest('[data-cpass]');
+      if (cpass) { var cp = byId('contents', cpass.getAttribute('data-cpass')); if (cp) contentAudit(cp, true); return; }
+      var crej = e.target.closest('[data-crej]');
+      if (crej) { var cr = byId('contents', crej.getAttribute('data-crej')); if (cr) contentAudit(cr, false); return; }
+    });
+    $('#body').addEventListener('mouseover', function (e) {
+      var sq = e.target.closest('[data-swhy]');
+      if (sq) { var s = ctx.students.find(function (x) { return x.id === sq.getAttribute('data-swhy'); }); if (s) showTip(sq, explainStudent(s)); return; }
+      var mq = e.target.closest('[data-mwhy]');
+      if (mq) { showTip(mq, explainMajor()); return; }
+      var cq = e.target.closest('[data-cwhy]');
+      if (cq) { var c = byId('contents', cq.getAttribute('data-cwhy')); if (c) showTip(cq, explainContent(c)); return; }
+    });
+    $('#body').addEventListener('mouseout', function (e) {
+      if (e.target.closest('[data-swhy],[data-mwhy],[data-cwhy]')) hideTip();
+    });
+  }
+
+  /* ── 启动 ── */
+  UI.boot({ portal: 'admin', active: 'basedata' });
+  UI.onChange(function () { render(); });
+  bindEvents();
+  render();
+})();
+</script>
+</body>
+</html>

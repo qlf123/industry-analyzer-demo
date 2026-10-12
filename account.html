@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>账号与角色</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<style>
+/* 账号与角色页业务布局 */
+.m-hid{color:var(--muted);font-family:var(--mono);font-size:11px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.kv2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 18px}
+.kv2 .kk{color:var(--muted);font-size:11.5px}
+.kv2 .vv{font-size:13px;color:var(--ink);word-break:break-all}
+.sec-h{font-size:12.5px;font-weight:700;margin:4px 0 8px}
+.whyq{width:22px;height:22px;border-radius:50%;background:var(--card-2);border:1px solid var(--rule);
+  color:var(--ink-2);font-size:12px;font-weight:700;display:inline-grid;place-items:center;
+  cursor:help;flex:0 0 22px}
+.whyq:hover{border-color:var(--brand);color:var(--brand-ink)}
+.dt-row.filt{opacity:.55}
+.dt-row.filt .cell-s{color:var(--warn-ink)}
+
+/* 账号管理：筛选栏 + 宽表横向滚动 + 多值单元格 */
+.act-filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--rule)}
+.act-filter .f-search{flex:1 1 190px;min-width:150px;font:inherit;font-size:12.5px;padding:7px 10px;
+  border:1px solid var(--rule);border-radius:8px;background:var(--card-2);color:var(--ink)}
+.act-filter .f-search:focus{outline:none;border-color:var(--brand)}
+.act-filter select{font:inherit;font-size:12.5px;padding:7px 8px;border:1px solid var(--rule);
+  border-radius:8px;background:var(--card-2);color:var(--ink);max-width:150px}
+.act-filter .f-count{margin-left:auto;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.act-table{overflow-x:auto}
+.act-table .dt-row{min-width:1190px}
+.cell-list{font-size:11px;color:var(--ink-2);line-height:1.55;word-break:break-all}
+.detail-sec{margin-top:14px}
+.detail-sec:first-child{margin-top:0}
+/* 所属组织多选：左组织树 + 右已选 */
+.otp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.otp-title{font-size:11.5px;font-weight:600;color:var(--ink-2);padding:8px 10px;background:var(--card-2);border-bottom:1px solid var(--rule)}
+.otp-scroll{max-height:220px;overflow-y:auto;padding:8px 10px}
+.otp-org{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:12.5px;color:var(--ink);cursor:pointer;border-radius:6px}
+.otp-org:hover{background:var(--card-2)}
+.otp-org input{flex:0 0 auto}
+.otp-org.dis{opacity:.55;cursor:default}
+.otp-org.dis:hover{background:transparent}
+.otp-type{flex:0 0 auto;font-size:10.5px;font-family:var(--mono);color:var(--muted)}
+.otp-sel{max-height:220px;overflow-y:auto;padding:8px 10px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+.otp-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 8px;border-radius:999px;background:var(--brand-soft, #eef2ff);color:var(--brand, #3b5bdb)}
+.otp-rm{border:none;background:transparent;color:inherit;font-size:14px;line-height:1;cursor:pointer;padding:0 1px}
+.otp-rm:hover{opacity:.7}
+
+/* 角色分配卡片 */
+.asgcard{border:1px solid var(--rule);border-radius:11px;padding:13px 14px;margin-bottom:12px;background:var(--card-2)}
+.asgcard .dr-k{margin-bottom:9px}
+.asgcard select{width:100%}
+.orgline{display:flex;align-items:center;gap:8px;padding:3px 0;flex-wrap:wrap}
+.orgline .ocl{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink)}
+.gchk{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-2);margin-right:10px;white-space:nowrap}
+.grps{display:inline-flex;flex-wrap:wrap;gap:2px 0;margin-left:4px;align-items:center}
+.grps[hidden]{display:none}
+.majline{padding:3px 0}
+.kl{display:flex;align-items:center;gap:7px;font-size:12.5px;padding:3px 0;color:var(--ink)}
+.kl .cell-s{font-size:10.5px;color:var(--muted)}
+.idc{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;margin-top:4px;color:var(--ink)}
+.stopped-card{display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px solid var(--rule-2);flex-wrap:wrap}
+.stopped-card:first-of-type{border-top:0}
+
+/* 角色管理（左右分栏 + 详情） */
+.role-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.role-layout{grid-template-columns:1fr}}
+.role-list-panel{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden;
+  display:flex;flex-direction:column;max-height:calc(100vh - 250px);position:sticky;top:calc(var(--demobar-h) + 118px)}
+.role-toolbar{display:flex;gap:8px;padding:12px;border-bottom:1px solid var(--rule);align-items:center}
+.role-search{flex:1;min-width:0;font:inherit;font-size:12.5px;padding:7px 10px;border:1px solid var(--rule);
+  border-radius:8px;background:var(--card-2);color:var(--ink)}
+.role-search:focus{outline:none;border-color:var(--brand)}
+.role-list{overflow-y:auto;flex:1}
+.role-item{display:block;width:100%;text-align:left;padding:12px 14px;border-top:1px solid var(--rule-2);
+  cursor:pointer;transition:background .12s}
+.role-item:first-child{border-top:0}
+.role-item:hover{background:var(--rule-2)}
+.role-item.is-active{background:var(--brand-soft)}
+.role-item-head{display:flex;align-items:center;gap:8px}
+.role-item-title{font-size:13px;font-weight:600;color:var(--ink)}
+.role-status{font-family:var(--mono);font-size:10px;padding:1px 7px;border-radius:20px;border:1px solid transparent}
+.role-status.enabled{background:var(--good-bg);color:var(--good)}
+.role-status.disabled{background:var(--crit-bg);color:var(--crit)}
+.role-item-desc{font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.5}
+.role-item-meta{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:6px}
+.role-detail-panel{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden}
+.detail-topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;
+  border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.detail-name{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.detail-badge{font-family:var(--mono);font-size:11px;font-weight:400;padding:2px 9px;border-radius:20px;
+  background:var(--card-2);color:var(--ink-2);border:1px solid var(--rule)}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap}
+.role-tabs{display:flex;gap:3px;padding:10px 18px;border-bottom:1px solid var(--rule)}
+.rtab{padding:6px 14px;border-radius:8px;font-size:13px;color:var(--ink-2)}
+.rtab:hover{background:var(--rule-2);color:var(--ink)}
+.rtab.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
+.role-tab-pane{padding:18px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px}
+@media (max-width:720px){.form-grid{grid-template-columns:1fr}}
+.field-group{display:flex;flex-direction:column;gap:5px}
+.field-group.field-full{grid-column:1/-1}
+.field-label{font-size:11.5px;color:var(--muted)}
+.field-value{font-size:13px;color:var(--ink);min-height:20px;display:flex;align-items:center;gap:8px}
+.field-value.mono{font-family:var(--mono)}
+.switch{position:relative;width:40px;height:22px;border-radius:20px;background:var(--rule);border:1px solid var(--rule);
+  cursor:pointer;transition:background .15s;flex:0 0 auto}
+.switch.on{background:var(--brand);border-color:var(--brand)}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch.on::after{transform:translateX(18px)}
+.switch.locked{opacity:.5;cursor:not-allowed}
+.rm{font-weight:600;font-size:12.5px;margin:14px 0 4px;color:var(--ink)}
+.rr{font-size:11.5px;color:var(--ink-2);margin:4px 0 2px}
+.op{display:inline-block;font-size:11px;padding:1px 9px;border-radius:6px;border:1px solid var(--rule);color:var(--muted);margin:2px 5px 2px 0}
+.op.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink);font-weight:500}
+/* 配置角色菜单权限树 */
+.pgroup{padding:9px 0;border-bottom:1px solid var(--rule-2)}
+.pgroup:last-child{border-bottom:0}
+.pgroup-h{display:flex;align-items:center;gap:7px;font-weight:600;font-size:13px;color:var(--ink);cursor:pointer;padding:3px 0}
+.pitems{display:flex;flex-wrap:wrap;gap:4px 14px;padding:4px 0 2px 24px}
+.pitem{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);cursor:pointer;padding:2px 0}
+.pgroup-h input,.pitem input{accent-color:var(--brand);margin:0}
+</style>
+</head>
+<body>
+<div class="demobar" id="demobar"></div>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">账号与角色</h1>
+          <div class="pt-d">账号管理 · 角色管理</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body">
+      <div class="tabs l2" id="acctTabs" role="tablist"></div>
+      <div class="pane" id="paneAccount"></div>
+      <div class="pane" id="paneRole" hidden></div>
+    </div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var ctx = null, identity = null, ui = null;
+  var activeTab = 'account';
+
+  var TYPE_ORDER = ['内置', '预设', '部门模板', '自定义'];
+  var ORG_SCOPED = { orgAdmin: 1, counselor: 1, academic: 1, studentAffairs: 1, supervisor: 1, info: 1, majorLead: 1 };
+  var COL_GRID = 'minmax(150px,1.4fr) minmax(106px,1.1fr) minmax(160px,1.7fr) minmax(104px,1.1fr) minmax(82px,0.9fr) minmax(126px,1.3fr) minmax(118px,1.2fr) 62px minmax(102px,1fr) minmax(216px,auto)';
+
+  var TABS = [
+    { key: 'account', label: '账号管理', perms: ['org:account:view'] },
+    { key: 'role',    label: '角色管理', perms: ['org:role:define'] }
+  ];
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function byId(col, id) { return (ctx[col] || []).find(function (o) { return o.id === id; }); }
+  function orgById(id) { return byId('orgs', id); }
+  function majorById(id) { return byId('majors', id); }
+  function klassById(id) { return byId('klasses', id); }
+  function gradeById(id) { return byId('grades', id); }
+  function roleById(id) { return byId('roles', id); }
+
+  function reload() {
+    ctx = DEMO.getState();
+    ui = UI.ui();
+    identity = Perm.getIdentity(ctx, ui.accountId);
+  }
+
+  function audit(action, object, before, after, result, orgId) {
+    var rec = DEMO.addAudit(ctx, identity.account.id, action, object, before, after, result);
+    if (orgId != null) rec.orgId = orgId;
+    DEMO.saveState(ctx);
+  }
+
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2600);
+  }
+
+  function genId(prefix) {
+    return prefix + '-N' + Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6);
+  }
+
+  function can(code) { return Perm.check(ctx, identity, code, null, null).allowed; }
+  function orgDepth(orgId) {
+    var m = {}; ctx.orgs.forEach(function (o) { m[o.id] = o; });
+    var d = 0, cur = orgId;
+    while (cur && m[cur] && m[cur].parentId) { d++; cur = m[cur].parentId; }
+    return d;
+  }
+  function indent(n) { return new Array(n + 1).join('　'); }
+  function kv(k, v) { return '<div><div class="kk">' + esc(k) + '</div><div class="vv">' + esc(v) + '</div></div>'; }
+
+  /* ── 渲染入口 ── */
+  function render() {
+    reload();
+    renderTabs();
+    $('#paneAccount').hidden = activeTab !== 'account';
+    $('#paneRole').hidden = activeTab !== 'role';
+    if (activeTab === 'account') renderAccount();
+    else if (activeTab === 'role') renderRole();
+  }
+
+  function renderTabs() {
+    var el = $('#acctTabs');
+    var visible = TABS.filter(function (t) {
+      return t.perms.some(function (p) { return Perm.check(ctx, identity, p, null, null).allowed; });
+    });
+    if (!visible.find(function (t) { return t.key === activeTab; })) activeTab = visible.length ? visible[0].key : null;
+    el.innerHTML = visible.map(function (t) {
+      return '<button class="tab" data-tab="' + t.key + '" role="tab"'
+        + (t.key === activeTab ? ' aria-selected="true"' : '') + '>' + esc(t.label) + '</button>';
+    }).join('');
+    if (!visible.length) {
+      $('#paneAccount').hidden = false;
+      $('#paneRole').hidden = true;
+      $('#paneAccount').innerHTML = '<div class="empty">当前身份无权访问账号与角色。</div>';
+    }
+  }
+
+  /* ── Tab1：账号管理（7.4） ── */
+  function accountRoles(a) {
+    var seen = {}, roles = [];
+    ctx.assignments.forEach(function (asg) {
+      if (asg.accountId !== a.id) return;
+      var r = roleById(asg.roleId);
+      if (r && !seen[r.id]) { seen[r.id] = 1; roles.push(r); }
+    });
+    return roles;
+  }
+  function statusPill(a) {
+    if (a.status === '停用') return '<span class="pill crit">停用</span>';
+    if (a.kind === '学生' && a.studentId) {
+      var s = byId('students', a.studentId);
+      if (s && s.status === '已毕业') return '<span class="pill warn">已毕业</span>';
+      return '<span class="pill good">在读</span>';
+    }
+    return '<span class="pill good">正常</span>';
+  }
+
+  var acctFilter = { q: '', roleId: '', status: '', major: '' };
+
+  function klassShort(k) {
+    var m = majorById(k.majorId);
+    var name = k.name;
+    if (m && name.indexOf(m.name) === 0) name = name.slice(m.name.length).trim();
+    return name;
+  }
+  function accountIdentity(a) {
+    var majors = [], grades = [], klasses = [], courses = [];
+    var sm = {}, sg = {}, sk = {}, sc = {};
+    function add(arr, map, v) { if (v && !map[v]) { map[v] = 1; arr.push(v); } }
+    if (a.studentId) {
+      var stu = byId('students', a.studentId);
+      if (stu && stu.klassId) {
+        var k = klassById(stu.klassId);
+        if (k) {
+          add(klasses, sk, klassShort(k));
+          var mm = majorById(k.majorId); if (mm) add(majors, sm, mm.name);
+          var gg = gradeById(k.gradeId); if (gg) add(grades, sg, gg.name);
+        }
+      }
+    }
+    ctx.assignments.forEach(function (asg) {
+      if (asg.accountId !== a.id) return;
+      var r = roleById(asg.roleId);
+      var ts = asg.teachingScope || {};
+      if (r && (r.key === 'teacher' || r.key === 'enterprise')) {
+        (ts.classIds || []).forEach(function (cid) {
+          var k2 = klassById(cid); if (!k2) return;
+          add(klasses, sk, klassShort(k2));
+          var m2 = majorById(k2.majorId); if (m2) add(majors, sm, m2.name);
+          var g2 = gradeById(k2.gradeId); if (g2) add(grades, sg, g2.name);
+        });
+        (ts.majorIds || []).forEach(function (mid) { var m3 = majorById(mid); if (m3) add(majors, sm, m3.name); });
+        (ts.courseIds || []).forEach(function (cid) { var c = byId('courses', cid); if (c) add(courses, sc, c.name); });
+      } else if (r && r.key === 'headTeacher') {
+        (asg.scopeClassIds || []).forEach(function (cid) {
+          var k3 = klassById(cid); if (!k3) return;
+          add(klasses, sk, klassShort(k3));
+          var m4 = majorById(k3.majorId); if (m4) add(majors, sm, m4.name);
+          var g4 = gradeById(k3.gradeId); if (g4) add(grades, sg, g4.name);
+        });
+      }
+    });
+    return { majors: majors, grades: grades, klasses: klasses, courses: courses };
+  }
+  function cellList(arr) {
+    return arr.length
+      ? '<div class="cell-list">' + arr.map(function (x) { return esc(x); }).join('<br>') + '</div>'
+      : '<span class="m-hid">—</span>';
+  }
+
+  function accountRow(a, filtered, canEdit) {
+    var roles = accountRoles(a);
+    var idn = accountIdentity(a);
+    var roleTags = roles.map(function (r) { return '<span class="pill k">' + esc(r.name) + '</span>'; }).join(' ') || '<span class="m-hid">—</span>';
+    var acts = '<button class="btn-s" data-adetail="' + esc(a.id) + '">详情</button>';
+    if (canEdit) {
+      acts += ' <button class="btn-s" data-aedit="' + esc(a.id) + '">编辑</button> '
+        + (a.status === '停用'
+          ? '<button class="btn-s" data-aenable="' + esc(a.id) + '">启用</button>'
+          : '<button class="btn-s" data-adisable="' + esc(a.id) + '">停用</button>') + ' '
+        + '<button class="btn-s" data-apwd="' + esc(a.id) + '">重置密码</button>';
+    }
+    if (ui.why) acts += '<button class="whyq" data-awhy="' + esc(a.id) + '">?</button>';
+    var nameCell = '<div class="cell-t">' + esc(a.name)
+      + '<span class="cell-s">' + esc(a.id) + '</span></div>';
+    var orgCell = '<div class="cell-t">' + esc(accountOrgNames(a))
+      + (filtered ? '<span class="cell-s">有权限，被当前组织过滤</span>' : '') + '</div>';
+    return '<div class="dt-row' + (filtered ? ' filt' : '') + '" data-acc="' + esc(a.id) + '" style="grid-template-columns:' + COL_GRID + '">'
+      + nameCell + orgCell
+      + '<div>' + roleTags + '</div>'
+      + cellList(idn.majors)
+      + cellList(idn.grades)
+      + cellList(idn.klasses)
+      + cellList(idn.courses)
+      + '<div>' + statusPill(a) + '</div>'
+      + '<div class="dt-num">' + (a.lastLoginAt ? '<span class="cell-s">' + esc(a.lastLoginAt) + '</span>' : '<span class="m-hid">—</span>') + '</div>'
+      + '<div class="dacts">' + acts + '</div>'
+      + '</div>';
+  }
+
+  function matchAccount(a) {
+    if (acctFilter.q) {
+      var q = acctFilter.q.trim().toLowerCase();
+      if (a.name.toLowerCase().indexOf(q) < 0 && a.id.toLowerCase().indexOf(q) < 0) return false;
+    }
+    if (acctFilter.roleId) {
+      if (!ctx.assignments.some(function (x) { return x.accountId === a.id && x.roleId === acctFilter.roleId; })) return false;
+    }
+    if (acctFilter.status && a.status !== acctFilter.status) return false;
+    if (acctFilter.major && accountIdentity(a).majors.indexOf(acctFilter.major) < 0) return false;
+    return true;
+  }
+
+  function renderAccount() {
+    var pane = $('#paneAccount');
+    var canEdit = can('org:account:edit');
+    var parts = Perm.listFilterWithOrg(ctx, identity, 'org:account:view', 'account', ctx.accounts, ui.orgId);
+    var visible = parts.visible.filter(matchAccount);
+    var filteredOut = ui.why ? parts.filteredOut.filter(matchAccount) : [];
+    var rows = visible.map(function (a) { return accountRow(a, false, canEdit); }).join('');
+    if (ui.why) rows += filteredOut.map(function (a) { return accountRow(a, true, canEdit); }).join('');
+
+    var roleOpts = ctx.roles.map(function (r) {
+      return '<option value="' + esc(r.id) + '"' + (acctFilter.roleId === r.id ? ' selected' : '') + '>' + esc(r.name) + '</option>';
+    }).join('');
+    var majorSet = {};
+    ctx.accounts.forEach(function (a) { accountIdentity(a).majors.forEach(function (m) { majorSet[m] = 1; }); });
+    var majorOpts = Object.keys(majorSet).map(function (m) {
+      return '<option value="' + esc(m) + '"' + (acctFilter.major === m ? ' selected' : '') + '>' + esc(m) + '</option>';
+    }).join('');
+    var statusOpts = '<option value=""' + (!acctFilter.status ? ' selected' : '') + '>全部状态</option>'
+      + '<option value="正常"' + (acctFilter.status === '正常' ? ' selected' : '') + '>正常</option>'
+      + '<option value="停用"' + (acctFilter.status === '停用' ? ' selected' : '') + '>停用</option>';
+
+    var addBtn = canEdit ? '<button class="btn-s" data-aadd="1">新建账号</button>' : '';
+    var filterHtml = '<div class="act-filter">'
+      + '<input class="f-search" id="acctSearch" placeholder="搜索姓名 / 账号" value="' + esc(acctFilter.q) + '">'
+      + '<select id="acctRole" aria-label="角色筛选"><option value="">全部角色</option>' + roleOpts + '</select>'
+      + '<select id="acctStatus" aria-label="状态筛选">' + statusOpts + '</select>'
+      + '<select id="acctMajor" aria-label="专业筛选"><option value="">全部专业</option>' + majorOpts + '</select>'
+      + '<span class="f-count">可见 ' + visible.length + ' 条'
+      + (filteredOut.length ? ' · 被当前组织过滤 ' + filteredOut.length + ' 条' : '')
+      + (parts.denied.length ? ' · 无权限 ' + parts.denied.length + ' 条' : '') + '</span>'
+      + addBtn
+      + '</div>';
+
+    pane.innerHTML = '<div class="card">'
+      + filterHtml
+      + '<div class="dtable act-table">'
+      + '<div class="dt-row dt-head" style="grid-template-columns:' + COL_GRID + '"><div>账号</div><div>所属组织</div><div>角色</div><div>所属专业</div><div>所属年级</div><div>所属班级</div><div>可授课程</div><div>状态</div><div class="dt-num">最近登录</div><div class="dt-num">操作</div></div>'
+      + (rows || '<div class="empty">暂无可见账号</div>')
+      + '</div>'
+      + '</div>';
+  }
+
+  /* ── 账号编辑（角色分配卡片） ── */
+  var editAccount = null, editDraft = null;
+
+  function emptyAssign() {
+    return { id: null, roleId: null, scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [],
+      teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] };
+  }
+  function cloneAssign(a) {
+    var ts = a.teachingScope || {};
+    return { id: a.id || null, roleId: a.roleId || null,
+      scopeOrgIds: (a.scopeOrgIds || []).slice(),
+      scopeGrades: JSON.parse(JSON.stringify(a.scopeGrades || {})),
+      scopeClassIds: (a.scopeClassIds || []).slice(),
+      teachingScope: { majorIds: (ts.majorIds || []).slice(), classIds: (ts.classIds || []).slice(), courseIds: (ts.courseIds || []).slice() },
+      extraPermIds: (a.extraPermIds || []).slice() };
+  }
+  function makeAssign(id, accountId, a) {
+    var ts = a.teachingScope || {};
+    return { id: id, accountId: accountId, roleId: a.roleId,
+      scopeOrgIds: (a.scopeOrgIds || []).slice(),
+      scopeGrades: JSON.parse(JSON.stringify(a.scopeGrades || {})),
+      scopeClassIds: (a.scopeClassIds || []).slice(),
+      teachingScope: { majorIds: (ts.majorIds || []).slice(), classIds: (ts.classIds || []).slice(), courseIds: (ts.courseIds || []).slice() },
+      extraPermIds: (a.extraPermIds || []).slice() };
+  }
+
+  function roleOptions(selectedId) {
+    var html = '<option value="">— 请选择角色 —</option>';
+    TYPE_ORDER.forEach(function (t) {
+      var roles = ctx.roles.filter(function (r) { return r.type === t; });
+      if (!roles.length) return;
+      html += '<optgroup label="' + esc(t) + '">' + roles.map(function (r) {
+        return '<option value="' + esc(r.id) + '"' + (r.id === selectedId ? ' selected' : '') + '>' + esc(r.name) + '</option>';
+      }).join('') + '</optgroup>';
+    });
+    return html;
+  }
+
+  function klassShort(k) {
+    var m = majorById(k.majorId);
+    return m ? k.name.replace(m.name, '').trim() : k.name;
+  }
+
+  function orgScopeTree(a, idx) {
+    var nodes = Perm.visibleOrgNodes(ctx, identity, { forAssign: true });
+    var checked = new Set(a.scopeOrgIds || []);
+    return nodes.map(function (o) {
+      var d = orgDepth(o.id);
+      var isChecked = checked.has(o.id);
+      var grades = (a.scopeGrades || {})[o.id] || [];
+      var gradeSel = new Set(grades);
+      var gradeHtml = '<span class="grps"' + (isChecked ? '' : ' hidden') + '>'
+        + ctx.grades.map(function (g) {
+          return '<label class="gchk"><input type="checkbox" data-card="' + idx + '" data-field="scopeGrade" data-org="' + esc(o.id) + '" value="' + esc(g.id) + '"' + (gradeSel.has(g.id) ? ' checked' : '') + '>' + esc(g.name) + '</label>';
+        }).join('') + '<span class="m-hid">不选=全部年级</span></span>';
+      return '<div class="orgline" style="padding-left:' + (d * 16) + 'px">'
+        + '<label class="ocl"><input type="checkbox" data-card="' + idx + '" data-field="scopeOrg" value="' + esc(o.id) + '"' + (isChecked ? ' checked' : '') + '>' + esc(o.name) + '</label>'
+        + gradeHtml
+        + '</div>';
+    }).join('');
+  }
+
+  function classCheckboxList(selectedIds, idx, field) {
+    var set = new Set(selectedIds || []);
+    return ctx.klasses.map(function (k) {
+      var major = majorById(k.majorId);
+      return '<label class="kl"><input type="checkbox" data-card="' + idx + '" data-field="' + field + '" value="' + esc(k.id) + '"' + (set.has(k.id) ? ' checked' : '') + '>'
+        + esc(klassShort(k)) + '<span class="cell-s">' + esc(major ? major.name : '') + '</span></label>';
+    }).join('');
+  }
+
+  function teachingScopeTree(a, idx) {
+    var ts = a.teachingScope || {};
+    var classSet = new Set(ts.classIds || []);
+    var majorSet = new Set(ts.majorIds || []);
+    var courseSet = new Set(ts.courseIds || []);
+    var byOrg = {};
+    ctx.majors.forEach(function (m) { (byOrg[m.orgId] = byOrg[m.orgId] || []).push(m); });
+    return ctx.orgs.map(function (o) {
+      var majors = byOrg[o.id];
+      if (!majors || !majors.length) return '';
+      var d = orgDepth(o.id);
+      return '<div class="orgline" style="padding-left:' + (d * 16) + 'px"><span class="m-hid">' + esc(o.name) + '</span></div>'
+        + majors.map(function (m) {
+          var klasses = ctx.klasses.filter(function (k) { return k.majorId === m.id; });
+          var courses = (ctx.courses || []).filter(function (c) { return c.majorId === m.id; });
+          var courseHtml = courses.map(function (c) {
+            return '<label class="gchk"><input type="checkbox" data-card="' + idx + '" data-field="tCourse" value="' + esc(c.id) + '"' + (courseSet.has(c.id) ? ' checked' : '') + '>' + esc(c.name) + '</label>';
+          }).join('');
+          return '<div class="majline" style="padding-left:' + ((d + 1) * 16) + 'px">'
+            + '<label class="ocl"><input type="checkbox" data-card="' + idx + '" data-field="tMajor" value="' + esc(m.id) + '"' + (majorSet.has(m.id) ? ' checked' : '') + '>' + esc(m.name) + '（专业）</label>'
+            + '<span class="grps">' + klasses.map(function (k) {
+              return '<label class="gchk"><input type="checkbox" data-card="' + idx + '" data-field="tClass" value="' + esc(k.id) + '"' + (classSet.has(k.id) ? ' checked' : '') + '>' + esc(klassShort(k)) + '</label>';
+            }).join('') + '</span>'
+            + (courseHtml ? '<div class="grps" style="margin-left:22px"><span class="m-hid">课程：</span>' + courseHtml + '</div>' : '')
+            + '</div>';
+        }).join('');
+    }).join('');
+  }
+
+  function renderCard(a, idx) {
+    var role = a.roleId ? roleById(a.roleId) : null;
+    var html = '<div class="asgcard" id="acard-' + idx + '" data-card="' + idx + '">'
+      + '<div class="dr-k"><span class="mono">分配 ' + (idx + 1) + '</span>'
+      + '<button type="button" class="x" data-rm="' + idx + '" aria-label="删除分配">×</button></div>'
+      + '<label>角色<select data-card="' + idx + '" data-field="role">' + roleOptions(a.roleId) + '</select></label>'
+      + '<div class="kv2">' + kv('AI 每日配额（只读）', role ? role.aiQuota + ' 次' : '—') + '</div>';
+    if (role) {
+      if (role.key === 'teacher') {
+        html += '<div class="sec-h">教学范围（专业 → 班级，多选）</div>' + teachingScopeTree(a, idx);
+      } else if (role.key === 'headTeacher') {
+        html += '<div class="sec-h">数据范围（班主任 · 选班级）</div>' + classCheckboxList(a.scopeClassIds, idx, 'scopeClass');
+      } else if (role.key === 'enterprise') {
+        html += '<div class="note" style="color:var(--muted)">企业导师范围随所属基地，无需配置。</div>';
+      } else if (role.key === 'super') {
+        html += '<div class="note" style="color:var(--muted)">平台超级管理员覆盖全校，无需配置范围。</div>';
+      } else if (role.key === 'student') {
+        html += '<div class="note" style="color:var(--muted)">学生角色范围为本账号，无需配置。</div>';
+      } else {
+        html += '<div class="sec-h">数据范围（组织树多选 · 节点可选年级）</div>' + orgScopeTree(a, idx);
+      }
+      if (role.key === 'studentAffairs') {
+        html += '<label class="idc"><input type="checkbox" data-card="' + idx + '" data-field="idcard"' + ((a.extraPermIds || []).indexOf('student:idcard:plain') >= 0 ? ' checked' : '') + '> 身份证明文（明文查看身份证）</label>';
+      }
+    } else {
+      html += '<div class="note" style="color:var(--muted)">请选择角色后配置数据范围。</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function roleTagsReadonly() {
+    var assigns = ctx.assignments.filter(function (x) { return x.accountId === editAccount.id; });
+    if (!assigns.length) return '<div class="note">该账号暂无角色分配。</div>';
+    return '<div>' + assigns.map(function (asg) {
+      var r = roleById(asg.roleId);
+      var scope = (asg.scopeOrgIds || []).map(function (oid) { var o = orgById(oid); return o ? o.name : oid; }).join('、');
+      if ((asg.scopeClassIds || []).length) scope = asg.scopeClassIds.map(function (cid) { var k = klassById(cid); return k ? k.name : cid; }).join('、');
+      return '<div class="stopped-card"><span class="pill k">' + esc(r ? r.name : asg.roleId) + '</span>'
+        + (scope ? '<span class="m-hid">' + esc(scope) + '</span>' : '')
+        + '<span class="pill crit">已失效</span></div>';
+    }).join('') + '</div>';
+  }
+
+  /* 账号「所属组织」展示名（多选，逗号分隔） */
+  function accountOrgNames(a) {
+    var ids = (a.orgIds && a.orgIds.length) ? a.orgIds : (a.orgId ? [a.orgId] : []);
+    // 折叠显示：父级代表其整个子树，只显示「父节点未被选中」的节点
+    var set = new Set(ids);
+    var tops = ids.filter(function (id) {
+      var o = orgById(id);
+      return !o || !o.parentId || !set.has(o.parentId);
+    });
+    var names = tops.map(function (id) { var o = orgById(id); return o ? o.name : id; });
+    return names.length ? names.join('、') : '—';
+  }
+
+  /* 所属组织多选：左侧组织树 + 右侧已选（树结构对齐「组织管理」，勾选父节点级联子节点） */
+  function orgPickCtx() {
+    var nodes = Perm.visibleOrgNodes(ctx, identity, { forAssign: true });
+    var byId = {}; nodes.forEach(function (o) { byId[o.id] = o; });
+    var children = {};
+    nodes.forEach(function (o) {
+      if (o.parentId && byId[o.parentId]) (children[o.parentId] = children[o.parentId] || []).push(o.id);
+    });
+    function sortFn(a, b) { var A = byId[a], B = byId[b]; return (A.sort || 0) - (B.sort || 0) || A.name.localeCompare(B.name); }
+    Object.keys(children).forEach(function (pid) { children[pid].sort(sortFn); });
+    var roots = nodes.filter(function (o) { return !o.parentId || !byId[o.parentId]; }).sort(sortFn);
+    function subtree(oid) {
+      var set = new Set();
+      Perm.descendants(ctx, oid).forEach(function (d) { if (byId[d]) set.add(d); });
+      return Array.from(set);
+    }
+    return { nodes: nodes, byId: byId, children: children, roots: roots, subtree: subtree };
+  }
+  function orgSelRightHtml(selectedIds, pickCtx) {
+    var sel = selectedIds || [];
+    var selSet = new Set(sel);
+    // 折叠显示：只显示「父节点未被选中」的节点（父级代表其整个子树）
+    var tops = sel.filter(function (oid) {
+      var o = pickCtx.byId[oid];
+      return !o || !o.parentId || !selSet.has(o.parentId);
+    });
+    var list = tops.map(function (oid) { return pickCtx.byId[oid]; }).filter(Boolean);
+    if (!list.length) return '<div class="m-hid" style="padding:6px 2px">暂未选择</div>';
+    return list.map(function (o) {
+      return '<span class="otp-chip">' + esc(o.name) + '<button type="button" class="otp-rm" data-otp-rm="' + esc(o.id) + '" aria-label="移除">×</button></span>';
+    }).join('');
+  }
+  function orgTreeLeftHtml(selectedIds, pickCtx) {
+    var selSet = new Set(selectedIds || []);
+    function nodeHtml(oid, depth) {
+      var o = pickCtx.byId[oid];
+      var t = byId('orgTypes', o.typeId);
+      var typeName = t ? t.name : '';
+      var kids = pickCtx.children[oid] || [];
+      var checked = selSet.has(oid);
+      var html = '<label class="otp-org" style="padding-left:' + (depth * 16) + 'px">'
+        + '<input type="checkbox" data-otp="' + esc(oid) + '"' + (checked ? ' checked' : '') + '>'
+        + '<span>' + esc(o.name) + '</span>'
+        + (typeName ? '<span class="otp-type">' + esc(typeName) + '</span>' : '')
+        + '</label>';
+      for (var i = 0; i < kids.length; i++) html += nodeHtml(kids[i], depth + 1);
+      return html;
+    }
+    return pickCtx.roots.map(function (r) { return nodeHtml(r.id, 0); }).join('');
+  }
+  function orgTreePickHtml(selectedIds, pickCtx) {
+    var left = orgTreeLeftHtml(selectedIds, pickCtx);
+    return '<div class="otp">'
+      + '<div class="otp-left"><div class="otp-title">组织树</div><div class="otp-scroll">' + (left || '<div class="m-hid" style="padding:4px 2px">无可选组织</div>') + '</div></div>'
+      + '<div class="otp-right"><div class="otp-title">已选组织</div><div class="otp-sel" id="otpSel">' + orgSelRightHtml(selectedIds, pickCtx) + '</div></div>'
+      + '</div>';
+  }
+
+  function openAccountForm(account) {
+    editAccount = account;
+    var isAdd = !account;
+    var canAssign = can('org:account:assign');
+    var isStopped = account && account.status === '停用';
+
+    editDraft = {
+      name: account ? account.name : '',
+      phone: account ? (account.phone || '') : '',
+      orgIds: account
+        ? (account.orgIds && account.orgIds.length ? account.orgIds.slice() : (account.orgId ? [account.orgId] : []))
+        : [],
+      assignments: account
+        ? ctx.assignments.filter(function (x) { return x.accountId === account.id; }).map(cloneAssign)
+        : [emptyAssign()]
+    };
+
+    var pickCtx = orgPickCtx();
+    var orgField = '<label>所属组织（必填，可多选）' + orgTreePickHtml(editDraft.orgIds, pickCtx) + '</label>';
+
+    var roleSection;
+    if (isStopped) {
+      roleSection = '<div class="sec-h">角色分配</div>'
+        + '<div class="note" style="color:var(--crit);font-weight:600">账号已停用，分配已失效</div>'
+        + roleTagsReadonly();
+    } else if (!canAssign) {
+      roleSection = '<div class="sec-h">角色分配</div>' + roleTagsReadonly();
+    } else {
+      roleSection = '<div class="sec-h">角色分配</div>'
+        + '<div id="asgCards">' + editDraft.assignments.map(function (a, i) { return renderCard(a, i); }).join('') + '</div>'
+        + '<div><button type="button" class="btn-s" data-addcard="1">+ 新增分配</button></div>';
+    }
+
+    var dlg = openDialog('<form style="max-height:88vh;overflow-y:auto">'
+      + '<h2>' + (isAdd ? '新增账号' : '编辑账号') + (account ? ' · ' + esc(account.name) : '') + '</h2>'
+      + '<label>姓名<input name="name" value="' + esc(editDraft.name) + '" required></label>'
+      + '<label>手机号<input name="phone" value="' + esc(editDraft.phone) + '" placeholder="11 位手机号"></label>'
+      + orgField
+      + roleSection
+      + '<div class="note" id="formErr" style="color:var(--crit)"></div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div>'
+      + '</form>');
+    dlg.style.width = 'min(720px, calc(100vw - 32px))';
+
+    var err = dlg.querySelector('#formErr');
+
+    function renderAllCards() {
+      var container = dlg.querySelector('#asgCards');
+      if (container) container.innerHTML = editDraft.assignments.map(function (a, i) { return renderCard(a, i); }).join('');
+    }
+    function rerenderCard(idx) {
+      var el = dlg.querySelector('#acard-' + idx);
+      if (el) el.outerHTML = renderCard(editDraft.assignments[idx], idx);
+    }
+
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+
+    function renderOrgPick() {
+      var scroll = dlg.querySelector('.otp-scroll');
+      if (scroll) scroll.innerHTML = orgTreeLeftHtml(editDraft.orgIds, pickCtx);
+      var selEl = dlg.querySelector('#otpSel');
+      if (selEl) selEl.innerHTML = orgSelRightHtml(editDraft.orgIds, pickCtx);
+      var selSet = new Set(editDraft.orgIds);
+      pickCtx.nodes.forEach(function (n) {
+        var cb = dlg.querySelector('[data-otp="' + n.id + '"]');
+        if (!cb) return;
+        cb.indeterminate = !selSet.has(n.id) && pickCtx.subtree(n.id).some(function (d) { return d !== n.id && selSet.has(d); });
+      });
+    }
+
+    dlg.addEventListener('change', function (e) {
+      var el = e.target;
+      if (!el || !el.getAttribute) return;
+      if (el.getAttribute('data-otp')) {
+        var oid = el.getAttribute('data-otp');
+        var sub = pickCtx.subtree(oid);
+        if (el.checked) {
+          // 级联：勾选父级 → 子级全部选中
+          sub.forEach(function (id) { if (editDraft.orgIds.indexOf(id) < 0) editDraft.orgIds.push(id); });
+        } else {
+          // 级联：取消 → 该节点及其子级全部取消
+          var rm = new Set(sub);
+          editDraft.orgIds = editDraft.orgIds.filter(function (x) { return !rm.has(x); });
+        }
+        renderOrgPick();
+        return;
+      }
+      var cardIdx = el.getAttribute('data-card');
+      if (cardIdx == null) return;
+      var idx = parseInt(cardIdx, 10);
+      var a = editDraft.assignments[idx];
+      if (!a) return;
+      var field = el.getAttribute('data-field');
+      if (field === 'role') {
+        a.roleId = el.value || null;
+        a.scopeOrgIds = []; a.scopeGrades = {}; a.scopeClassIds = [];
+        a.teachingScope = { majorIds: [], classIds: [], courseIds: [] };
+        a.extraPermIds = [];
+        rerenderCard(idx);
+      } else if (field === 'scopeOrg') {
+        var oid = el.value;
+        if (el.checked) { if (a.scopeOrgIds.indexOf(oid) < 0) a.scopeOrgIds.push(oid); }
+        else { a.scopeOrgIds = a.scopeOrgIds.filter(function (x) { return x !== oid; }); delete a.scopeGrades[oid]; }
+        var grps = el.closest('.orgline').querySelector('.grps');
+        if (grps) grps.hidden = !el.checked;
+      } else if (field === 'scopeGrade') {
+        var org = el.getAttribute('data-org');
+        a.scopeGrades = a.scopeGrades || {};
+        a.scopeGrades[org] = a.scopeGrades[org] || [];
+        if (el.checked) { if (a.scopeGrades[org].indexOf(el.value) < 0) a.scopeGrades[org].push(el.value); }
+        else a.scopeGrades[org] = a.scopeGrades[org].filter(function (x) { return x !== el.value; });
+      } else if (field === 'scopeClass') {
+        if (el.checked) { if (a.scopeClassIds.indexOf(el.value) < 0) a.scopeClassIds.push(el.value); }
+        else a.scopeClassIds = a.scopeClassIds.filter(function (x) { return x !== el.value; });
+      } else if (field === 'tClass') {
+        var ts = a.teachingScope = a.teachingScope || { majorIds: [], classIds: [], courseIds: [] };
+        if (el.checked) { if (ts.classIds.indexOf(el.value) < 0) ts.classIds.push(el.value); }
+        else ts.classIds = ts.classIds.filter(function (x) { return x !== el.value; });
+      } else if (field === 'tMajor') {
+        var ts2 = a.teachingScope = a.teachingScope || { majorIds: [], classIds: [], courseIds: [] };
+        if (el.checked) { if (ts2.majorIds.indexOf(el.value) < 0) ts2.majorIds.push(el.value); }
+        else ts2.majorIds = ts2.majorIds.filter(function (x) { return x !== el.value; });
+      } else if (field === 'tCourse') {
+        var ts3 = a.teachingScope = a.teachingScope || { majorIds: [], classIds: [], courseIds: [] };
+        if (el.checked) { if (ts3.courseIds.indexOf(el.value) < 0) ts3.courseIds.push(el.value); }
+        else ts3.courseIds = ts3.courseIds.filter(function (x) { return x !== el.value; });
+      } else if (field === 'idcard') {
+        var perm = 'student:idcard:plain';
+        if (el.checked) { if (a.extraPermIds.indexOf(perm) < 0) a.extraPermIds.push(perm); }
+        else a.extraPermIds = a.extraPermIds.filter(function (x) { return x !== perm; });
+      }
+    });
+
+    dlg.addEventListener('click', function (e) {
+      var otpRm = e.target.closest('[data-otp-rm]');
+      if (otpRm) {
+        var rmOid = otpRm.getAttribute('data-otp-rm');
+        var rmSet = new Set(pickCtx.subtree(rmOid));
+        editDraft.orgIds = editDraft.orgIds.filter(function (x) { return !rmSet.has(x); });
+        renderOrgPick();
+        return;
+      }
+      var rm = e.target.closest('[data-rm]');
+      if (rm) {
+        var idx = parseInt(rm.getAttribute('data-rm'), 10);
+        editDraft.assignments.splice(idx, 1);
+        renderAllCards();
+        return;
+      }
+      if (e.target.closest('[data-addcard]')) {
+        editDraft.assignments.push(emptyAssign());
+        renderAllCards();
+      }
+    });
+
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var name = dlg.querySelector('[name=name]').value.trim();
+      if (!name) { err.textContent = '姓名不能为空'; return; }
+      var phone = dlg.querySelector('[name=phone]').value.trim();
+      var orgIds = editDraft.orgIds.slice();
+      if (!orgIds.length) { err.textContent = '请至少选择一个所属组织'; return; }
+      var orgId = orgIds[0];
+
+      var operator = identity.account ? identity.account.name : '系统';
+      var now = new Date();
+      var stamp = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0')
+        + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+      var assignmentsLocked = isStopped || !canAssign;
+      var granteeId = editAccount ? editAccount.id : genId('ACC');
+
+      if (!assignmentsLocked) {
+        for (var i = 0; i < editDraft.assignments.length; i++) {
+          var a = editDraft.assignments[i];
+          if (!a.roleId) { err.textContent = '分配 ' + (i + 1) + ' 未选择角色'; return; }
+          var res = Perm.canDelegate(ctx, identity, granteeId, a);
+          if (!res.ok) {
+            err.innerHTML = '分配 ' + (i + 1) + '（' + esc(roleById(a.roleId).name) + '）校验不通过：' + esc(res.reason);
+            audit('授权约束校验失败', name, null, { roleId: a.roleId, reason: res.reason }, '被拦截', orgId);
+            return;
+          }
+        }
+      }
+
+      if (isAdd) {
+        var newAcc = { id: granteeId, name: name, orgId: orgId, orgIds: orgIds.slice(), kind: '管理员', status: '正常', studentId: null,
+          phone: phone || null, lastLoginAt: null, createdAt: stamp, createdBy: operator, updatedAt: stamp, updatedBy: operator };
+        ctx.accounts.push(newAcc);
+        if (!assignmentsLocked) {
+          editDraft.assignments.forEach(function (a) { ctx.assignments.push(makeAssign(genId('A'), granteeId, a)); });
+        }
+        audit('新增账号', name, null, { id: granteeId, orgId: orgId, orgIds: orgIds.slice(), phone: phone || null, roles: editDraft.assignments.map(function (x) { return x.roleId; }) }, '成功', orgId);
+        toast('已新增账号「' + name + '」');
+      } else {
+        var before = { name: editAccount.name, phone: editAccount.phone || null, orgIds: (editAccount.orgIds || [editAccount.orgId]).slice(), roles: ctx.assignments.filter(function (x) { return x.accountId === editAccount.id; }).map(function (x) { return x.roleId; }) };
+        editAccount.name = name;
+        editAccount.phone = phone || null;
+        editAccount.orgIds = orgIds.slice();
+        editAccount.orgId = orgId;
+        editAccount.updatedAt = stamp;
+        editAccount.updatedBy = operator;
+        var after = { name: name, phone: phone || null, orgIds: orgIds.slice(), roles: editDraft.assignments.map(function (x) { return x.roleId; }) };
+        if (!assignmentsLocked) {
+          var origAssigns = ctx.assignments.filter(function (x) { return x.accountId === editAccount.id; });
+          editDraft.assignments.forEach(function (a) {
+            var orig = origAssigns.find(function (o) { return o.id === a.id; });
+            var had = orig && (orig.extraPermIds || []).indexOf('student:idcard:plain') >= 0;
+            var now = (a.extraPermIds || []).indexOf('student:idcard:plain') >= 0;
+            if (had !== now) {
+              audit(now ? '授予身份证明文' : '撤销身份证明文', editAccount.name, { had: had }, { now: now }, '成功', editAccount.orgId);
+            }
+          });
+          ctx.assignments = ctx.assignments.filter(function (x) { return x.accountId !== editAccount.id; });
+          editDraft.assignments.forEach(function (a) { ctx.assignments.push(makeAssign(a.id || genId('A'), editAccount.id, a)); });
+        }
+        audit('编辑账号与角色分配', name, before, after, '成功', editAccount.orgId);
+        toast('已保存「' + name + '」');
+      }
+      dlg.close();
+      render();
+    });
+
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function toggleStatus(a) {
+    var before = { status: a.status };
+    a.status = a.status === '停用' ? '正常' : '停用';
+    audit(a.status === '正常' ? '启用账号' : '停用账号', a.name, before, { status: a.status }, '成功', a.orgId);
+    toast((a.status === '正常' ? '已启用' : '已停用') + '「' + a.name + '」');
+    render();
+  }
+  function resetPassword(a) {
+    audit('重置密码', a.name, null, { passwordReset: true }, '成功', a.orgId);
+    toast('已重置「' + a.name + '」的密码');
+  }
+
+  /* 账号详情（只读抽屉） */
+  function openAccountDetail(a) {
+    var roles = accountRoles(a);
+    var idn = accountIdentity(a);
+    function j(arr) { return arr.length ? arr.join('、') : '—'; }
+    var stu = a.studentId ? byId('students', a.studentId) : null;
+    var dlg = openDialog('<div class="pad" style="max-height:88vh;overflow-y:auto">'
+      + '<h2>账号详情 · ' + esc(a.name) + '</h2>'
+      + '<div class="sec-h detail-sec">基础信息</div>'
+      + '<div class="kv2">'
+      + kv('账号编号', a.id)
+      + kv('姓名', a.name)
+      + kv('登录账号', a.id)
+      + kv('手机号', a.phone || '—')
+      + kv('账号类型', a.kind)
+      + kv('最近登录时间', a.lastLoginAt || '—')
+      + '</div>'
+      + '<div class="sec-h detail-sec">身份信息</div>'
+      + '<div class="kv2">'
+      + kv('所属组织', accountOrgNames(a))
+      + kv('角色', roles.map(function (r) { return r.name; }).join('、') || '—')
+      + kv('所属专业', j(idn.majors))
+      + kv('所属年级', j(idn.grades))
+      + kv('所属班级', j(idn.klasses))
+      + kv('可授课程', j(idn.courses))
+      + kv('状态', a.status)
+      + kv('身份绑定', stu ? ('学生 · ' + stu.name) : '—')
+      + '</div>'
+      + '<div class="sec-h detail-sec">系统信息</div>'
+      + '<div class="kv2">'
+      + kv('创建人', a.createdBy || '—')
+      + kv('创建时间', a.createdAt || '—')
+      + kv('最近修改人', a.updatedBy || '—')
+      + kv('最近修改时间', a.updatedAt || '—')
+      + '</div>'
+      + '<div class="acts" style="margin-top:16px"><button type="button" class="btn ghost" data-x>关闭</button></div>'
+      + '</div>');
+    dlg.style.width = 'min(560px, calc(100vw - 32px))';
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  /* ── Tab2：角色管理（7.5，左右分栏 + 增删改） ── */
+  var roleState = { search: '', selectedId: null, tab: 'basic' };
+
+  function roleScope(r) {
+    if (r.key === 'student') return '学生端';
+    if (r.key === 'teacher' || r.key === 'enterprise') return '教师端';
+    return '管理后台';
+  }
+  function isSystemRole(r) { return r.type === '内置'; }
+  function roleCode(r) { return r.code || r.id; }
+  function roleStatus(r) { return r.status || '启用'; }
+
+  function permTreeHtml(role) {
+    var granted = {};
+    (role.permissionIds || []).forEach(function (c) { granted[c] = 1; });
+    var byMod = {};
+    ctx.permissions.forEach(function (p) {
+      (byMod[p.module] = byMod[p.module] || {});
+      (byMod[p.module][p.resource] = byMod[p.module][p.resource] || []).push(p);
+    });
+    return Object.keys(byMod).map(function (mod) {
+      var res = byMod[mod];
+      return '<div class="rm">' + esc(mod) + '</div>'
+        + Object.keys(res).map(function (resName) {
+          return '<div class="rr">' + esc(resName) + '　'
+            + res[resName].map(function (p) {
+              return '<span class="op' + (granted[p.code] ? ' on' : '') + '">' + esc(p.action) + '</span>';
+            }).join('')
+            + '</div>';
+        }).join('');
+    }).join('') || '<div class="empty">该角色暂无权限点</div>';
+  }
+
+  /* 配置菜单权限：模块 → 权限点 复选框树 */
+  function permCheckTree(checkedSet) {
+    var byMod = {};
+    ctx.permissions.forEach(function (p) { (byMod[p.module] = byMod[p.module] || []).push(p); });
+    return Object.keys(byMod).map(function (mod) {
+      var perms = byMod[mod];
+      var allChecked = perms.every(function (p) { return checkedSet.has(p.code); });
+      return '<div class="pgroup">'
+        + '<label class="pgroup-h"><input type="checkbox" data-pmod="' + esc(mod) + '"' + (allChecked ? ' checked' : '') + '> ' + esc(mod) + '</label>'
+        + '<div class="pitems">' + perms.map(function (p) {
+          return '<label class="pitem"><input type="checkbox" data-pcode="' + esc(p.code) + '" data-pmod="' + esc(mod) + '"' + (checkedSet.has(p.code) ? ' checked' : '') + '> ' + esc(p.resource) + ' · ' + esc(p.action) + '</label>';
+        }).join('') + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  function roleItemHtml(r) {
+    var st = roleStatus(r);
+    return '<button type="button" class="role-item' + (r.id === roleState.selectedId ? ' is-active' : '') + '" data-rsel="' + esc(r.id) + '">'
+      + '<div class="role-item-head"><span class="role-item-title">' + esc(r.name) + '</span>'
+      + '<span class="role-status ' + (st === '启用' ? 'enabled' : 'disabled') + '">' + esc(st) + '</span></div>'
+      + '<div class="role-item-desc">' + esc(r.description || '—') + '</div>'
+      + '<div class="role-item-meta">创建人：' + esc(r.createdBy || '—') + '　' + esc(r.createdAt || '') + '</div>'
+      + '</button>';
+  }
+
+  function switchHtml(r, st, sys) {
+    return '<span class="switch' + (st === '启用' ? ' on' : '') + (sys ? ' locked' : '') + '"'
+      + (sys ? '' : ' data-rstatus="' + esc(r.id) + '" role="switch" tabindex="0"')
+      + ' aria-checked="' + (st === '启用') + '"></span>';
+  }
+
+  function basicInfoHtml(r, st, sys) {
+    return '<div class="form-grid">'
+      + '<div class="field-group"><div class="field-label">角色名称</div><div class="field-value">' + esc(r.name) + '</div></div>'
+      + '<div class="field-group"><div class="field-label">角色编码</div><div class="field-value mono">' + esc(roleCode(r)) + '</div></div>'
+      + '<div class="field-group"><div class="field-label">所属端</div><div class="field-value">' + esc(roleScope(r)) + '</div></div>'
+      + '<div class="field-group"><div class="field-label">状态</div><div class="field-value">'
+      + switchHtml(r, st, sys) + '<span class="m-hid">' + esc(st) + '</span></div></div>'
+      + '<div class="field-group field-full"><div class="field-label">角色说明</div><div class="field-value" style="align-items:flex-start">' + esc(r.description || '—') + '</div></div>'
+      + '</div>'
+      + '<div class="kv2" style="margin-top:16px;border-top:1px solid var(--rule-2);padding-top:14px">'
+      + '<div><div class="kk">AI 每日配额</div><div class="vv">' + esc(r.aiQuota) + ' 次</div></div>'
+      + '<div><div class="kk">创建人</div><div class="vv">' + esc(r.createdBy || '—') + '</div></div>'
+      + '<div><div class="kk">创建时间</div><div class="vv">' + esc(r.createdAt || '—') + '</div></div>'
+      + '<div><div class="kk">角色类型</div><div class="vv">' + esc(r.type) + '</div></div></div>';
+  }
+
+  function roleDetailHtml(r) {
+    if (!r) return '<div class="empty">请选择角色</div>';
+    var sys = isSystemRole(r);
+    var st = roleStatus(r);
+    return '<div class="detail-topbar">'
+      + '<div class="detail-name">' + esc(r.name) + '<span class="detail-badge">' + esc(roleScope(r)) + '</span></div>'
+      + '<div class="detail-actions">'
+      + '<button class="btn-s" data-redit="' + esc(r.id) + '"' + (sys ? ' disabled' : '') + '>编辑</button>'
+      + '<button class="btn-s" data-rperm="' + esc(r.id) + '"' + (sys ? ' disabled' : '') + '>配置角色菜单</button>'
+      + '<button class="btn-s" data-rdel="' + esc(r.id) + '"' + (sys ? ' disabled' : '') + '>删除</button>'
+      + '</div></div>'
+      + '<div class="role-tabs">'
+      + '<button class="rtab' + (roleState.tab === 'basic' ? ' on' : '') + '" data-rtab="basic">基础信息</button>'
+      + '<button class="rtab' + (roleState.tab === 'perm' ? ' on' : '') + '" data-rtab="perm">菜单权限</button>'
+      + '</div>'
+      + '<div class="role-tab-pane">' + (roleState.tab === 'basic' ? basicInfoHtml(r, st, sys) : permTreeHtml(r)) + '</div>';
+  }
+
+  function renderRole() {
+    var pane = $('#paneRole');
+    if (!can('org:role:define')) {
+      pane.innerHTML = '<div class="empty">当前身份无权访问角色管理。</div>';
+      return;
+    }
+    var roles = ctx.roles.slice();
+    var q = (roleState.search || '').trim().toLowerCase();
+    if (q) roles = roles.filter(function (r) { return r.name.toLowerCase().indexOf(q) >= 0; });
+    if (!roles.length) {
+      pane.innerHTML = '<div class="scbar"><b>角色管理</b>　维护全校角色、所属端与菜单权限。</div>'
+        + '<div class="card"><div class="empty">' + (q ? '未找到匹配「' + esc(roleState.search) + '」的角色' : '暂无角色') + '</div></div>';
+      return;
+    }
+    if (!roleState.selectedId || !roles.some(function (r) { return r.id === roleState.selectedId; })) {
+      roleState.selectedId = roles[0].id;
+    }
+    var cur = byId('roles', roleState.selectedId);
+    pane.innerHTML = '<div class="scbar"><b>角色管理</b>　共 ' + ctx.roles.length + ' 个角色；权限点细化到操作级。选中左侧角色查看详情并维护。</div>'
+      + '<div class="role-layout">'
+      + '<section class="role-list-panel">'
+      + '<div class="role-toolbar"><input class="role-search" id="roleSearch" placeholder="搜索角色" value="' + esc(roleState.search) + '"><button class="btn-s" data-radd="1">+ 新增</button></div>'
+      + '<div class="role-list">' + roles.map(roleItemHtml).join('') + '</div>'
+      + '</section>'
+      + '<section class="role-detail-panel">' + roleDetailHtml(cur) + '</section>'
+      + '</div>';
+  }
+
+  /* ── 角色 CRUD ── */
+  function scopeToKey(scope) {
+    if (scope === '学生端') return 'student';
+    if (scope === '教师端') return 'teacher';
+    return 'orgAdmin';
+  }
+
+  function openRoleForm(role) {
+    var isAdd = !role;
+    var curScope = role ? roleScope(role) : '管理后台';
+    var dlg = openDialog('<form><h2>' + (isAdd ? '新增角色' : '编辑角色' + (role ? ' · ' + esc(role.name) : '')) + '</h2>'
+      + '<label>角色名称<input name="rname" value="' + esc(role ? role.name : '') + '" placeholder="请输入角色名称"></label>'
+      + '<label>角色编码<input name="rcode" value="' + esc(isAdd ? '' : roleCode(role)) + '" placeholder="字母、数字或符号"' + (isAdd ? '' : ' disabled') + '>'
+      + (isAdd ? '' : '<span class="m-hid" style="margin-top:2px">角色编码为系统标识，创建后不可修改</span>') + '</label>'
+      + '<label>所属端<select name="rscope"' + (isAdd ? '' : ' disabled') + '>'
+      + ['管理后台', '教师端', '学生端'].map(function (s) {
+          return '<option value="' + s + '"' + (s === curScope ? ' selected' : '') + '>' + s + '</option>';
+        }).join('') + '</select>'
+      + (isAdd ? '' : '<span class="m-hid" style="margin-top:2px">所属端关联角色数据范围，创建后不可修改</span>') + '</label>'
+      + '<label>角色说明<textarea name="rdesc" rows="3" placeholder="请输入角色说明">' + esc(role ? (role.description || '') : '') + '</textarea></label>'
+      + '<div class="note" id="rErr" style="color:var(--crit)"></div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div>'
+      + '</form>');
+    dlg.style.width = 'min(440px, calc(100vw - 32px))';
+    var err = dlg.querySelector('#rErr');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var name = dlg.querySelector('[name=rname]').value.trim();
+      var codeVal = (dlg.querySelector('[name=rcode]').value || '').trim();
+      var scope = dlg.querySelector('[name=rscope]').value;
+      var desc = dlg.querySelector('[name=rdesc]').value.trim();
+      if (!name) { err.textContent = '请输入角色名称'; return; }
+      if (isAdd) {
+        if (!codeVal) { err.textContent = '请输入角色编码'; return; }
+        if (!/^[A-Za-z0-9!-/:-@[-`{-~]+$/.test(codeVal)) { err.textContent = '角色编码只能包含字母、数字和符号'; return; }
+        if (byId('roles', codeVal)) { err.textContent = '角色编码已存在'; return; }
+      }
+      if (isAdd) {
+        var nRole = { id: codeVal, key: scopeToKey(scope), name: name, type: '自定义', status: '启用', aiQuota: 0,
+          description: desc, createdBy: identity.account.name, createdAt: new Date().toISOString().slice(0, 10),
+          permissionIds: [] };
+        ctx.roles.push(nRole);
+        audit('新增角色', name, null, { id: codeVal, scope: scope, description: desc }, '成功', null);
+        roleState.selectedId = codeVal;
+        toast('已新增角色「' + name + '」');
+      } else {
+        var before = { name: role.name, description: role.description };
+        role.name = name;
+        role.description = desc;
+        audit('编辑角色', name, before, { name: name, description: desc }, '成功', null);
+        toast('已保存「' + name + '」');
+      }
+      dlg.close();
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function openRolePermConfig(role) {
+    var granted = new Set(role.permissionIds || []);
+    var dlg = openDialog('<form><h2>配置角色菜单 · ' + esc(role.name) + '</h2>'
+      + '<div style="max-height:52vh;overflow-y:auto;padding-right:4px">' + permCheckTree(granted) + '</div>'
+      + '<div class="note" id="pErr" style="color:var(--crit)"></div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div>'
+      + '</form>');
+    dlg.style.width = 'min(520px, calc(100vw - 32px))';
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+
+    function syncMod(mod) {
+      var items = Array.from(dlg.querySelectorAll('[data-pcode]')).filter(function (i) { return i.getAttribute('data-pmod') === mod; });
+      var modInput = Array.from(dlg.querySelectorAll('[data-pmod]')).filter(function (i) { return !i.hasAttribute('data-pcode') && i.getAttribute('data-pmod') === mod; })[0];
+      if (modInput) modInput.checked = items.length > 0 && items.every(function (i) { return i.checked; });
+    }
+    dlg.addEventListener('change', function (e) {
+      var el = e.target;
+      if (!el || !el.getAttribute) return;
+      var mod = el.getAttribute('data-pmod');
+      if (mod == null) return;
+      if (el.hasAttribute('data-pcode')) { syncMod(mod); }
+      else {
+        var on = el.checked;
+        dlg.querySelectorAll('[data-pcode]').forEach(function (i) {
+          if (i.getAttribute('data-pmod') === mod) i.checked = on;
+        });
+      }
+    });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var next = [];
+      dlg.querySelectorAll('[data-pcode]:checked').forEach(function (i) { next.push(i.getAttribute('data-pcode')); });
+      var before = (role.permissionIds || []).slice().sort().join(',');
+      var after = next.slice().sort().join(',');
+      role.permissionIds = next;
+      audit('配置角色菜单权限', role.name, { permissionIds: before }, { permissionIds: after }, '成功', null);
+      toast('已保存「' + role.name + '」的菜单权限');
+      dlg.close();
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function deleteRole(role) {
+    var assigned = ctx.assignments.filter(function (a) { return a.roleId === role.id; }).length;
+    var dlg = openDialog('<form><h2>删除角色「' + esc(role.name) + '」</h2>'
+      + '<div class="note">' + (assigned
+          ? '该角色已被 ' + assigned + ' 个账号分配，删除后这些账号的该角色分配将一并移除，确定删除吗？'
+          : '确定删除该角色吗？删除后不可恢复。') + '</div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">删除</button></div>'
+      + '</form>');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var before = { id: role.id, name: role.name, assigned: assigned };
+      ctx.assignments = ctx.assignments.filter(function (a) { return a.roleId !== role.id; });
+      ctx.roles = ctx.roles.filter(function (r) { return r.id !== role.id; });
+      audit('删除角色', role.name, before, null, '成功', null);
+      roleState.selectedId = null;
+      toast('已删除角色「' + role.name + '」');
+      dlg.close();
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function toggleRoleStatus(role) {
+    var st = roleStatus(role);
+    var next = st === '启用' ? '停用' : '启用';
+    role.status = next;
+    audit(next === '停用' ? '停用角色' : '启用角色', role.name, { status: st }, { status: next }, '成功', null);
+    toast((next === '停用' ? '已停用' : '已启用') + '「' + role.name + '」');
+    render();
+  }
+
+  /* ── 弹层 ── */
+  function openDialog(html) {
+    var dlg = document.createElement('dialog');
+    dlg.className = 'aidlg';
+    dlg.innerHTML = html;
+    document.body.appendChild(dlg);
+    dlg.showModal();
+    return dlg;
+  }
+
+  /* ── 「为什么能看到 / 看不到」 ── */
+  function ensureTip() {
+    if (!window.__tipEl) {
+      var t = document.createElement('div');
+      t.id = 'tip';
+      document.body.appendChild(t);
+      window.__tipEl = t;
+    }
+    return window.__tipEl;
+  }
+  function roleSummary() {
+    return Perm.activeAssignments(ctx, identity).map(function (a) {
+      var r = byId('roles', a.roleId);
+      var scope = (a.scopeOrgIds || []).map(function (oid) { return orgById(oid) ? orgById(oid).name : oid; }).join('、');
+      return r.name + (scope ? ' @' + scope : '');
+    }).join('；') || '无';
+  }
+  function showTip(anchor, html) {
+    var t = ensureTip();
+    t.innerHTML = html;
+    t.classList.add('on');
+    var r = anchor.getBoundingClientRect();
+    var tw = t.offsetWidth || 260;
+    var left = Math.max(8, Math.min(r.left, window.innerWidth - tw - 12));
+    var top = r.bottom + 8;
+    if (top + 140 > window.innerHeight) top = r.top - 148;
+    t.style.left = left + 'px';
+    t.style.top = Math.max(8, top) + 'px';
+  }
+  function hideTip() { if (window.__tipEl) window.__tipEl.classList.remove('on'); }
+
+  function explainAccount(a) {
+    var t = Perm.explain(ctx, identity, 'org:account:view', a, 'account', ui.orgId);
+    var lines = ['<b>' + esc(a.name) + ' · 账号查看</b>',
+      '<span class="tk">账号：' + esc(identity.account.name) + '（' + esc(identity.account.status) + '）</span>',
+      '<span class="tk">角色：' + esc(roleSummary()) + '</span>'];
+    (t.assignments || []).forEach(function (asg) {
+      lines.push('<span class="tk">' + esc(asg.roleName) + '：功能 ' + (asg.hasPerm ? '✓' : '✗')
+        + (asg.hasPerm && asg.scopePass != null ? ' · 范围 ' + (asg.scopePass ? '✓' : '✗') : '') + '</span>');
+    });
+    if (t.orgFiltered) lines.push('<span class="tk">有权限，被当前组织过滤</span>');
+    if (!t.allowed && t.hiddenReason) lines.push('<span class="tk">不可见：' + esc(t.hiddenReason) + '</span>');
+    return lines.join('');
+  }
+
+  /* ── 事件（委托到 #body） ── */
+  function bindEvents() {
+    $('#body').addEventListener('click', function (e) {
+      var tab = e.target.closest('[data-tab]');
+      if (tab) { activeTab = tab.getAttribute('data-tab'); render(); return; }
+      var aadd = e.target.closest('[data-aadd]');
+      if (aadd) {
+        if (can('org:account:edit')) openAccountForm(null);
+        else { audit('越权尝试·新增账号', '新账号', null, { reason: '无账号维护权限' }, '被拒绝', null); toast('越权尝试已记录：无账号维护权限'); }
+        return;
+      }
+      var adetail = e.target.closest('[data-adetail]');
+      if (adetail) { var adt = byId('accounts', adetail.getAttribute('data-adetail')); if (adt) openAccountDetail(adt); return; }
+      var aedit = e.target.closest('[data-aedit]');
+      if (aedit) {
+        var ae = byId('accounts', aedit.getAttribute('data-aedit'));
+        if (ae && can('org:account:edit')) openAccountForm(ae);
+        return;
+      }
+      var adisable = e.target.closest('[data-adisable]');
+      if (adisable) { var ad = byId('accounts', adisable.getAttribute('data-adisable')); if (ad) toggleStatus(ad); return; }
+      var aenable = e.target.closest('[data-aenable]');
+      if (aenable) { var an = byId('accounts', aenable.getAttribute('data-aenable')); if (an) toggleStatus(an); return; }
+      var apwd = e.target.closest('[data-apwd]');
+      if (apwd) { var ap = byId('accounts', apwd.getAttribute('data-apwd')); if (ap) resetPassword(ap); return; }
+      var rsel = e.target.closest('[data-rsel]');
+      if (rsel) { roleState.selectedId = rsel.getAttribute('data-rsel'); roleState.tab = 'basic'; render(); return; }
+      var radd = e.target.closest('[data-radd]');
+      if (radd) { openRoleForm(null); return; }
+      var redit = e.target.closest('[data-redit]');
+      if (redit) { var re = byId('roles', redit.getAttribute('data-redit')); if (re && !isSystemRole(re)) openRoleForm(re); return; }
+      var rperm = e.target.closest('[data-rperm]');
+      if (rperm) { var rp = byId('roles', rperm.getAttribute('data-rperm')); if (rp && !isSystemRole(rp)) openRolePermConfig(rp); return; }
+      var rdel = e.target.closest('[data-rdel]');
+      if (rdel) { var rd = byId('roles', rdel.getAttribute('data-rdel')); if (rd && !isSystemRole(rd)) deleteRole(rd); return; }
+      var rtab = e.target.closest('[data-rtab]');
+      if (rtab) { roleState.tab = rtab.getAttribute('data-rtab'); render(); return; }
+      var rstatus = e.target.closest('[data-rstatus]');
+      if (rstatus) { var rs = byId('roles', rstatus.getAttribute('data-rstatus')); if (rs && !isSystemRole(rs)) toggleRoleStatus(rs); return; }
+    });
+    $('#body').addEventListener('input', function (e) {
+      if (e.target && e.target.id === 'roleSearch') {
+        roleState.search = e.target.value;
+        render();
+        var el = document.getElementById('roleSearch');
+        if (el) { el.focus(); try { el.setSelectionRange(el.value.length, el.value.length); } catch (x) {} }
+      }
+      if (e.target && e.target.id === 'acctSearch') {
+        acctFilter.q = e.target.value;
+        render();
+        var el2 = document.getElementById('acctSearch');
+        if (el2) { el2.focus(); try { el2.setSelectionRange(el2.value.length, el2.value.length); } catch (x) {} }
+      }
+    });
+    $('#body').addEventListener('change', function (e) {
+      if (e.target && e.target.id === 'acctRole') { acctFilter.roleId = e.target.value; render(); }
+      else if (e.target && e.target.id === 'acctStatus') { acctFilter.status = e.target.value; render(); }
+      else if (e.target && e.target.id === 'acctMajor') { acctFilter.major = e.target.value; render(); }
+    });
+    $('#body').addEventListener('mouseover', function (e) {
+      var aq = e.target.closest('[data-awhy]');
+      if (aq) { var a = byId('accounts', aq.getAttribute('data-awhy')); if (a) showTip(aq, explainAccount(a)); }
+    });
+    $('#body').addEventListener('mouseout', function (e) {
+      if (e.target.closest('[data-awhy]')) hideTip();
+    });
+  }
+
+  /* ── 启动 ── */
+  UI.boot({ portal: 'admin', active: 'account' });
+  UI.onChange(function () { render(); });
+  bindEvents();
+  render();
+})();
+</script>
+</body>
+</html>

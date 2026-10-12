@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>备课中心 · 资源</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<style>
+.sec-h{font-size:12.5px;font-weight:700;margin:12px 0 6px}
+.chklist{display:flex;flex-direction:column;gap:2px;max-height:200px;overflow-y:auto;border:1px solid var(--rule);border-radius:9px;padding:8px 10px;background:var(--card-2)}
+.ocl{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink);padding:3px 0}
+.idc{display:flex;align-items:center;gap:7px;font-size:12.5px;margin-top:10px;color:var(--ink)}
+.rres{display:grid;grid-template-columns:minmax(180px,2fr) 76px minmax(96px,1fr) minmax(110px,1.1fr) minmax(210px,auto);gap:0 12px;align-items:center;padding:9px 14px;border-top:1px solid var(--rule-2);font-size:12.5px}
+.rres:first-child{border-top:0}
+.rhead{background:var(--card-2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
+.cell-t b{font-weight:600}
+.cell-t .cell-s{display:block;font-size:11px;color:var(--muted);margin-top:1px}
+.dacts{display:flex;gap:6px;flex-wrap:wrap}
+.empty{padding:24px 12px;text-align:center;color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="demobar" id="demobar"></div>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t" id="ptTitle">备课中心 · 资源</h1>
+          <div class="pt-d" id="ptDesc">我的资源 · 共享给我的 · 校本资源库</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body">
+      <div class="tabs l2" id="tabs" role="tablist"></div>
+      <div class="pane" id="pane"></div>
+    </div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var ctx = null, identity = null, ui = null, portal = 'teacher';
+  var activeTab = 'mine';
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function byId(col, id) { return (ctx[col] || []).find(function (o) { return o.id === id; }); }
+  function orgById(id) { return byId('orgs', id); }
+  function accountById(id) { return byId('accounts', id); }
+  function orgDepth(orgId) {
+    var m = {}; ctx.orgs.forEach(function (o) { m[o.id] = o; });
+    var d = 0, cur = orgId;
+    while (cur && m[cur] && m[cur].parentId) { d++; cur = m[cur].parentId; }
+    return d;
+  }
+
+  function reload() {
+    ctx = DEMO.getState();
+    ui = UI.ui();
+    identity = Perm.getIdentity(ctx, ui.accountId);
+    portal = UI.portalOf(ctx, identity);
+  }
+  function audit(action, object, before, after, result, orgId) {
+    var rec = DEMO.addAudit(ctx, identity.account.id, action, object, before, after, result);
+    if (orgId != null) rec.orgId = orgId;
+    DEMO.saveState(ctx);
+  }
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2600);
+  }
+  function genId(prefix) {
+    return prefix + '-N' + Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6);
+  }
+  function can(code) { return Perm.check(ctx, identity, code, null, null).allowed; }
+
+  function statusPill(r) {
+    var p = [];
+    if (r.published) p.push('<span class="pill good">已发布</span>');
+    if (r.recommended && !r.published) p.push('<span class="pill warn">待发布</span>');
+    if (r.shared) p.push('<span class="pill k">共享中</span>');
+    return p.join(' ') || '<span class="pill ext">私有</span>';
+  }
+
+  var TABS_TEACHER = [
+    { key: 'mine', label: '我的资源' },
+    { key: 'shared', label: '共享给我的' },
+    { key: 'schoolpub', label: '校本资源库' }
+  ];
+
+  function render() {
+    reload();
+    var tabs = portal === 'teacher' ? TABS_TEACHER : [{ key: 'schoolpub', label: '校本资源库' }];
+    if (!tabs.some(function (t) { return t.key === activeTab; })) activeTab = tabs[0].key;
+    $('#ptTitle').textContent = portal === 'teacher' ? '备课中心 · 资源' : '校本资源库';
+    $('#ptDesc').textContent = portal === 'teacher' ? '我的资源 · 共享给我的 · 校本资源库' : '发布 / 不发布 / 撤下（组织管理员、教务）';
+    $('#tabs').innerHTML = tabs.map(function (t) {
+      return '<button class="tab" data-tab="' + t.key + '"' + (t.key === activeTab ? ' aria-selected="true"' : '') + '>' + esc(t.label) + '</button>';
+    }).join('');
+    if (activeTab === 'mine') renderMine();
+    else if (activeTab === 'shared') renderShared();
+    else renderSchoolpub();
+  }
+
+  function resRow(r, actions) {
+    var org = orgById(r.orgId);
+    return '<div class="rres" data-res="' + esc(r.id) + '">'
+      + '<div class="cell-t"><b>' + esc(r.title) + '</b><span class="cell-s">' + esc(accountById(r.ownerId) ? accountById(r.ownerId).name : r.ownerId) + '</span></div>'
+      + '<div>' + esc(r.type) + '</div>'
+      + '<div>' + esc(org ? org.name : '—') + '</div>'
+      + '<div>' + statusPill(r) + '</div>'
+      + '<div class="dacts">' + actions + '</div>'
+      + '</div>';
+  }
+
+  function renderMine() {
+    var list = ctx.resources.filter(function (r) { return r.ownerId === identity.account.id; });
+    var rows = list.map(function (r) {
+      var acts = '<button class="btn-s" data-view="' + esc(r.id) + '">查看</button>'
+        + '<button class="btn-s" data-rename="' + esc(r.id) + '">重命名</button>';
+      if (Perm.canShareResource(ctx, identity, r)) acts += '<button class="btn-s" data-share="' + esc(r.id) + '">共享</button>';
+      if (r.shared && (r.shareTargets || []).length) acts += '<button class="btn-s" data-revoke="' + esc(r.id) + '">撤回</button>';
+      return resRow(r, acts);
+    }).join('');
+    $('#pane').innerHTML = '<div class="scbar"><b>我的资源</b>　共 ' + list.length + ' 份（「学情分析」不可共享）</div>'
+      + '<div class="card"><div class="dtable">'
+      + '<div class="rres rhead"><div>资源</div><div>类型</div><div>所属组织</div><div>状态</div><div class="dt-num">操作</div></div>'
+      + (rows || '<div class="empty">暂无资源</div>')
+      + '</div></div>';
+  }
+
+  function sharedHit(r) {
+    return (r.shareTargets || []).some(function (t) {
+      if (t.type === 'teacher') return t.targetId === identity.account.id;
+      if (t.type === 'org') return Perm.accountInOrg(ctx, identity.account, t.targetId);
+      return false;
+    });
+  }
+
+  function renderShared() {
+    var list = ctx.resources.filter(function (r) {
+      return r.ownerId !== identity.account.id && !r.published && r.shared && sharedHit(r);
+    });
+    var rows = list.map(function (r) {
+      var acts = '<button class="btn-s" data-view="' + esc(r.id) + '">查看</button>'
+        + '<button class="btn-s" data-copy="' + esc(r.id) + '">复制到我的资源</button>';
+      return resRow(r, acts);
+    }).join('');
+    $('#pane').innerHTML = '<div class="scbar"><b>共享给我的</b>　共 ' + list.length + ' 份 · 作者撤回后原件消失，副本保留</div>'
+      + '<div class="card"><div class="dtable">'
+      + '<div class="rres rhead"><div>资源</div><div>类型</div><div>所属组织</div><div>状态</div><div class="dt-num">操作</div></div>'
+      + (rows || '<div class="empty">暂未收到共享</div>')
+      + '</div></div>';
+  }
+
+  function canUnpublish(r) {
+    if (r.ownerId === identity.account.id) return true;
+    // 组织管理员（范围覆盖作者）与教务：复用「发布」的范围判定（已发布内容 recommended 仍为 true）
+    return Perm.canPublishResource(ctx, identity, r);
+  }
+
+  function renderSchoolpub() {
+    var published = ctx.resources.filter(function (r) { return r.published; });
+    var isPub = can('resource:schoolpub:publish');
+
+    var html = '<div class="scbar"><b>校本资源库</b>　已发布 ' + published.length + ' 份 · 全校教师可查看、复制</div>';
+
+    if (isPub) {
+      var pending = ctx.resources.filter(function (r) { return r.recommended && !r.published; });
+      html += '<div class="sec-h">待发布（' + pending.length + '）</div>'
+        + '<div class="card"><div class="dtable">'
+        + '<div class="rres rhead"><div>资源</div><div>类型</div><div>所属组织</div><div>状态</div><div class="dt-num">操作</div></div>'
+        + (pending.map(function (r) {
+          return resRow(r, '<button class="btn-s" data-publish="' + esc(r.id) + '">发布</button><button class="btn-s" data-reject="' + esc(r.id) + '">不发布</button>');
+        }).join('') || '<div class="empty">暂无待发布内容</div>')
+        + '</div></div>';
+    }
+
+    html += '<div class="sec-h">已发布（' + published.length + '）</div>'
+      + '<div class="card"><div class="dtable">'
+      + '<div class="rres rhead"><div>资源</div><div>类型</div><div>所属组织</div><div>状态</div><div class="dt-num">操作</div></div>'
+      + (published.map(function (r) {
+        var acts = '<button class="btn-s" data-view="' + esc(r.id) + '">查看</button>'
+          + '<button class="btn-s" data-copy="' + esc(r.id) + '">复制</button>';
+        if (canUnpublish(r)) acts += '<button class="btn-s" data-unpublish="' + esc(r.id) + '">撤下</button>';
+        return resRow(r, acts);
+      }).join('') || '<div class="empty">暂无已发布内容</div>')
+      + '</div></div>';
+
+    $('#pane').innerHTML = html;
+  }
+
+  /* ── 弹层 ── */
+  function openDialog(html) {
+    var dlg = document.createElement('dialog');
+    dlg.className = 'aidlg';
+    dlg.innerHTML = html;
+    document.body.appendChild(dlg);
+    dlg.showModal();
+    return dlg;
+  }
+
+  function viewResource(r) {
+    var dlg = openDialog('<div class="pad" style="display:flex;flex-direction:column;gap:10px">'
+      + '<div class="dr-k"><h2>' + esc(r.title) + '</h2><button type="button" class="x" data-x>×</button></div>'
+      + '<div class="note">类型：' + esc(r.type) + '</div>'
+      + '<div class="note">作者：' + esc(accountById(r.ownerId) ? accountById(r.ownerId).name : r.ownerId) + '</div>'
+      + '<div class="note">所属组织：' + esc(orgById(r.orgId) ? orgById(r.orgId).name : '—') + '</div>'
+      + '<div class="note">' + statusPill(r) + '</div>'
+      + '</div>');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function renameResource(r) {
+    var dlg = openDialog('<form><h2>重命名资源</h2>'
+      + '<label>标题<input name="title" value="' + esc(r.title) + '" required></label>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div></form>');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var t = dlg.querySelector('[name=title]').value.trim();
+      if (!t) return;
+      var before = r.title;
+      r.title = t;
+      audit('重命名资源', before, { before: before }, { after: t }, '成功', r.orgId);
+      toast('已重命名');
+      dlg.close();
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function openShare(r) {
+    var teachers = ctx.accounts.filter(function (a) { return a.kind === '教师' && a.status !== '停用' && a.id !== identity.account.id; });
+    var orgs = ctx.orgs.filter(function (o) { return o.status === 'enabled'; });
+    var existing = {};
+    (r.shareTargets || []).forEach(function (t) { existing[(t.type === 'teacher' ? 'T' : 'O') + t.targetId] = 1; });
+    var dlg = openDialog('<form>'
+      + '<h2>共享 · ' + esc(r.title) + '</h2>'
+      + '<div class="sec-h">指定教师</div>'
+      + '<div class="chklist">' + teachers.map(function (a) {
+        return '<label class="ocl"><input type="checkbox" name="t" value="' + esc(a.id) + '"' + (existing['T' + a.id] ? ' checked' : '') + '>' + esc(a.name) + '<span class="cell-s" style="color:var(--muted)">' + esc((Perm.accountOrgIds(ctx, a) || []).map(function (id) { var o = orgById(id); return o ? o.name : id; }).join('、') || '—') + '</span></label>';
+      }).join('') + (teachers.length ? '' : '<div class="empty">暂无可共享的教师</div>') + '</div>'
+      + '<div class="sec-h">指定组织（含下级）</div>'
+      + '<div class="chklist">' + orgs.map(function (o) {
+        var d = orgDepth(o.id);
+        return '<label class="ocl" style="padding-left:' + (d * 14) + 'px"><input type="checkbox" name="o" value="' + esc(o.id) + '"' + (existing['O' + o.id] ? ' checked' : '') + '>' + esc(o.name) + '</label>';
+      }).join('') + '</div>'
+      + '<label class="idc"><input type="checkbox" name="rec"' + (r.recommended ? ' checked' : '') + '> 推荐到校本资源库</label>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div>'
+      + '</form>');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var ts = [], os = [];
+      dlg.querySelectorAll('input[name=t]:checked').forEach(function (i) { ts.push(i.value); });
+      dlg.querySelectorAll('input[name=o]:checked').forEach(function (i) { os.push(i.value); });
+      var rec = dlg.querySelector('input[name=rec]').checked;
+      var before = { shared: r.shared, shareTargets: (r.shareTargets || []).slice(), recommended: r.recommended };
+      r.shareTargets = ts.map(function (id) { return { type: 'teacher', targetId: id }; }).concat(os.map(function (id) { return { type: 'org', targetId: id }; }));
+      r.shared = r.shareTargets.length > 0;
+      r.recommended = r.recommended || rec;
+      audit('共享资源', r.title, before, { shared: r.shared, shareTargets: r.shareTargets.slice(), recommended: r.recommended }, '成功', r.orgId);
+      toast('已更新「' + r.title + '」的共享设置');
+      dlg.close();
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function copyResource(r) {
+    var copy = { id: genId('RES'), title: r.title + '（副本）', type: r.type, ownerId: identity.account.id, orgId: r.orgId, shared: false, shareTargets: [], recommended: false, published: false };
+    ctx.resources.push(copy);
+    audit('复制资源', r.title, null, { copyId: copy.id, title: copy.title }, '成功', r.orgId);
+    toast('已复制到我的资源');
+    render();
+  }
+  function revokeResource(r) {
+    var before = { shared: r.shared, shareTargets: (r.shareTargets || []).slice() };
+    r.shared = false; r.shareTargets = [];
+    audit('撤回共享', r.title, before, { shared: false, shareTargets: [] }, '成功', r.orgId);
+    toast('已撤回共享');
+    render();
+  }
+  function publishResource(r) {
+    r.published = true;
+    audit('发布到校本资源库', r.title, { published: false }, { published: true }, '成功', r.orgId);
+    toast('已发布');
+    render();
+  }
+  function rejectResource(r) {
+    r.recommended = false;
+    audit('不发布', r.title, { recommended: true }, { recommended: false }, '成功', r.orgId);
+    toast('已设为不发布');
+    render();
+  }
+  function unpublishResource(r) {
+    r.published = false;
+    audit('撤下', r.title, { published: true }, { published: false }, '成功', r.orgId);
+    toast('已撤下');
+    render();
+  }
+
+  /* ── 事件 ── */
+  function bindEvents() {
+    $('#body').addEventListener('click', function (e) {
+      var tab = e.target.closest('[data-tab]');
+      if (tab) { activeTab = tab.getAttribute('data-tab'); render(); return; }
+      var act = function (attr, fn) {
+        var el = e.target.closest('[data-' + attr + ']');
+        if (el) { var r = byId('resources', el.getAttribute('data-' + attr)); if (r) fn(r); return true; }
+        return false;
+      };
+      if (act('view', viewResource)) return;
+      if (act('share', openShare)) return;
+      if (act('rename', renameResource)) return;
+      if (act('copy', copyResource)) return;
+      if (act('revoke', revokeResource)) return;
+      if (act('publish', publishResource)) return;
+      if (act('reject', rejectResource)) return;
+      if (act('unpublish', unpublishResource)) return;
+    });
+  }
+
+  /* ── 启动 ── */
+  var c0 = DEMO.getState();
+  var id0 = Perm.getIdentity(c0, UI.ui().accountId);
+  var p0 = UI.portalOf(c0, id0);
+  if (p0 === 'student') { location.replace(UI.firstPage(c0, id0)); return; }
+  UI.boot({ portal: p0, active: p0 === 'teacher' ? 'resources' : 'schoolpub' });
+  UI.onChange(function () { render(); });
+  bindEvents();
+  render();
+})();
+</script>
+</body>
+</html>

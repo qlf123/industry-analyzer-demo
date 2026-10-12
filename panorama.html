@@ -75,6 +75,7 @@ input{font:inherit}
   border-radius:8px;color:var(--ink-2);font-size:13px;transition:background .12s,color .12s}
 .lmenu:hover{background:var(--rule-2);color:var(--ink)}
 .lmenu.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
+a.lmenu{text-decoration:none}
 .lmenu i{width:15px;height:15px;flex:0 0 15px;display:block;opacity:.75}
 .lmenu.on i{opacity:1}
 .lfoot{margin-top:auto;padding:14px 18px 16px;border-top:1px solid var(--rule-2);
@@ -1439,6 +1440,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
       <div class="lgt">概览</div>
       <button class="lmenu"><i>▤</i>数据概览</button>
       <button class="lmenu on"><i>◎</i>行业分析</button>
+      <a class="lmenu" href="kmap.html"><i>◇</i>行业图谱</a>
     </div>
     <div class="lgroup">
       <div class="lgt">教务</div>
@@ -1685,6 +1687,7 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
 
     </div>
   </div>
+
 </div>
 
 <div id="pop" role="dialog" aria-label="说明信息"></div>
@@ -8137,12 +8140,84 @@ document.addEventListener('click', e => {
 });
 
 /* ── 导出报告（复用 DOC_CSS 的 .doc 样式，独立叠加层 #a3docov）── */
+/* A3 报告改版新增样式：沿用 DOC_CSS 的紫调变量，仅补 .doc 下新增的 box/grid/card/kv/todo 等类，不动 DOC_CSS（保证「能力测评」导出不变）。 */
+const A3_DOC_CSS = `
+.doc .box{background:#f7f5fd;border:1px solid #dcd4f6;border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.8}
+.doc .box b{color:var(--brand-d)}
+.doc .box .sub{display:block;color:var(--ink2);font-size:12.5px;line-height:1.75;margin:4px 0 0}
+.doc .box.ok{background:var(--good-bg);border-color:#bfe3cd} .doc .box.ok b{color:var(--good)}
+.doc .box.warn{background:var(--warn-bg);border-color:#f0d9b0} .doc .box.warn b{color:var(--warn)}
+.doc .box.bad{background:var(--crit-bg);border-color:#f2c7c7} .doc .box.bad b{color:var(--crit)}
+.doc .leadbox{background:var(--brand-bg);border:1px solid #dcd4f6;border-left:4px solid var(--brand);border-radius:8px;padding:13px 16px;margin:12px 0;font-size:13.5px;line-height:1.85}
+.doc .leadbox b{color:var(--brand-d)}
+.doc .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
+.doc .card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:#faf9fd}
+.doc .card h4{margin:0 0 6px;font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.doc .card .sub{color:var(--ink2);font-size:12.5px;line-height:1.7;margin:0}
+.doc .kv{display:grid;grid-template-columns:78px 1fr;gap:5px 12px;font-size:12.5px;margin:10px 0 0}
+.doc .kv dt{color:var(--ink3);font-size:12px;padding-top:1px}
+.doc .kv dd{margin:0;line-height:1.7}
+.doc .kv ul{margin:0;padding-left:17px}
+.doc .kv li{margin:2px 0}
+.doc .todo{border:1px dashed #c9c4d6;border-radius:10px;padding:14px 16px;margin:12px 0}
+.doc .todo .todo-h{font-weight:700;margin:0 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.doc .todo .sub{color:var(--ink2);font-size:12.5px;line-height:1.7;margin:0}
+.doc .pill{display:inline-block;padding:1px 8px;border-radius:10px;background:#f0eef4;color:var(--ink2);font-size:11px;white-space:nowrap}
+.doc .toc{margin:10px 0 4px;padding-left:24px;font-size:13.5px}
+.doc .toc li{margin:8px 0}
+.doc .toc .d{color:var(--ink3);font-size:12px}
+.doc .tocbar{display:flex;flex-wrap:wrap;gap:8px 20px;margin:10px 0 14px;padding:10px 14px;background:#f7f5fd;border:1px solid #dcd4f6;border-radius:8px;font-size:13px}
+.doc .tocbar a{color:var(--brand-d);text-decoration:none;white-space:nowrap}
+.doc .tocbar a:hover{text-decoration:underline}
+.doc .leadbox .lab{font-size:11px;font-weight:700;color:var(--brand);letter-spacing:2px;margin-bottom:5px}
+.doc .decisions{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:12px 0}
+.doc .dec{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.doc .dec:last-child{border-bottom:none}
+.doc .dec .n{flex:0 0 22px;height:22px;border-radius:50%;background:var(--crit);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.doc .dec .t{font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.doc .dec .s{font-size:12.5px;color:var(--ink2);margin-top:3px;line-height:1.7}
+.doc .highlights{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.doc .hl{background:var(--good-bg);border-radius:8px;padding:11px 14px;font-size:12.5px;line-height:1.7}
+.doc .hl b{color:var(--good)}
+.doc .terms{background:#f7f5fd;border:1px solid #dcd4f6;border-radius:8px;padding:4px 16px 12px;margin:12px 0}
+.doc .terms dl{margin:0}
+.doc .terms dt{font-weight:700;font-size:13px;margin-top:10px;color:var(--brand-d)}
+.doc .terms dd{margin:2px 0 0;font-size:12.5px;color:var(--ink2);line-height:1.7}
+.doc .act{background:#f7f5fd;border:1px solid #dcd4f6;border-radius:8px;padding:9px 14px;font-size:12.5px;line-height:1.75;margin:6px 0}
+.doc .act b{color:var(--brand-d)}
+.doc .concl{font-size:13px;color:var(--ink2);margin:10px 0 16px;padding-left:12px;border-left:3px solid var(--l2);line-height:1.75}
+.doc .concl b{color:var(--ink)}
+.doc .pbar{display:flex;align-items:center;gap:12px;padding:6px 0;font-size:13px}
+.doc .pbar .pn{flex:0 0 150px}
+.doc .pbar .pt{flex:1;height:18px;background:var(--l0);border-radius:4px;overflow:hidden}
+.doc .pbar .pt i{display:block;height:100%}
+.doc .pbar .pp{flex:0 0 46px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.doc .kstrip.a3kstrip{grid-template-columns:repeat(3,1fr)}
+@media (max-width:720px){.doc .grid3{grid-template-columns:1fr 1fr}.doc .highlights{grid-template-columns:1fr}.doc .pbar .pn{flex:0 0 110px}.doc .kstrip.a3kstrip{grid-template-columns:1fr}}
+`;
+function a3ResPlan(d) {
+  if (d.l3gap) return {
+    res: '情境模拟场景、真实业务单据或等效单据、企业带教师傅或双师型教师',
+    owner: '教研室 / 专业带头人牵头，校企合作办对接带教资源',
+    time: '本学期完成方案设计，1 学期内落地',
+  };
+  if (d.tier === 'priority') return {
+    res: '新增课程（学时由学校确定）、对应实训系统或等效账号',
+    owner: '教研室提出课程标准，教务处审批',
+    time: '下学期开课',
+  };
+  return {
+    res: '真实或仿真案例、工单或单据样例、模拟质询或带教环节',
+    owner: '教研室补充教学内容，教务处审核纳入课程大纲',
+    time: '本学期即可启动',
+  };
+}
 function a3DocTitle() { return a3ReportName(); }
 function a3DocPage(title, inner, withBar) {
   const bar = withBar ? `<div class="doc-bar"><b>${esc(title)}</b><span style="opacity:.7">历史报告 · 只读</span>
     <span style="flex:1"></span><button class="pri" onclick="window.print()">打印 / 另存为 PDF</button></div>` : '';
   return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)}</title><style>body{margin:0;background:#f5f3f9}${DOC_CSS}
+<title>${esc(title)}</title><style>body{margin:0;background:#f5f3f9}${DOC_CSS}${A3_DOC_CSS}
 body>.doc-bar{position:sticky;top:0;z-index:2}.page{padding:24px 16px 60px}
 @media print{body>.doc-bar{display:none}.page{padding:0}}</style></head>
 <body>${bar}<div class="page">${inner}</div></body></html>`;
@@ -8156,150 +8231,250 @@ function a3DocHTML() {
     (p.abilityReqs || []).forEach(r => { const a = a3Achieved(r.id); if (a > 0) covered++; if (a >= a3Lv(r.requiredLevel)) attained++; });
     const total = (p.abilityReqs || []).length;
     return { p, total, covered, attained, rate: total ? attained / total : 0 };
-  }).sort((a, b) => b.rate - a.rate);
+  }).sort((a, b) => (b.rate - a.rate) || (b.total - a.total));
   const sugs = a3DocSuggestions(rows);
   const reqMap = a3ReqMap();
   const pct = x => Math.round(x * 100);
   const ver = a3ReportNo();
   const verRec = ver != null ? a3Versions.find(v => v.no === ver) : null;
+  const meta = A3D.meta || {};
   const tiers = { keep: [], improve: [], priority: [] };
   rows.forEach(d => tiers[d.tier].push(d.domain));
-  const tag = (t, c) => `<span class="tag ${c || ''}">${esc(t)}</span>`;
-  const tierTag = t => tag(A3_DOC_TIER[t], { keep: 'good', improve: 'warn', priority: 'crit' }[t]);
+  const tierTag = t => `<span class="tag ${A3_TIER_PILL[t]}">${A3_DOC_TIER[t]}</span>`;
+  const circled = i => '①②③④⑤⑥⑦⑧⑨⑩'[i - 1] || (i + '.');
   const H = [];
 
+  /* 课程 / 技能 */
+  const allCourses = [];
+  majors.forEach(m => m.categories.forEach(cat => cat.courses.forEach(c => allCourses.push(c))));
+  const unopenedCourses = allCourses.filter(c => a3CountOf(A3_COURSE_SKILLS[c.id] || []) === 0);
+
+  /* 行业全量（对照基准，与本校无关） */
+  const allPos = A3D.positions, allAb = A3D.abilities;
+  const abPosCnt = {}, abMaxLv = {};
+  allPos.forEach(p => (p.abilityReqs || []).forEach(r => {
+    abPosCnt[r.id] = (abPosCnt[r.id] || 0) + 1;
+    abMaxLv[r.id] = Math.max(abMaxLv[r.id] || 0, a3Lv(r.requiredLevel));
+  }));
+  const subOrder = [], subPos = {};
+  allPos.forEach(p => {
+    const s = p.sub || '未分类';
+    if (!(s in subPos)) { subPos[s] = []; subOrder.push(s); }
+    subPos[s].push(p.name);
+  });
+  const domF = {};
+  allAb.forEach(a => {
+    const d = domF[a.domain] = domF[a.domain] || { domain: a.domain, count: 0, core: 0, pos: new Set(), rel: 0, rel3: 0 };
+    d.count++; if (a.core) d.core++;
+  });
+  allPos.forEach(p => (p.abilityReqs || []).forEach(r => {
+    const a = A3_ABILITY_BY_ID[r.id]; if (!a) return;
+    const d = domF[a.domain]; if (!d) return;
+    d.pos.add(p.id); d.rel++;
+    if (a3Lv(r.requiredLevel) === 3) d.rel3++;
+  }));
+  const domFull = Object.values(domF).map(d => ({ ...d, pos: d.pos.size })).sort((x, y) => y.pos - x.pos || y.count - x.count);
+  const emergingAll = allAb.filter(a => a.flag)
+    .map(a => ({ a, posCount: abPosCnt[a.id] || 0, maxLv: abMaxLv[a.id] || 0 }))
+    .sort((x, y) => y.posCount - x.posCount);
+  const emergingReq = allAb.filter(a => a.flag && reqMap.has(a.id));
+  const l3Total = [...reqMap.values()].filter(v => v === 3).length;
+  const maxLib = Math.max(0, ...Object.values(A3D.abilitySkills).flat().map(s => a3Lv(s.serviceLevel)));
+  const l3GapAbilities = [...reqMap.keys()].filter(id => reqMap.get(id) === 3 && a3Achieved(id) < 3).map(id => A3_ABILITY_BY_ID[id]);
+  const selfDev = [...reqMap.keys()].filter(id => !(A3D.abilitySkills[id] || []).length);
+
+  const kpiTone = p => p >= 0.8 ? 'var(--good)' : p >= 0.5 ? 'var(--warn)' : 'var(--crit)';
+  const kpi = (k, a, b, s) => {
+    const p = b ? a / b : 0, tone = kpiTone(p);
+    return `<div class="mcard"><div class="k">${esc(k)}</div>
+      <div class="v" style="color:${tone}">${pct(p)}%<small>${a} / ${b}</small></div>
+      <div class="s">${esc(s)}</div>
+      <div class="meter"><i style="background:${tone};width:${Math.min(100, pct(p))}%"></i></div></div>`;
+  };
+
+  const verdict = (() => {
+    const s = [];
+    s.push(`本校所选课程已支撑岗位要求的 <b>${n.coveredAb} 条能力（${pct(n.coverage)}%）</b>，达到岗位要求等级的 <b>${n.depthAb} 条（${pct(n.attainment)}%）</b>。`);
+    if (l3GapAbilities.length) s.push(`差距不在「有没有开课」，而在「有没有教到岗位要求的程度」——其中 <b>${l3GapAbilities.length}</b> 条 L3 综合应用要求，只能靠情境实训与顶岗实习达成。`);
+    else if (n.coverage >= A3C.COVERAGE_OK && n.attainment < A3C.ATTAIN_OK) s.push('差距不在「有没有开课」，而在「有没有教到岗位要求的程度」。');
+    else if (n.coverage < A3C.COVERAGE_LOW) s.push('仍有较多能力要求没有技能支撑，课程设置需要补充。');
+    else s.push('技能支撑与教学深度基本到位，可进一步巩固与提升。');
+    return s.join('');
+  })();
+
+  /* 三件事 */
+  const things = [
+    { t: unopenedCourses.length ? `增开 ${unopenedCourses.length} 门尚未开展的课程` : '课程已全部开设', tag: 'brand', lab: '补开课程',
+      s: unopenedCourses.length ? `对应：${esc(unopenedCourses.map(c => c.name).join('、'))}` : '所选专业课程均已开展技能，无需增开' },
+    { t: l3Total ? `为 ${l3Total} 条 L3 要求增设情境实训 / 顶岗` : '暂无 L3 综合应用要求', tag: 'crit', lab: '需教学安排配合',
+      s: l3Total ? `L3 综合应用要求无法靠开课达成，须靠情境模拟与顶岗实习` : '无需额外实训配套' },
+    { t: selfDev.length ? `为 ${selfDev.length} 条能力自主开发教学内容` : '所有能力均有现成课程支撑', tag: 'warn', lab: '自主开发',
+      s: selfDev.length ? `对应：${esc(selfDev.map(id => A3_ABILITY_BY_ID[id].name).join('、'))}` : '无需自主开发' },
+  ];
+
+  /* 亮点 */
+  const highlights = [];
+  const rankedDoms = rows.slice().sort((x, y) => (y.rate - x.rate) || (y.attained - x.attained));
+  rankedDoms.slice(0, 2).forEach((d, i) => {
+    if (d.attained > 0) highlights.push(`<div class="hl"><b>${esc(d.domain)}</b>：${d.total} 条要求达标 ${d.attained} 条${d.attained === d.total ? '，全部达标' : ''}，${i === 0 ? '为达标率最高的领域' : '表现稳定'}</div>`);
+  });
+  const bestPos = posRows.find(r => r.total > 0);
+  if (bestPos) highlights.push(`<div class="hl"><b>${esc(bestPos.p.name)}</b>：${bestPos.total} 条能力${bestPos.attained === bestPos.total ? '全部达标，该方向已具备完整培养能力' : `达标 ${bestPos.attained} 条，为对接最好的目标岗位`}</div>`);
+  if (n.coveredAb > 0) highlights.push(`<div class="hl"><b>整体覆盖</b>：${pct(n.coverage)}% 的能力已有技能支撑，无需大规模重构课程体系</div>`);
+  const highlightHTML = highlights.slice(0, 4).join('');
+
+  /* 判断结论（2.1 / 2.2） */
+  const goodPos = posRows.filter(r => r.rate >= A3C.POS_RATE_GOOD).map(r => r.p.name);
+  const lagPos = posRows.filter(r => r.rate < A3C.POS_RATE_GOOD).map(r => r.p.name);
+  const concl21 = (goodPos.length ? `「${esc(goodPos.join('、'))}」方向已基本达标；` : '')
+    + (lagPos.length ? `差距集中在「${esc(lagPos.join('、'))}」，且越偏产品设计、偏综合协调的岗位，达标率越低。` : '各目标岗位均已基本达标。');
+  const shortAct = d => d.tier === 'keep' ? '正在支撑岗位要求，调整课程时建议保留相关教学内容'
+    : d.l3gap ? `通过情境实训 / 顶岗达到 L3 综合应用要求（${d.l3gap} 条）`
+    : d.tier === 'priority' ? `补齐 ${d.total - d.covered} 条尚无技能支撑的能力（增开课程或自主开发）`
+    : '加深教学深度，补齐未达要求的能力';
+  const concl3 = (() => {
+    const act = rows.filter(d => d.tier !== 'keep');
+    if (!act.length) return '各领域均已达到「保持优势」，建议以巩固为主。';
+    const l3dom = act.filter(d => d.l3gap).length;
+    return `${act.length} 个待完善领域中，${l3dom} 个需补实训与顶岗，其余通过增开课程或补充教学内容解决。这是一次「教学深度升级」，不是课程体系重构，投入可控。`;
+  })();
+
+  /* 封面 */
   H.push(`<div class="cover">
     <h1>${esc(a3ReportName())}</h1>
     <div class="metas">
       <span>学校：<b>${esc(SC.name || '—')}</b></span>
-      <span>行业：<b>${esc(A3D.meta.industryName || '—')}</b></span>
-      <span>专业：<b>${esc(majors.map(m => m.name).join('、'))}</b></span>
+      <span>行业：<b>${esc(meta.industryName || '旅游业')}</b></span>
+      <span>专业：<b>${esc(majors.map(m => m.nameFull || m.name).join('、'))}</b></span>
       <span>生成时间：<b>${esc(verRec ? verRec.at : nowStr())}</b></span>
       <span>报告编号：<b>${ver != null ? '#' + ver : '未保存（设置修改后尚未确认）'}</b></span>
-    </div></div>`);
-
-  const chart = [
-    { k: '岗位覆盖度', a: n.posN, b: n.totalPos, den: '行业' },
-    { k: '能力覆盖度', a: n.coveredAb, b: n.totalAb, den: '行业' },
-    { k: '能力达标度', a: n.depthAb, b: n.totalAb, den: '行业' },
-  ];
-  H.push(`<section><h2><span class="num">一</span>概览 / 摘要</h2>
-    <p class="lead" style="margin-top:0">本次评估 <b>${esc(A3D.meta.industryName)}·${esc(majors.map(m => m.name).join('、'))}</b> 面向的 <b>${esc(a3PosArr().map(p => p.name).join('、'))}</b> 岗位：</p>
-    <ul class="sum">
-      <li>岗位覆盖度 <b>${pct(n.posN / n.totalPos)}%</b></li>
-      <li>能力覆盖度 <b>${pct(n.coveredAb / n.totalAb)}%</b></li>
-      <li>能力达标度 <b>${pct(n.depthAb / n.totalAb)}%</b></li>
-    </ul>
-    <div class="fchart">
-      ${chart.map(f => `<div class="col">
-        <div class="fpct">${pct(f.a / f.b)}%</div>
-        <div class="coltrack"><i style="height:${pct(f.a / f.b)}%"></i></div>
-        <div class="clabel">${esc(f.k)}</div>
-        <div class="csub">本校 ${f.a} / ${f.den} ${f.b}</div></div>`).join('')}
     </div>
-    <p class="note">柱高表示本校在对应指标上占基准的比例，满格为 100%。「能力覆盖度」「能力达标度」的基准是本次目标岗位的能力要求总量：有多少被本校所选技能支撑、又有多少真正支撑到了岗位要求的等级。</p>
+    <p class="disc">本报告对照${esc(meta.industryName || '旅游业')}岗位能力要求，分析本校${esc(majors.map(m => m.name).join('、'))}专业的对接情况，用于专业建设与课程调整参考，<b>不作为办学水平评价或排名依据</b>。学时、开课学期等安排由学校在课程计划中确定，本报告不作建议。</p>
+  </div>`);
+
+  /* 目录 */
+  H.push(`<div class="tocbar"><a href="#a3-s1">一 一页纸摘要</a><a href="#a3-s2">二 差在哪</a><a href="#a3-s3">三 怎么补</a><a href="#a3-s4">四 本校现状</a><a href="#a3-s5">五 附录：口径与明细</a></div>`);
+
+  /* 一 一页纸摘要 */
+  H.push(`<section id="a3-s1"><h2><span class="num">一</span>一页纸摘要</h2>
+    <p class="sub">本页汇总整体结论、关键指标与需要决策的三件事；判断依据与执行明细见后续章节。</p>
+    <div class="leadbox"><div class="lab">一句话结论</div>${verdict}</div>
+    <h3>三个关键数字</h3>
+    <div class="kstrip a3kstrip">
+      ${kpi('岗位覆盖度', n.posN, n.totalPos, `本校面向 ${n.totalPos} 个行业代表岗位中的 ${n.posN} 个，是定位聚焦，不是缺口`)}
+      ${kpi('能力覆盖度', n.coveredAb, n.totalAb, `${n.totalAb} 条岗位能力要求中，有技能支撑 ${n.coveredAb} 条，覆盖面良好`)}
+      ${kpi('能力达标度', n.depthAb, n.totalAb, `教到岗位要求等级的只有 ${n.depthAb} 条，这是真正需要解决的问题`)}
+    </div>
+    <p class="note">怎么读这三个数字：「覆盖」指有技能支撑到该能力（不论教到什么程度），「达标」指教到了岗位要求的等级。三个数字的分母各不相同，不可横向比较大小——<b>唯一需要重点看的是第 3 个「能力达标度」</b>。</p>
+    <h3>需要您拍板的三件事</h3>
+    <div class="decisions">
+      ${things.map((x, i) => `<div class="dec"><div class="n">${i + 1}</div><div>
+        <div class="t">${esc(x.t)}<span class="tag ${x.tag}">${esc(x.lab)}</span></div>
+        <div class="s">${x.s}</div></div></div>`).join('')}
+    </div>
+    ${highlightHTML ? `<h3>现有基础中的亮点（可对外表述）</h3><div class="highlights">${highlightHTML}</div>` : ''}
   </section>`);
 
-  /* 二 行业现状与趋势（与本校无关，作为后文对照的基准；取新能力图谱行业节点 info） */
-  const ameta = A3D.meta || {};
-  H.push(`<section><h2><span class="num">二</span>行业现状与趋势</h2>
-    <h3>2.1 行业范围</h3>
-    <div class="kstrip">
-      <div class="mcard"><div class="k">子行业</div><div class="v">${ameta.subIndustries}<small>个</small></div><div class="s">按新能力图谱计</div></div>
-      <div class="mcard"><div class="k">岗位</div><div class="v">${ameta.positions}<small>个</small></div><div class="s">行业代表岗位</div></div>
-      <div class="mcard"><div class="k">能力项</div><div class="v">${ameta.abilities}<small>条</small></div><div class="s">岗位能力要求总量</div></div>
-    </div>
-    <h3>2.2 纳入建图的方向</h3>
-    ${(ameta.included || []).length ? `<ul class="trend">${ameta.included.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p class="note">暂无纳入方向记录。</p>'}
-    <h3>2.3 排除项与理由</h3>
-    ${(ameta.excluded || []).length ? `<div class="tscroll"><table><thead><tr><th>排除项</th><th>理由</th></tr></thead><tbody>
-      ${ameta.excluded.map(e => `<tr><td>${esc(e.item)}</td><td>${esc(e.reason)}</td></tr>`).join('')}
-    </tbody></table></div>` : '<p class="note">暂无排除项。</p>'}
-    <h3>2.4 边界说明</h3>
-    <p class="note">${esc(ameta.boundaryNotes || '—')}</p>
-    <h3>2.5 变化趋势</h3>
-    ${(ameta.trends || []).length ? `<ul class="trend">${ameta.trends.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
-    <p class="note">产业趋势为建图模型基于公开信息给出的背景判断，<b>未逐条标注出处</b>，仅供理解行业方向。</p>` : '<p class="note">暂无产业趋势记录。</p>'}
-  </section>`);
-
-  /* 三 本校专业现状（已开设课程 / 已开展技能，按课程展开到任务级；旧版专业定位、标准课程对比无数据来源，整段省略） */
-  const a3AllCourses = [];
-  majors.forEach(m => m.categories.forEach(cat => cat.courses.forEach(c => a3AllCourses.push(c))));
-  const a3TotalCourses = a3AllCourses.length;
-  const a3OpenedCourseCnt = a3AllCourses.filter(c => a3CountOf(A3_COURSE_SKILLS[c.id] || []) > 0).length;
-  const a3TotalSkills = a3SelectedSkillIds().length;
-  const a3OpenedSkillCnt = A3.skills.size;
-  H.push(`<section><h2><span class="num">三</span>本校专业现状</h2>
-    <p class="cl">${esc(majors.map(m => m.name).join('、'))}专业面向 <b>${n.posN}</b> 个目标岗位，合计要求 <b>${n.totalAb}</b> 条能力；已开设课程 <b>${a3OpenedCourseCnt}/${a3TotalCourses}</b> 门，已开展技能 <b>${a3OpenedSkillCnt}/${a3TotalSkills}</b> 条。与岗位要求的差距见第四章。</p>
-    <div class="kstrip">
-      <div class="mcard"><div class="k">已开设课程</div><div class="v">${a3OpenedCourseCnt}<small>/ ${a3TotalCourses} 门</small></div><div class="s">所选专业下已开展至少 1 条技能的课程</div></div>
-      <div class="mcard"><div class="k">已开展技能</div><div class="v">${a3OpenedSkillCnt}<small>/ ${a3TotalSkills} 条</small></div><div class="s">所选专业课程下已勾选的技能</div></div>
-    </div>
-    <h3>3.1 课程与任务</h3>
-    ${a3AllCourses.map(c => {
-      const cids = A3_COURSE_SKILLS[c.id] || [];
-      const con = a3CountOf(cids);
-      const tasks = c.tasks || [];
-      return `<h4>${esc(c.name)} <span style="font-weight:400;font-size:12px;color:var(--ink3)">${esc(c.category)} · 技能开展 ${con}/${cids.length}</span></h4>
-      ${tasks.length ? `<div class="tscroll"><table><thead><tr><th>任务</th><th class="r">技能开展</th><th style="width:46%">已开展技能</th></tr></thead><tbody>
-        ${tasks.map(t => { const tids = t.skills.map(s => s.id); const ton = a3CountOf(tids);
-          const tonNames = t.skills.filter(s => A3.skills.has(s.id)).map(s => esc(s.name));
-          return `<tr><td>${esc(t.name)}</td><td class="r">${ton}/${tids.length}</td>
-            <td>${tonNames.length ? tonNames.slice(0, 5).join('、') + (tonNames.length > 5 ? ` 等 ${tonNames.length} 条` : '') : '<span class="dash">—</span>'}</td></tr>`; }).join('')}
-      </tbody></table></div>` : '<p class="note">该课程暂无任务。</p>'}`;
+  /* 二 差在哪 */
+  H.push(`<section id="a3-s2"><h2><span class="num">二</span>差在哪</h2>
+    <p class="sub">本章回答：${n.totalAb} 条岗位能力要求中，哪几条没教到、差在哪个环节。</p>
+    <h3>2.1 按岗位看</h3>
+    ${posRows.map(r => {
+      const tone = r.rate >= A3C.POS_RATE_GOOD ? 'var(--good)' : r.rate <= A3C.POS_RATE_LOW ? 'var(--crit)' : 'var(--warn)';
+      return `<div class="pbar"><div class="pn">${esc(r.p.name)}</div><div class="pt"><i style="width:${pct(r.rate)}%;background:${tone}"></i></div><div class="pp">${pct(r.rate)}%</div></div>`;
     }).join('')}
+    <div class="tscroll"><table><thead><tr><th>目标岗位</th><th>所属子行业</th><th class="r">能力要求</th><th class="r">已达标</th><th class="r">达标率</th><th class="c">判断</th></tr></thead><tbody>
+      ${posRows.map(r => {
+        const j = r.rate >= A3C.POS_RATE_GOOD ? '<span class="tag good">已具备</span>' : r.rate <= A3C.POS_RATE_LOW ? '<span class="tag crit">差距最大</span>' : '<span class="tag warn">重点补齐</span>';
+        return `<tr><td>${esc(r.p.name)}</td><td>${esc(r.p.sub)}</td><td class="r">${r.total}</td><td class="r">${r.attained}</td><td class="r"><b>${pct(r.rate)}%</b></td><td class="c">${j}</td></tr>`;
+      }).join('')}
+    </tbody></table></div>
+    <p class="concl"><b>结论：</b>${concl21}</p>
+    <h3>2.2 按能力领域看</h3>
+    <div class="tscroll"><table><thead><tr><th>能力领域</th><th class="r">岗位要求</th><th class="r">已覆盖</th><th class="r">已达标</th><th class="c">建设建议</th></tr></thead><tbody>
+      ${rows.map(d => `<tr><td>${esc(d.domain)}</td><td class="r">${d.total}</td><td class="r">${d.covered}</td><td class="r"><b>${d.attained}</b></td><td class="c">${tierTag(d.tier)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="concl"><b>结论：</b>${tiers.priority.length ? `<b>${tiers.priority.length} 个领域存在「完全没开课」的结构性缺口</b>（优先建设）` : `${rows.length} 个能力领域中<b>没有一个是「完全没开课」</b>（优先建设 0 个）`}，${n.totalAb} 条要求里 ${n.coveredAb} 条已有技能支撑。${l3GapAbilities.length ? `问题不在课程体系的结构性缺失，而在部分能力<b>只支撑到了 L1/L2、没教到岗位要求的 L3</b>。` : '差距主要在覆盖与教学深度。'}</p>
+    ${maxLib < 3 && l3Total ? `<div class="box bad"><b>关于「综合应用（L3）」的口径说明 —— 请务必留意</b><span class="sub">现有课程与技能的映射最高只能支撑到 <b>L${maxLib}</b> 独立操作，因此本次 ${l3Total} 条 L3 要求全部计为未达标。这类能力需要在真实或仿真的工作情境中反复练习才能形成，通常由情境实训和顶岗实习完成，<b>并不说明课程开得不够、也不说明教师教学不到位</b>。</span></div>` : ''}
+    <h3>2.3 新兴能力</h3>
+    ${emergingReq.length ? `<p class="lead" style="margin-top:0">行业新出现的能力要求中，本校目标岗位涉及 <b>${emergingReq.length}</b> 条：</p>
+    <div class="tscroll"><table><thead><tr><th>新兴能力</th><th>能力领域</th><th class="c">岗位要求等级</th><th class="c">本校情况</th></tr></thead><tbody>
+      ${emergingReq.map(a => {
+        const rq = reqMap.get(a.id), at = a3Achieved(a.id);
+        return `<tr><td>${esc(a.name)}</td><td>${esc(a.domain)}</td><td class="c">${DOC_LV[rq]}</td><td class="c">${at >= rq ? '<span class="tag good">达到要求</span>' : at ? `<span class="tag warn">${DOC_LV[at]}</span>` : '<span class="tag crit">尚未覆盖</span>'}</td></tr>`;
+      }).join('')}
+    </tbody></table></div>
+    <p class="concl"><b>结论：</b>这些是行业变化直接落到岗位上的新要求，现有课程体系尚无对应内容，是<b>最应在下一轮课程调整中优先纳入</b>的部分。</p>` : '<p class="lead" style="margin-top:0">本次目标岗位要求中暂无新兴能力。</p>'}
   </section>`);
 
-  H.push(`<section><h2><span class="num">四</span>差距分析</h2>
-    <p class="cl">${rows.length} 个能力领域中，<span class="neg">优先建设 ${tiers.priority.length} 个</span>、逐步完善 ${tiers.improve.length} 个、保持优势 ${tiers.keep.length} 个。${tiers.priority.length ? '最需要关注：<b>' + esc(tiers.priority.join('、')) + '</b>。' : ''}整体技能支撑 <b>${n.coveredAb}/${n.totalAb}</b> 条，达到岗位要求 <b>${n.depthAb}/${n.totalAb}</b> 条。</p>
-    <h3>按能力领域</h3>
-    <div class="tscroll"><table><thead><tr><th>能力领域</th><th class="r">岗位要求</th><th style="width:28%">对接情况</th><th class="r">技能支撑</th><th class="r">达到要求</th><th class="c">建设建议</th></tr></thead><tbody>
-      ${rows.map(d => `<tr><td>${esc(d.domain)}</td><td class="r">${d.total}</td>
-        <td><div class="hbar"><i class="a" style="width:${pct(d.attained / d.total)}%"></i><i class="p" style="width:${pct((d.covered - d.attained) / d.total)}%"></i></div></td>
-        <td class="r">${d.covered}</td><td class="r"><b>${d.attained}</b></td>
-        <td class="c">${tierTag(d.tier)}</td></tr>`).join('')}
+  /* 三 怎么补 */
+  H.push(`<section id="a3-s3"><h2><span class="num">三</span>怎么补</h2>
+    <p class="sub">按差距从大到小给出建议，每条建议均落实到具体能力项，逐条出处见附录 5.3。</p>
+    <div class="tscroll"><table><thead><tr><th>类别</th><th>能力领域</th><th>建议动作</th></tr></thead><tbody>
+      ${rows.map(d => `<tr><td>${tierTag(d.tier)}</td><td>${esc(d.domain)}</td><td>${esc(shortAct(d))}</td></tr>`).join('')}
     </tbody></table></div>
-    <div class="legend"><span><i style="background:var(--l3)"></i>达到要求</span><span><i style="background:var(--l2)"></i>已覆盖、程度不足</span><span><i style="background:var(--l0)"></i>尚未覆盖</span></div>
-    <p class="note">各能力领域包含哪些能力项，见附录「能力明细」。</p>
-    <h3>按岗位</h3>
-    <div class="tscroll"><table><thead><tr><th>岗位</th><th class="r">达到要求</th><th style="width:50%">对接情况</th></tr></thead><tbody>
-      ${posRows.map(r => `<tr><td>${esc(r.p.name)}<div class="note" style="margin-top:0">${esc(r.p.sub)}</div></td>
-        <td class="r"><b style="color:${r.rate >= A3C.POS_RATE_GOOD ? 'var(--good)' : r.rate <= A3C.POS_RATE_LOW ? 'var(--crit)' : 'inherit'}">${pct(r.rate)}%</b><div class="note" style="margin-top:0">${r.attained} / ${r.total} 条</div></td>
-        <td><div class="hbar"><i class="a" style="width:${pct(r.attained / r.total)}%"></i><i class="p" style="width:${pct((r.covered - r.attained) / r.total)}%"></i></div></td></tr>`).join('')}
-    </tbody></table></div>
+    ${sugs.length ? sugs.map((s, i) => `<h3>3.${i + 1} ${esc(s.d.domain)}</h3>
+      <div class="card"><h4>${tierTag(s.d.tier)}<b>${esc(s.d.domain)}</b><span class="note" style="margin:0">岗位要求 ${s.d.total} 条 · 已覆盖 ${s.d.covered} 条 · 已达标 ${s.d.attained} 条</span></h4>
+        <dl class="kv"><dt>现状</dt><dd>${esc(s.now)}</dd>
+          <dt>目标</dt><dd>${esc(s.target)}</dd>
+          <dt>动作</dt><dd>${s.acts.map((a, j) => `<div class="act"><b>${circled(j + 1)}</b> ${a}</div>`).join('') || '<div class="act">—</div>'}</dd></dl></div>`).join('')
+      : '<p class="lead" style="margin-top:0">各领域均达到「保持优势」，建议以巩固为主，调整课程时注意保留支撑这些领域的教学内容。</p>'}
+    <p class="concl"><b>结论：</b>${concl3}</p>
   </section>`);
 
-  H.push(`<section><h2><span class="num">五</span>建设建议</h2>
-    <p class="cl">按差距从大到小给出建议：优先补齐 <span class="neg">${tiers.priority.length}</span> 个优先建设领域、完善 ${tiers.improve.length} 个逐步完善领域${tiers.keep.length ? '，「' + esc(tiers.keep.join('、')) + '」以巩固为主' : ''}。每条建议都落实到具体能力项，出处见附录。</p>
-    <div class="tlist">
-      ${['priority', 'improve', 'keep'].map(t => `<div class="trow ${t}"><span class="tk"><i></i>${A3_DOC_TIER[t]}</span>
-        <span class="tn"><b>${tiers[t].length}</b> 个能力领域</span>
-        <span class="tl">${tiers[t].length ? esc(tiers[t].join('、')) : '暂无'}</span></div>`).join('')}
-    </div>
-    <p class="note">能力领域的划分方法：尚无技能支撑的能力占一半以上的，列为「优先建设」；
-      达到岗位要求的能力占 ${pct(A3_DOC.KEEP)}% 及以上的，列为「保持优势」；其余列为「逐步完善」。</p>
-    ${sugs.length ? sugs.map(s => `<div class="sug"><div class="sug-h">${tierTag(s.d.tier)}<b>${esc(s.d.domain)}</b>
-        <span class="note" style="margin:0">${esc(s.d.why)}</span></div>
-      <dl><dt>现状</dt><dd>${esc(s.now)}</dd>
-        <dt>目标</dt><dd>${esc(s.target)}</dd>
-        <dt>建议</dt><dd><ul>${s.acts.map(a => `<li>${a}</li>`).join('') || '<li>—</li>'}</ul></dd></dl></div>`).join('')
-      : '<p class="lead">各领域均达到「保持优势」，建议以巩固为主，调整课程时注意保留支撑这些领域的教学内容。</p>'}
-    ${tiers.keep.length ? `<p class="note">保持优势的领域（${esc(tiers.keep.join('、'))}）正在支撑岗位要求，调整课程时建议保留相关教学内容。</p>` : ''}
+  /* 四 本校现状 */
+  H.push(`<section id="a3-s4"><h2><span class="num">四</span>本校现状</h2>
+    <p class="sub">本章是第二章判断的依据：本校专业面向哪些岗位、开了哪些课。</p>
+    <h3>4.1 专业设置与目标岗位</h3>
+    <p class="lead" style="margin-top:0">${esc(majors.map(m => m.name).join('、'))}专业面向 <b>${n.posN}</b> 个目标岗位，合计要求 <b>${n.totalAb}</b> 条能力，其中 <b>${l3Total}</b> 条要求达到 L3 综合应用。行业代表岗位共 ${allPos.length} 个，本校选定其中 ${n.posN} 个作为培养方向：</p>
+    <div class="tscroll"><table><thead><tr><th>专业</th><th>专业代码</th></tr></thead><tbody>
+      ${majors.map(m => `<tr><td>${esc(m.nameFull || m.name)}</td><td>${esc(m.code)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="note">新知识体系中专业节点无层次字段，此处以专业代码标识；层次请以学校实际招生层次为准。</p>
+    <div class="tscroll"><table><thead><tr><th>目标岗位</th><th>所属子行业</th><th class="r">能力要求</th><th class="r">其中 L3</th><th class="r">核心能力</th></tr></thead><tbody>
+      ${a3PosArr().map(p => {
+        const reqs = p.abilityReqs || [];
+        const l3n = reqs.filter(r => a3Lv(r.requiredLevel) === 3).length;
+        const coreN = reqs.filter(r => (A3_ABILITY_BY_ID[r.id] || {}).core).length;
+        return `<tr><td>${esc(p.name)}</td><td>${esc(p.sub)}</td><td class="r">${reqs.length}</td><td class="r">${l3n}</td><td class="r">${coreN}</td></tr>`;
+      }).join('')}
+    </tbody></table></div>
+    <h3>4.2 专业课程开设情况</h3>
+    <div class="tscroll"><table><thead><tr><th>课程</th><th>课程类型</th><th class="c">开设状态</th><th class="c">技能开展</th></tr></thead><tbody>
+      ${allCourses.map(c => {
+        const cids = A3_COURSE_SKILLS[c.id] || [];
+        const con = a3CountOf(cids);
+        return `<tr><td>${esc(c.name)}</td><td>${esc(c.courseType || '—')}</td><td class="c">${con > 0 ? '<span class="tag good">已开设</span>' : '<span class="tag crit">未开设</span>'}</td><td class="c">${con} / ${cids.length}</td></tr>`;
+      }).join('')}
+    </tbody></table></div>
+    <p class="note">统计范围说明：本节只统计所选专业下的课程，公共基础课及学校自设课程不在比对范围内。</p>
   </section>`);
 
-  H.push(`<section class="apx"><h2><span class="num">六</span>附录</h2>
-    <h3>6.1 阅读说明</h3>
-    <p class="lead" style="margin-top:0"><b>这份报告回答一个问题：</b>${esc(majors.map(m => m.name).join('、'))}专业现有的课程内容（技能），能不能满足${esc(A3D.meta.industryName)}行业代表岗位对能力的要求——差在哪、该怎么补。</p>
-    <div class="tscroll"><table><thead><tr><th style="width:112px">词</th><th>含义</th></tr></thead><tbody>
-      <tr><td>岗位能力要求</td><td>一个岗位对一条能力提出要求，计为 1 项；本报告以本次选定的目标岗位为准。</td></tr>
-      <tr><td>技能支撑</td><td>本校所选技能通过「直接支撑 / 部分支撑」映射到该能力（不论支撑到什么等级）。</td></tr>
-      <tr><td>达到要求</td><td>支撑到了岗位要求的等级。</td></tr>
-      <tr><td>能力等级</td><td><b>L1 认知</b>——了解、在指导下完成；<b>L2 独立操作</b>——按规范独立完成常规任务；<b>L3 综合应用</b>——处理非常规情况、优化流程、指导他人。</td></tr>
-      <tr><td>核心能力 ★</td><td>被 2 个及以上岗位要求、且有国家法规政策依据的能力。</td></tr>
-      <tr><td>能力领域分档</td><td>尚无技能支撑的能力占一半以上的列为「优先建设」；达到要求的能力占 ${pct(A3_DOC.KEEP)}% 及以上的列为「保持优势」；其余列为「逐步完善」。</td></tr>
+  /* 五 附录 */
+  H.push(`<section id="a3-s5" class="apx"><h2><span class="num">五</span>附录：口径与明细</h2>
+    <p class="sub">本附录列出口径术语、行业基准与逐条能力明细，用于核对各章数字出处。</p>
+    <h3>5.1 三个词读懂本报告</h3>
+    <div class="terms"><dl>
+      <dt>能力等级 L1 / L2 / L3</dt><dd>L1 认知——了解要求、在指导下完成；L2 独立操作——按规范独立完成常规任务；L3 综合应用——处理非常规情况、优化流程、指导他人。</dd>
+      <dt>技能支撑 / 达到要求</dt><dd>「覆盖」= 本校有技能支撑到该能力（不论教到什么程度）；「达到要求」= 支撑到了岗位要求的等级。</dd>
+      <dt>核心能力（★）</dt><dd>能力图谱中标记为核心的能力，建设时优先保障。</dd>
+      <dt>岗位能力要求</dt><dd>一个岗位对一条能力提出要求，计为 1 项；本报告以本次选定的目标岗位为准。</dd>
+      <dt>能力领域分档</dt><dd>尚无技能支撑的能力占一半以上 →「优先建设」；达到要求的能力占 ${pct(A3_DOC.KEEP)}% 及以上 →「保持优势」；其余 →「逐步完善」。</dd>
+    </dl></div>
+    <h3>5.2 行业基准：范围与能力结构</h3>
+    <p class="lead" style="margin-top:0">行业分 ${subOrder.length} 个子行业、${allPos.length} 个代表岗位，收敛出 ${allAb.length} 条能力项，其中 ${allAb.filter(a => a.core).length} 条为核心能力：</p>
+    <ul class="trend">${subOrder.map(s => `<li><b>${esc(s)}</b>：${esc(subPos[s].join('、'))}</li>`).join('')}</ul>
+    <div class="tscroll"><table><thead><tr><th>能力领域</th><th class="r">能力数</th><th class="r">其中核心</th><th class="r">涉及岗位</th><th class="r">要求达 L3</th></tr></thead><tbody>
+      ${domFull.map(d => `<tr><td>${esc(d.domain)}</td><td class="r">${d.count}</td><td class="r">${d.core}</td><td class="r">${d.pos} / ${allPos.length}</td><td class="r">${d.rel3} / ${d.rel} 项</td></tr>`).join('')}
     </tbody></table></div>
-    <h3>6.2 能力明细</h3>
-    <p class="cl">按能力领域列出每条能力项的本校对接情况，供核对正文各章数字的出处；<b>★ 为核心能力</b>。</p>
+    <h4>行业新兴能力（${emergingAll.length} 条）</h4>
+    ${emergingAll.length ? `<div class="tscroll"><table><thead><tr><th>新兴能力</th><th>能力领域</th><th class="r">要求岗位数</th><th class="r">最高要求</th></tr></thead><tbody>
+      ${emergingAll.map(e => `<tr><td>${esc(e.a.name)}</td><td>${esc(e.a.domain)}</td><td class="r">${e.posCount}</td><td class="r">${e.maxLv ? DOC_LV[e.maxLv] : '—'}</td></tr>`).join('')}
+    </tbody></table></div>` : '<p class="note">暂无新兴能力记录。</p>'}
+    ${(meta.trends || []).length ? `<h4>产业趋势（背景参考）</h4><ul class="trend">${meta.trends.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+      <p class="note">产业趋势为建图模型基于公开信息给出的背景判断，<b>未逐条标注出处</b>，仅供理解行业方向。</p>` : ''}
+    <h3>5.3 能力明细</h3>
+    <p>逐条列出本校对接情况，供核对正文各章数字出处。「目标岗位达标 x / y」：本次目标岗位中有 y 个要求该能力，其中 x 个岗位的要求等级已达到。</p>
     <div class="tscroll"><table><thead><tr><th>能力</th><th class="c">岗位要求</th><th class="c">本校</th><th class="c">目标岗位达标</th></tr></thead><tbody>
       ${rows.map(d => {
         const tpc = a3TpCount();
@@ -8307,17 +8482,29 @@ function a3DocHTML() {
           .sort((x, y) => (y.a.core - x.a.core) || (tpc[y.a.id] - tpc[x.a.id]));
         return `<tr class="apx-g"><td colspan="4">${esc(d.domain)}<span>要求 ${d.total} 条 · 覆盖 ${d.covered} 条 · 达到要求 ${d.attained} 条 · ${A3_DOC_TIER[d.tier]}</span></td></tr>`
           + items.map(r => `<tr><td>${esc(r.a.name)}${r.a.core ? ' ★' : ''}</td><td class="c">${DOC_LV[r.rq]}</td>
-          <td class="c">${r.at >= r.rq ? tag('达到要求', 'good') : r.at ? tag(DOC_LV[r.at], 'warn') : tag('尚未覆盖', 'crit')}</td><td class="c">${r.tpa.ok} / ${r.tpa.n}</td></tr>`).join('');
+          <td class="c">${r.at >= r.rq ? '<span class="tag good">达到要求</span>' : r.at ? `<span class="tag warn">${DOC_LV[r.at]}</span>` : '<span class="tag crit">尚未覆盖</span>'}</td><td class="c">${r.tpa.ok} / ${r.tpa.n}</td></tr>`).join('');
       }).join('')}
     </tbody></table></div>
-    <p class="note">★ 为核心能力。「目标岗位达标 x / y」：本次目标岗位中有 y 个要求该能力，其中 x 个岗位的要求等级已达到。领域内按核心能力优先、y 从多到少排列。</p>
+    <p class="note">★ 为核心能力。领域内按核心能力优先、y 从多到少排列。</p>
+    <h3>5.4 数据来源与口径</h3>
+    <ul class="trend">
+      <li>岗位能力要求来源：行业代表岗位的能力要求（新能力图谱）。</li>
+      <li>本校数据来源：学校填报的专业设置、目标岗位与课程内容信息。</li>
+      <li>技能支撑映射：仅「直接支撑」「部分支撑」计入达成，「基础支撑」不计入；能力图谱中标记为 AI 推断的能力不纳入测评。</li>
+      <li>新数据无「专业培养目标」与「标准课程清单」，报告不含「专业定位」与「标准参照」两类内容。</li>
+      <li>产业趋势为背景判断，基于公开信息整理，未逐条标注出处，仅供理解行业方向。</li>
+      <li>L3 综合应用要求的达成无法仅靠开课，需结合实训 / 顶岗；本报告不含实训条件评估，相关结论请结合学校实际条件判断。</li>
+      <li>学时、开课学期等教学安排由学校在课程计划中确定，本报告不作建议。</li>
+    </ul>
   </section>
   <div class="foot">本报告由平台根据学校填报信息自动生成</div>`);
+
   return `<div class="doc">${H.join('')}</div>`;
 }
 function a3Export() {
   if (!A3.majors.length || A3.layer < 3) { toast('请先完成全部 3 步，再导出报告'); return; }
   if (!$('#docCss')) { const s = document.createElement('style'); s.id = 'docCss'; s.textContent = DOC_CSS; document.head.appendChild(s); }
+  if (!$('#a3docCss')) { const s = document.createElement('style'); s.id = 'a3docCss'; s.textContent = A3_DOC_CSS; document.head.appendChild(s); }
   if (!$('#a3docovCss')) { const s = document.createElement('style'); s.id = 'a3docovCss'; s.textContent = `#a3docov{position:fixed;inset:0;z-index:80;background:rgba(20,17,30,.55);display:flex;flex-direction:column}#a3docov[hidden]{display:none}`; document.head.appendChild(s); }
   let ov = $('#a3docov');
   if (!ov) {
