@@ -18,6 +18,12 @@ skills = [{"id": i, "name": n} for i, n in K.SKILLS]
 CHILD_KINDS = ("知识点", "操作步骤", "标准", "案例")
 nodes = [{"id": i, "kind": k, "name": n} for i, k, n in K.SKILL_NODES]
 
+# 新兴标记：data_kmap.py 里的 EMERGING_* id 集合，标到对应节点上，供页面显示「新兴」徽标
+for s in subs: s["emerging"] = s["id"] in getattr(K, "EMERGING_SUBS", set())
+for p in positions: p["emerging"] = p["id"] in getattr(K, "EMERGING_POSITIONS", set())
+for a in abilities: a["emerging"] = a["id"] in getattr(K, "EMERGING_ABILITIES", set())
+for k in skills: k["emerging"] = k["id"] in getattr(K, "EMERGING_SKILLS", set())
+
 # 节点详情（NODE_DETAILS）合入各节点 detail 字段，供页面「详情」弹窗展示
 ND = getattr(K, "NODE_DETAILS", {})
 for s in subs: s["detail"] = ND.get(s["id"], {})

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>行业图谱</title>
+<title>能力图谱</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
@@ -17,6 +17,7 @@
   --lv1:#b9a9ee; --lv2:#7f63d8; --lv3:#4a3aa7;
   --kgt-kp:#6366f1; --kgt-step:#64748b; --kgt-std:#d946ef; --kgt-case:#f59e0b;
   --good:#0ca30c; --warn:#fab219; --crit:#d03b3b; --warn-ink:#7a5a08;
+  --emg:#e8860c; --emg-soft:#fdf1e3;
   --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
 }
@@ -28,6 +29,7 @@
     --rule:#2b2739; --rule-2:#252132;
     --brand:#9b8bef; --brand-soft:#282343; --brand-ink:#c3b8f7;
     --lv1:#54477f; --lv2:#8371d6; --lv3:#b8aaf2;
+    --emg:#f0a04b; --emg-soft:#3a2c18;
   }
 }
 :root[data-theme="dark"]{
@@ -84,6 +86,15 @@ a.lmenu{text-decoration:none}
 .burst{position:relative;padding:14px 14px 10px;display:flex;flex-direction:column}
 .burst-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:2px 6px 8px}
 .burst-t{font-size:13px;font-weight:700}
+/* 层级面包屑：逐层标号，最后一层为当前层级 */
+.crumb{display:flex;align-items:center;flex-wrap:wrap;gap:5px 6px;margin:0 6px 8px;font-size:12px;color:var(--ink-2)}
+.crumb .cs{display:inline-flex;align-items:center;gap:6px;max-width:240px;padding:3px 10px;
+  border:1px solid var(--rule);border-radius:999px;background:var(--card-2)}
+.crumb .cs b{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--muted);line-height:1}
+.crumb .cs span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.crumb .cs.cur{border-color:var(--brand);background:var(--brand-soft);color:var(--ink);font-weight:600}
+.crumb .cs.cur b{color:var(--brand)}
+.crumb .sep{color:var(--muted);font-size:11px}
 .blegend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 6px 2px;border-top:1px solid var(--rule-2);
   margin-top:6px}
 .bl{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2)}
@@ -223,6 +234,8 @@ a.lmenu{text-decoration:none}
 .gt-chev{font-size:14px;fill:var(--muted)}
 .gnode.sel .gt-chev{fill:var(--brand)}
 .gt-empty{font-size:12px;fill:var(--muted)}
+.gt-emg{fill:var(--emg);font-weight:600}
+#tip .tk.emg{color:var(--emg);opacity:1;font-weight:600}
 
 #tip{position:fixed;z-index:80;pointer-events:auto;background:var(--ink);color:var(--plane);
   border-radius:8px;padding:8px 11px;font-size:11.5px;line-height:1.55;max-width:260px;opacity:0;
@@ -270,12 +283,12 @@ a.lmenu{text-decoration:none}
 <div class="app">
   <aside class="lnav">
     <div class="lbrand"><div class="ldot" aria-hidden="true"></div>
-      <div class="lname">AIGC 智慧课堂<br>教学平台 · 管理端</div></div>
+      <div class="lname">AIGC 智慧课堂教学平台</div></div>
     <div class="lgroup">
       <div class="lgt">概览</div>
       <button class="lmenu"><i>▤</i>数据概览</button>
       <a class="lmenu" href="panorama.html"><i>◎</i>行业分析</a>
-      <button class="lmenu on" aria-current="page"><i>◇</i>行业图谱</button>
+      <button class="lmenu on" aria-current="page"><i>◇</i>能力图谱</button>
     </div>
     <div class="lgroup">
       <div class="lgt">教务</div>
@@ -292,7 +305,7 @@ a.lmenu{text-decoration:none}
 
   <div class="panel">
     <div class="ptop">
-      <h1 class="pt-t">行业图谱</h1>
+      <h1 class="pt-t">能力图谱</h1>
       <div class="pt-d" id="kmapDesc"></div>
     </div>
     <div class="body">
@@ -301,6 +314,7 @@ a.lmenu{text-decoration:none}
           <button class="btn-s" id="saveBtn" type="button" disabled>保存</button>
           <button class="btn-s" id="scBtn" type="button" disabled>自检</button>
           <button class="btn-s" id="aiCfgBtn" type="button">AI 设置</button></div>
+        <div class="crumb" id="levelCrumb" aria-label="当前展开层级"></div>
         <div class="scbar" id="scBar" hidden></div>
         <div class="tree" id="posTree"></div>
         <div class="blegend">
@@ -574,7 +588,7 @@ function renderGraph(){
     nodes += `<g class="gnode${cls(on)}${sel&&sel.type==='sub'&&sel.id===sid?' sel':''}" data-n="sub|${sid}">
       <rect x="${XS[0]}" y="${subY[sid]-15}" width="${w}" height="30" rx="8"
         fill="var(--card-2)" stroke="var(--rule)"></rect>
-      <text x="${XS[0]+11}" y="${subY[sid]}" dominant-baseline="central" class="gt">${esc(fit(s.name, w-38, 11.5))}</text>
+      <text x="${XS[0]+11}" y="${subY[sid]}" dominant-baseline="central" class="gt">${esc(fit(s.name, w-(s.emerging?64:38), 11.5))}${s.emerging?'<tspan class="gt-emg"> 新兴</tspan>':''}</text>
       <text x="${XS[1]-10}" y="${subY[sid]}" text-anchor="end" dominant-baseline="central"
         class="gt gt-n">${s.positionIds.length}</text></g>`;
   });
@@ -585,7 +599,7 @@ function renderGraph(){
     nodes += `<g class="gnode${cls(on)}${open?' sel':''}" data-n="pos|${p.id}">
       <rect x="${XP[0]}" y="${p.y-14}" width="${w}" height="28" rx="8"
         fill="var(--card-2)" stroke="var(--rule)"></rect>
-      <text x="${XP[0]+11}" y="${p.y}" dominant-baseline="central" class="gt">${esc(fit(P.name, w-46, 11.5))}</text>
+      <text x="${XP[0]+11}" y="${p.y}" dominant-baseline="central" class="gt">${esc(fit(P.name, w-(P.emerging?68:46), 11.5))}${P.emerging?'<tspan class="gt-emg"> 新兴</tspan>':''}</text>
       <text x="${XP[1]-22}" y="${p.y}" text-anchor="end" dominant-baseline="central"
         class="gt gt-n">${P.abilityCount}</text>
       <text x="${XP[1]-9}" y="${p.y}" text-anchor="middle" dominant-baseline="central"
@@ -600,7 +614,7 @@ function renderGraph(){
       <rect x="${XA[0]-4}" y="${y-10}" width="${XA[1]-XA[0]+4}" height="20" rx="6"
         class="abbg"></rect>
       <circle cx="${XA[0]+4}" cy="${y}" r="3" fill="var(--${a.core?'brand':'muted'})"></circle>
-      <text x="${XA[0]+14}" y="${y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(a.name, 182, 11))}${a.core?' ★':''}</text>
+      <text x="${XA[0]+14}" y="${y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(a.name, a.emerging?154:182, 11))}${a.core?' ★':''}${a.emerging?'<tspan class="gt-emg"> 新兴</tspan>':''}</text>
       ${tier?`<text x="${XA[1]-42}" y="${y}" text-anchor="end" dominant-baseline="central" class="gt gt-tier">${tier}</text>`:''}
       <text x="${XA[1]-4}" y="${y}" text-anchor="end" dominant-baseline="central" class="gt gt-n">×${a.positionCount}</text></g>`;
   });
@@ -611,7 +625,7 @@ function renderGraph(){
     nodes += `<g class="gnode sk${cls(on)}${on?' sel':''}" data-n="skl|${k.id}">
       <rect x="${XK[0]-4}" y="${k.y-10}" width="${XK[1]-XK[0]+4}" height="20" rx="6" class="abbg"></rect>
       <rect x="${XK[0]+1}" y="${k.y-3}" width="6" height="6" rx="1.5" fill="var(--brand)"></rect>
-      <text x="${XK[0]+14}" y="${k.y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(K.name, XK[1]-XK[0]-40, 11))}</text>
+      <text x="${XK[0]+14}" y="${k.y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(K.name, XK[1]-XK[0]-(K.emerging?66:40), 11))}${K.emerging?'<tspan class="gt-emg"> 新兴</tspan>':''}</text>
       <text x="${XK[1]-4}" y="${k.y}" text-anchor="end" dominant-baseline="central" class="gt gt-n">${K.children.length}</text></g>`;
   });
 
@@ -676,6 +690,26 @@ function renderGraph(){
   if(selAbl && KL.length) heads.push([XK[0], `技能 ${KL.length}`]);
   if(selSk) heads.push([XL[0], `下级节点 ${LL.length} · ${skl[selSk.id].name}`]);
   const aiHeads = AIL.map((c,i)=>`<text x="${XAI(i)[0]}" y="8" class="gch">${esc(fit('AI 细分 · '+c.lv.parentName, AIW, 9))}</text>`).join('');
+
+  // 层级面包屑：与列头一致逐层标号，最后一层（当前层级）高亮
+  const crumbs = [{n:1, t:I.name}];
+  const sid2 = exp ? pos[exp].sub : (sel && sel.type==='sub' ? sel.id : null);
+  crumbs.push({n:2, t: sid2 ? sub[sid2].name : '子行业'});
+  crumbs.push({n:3, t: exp ? pos[exp].name : '岗位'});
+  if(exp){
+    crumbs.push({n:4, t: selAbl ? abl[selAbl.id].name : '能力项'});
+    if(selAbl && KL.length){
+      crumbs.push({n:5, t: selSk ? skl[selSk.id].name : '技能'});
+      if(selSk){
+        crumbs.push({n:6, t: ai.length ? ((snode[ai[0].parent]||{}).name || '下级节点') : '下级节点'});
+        ai.forEach((lv,i)=>crumbs.push({n:7+i, t:'AI 细分 · '+lv.parentName}));
+      }
+    }
+  }
+  $('#levelCrumb').innerHTML = crumbs.map((c,i)=>
+    `<span class="cs${i===crumbs.length-1?' cur':''}"><b>${c.n}</b><span>${esc(c.t)}</span></span>` +
+    (i<crumbs.length-1?'<span class="sep">›</span>':'')).join('');
+
   $('#posTree').innerHTML = `<svg width="${GW}" height="${GH}" viewBox="0 0 ${GW} ${GH}"
     role="img" aria-label="行业能力树形图：行业、子行业、岗位三列，点击岗位展开其能力项，点击能力项展开其技能，点击技能展开其下级节点，点击末级节点由 AI 逐层细分">
     <g class="colhead">
@@ -1297,12 +1331,14 @@ function openNodeDetail(type, id){
   } else if(type==='sub'){
     const s = sub[id]; const dt = s.detail || {};
     title = s.name; label = '子行业';
+    html += s.emerging ? ndSec('标注', ndTags(['新兴'], true)) : '';
     html += dt.priority ? ndSec('优先级', ndTags([dt.priority==='core'?'核心子行业':dt.priority], true)) : '';
     html += dt.describe ? ndSec('简介', `<p class="nd-p">${esc(dt.describe)}</p>`) : '';
     html += dt.typicalEmployers && dt.typicalEmployers.length ? ndSec('典型用人单位', ndTags(dt.typicalEmployers)) : '';
   } else if(type==='pos'){
     const p = pos[id]; const dt = p.detail || {};
     title = p.name; label = '岗位 · ' + sub[p.sub].name;
+    html += p.emerging ? ndSec('标注', ndTags(['新兴'], true)) : '';
     html += p.aliases && p.aliases.length ? ndSec('别名', ndTags(p.aliases)) : '';
     html += dt.careerLevel ? ndSec('职业等级', ndTags([dt.careerLevel], true)) : '';
     html += dt.describe ? ndSec('简介', `<p class="nd-p">${esc(dt.describe)}</p>`) : '';
@@ -1310,6 +1346,7 @@ function openNodeDetail(type, id){
     const a = abl[id]; const dt = a.detail || {};
     title = a.name; label = '能力项';
     const flags = [];
+    if(a.emerging) flags.push('新兴');
     if(dt.core) flags.push('核心能力');
     if(dt.flag) flags.push(dt.flag);
     if(dt.crossSubIndustry) flags.push('跨子行业');
@@ -1371,19 +1408,20 @@ $('#posTree').addEventListener('mouseover', e=>{
   const [t,id] = g.dataset.n.split('|');
   tipDetail = null;
   const detailBtn = () => `<button class="tip-detail" type="button" data-tip-detail>查看详情</button>`;
+  const emgTag = () => `<span class="tk emg">新兴</span>`;
   if(t==='ind'){ tipDetail={type:'ind', id:I.id};
     tip.innerHTML = `<b>${esc(I.name)}</b><span class="tk">${D.subIndustries.filter(s=>s.built).length} 个子行业 · ${D.positions.length} 个岗位 · ${D.abilities.length} 条能力项</span>${detailBtn()}`;
   } else if(t==='sub'){ const s=sub[id]; tipDetail={type:'sub', id};
-    tip.innerHTML = `<b>${esc(s.name)}</b><span class="tk">${s.positionIds.length} 个岗位 · ${s.distinctAbilityCount} 条去重能力项</span>${detailBtn()}`;
+    tip.innerHTML = `<b>${esc(s.name)}</b>${s.emerging?emgTag():''}<span class="tk">${s.positionIds.length} 个岗位 · ${s.distinctAbilityCount} 条去重能力项</span>${detailBtn()}`;
   } else if(t==='pos'){ const p=pos[id], b=breakdown(id); tipDetail={type:'pos', id};
-    tip.innerHTML = `<b>${esc(p.name)}</b><span class="tk">${esc(p.aliases.join(' / '))}</span>
+    tip.innerHTML = `<b>${esc(p.name)}</b>${p.emerging?emgTag():''}<span class="tk">${esc(p.aliases.join(' / '))}</span>
       <span class="tk">通用 ${b.ind} · 岗位专项 ${b.sh + b.own}　${p.l3Count} 条需 L3</span>${detailBtn()}`;
   } else if(t==='abl'){ const a=abl[id]; tipDetail={type:'abl', id};
-    tip.innerHTML = `<b>${esc(a.name)}</b><span class="tk">${a.typeCn} · ${esc(a.domain)}</span>
+    tip.innerHTML = `<b>${esc(a.name)}</b>${a.emerging?emgTag():''}<span class="tk">${a.typeCn} · ${esc(a.domain)}</span>
       <span class="tk">${a.positionCount} 个岗位要求 · 最高 ${a.maxRequiredLevel}${a.core?' · 核心能力':''} · 技能 ${a.skills.length}</span>${detailBtn()}`;
   } else if(t==='skl'){ const k=skl[id];
     const cnt = {}; k.children.forEach(n=>{ const t=snode[n].kind; cnt[t]=(cnt[t]||0)+1; });
-    tip.innerHTML = `<b>${esc(k.name)}</b><span class="tk">归属能力项：${k.abilityIds.map(x=>esc(abl[x].name)).join(' / ')}</span>
+    tip.innerHTML = `<b>${esc(k.name)}</b>${k.emerging?emgTag():''}<span class="tk">归属能力项：${k.abilityIds.map(x=>esc(abl[x].name)).join(' / ')}</span>
       <span class="tk">${Object.keys(KIND).filter(t=>cnt[t]).map(t=>`${t} ${cnt[t]}`).join(' · ') || '暂无下级节点'}</span>`;
   } else if(t==='lf'){ const n=snode[id];
     tip.innerHTML = `<b>${esc(n.name)}</b><span class="tk">${esc(n.kind)} · 点击由 AI 继续细分</span>`;
