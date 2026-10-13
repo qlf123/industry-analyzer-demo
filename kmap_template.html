@@ -159,6 +159,8 @@ a.lmenu{text-decoration:none}
 .rpt-miss{padding:7px 12px;font-size:12px;color:var(--ink-2);border-top:1px dashed var(--rule);background:var(--card)}
 .rpt-empty{font-size:12.5px;color:var(--muted);padding:10px 2px}
 .rpt-src{font-size:10.5px;color:var(--muted);border:1px solid var(--rule);border-radius:4px;padding:0 4px;margin-left:4px}
+.rpt-lv td.op{white-space:nowrap;width:1%}
+.rpt-lv td.op button+button{margin-left:6px}
 .sc-pass{color:var(--good)} .sc-doubt{color:var(--warn-ink)} .sc-fail{color:var(--crit)}
 .gt-sc{font-size:11px;font-weight:700}
 .gt-sc.pass{fill:var(--good)} .gt-sc.doubt{fill:var(--warn)} .gt-sc.fail{fill:var(--crit)}
@@ -221,12 +223,45 @@ a.lmenu{text-decoration:none}
 .gnode.sel .gt-chev{fill:var(--brand)}
 .gt-empty{font-size:12px;fill:var(--muted)}
 
-#tip{position:fixed;z-index:80;pointer-events:none;background:var(--ink);color:var(--plane);
+#tip{position:fixed;z-index:80;pointer-events:auto;background:var(--ink);color:var(--plane);
   border-radius:8px;padding:8px 11px;font-size:11.5px;line-height:1.55;max-width:260px;opacity:0;
   transition:opacity .12s;box-shadow:0 8px 24px -8px rgba(0,0,0,.4)}
 #tip.on{opacity:1}
 #tip b{font-weight:700}
 #tip .tk{font-family:var(--mono);font-size:10px;opacity:.72;display:block;margin-top:3px}
+#tip .tip-detail{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:6px;
+  background:var(--brand);color:#fff;font-size:11px;font-weight:500;cursor:pointer}
+#tip .tip-detail:hover{background:var(--brand-ink)}
+
+/* 节点详情弹窗 */
+.nd{padding:18px 22px 16px;display:flex;flex-direction:column;gap:4px;max-height:calc(100vh - 50px)}
+.nd-h{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px}
+.nd-h h2{font-size:16px;margin:0}
+.nd-sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+.nd-h .btn-s{margin-left:auto}
+.nd-body{overflow:auto;display:flex;flex-direction:column;gap:12px;padding-right:2px}
+.nd-sec{display:flex;flex-direction:column;gap:6px}
+.nd-sec-h{font-size:12px;font-weight:600;color:var(--brand-ink);border-bottom:1px solid var(--rule-2);padding-bottom:3px}
+.nd-p{font-size:13px;color:var(--ink-2);line-height:1.7;margin:0}
+.nd-tags{display:flex;flex-wrap:wrap;gap:6px}
+.nd-tag{font-size:11.5px;color:var(--ink-2);background:var(--card-2);border:1px solid var(--rule);
+  border-radius:99px;padding:2px 10px}
+.nd-tag.hl{color:var(--brand-ink);background:var(--brand-soft);border-color:transparent}
+.nd-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--ink-2)}
+.nd-lv{border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.nd-lv-h{padding:6px 12px;background:var(--card-2);border-bottom:1px solid var(--rule-2);
+  display:flex;align-items:center;gap:8px}
+.nd-lv-h b{font-size:12.5px;font-family:var(--mono)}
+.nd-lv-h span{font-size:11px;color:var(--muted)}
+.nd-lv-b{padding:8px 12px;display:flex;flex-direction:column;gap:5px}
+.nd-kv{font-size:12.5px;color:var(--ink-2)}
+.nd-kv b{color:var(--ink);font-weight:600;margin-right:6px}
+.nd-pts{margin:2px 0 0;padding-left:16px;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--ink-2)}
+.nd-ev{border:1px solid var(--rule);border-radius:9px;padding:8px 12px;display:flex;flex-direction:column;gap:4px}
+.nd-ev-c{font-size:11.5px;font-family:var(--mono);color:var(--brand-ink)}
+.nd-ev-x{font-size:12.5px;color:var(--ink);line-height:1.6}
+.nd-ev-s{font-size:11px;color:var(--muted)}
+.nd-empty{font-size:12.5px;color:var(--muted);padding:4px 0}
 </style>
 </head>
 <body>
@@ -278,6 +313,15 @@ a.lmenu{text-decoration:none}
   </div>
 </div>
 <div id="tip" role="status"></div>
+<dialog class="aidlg wide" id="nodeDetail" aria-labelledby="ndTitle">
+  <div class="nd">
+    <div class="nd-h">
+      <div><h2 id="ndTitle">详情</h2><div class="nd-sub" id="ndSub"></div></div>
+      <button class="btn-s" type="button" data-nd="close">关闭</button>
+    </div>
+    <div class="nd-body" id="ndBody"></div>
+  </div>
+</dialog>
 <dialog class="aidlg" id="nodeDlg">
   <form method="dialog" id="nodeForm">
     <h2 id="nodeDlgTitle">编辑节点</h2>
@@ -305,6 +349,7 @@ a.lmenu{text-decoration:none}
 <div class="ctxmenu" id="ctxMenu" role="menu" hidden>
   <div class="ctx-h" id="ctxTitle"></div>
   <button type="button" role="menuitem" data-ctx="edit">✎ 编辑</button>
+  <button type="button" role="menuitem" data-ctx="regen">↻ 重新生成</button>
   <button type="button" role="menuitem" class="danger" data-ctx="del">✕ 删除</button>
 </div>
 <dialog class="aidlg" id="aiDlg">
@@ -318,7 +363,7 @@ a.lmenu{text-decoration:none}
     <label>接口地址<input id="aiUrl" type="url" required></label>
     <label>模型<input id="aiModel" type="text" required></label>
     <label>API Key<input id="aiKey" type="password" autocomplete="off" required></label>
-    <div class="note">点击末级节点时，页面直接调用该接口生成下级节点。Key 只保存在本机浏览器中，不会写入页面或项目文件；打开本页的任何人都需要填写自己的 Key。</div>
+    <div class="note">点击末级节点时，页面直接调用该接口生成下级节点。已预置接口与 Key，打开即可用；如需换用可在下方修改，只保存在本机浏览器中。</div>
     <div class="acts"><button class="btn-s" value="cancel" formnovalidate>取消</button><button class="btn-p" value="save">保存</button></div>
   </form>
 </dialog>
@@ -589,7 +634,7 @@ function renderGraph(){
       nodes += `<g class="gnode lf open ai${st}${sc?' sc-'+sc.c:''}" data-n="ai|${i}|${r.id}">
         <rect x="${x0-4}" y="${r.y-10}" width="${x1-x0+4}" height="20" rx="6" class="abbg"></rect>
         <rect x="${x0}" y="${r.y-8}" width="3" height="16" rx="1.5" fill="var(--kgt-${k.c})"></rect>
-        <text x="${x0+10}" y="${r.y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(it.name, x1-x0-(it.manual?62:50), 11))}</text>
+        <text x="${x0+10}" y="${r.y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(it.name + (it.genning?'…':''), x1-x0-(it.manual?62:50), 11))}</text>
         ${sc?`<text x="${x1-20}" y="${r.y}" text-anchor="end" dominant-baseline="central" class="gt gt-sc ${sc.c}">${sc.icon}</text>`:''}
         <text x="${x1-4}" y="${r.y}" text-anchor="end" dominant-baseline="central" class="gt gt-ai${it.manual?' man':''}">${it.manual?'人工':'AI'}</text></g>`;
     });
@@ -655,6 +700,7 @@ $('#posTree').addEventListener('click', e=>{
   const [t,id,j] = g ? g.dataset.n.split('|') : ['none'];
   tip.classList.remove('on');
   if(scState.status==='error') scState = {status:'idle', err:''};
+  if(t==='none') return;                     // 点击空白处：保持当前展开状态，不回到默认树
   const w0 = svgWidth();
   if(t==='aiadd'){ openNodeEdit(+id, null); return; }
   if(t==='airegen'){ regenerateLevel(+id); renderGraph(); return; }
@@ -702,7 +748,7 @@ $('#nodeForm').addEventListener('submit', ev=>{
   if(!e.it){                                                    // 新增：放在该列末尾
     if(!name) return;
     e.lv.items.push({key:`${e.lv.parent}/${newKeyPart('m')}`, name, desc, manual:true});
-    renderGraph(); return;
+    renderGraph(); if($('#scReport').open) renderReport(); return;
   }
   if(e.lv.items[e.j]!==e.it) return;                            // 期间内容已变化
   if(!name || (name===e.it.name && desc===(e.it.desc||''))) return;
@@ -710,7 +756,7 @@ $('#nodeForm').addEventListener('submit', ev=>{
   e.it.check = null;                                          // 内容变了，自检结论作废
   const child = ai[e.i+1];
   if(child && child.parent===e.it.key) child.parentName = name;   // 已展开的下一列列头跟着改
-  renderGraph();
+  renderGraph(); if($('#scReport').open) renderReport();
 });
 
 // 右键 AI 节点：弹出「编辑 / 删除」
@@ -736,6 +782,7 @@ $('#ctxMenu').addEventListener('click', e=>{
   const b = e.target.closest('[data-ctx]'); if(!b || !ctxTarget) return;
   const {i, j} = ctxTarget; hideCtx();
   if(b.dataset.ctx==='edit') openNodeEdit(i, j);
+  else if(b.dataset.ctx==='regen') regenerateNode(i, j);
   else deleteAiNode(i, j);
 });
 document.addEventListener('mousedown', e=>{ if(!(e.target.closest && e.target.closest('#ctxMenu'))) hideCtx(); });
@@ -765,7 +812,7 @@ function aiSnapshot(){
   return JSON.stringify(aiReachable().map(lv=>({
     parent: lv.parent, parentName: lv.parentName, kind: lv.kind, missing: lv.missing || '', checkedAt: lv.checkedAt || '',
     items: lv.items.map(it=>({key:it.key, name:it.name, desc:it.desc||'',
-      ...(it.manual?{manual:true}:{}), ...(it.edited?{edited:true}:{}), ...(it.check?{check:it.check}:{})})),
+      ...(it.manual?{manual:true}:{}), ...(it.edited?{edited:true}:{}), ...(it.regen?{regen:true}:{}), ...(it.check?{check:it.check}:{})})),
   })));
 }
 let savedSnapshot = '[]';
@@ -823,6 +870,53 @@ function regenerateLevel(i){
   });
 }
 
+// 重新生成单个节点：只重写该节点的名称/说明，位置不变，下面已展开的列收起；可撤销
+async function regenerateNode(i, j){
+  const lv = ai[i], it = lv && lv.items[j];
+  if(!it || it.genning || ai.some(l=>l.items.some(x=>x.genning))) return;
+  const cfg = aiCfg();
+  if(!cfg.key){ openAiCfg(); return; }
+  const old = {name:it.name, desc:it.desc, check:it.check, edited:!!it.edited, regen:!!it.regen};
+  const below = ai[i+1] && ai[i+1].parent===it.key ? ai.slice(i+1) : null;
+  it.genning = true; renderGraph(); if($('#scReport').open) renderReport();
+  const chain = aiChain(i).concat([`${lv.kind}：${it.name}`]);
+  const siblings = lv.items.filter(x=>x!==it).map(x=>x.name);
+  const ck = it.check;
+  const hint = (ck && ck.verdict!=='pass')
+    ? `\n该节点自检判定为「${SC_MARK[ck.verdict].label}」${ck.reason?`：${ck.reason}`:''}${ck.suggestion?`；修改建议：${ck.suggestion}`:''}`
+    : '';
+  const system = '你是职业教育课程设计与行业能力分析专家。用户给出从行业到当前节点的归属链与同层节点，请你重新生成其中一个节点，内容要准确、具体、可教学，不编造法规条款编号。';
+  const prompt =
+    `归属链：\n${chain.join('\n')}\n\n` +
+    `同层节点（重新生成的名称/说明不要与它们重复）：${siblings.join('、') || '（无）'}\n\n` +
+    `请重新生成节点「${it.name}」（类型：${lv.kind}）。${hint}\n` +
+    `要求：name 不超过 20 个汉字；desc 一句话说明，不超过 40 个汉字。`;
+  let out;
+  try {
+    out = await aiCallJSON(cfg, system, prompt, NODE_REG_OPT);
+  } catch(err){
+    if(ai[i]===lv && lv.items[j]===it){ delete it.genning; renderGraph(); if($('#scReport').open) renderReport(); showToast(`重新生成失败：${err.message||err}`); }
+    return;
+  }
+  if(ai[i]!==lv || lv.items[j]!==it) return;
+  if(below) ai = ai.slice(0, i+1);
+  it.name = ((out.name||'').trim()) || it.name;
+  it.desc = (out.desc||'').trim();
+  it.check = null; delete it.edited; it.regen = true;
+  delete it.genning;
+  aiStore[lv.parent] = lv;
+  renderGraph(); if($('#scReport').open) renderReport();
+  showToast(`已重新生成「${it.name}」`, '撤销', ()=>{
+    if(ai[i]!==lv || lv.items[j]!==it) return;
+    it.name = old.name; it.desc = old.desc; it.check = old.check;
+    if(old.edited) it.edited = true; else delete it.edited;
+    if(old.regen) it.regen = true; else delete it.regen;
+    if(below) ai = ai.concat(below);
+    aiStore[lv.parent] = lv;
+    renderGraph(); if($('#scReport').open) renderReport();
+  });
+}
+
 // 删除：已展开在它下面的各列一并收起；提供一次撤销
 let undo = null, toastTimer = 0;
 function deleteAiNode(i, j){
@@ -849,12 +943,14 @@ function showToast(text, actLabel, act){
 }
 
 /* ═══ AI 细分：页面直接调用 Anthropic Messages API ═══
-   Key 由使用者在「AI 设置」里填写，只存本机浏览器 localStorage。 */
+   AI_BUILTIN 由构建脚本注入（ai_config.json，部署时预置的接口与 Key）；
+   使用者仍可在「AI 设置」里改成自己的 Key，只存本机浏览器 localStorage。 */
 const AI_PRESETS = {
   claude:   {type:'anthropic', url:'https://api.anthropic.com/v1/messages', model:'claude-opus-5-5'},
   deepseek: {type:'openai',    url:'https://api.deepseek.com/chat/completions', model:'deepseek-chat'},
 };
-const AI_DEFAULT = {...AI_PRESETS.claude, key:''};
+const AI_BUILTIN = /*__AI_CFG__*/;
+const AI_DEFAULT = {...AI_PRESETS.claude, ...AI_BUILTIN};
 const AI_FALLBACK_MODELS = new Set(['claude-fable-5-1','claude-opus-5-5','claude-opus-5','claude-sonnet-5-5']);
 function aiCfg(){
   try { return {...AI_DEFAULT, ...JSON.parse(localStorage.getItem('kmapAi')||'{}')}; }
@@ -965,6 +1061,12 @@ async function aiCallJSON(cfg, system, prompt, opt){
 }
 const AI_EXPAND_OPT = {schema:AI_SCHEMA, effort:'low', maxTokens:4000,
   formatHint:'{"children":[{"name":"下级节点名称","desc":"一句话说明"}]}'};
+const NODE_REG_SCHEMA = {
+  type:'object', additionalProperties:false, required:['name','desc'],
+  properties:{ name:{type:'string'}, desc:{type:'string'} },
+};
+const NODE_REG_OPT = {schema:NODE_REG_SCHEMA, effort:'low', maxTokens:1200,
+  formatHint:'{"name":"节点名称","desc":"一句话说明"}'};
 
 /* ═══ 自检：按 skill「kmap-ai-selfcheck」的规则检查当前所有 AI 节点 ═══
    规则在 .claude/skills/kmap-ai-selfcheck/SKILL.md，构建时带入 D.selfCheckRules。
@@ -1062,10 +1164,10 @@ $('#scBtn').addEventListener('click', runSelfCheck);
 
 /* ═══ 自检报告：当前展开路径上各 AI 列的自检结论 ═══ */
 function reportData(){
-  return ai.filter(l=>l.status==='ok' && l.items.length).map(lv=>({
-    lv, chain: aiChain(ai.indexOf(lv)),
-    rows: lv.items.map(it=>({it, ck: it.check})),
-  }));
+  return ai.filter(l=>l.status==='ok' && l.items.length).map(lv=>{
+    const i = ai.indexOf(lv);
+    return { lv, i, chain: aiChain(i), rows: lv.items.map((it, j)=>({it, ck: it.check, i, j})) };
+  });
 }
 function renderReport(){
   const data = reportData(), only = $('#rptOnlyIssue').checked;
@@ -1081,19 +1183,20 @@ function renderReport(){
   const body = data.map(d=>{
     const rows = d.rows.filter(r=> !only || (r.ck && r.ck.verdict!=='pass'));
     if(only && !rows.length && !d.lv.missing) return '';
-    const tr = rows.map(({it, ck})=>{
+    const tr = rows.map(({it, ck, i, j})=>{
       const mk = ck && SC_MARK[ck.verdict];
-      const src = it.manual ? '<span class="rpt-src">人工新增</span>' : it.edited ? '<span class="rpt-src">人工编辑</span>' : '';
+      const src = it.manual ? '<span class="rpt-src">人工新增</span>' : it.edited ? '<span class="rpt-src">人工编辑</span>' : it.regen ? '<span class="rpt-src">重新生成</span>' : '';
       return `<tr><td class="n">${esc(it.name)}${src}${it.desc?`<small>${esc(it.desc)}</small>`:''}</td>
         <td class="v ${mk?'sc-'+mk.c:''}">${mk ? mk.icon+' '+mk.label : '<span style="color:var(--muted);font-weight:400">未检查</span>'}</td>
         <td>${ck && ck.dimension ? esc(ck.dimension) : '—'}</td>
         <td>${ck && ck.reason ? esc(ck.reason) : '—'}</td>
-        <td>${ck && ck.suggestion ? esc(ck.suggestion) : '—'}</td></tr>`;
+        <td>${ck && ck.suggestion ? esc(ck.suggestion) : '—'}</td>
+        <td class="op">${it.genning ? '<span style="color:var(--muted)">生成中…</span>' : `<button class="btn-s" data-rpt-act="edit" data-i="${i}" data-j="${j}">修改</button><button class="btn-s" data-rpt-act="regen" data-i="${i}" data-j="${j}">重新生成</button>`}</td></tr>`;
     }).join('');
     return `<section class="rpt-lv">
       <div class="rpt-lv-h"><b>${esc(d.lv.parentName)}</b> 的下级 · ${d.lv.items.length} 个
         <div class="rpt-chain">${d.chain.map(esc).join(' › ')}</div></div>
-      ${rows.length ? `<table><thead><tr><th>节点</th><th>判定</th><th>问题维度</th><th>原因</th><th>修改建议</th></tr></thead><tbody>${tr}</tbody></table>` : ''}
+      ${rows.length ? `<table><thead><tr><th>节点</th><th>判定</th><th>问题维度</th><th>原因</th><th>修改建议</th><th>操作</th></tr></thead><tbody>${tr}</tbody></table>` : ''}
       ${d.lv.missing ? `<div class="rpt-miss">遗漏提示：${esc(d.lv.missing)}</div>` : ''}
     </section>`;
   }).join('');
@@ -1103,6 +1206,13 @@ function openReport(){ renderReport(); $('#scReport').showModal(); }
 $('#rptOnlyIssue').addEventListener('change', renderReport);
 $('#scReport').addEventListener('click', async e=>{
   if(e.target===$('#scReport')){ $('#scReport').close(); return; }      // 点遮罩关闭
+  const act = e.target.closest('[data-rpt-act]');
+  if(act){
+    const i = +act.dataset.i, j = +act.dataset.j;
+    if(act.dataset.rptAct==='edit') openNodeEdit(i, j);
+    else if(act.dataset.rptAct==='regen') regenerateNode(i, j);
+    return;
+  }
   const b = e.target.closest('[data-rpt]'); if(!b) return;
   if(b.dataset.rpt==='close') $('#scReport').close();
   if(b.dataset.rpt==='copy'){
@@ -1171,49 +1281,134 @@ async function aiExpand(level, parent, keep=[]){
   revealRight();   // 生成完成后再对齐一次（失败提示会让图变宽）
 }
 
+/* ═══ 节点详情弹窗：行业 / 子行业 / 岗位 / 能力 ═══ */
+function ndSec(title, body){ return `<section class="nd-sec"><div class="nd-sec-h">${esc(title)}</div>${body}</section>`; }
+function ndTags(items, hl){ return items && items.length ? `<div class="nd-tags">${items.map(x=>`<span class="nd-tag${hl?' hl':''}">${esc(x)}</span>`).join('')}</div>` : ''; }
+function openNodeDetail(type, id){
+  let title='', label='', html='';
+  if(type==='ind'){
+    const dt = I.detail || {};
+    title = I.name; label = '行业';
+    html += dt.describe ? ndSec('简介', `<p class="nd-p">${esc(dt.describe)}</p>`) : '';
+    html += dt.aliases && dt.aliases.length ? ndSec('别名', ndTags(dt.aliases)) : '';
+    html += dt.trends && dt.trends.length ? ndSec('行业趋势', `<ul class="nd-list">${dt.trends.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`) : '';
+  } else if(type==='sub'){
+    const s = sub[id]; const dt = s.detail || {};
+    title = s.name; label = '子行业';
+    html += dt.priority ? ndSec('优先级', ndTags([dt.priority==='core'?'核心子行业':dt.priority], true)) : '';
+    html += dt.describe ? ndSec('简介', `<p class="nd-p">${esc(dt.describe)}</p>`) : '';
+    html += dt.typicalEmployers && dt.typicalEmployers.length ? ndSec('典型用人单位', ndTags(dt.typicalEmployers)) : '';
+  } else if(type==='pos'){
+    const p = pos[id]; const dt = p.detail || {};
+    title = p.name; label = '岗位 · ' + sub[p.sub].name;
+    html += p.aliases && p.aliases.length ? ndSec('别名', ndTags(p.aliases)) : '';
+    html += dt.careerLevel ? ndSec('职业等级', ndTags([dt.careerLevel], true)) : '';
+    html += dt.describe ? ndSec('简介', `<p class="nd-p">${esc(dt.describe)}</p>`) : '';
+  } else if(type==='abl'){
+    const a = abl[id]; const dt = a.detail || {};
+    title = a.name; label = '能力项';
+    const flags = [];
+    if(dt.core) flags.push('核心能力');
+    if(dt.flag) flags.push(dt.flag);
+    if(dt.crossSubIndustry) flags.push('跨子行业');
+    html += flags.length ? ndSec('标注', ndTags(flags, true)) : '';
+    html += dt.aliases && dt.aliases.length ? ndSec('别名', ndTags(dt.aliases)) : '';
+    html += a.domain ? ndSec('能力领域', `<div class="nd-kv">${esc(a.domain)}</div>`) : '';
+    html += dt.definition ? ndSec('定义', `<p class="nd-p">${esc(dt.definition)}</p>`) : (dt.describe? ndSec('简介', `<p class="nd-p">${esc(dt.describe)}</p>`) : '');
+    html += dt.crossSubIndustry && dt.acrossSubIndustries && dt.acrossSubIndustries.length ? ndSec('跨子行业', ndTags(dt.acrossSubIndustries)) : '';
+    if(dt.levels && dt.levels.length){
+      const lvs = dt.levels.map(lv=>{
+        const pts = lv.observablePoints && lv.observablePoints.length ? `<ul class="nd-pts">${lv.observablePoints.map(o=>`<li>${esc(o)}</li>`).join('')}</ul>` : '';
+        return `<div class="nd-lv"><div class="nd-lv-h"><b>${esc(lv.level)}</b><span>${esc(lv.assessMethod||'')}</span></div>
+          <div class="nd-lv-b"><div class="nd-kv"><b>行为描述</b>${esc(lv.behaviorDesc||'')}</div>${pts}</div></div>`;
+      }).join('');
+      html += ndSec('三级评估（L1 / L2 / L3）', lvs);
+    }
+    if(dt.evidences && dt.evidences.length){
+      const evs = dt.evidences.map(ev=>{
+        const src = [ev.sourceTitle, ev.sourceLevel, ev.sourceType].filter(Boolean).join(' · ');
+        return `<div class="nd-ev">${ev.clause?`<div class="nd-ev-c">${esc(ev.clause)}</div>`:''}
+          <div class="nd-ev-x">${esc(ev.excerpt||'')}</div>
+          <div class="nd-ev-s">${esc(src)}</div></div>`;
+      }).join('');
+      html += ndSec('证据引用', evs);
+    }
+  } else return;
+  $('#ndTitle').textContent = title;
+  $('#ndSub').textContent = label;
+  $('#ndBody').innerHTML = html || `<div class="nd-empty">暂无详情</div>`;
+  $('#nodeDetail').showModal();
+}
+$('#nodeDetail').addEventListener('click', e=>{
+  if(e.target===$('#nodeDetail')){ $('#nodeDetail').close(); return; }   // 点遮罩关闭
+  if(e.target.closest('[data-nd="close"]')) $('#nodeDetail').close();
+});
+
 /* ---- 悬停提示 ---- */
 const tip = $('#tip');
+let tipDetail = null, tipHover = false, tipHideTimer = 0;
+let tipNode = null, tipShowTimer = 0, lastX = 0, lastY = 0;
+function positionTip(x, y){
+  const w=tip.offsetWidth, h=tip.offsetHeight;
+  let px=x+14, py=y+16;
+  if(px+w>innerWidth-10) px=x-w-14;
+  if(py+h>innerHeight-10) py=y-h-16;
+  tip.style.left=px+'px'; tip.style.top=py+'px';
+}
+function scheduleTipHide(){ clearTimeout(tipHideTimer); tipHideTimer = setTimeout(()=>{ if(!tipHover) tip.classList.remove('on'); }, 160); }
+function tipHideNow(){ clearTimeout(tipShowTimer); tip.classList.remove('on'); }
+function tipShowNow(){ tipShowTimer = 0; tip.classList.add('on'); positionTip(lastX, lastY); }
+const TIP_DELAY = 350;
 $('#posTree').addEventListener('mouseover', e=>{
-  const g = e.target.closest('[data-n]'); if(!g){ tip.classList.remove('on'); return; }
+  const g = e.target.closest('[data-n]');
+  const key = g ? g.dataset.n : null;
+  if(key === tipNode){ lastX = e.clientX; lastY = e.clientY; return; }
+  tipNode = key;
+  if(!g){ tipHideNow(); tipDetail = null; return; }
+  tipHideNow();
   const [t,id] = g.dataset.n.split('|');
-  if(t==='sub'){ const s=sub[id];
-    tip.innerHTML = `<b>${esc(s.name)}</b><span class="tk">${s.positionIds.length} 个岗位 · ${s.distinctAbilityCount} 条去重能力项</span>`;
-  } else if(t==='pos'){ const p=pos[id], b=breakdown(id);
+  tipDetail = null;
+  const detailBtn = () => `<button class="tip-detail" type="button" data-tip-detail>查看详情</button>`;
+  if(t==='ind'){ tipDetail={type:'ind', id:I.id};
+    tip.innerHTML = `<b>${esc(I.name)}</b><span class="tk">${D.subIndustries.filter(s=>s.built).length} 个子行业 · ${D.positions.length} 个岗位 · ${D.abilities.length} 条能力项</span>${detailBtn()}`;
+  } else if(t==='sub'){ const s=sub[id]; tipDetail={type:'sub', id};
+    tip.innerHTML = `<b>${esc(s.name)}</b><span class="tk">${s.positionIds.length} 个岗位 · ${s.distinctAbilityCount} 条去重能力项</span>${detailBtn()}`;
+  } else if(t==='pos'){ const p=pos[id], b=breakdown(id); tipDetail={type:'pos', id};
     tip.innerHTML = `<b>${esc(p.name)}</b><span class="tk">${esc(p.aliases.join(' / '))}</span>
-      <span class="tk">通用 ${b.ind} · 岗位专项 ${b.sh + b.own}　${p.l3Count} 条需 L3</span>`;
-  } else if(t==='abl'){ const a=abl[id];
+      <span class="tk">通用 ${b.ind} · 岗位专项 ${b.sh + b.own}　${p.l3Count} 条需 L3</span>${detailBtn()}`;
+  } else if(t==='abl'){ const a=abl[id]; tipDetail={type:'abl', id};
     tip.innerHTML = `<b>${esc(a.name)}</b><span class="tk">${a.typeCn} · ${esc(a.domain)}</span>
-      <span class="tk">${a.positionCount} 个岗位要求 · 最高 ${a.maxRequiredLevel}${a.core?' · 核心能力':''} · 技能 ${a.skills.length}</span>`;
+      <span class="tk">${a.positionCount} 个岗位要求 · 最高 ${a.maxRequiredLevel}${a.core?' · 核心能力':''} · 技能 ${a.skills.length}</span>${detailBtn()}`;
   } else if(t==='skl'){ const k=skl[id];
     const cnt = {}; k.children.forEach(n=>{ const t=snode[n].kind; cnt[t]=(cnt[t]||0)+1; });
     tip.innerHTML = `<b>${esc(k.name)}</b><span class="tk">归属能力项：${k.abilityIds.map(x=>esc(abl[x].name)).join(' / ')}</span>
       <span class="tk">${Object.keys(KIND).filter(t=>cnt[t]).map(t=>`${t} ${cnt[t]}`).join(' · ') || '暂无下级节点'}</span>`;
   } else if(t==='lf'){ const n=snode[id];
     tip.innerHTML = `<b>${esc(n.name)}</b><span class="tk">${esc(n.kind)} · 点击由 AI 继续细分</span>`;
-  } else if(t==='retry'){ const lv=ai[+id]; if(!lv){ tip.classList.remove('on'); return; }
+  } else if(t==='retry'){ const lv=ai[+id]; if(!lv){ tipHideNow(); return; }
     tip.innerHTML = `<b>生成失败</b><span class="tk">${esc(lv.err)}</span><span class="tk">点击重试，或在「AI 设置」中检查接口地址、模型与 Key</span>`;
   } else if(t==='airegen'){
     tip.innerHTML = `<b>重新生成</b><span class="tk">让 AI 重新生成这一列；人工新增和人工编辑过的节点保留，下面已展开的列会收起</span>`;
   } else if(t==='aiadd'){
     tip.innerHTML = `<b>添加节点</b><span class="tk">在这一列末尾手动添加一个节点</span>`;
-  } else if(t==='ai'){ const it=ai[+id] && ai[+id].items[+g.dataset.n.split('|')[2]]; if(!it){ tip.classList.remove('on'); return; }
+  } else if(t==='ai'){ const it=ai[+id] && ai[+id].items[+g.dataset.n.split('|')[2]]; if(!it){ tipHideNow(); return; }
     const ck = it.check, mk = ck && SC_MARK[ck.verdict];
     tip.innerHTML = `<b>${esc(it.name)}</b><span class="tk">${esc(ai[+id].kind)}</span>${it.desc?`<span class="tk">${esc(it.desc)}</span>`:''}` +
       (ck ? `<span class="tk">自检：${mk.icon} ${mk.label}${ck.dimension?' · '+esc(ck.dimension):''}</span>` +
             (ck.reason?`<span class="tk">原因：${esc(ck.reason)}</span>`:'') +
             (ck.suggestion?`<span class="tk">建议：${esc(ck.suggestion)}</span>`:'') : '') +
-      `<span class="tk">${it.manual?'人工新增':'AI 生成'}${it.edited?' · 已人工编辑':''} · 点击由 AI 继续细分 · 右键编辑或删除</span>`;
-  } else { tip.classList.remove('on'); return; }
-  tip.classList.add('on');
+      `<span class="tk">${it.manual?'人工新增':'AI 生成'}${it.edited?' · 已人工编辑':it.regen?' · 已重新生成':''} · 点击由 AI 继续细分 · 右键编辑或删除</span>`;
+  } else { tipHideNow(); return; }
+  lastX = e.clientX; lastY = e.clientY;
+  tipShowTimer = setTimeout(tipShowNow, TIP_DELAY);
 });
-$('#posTree').addEventListener('mouseleave', ()=>tip.classList.remove('on'));
-document.addEventListener('mousemove', e=>{
-  if(!tip.classList.contains('on')) return;
-  const w=tip.offsetWidth,h=tip.offsetHeight;
-  let x=e.clientX+14,y=e.clientY+16;
-  if(x+w>innerWidth-10) x=e.clientX-w-14;
-  if(y+h>innerHeight-10) y=e.clientY-h-16;
-  tip.style.left=x+'px'; tip.style.top=y+'px';
+$('#posTree').addEventListener('mouseleave', ()=>{ tipNode = null; tipHover = false; clearTimeout(tipShowTimer); scheduleTipHide(); });
+tip.addEventListener('mouseenter', ()=>{ tipHover=true; clearTimeout(tipHideTimer); });
+tip.addEventListener('mouseleave', ()=>{ tipHover=false; tip.classList.remove('on'); });
+tip.addEventListener('click', e=>{
+  const b = e.target.closest('[data-tip-detail]'); if(!b || !tipDetail) return;
+  tip.classList.remove('on');
+  openNodeDetail(tipDetail.type, tipDetail.id);
 });
 
 // 首次渲染放在最后：用到的状态（自检、已保存的 AI 节点等）都已声明并载入

@@ -1,0 +1,6 @@
+{
+  "type": "openai",
+  "url": "https://api.deepseek.com/chat/completions",
+  "model": "deepseek-chat",
+  "key": "sk-你的DeepSeekKey"
+}

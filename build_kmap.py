@@ -18,6 +18,13 @@ skills = [{"id": i, "name": n} for i, n in K.SKILLS]
 CHILD_KINDS = ("知识点", "操作步骤", "标准", "案例")
 nodes = [{"id": i, "kind": k, "name": n} for i, k, n in K.SKILL_NODES]
 
+# 节点详情（NODE_DETAILS）合入各节点 detail 字段，供页面「详情」弹窗展示
+ND = getattr(K, "NODE_DETAILS", {})
+for s in subs: s["detail"] = ND.get(s["id"], {})
+for p in positions: p["detail"] = ND.get(p["id"], {})
+for a in abilities: a["detail"] = ND.get(a["id"], {})
+industry_detail = ND.get(K.INDUSTRY["id"], {})
+
 abl_by = {a["id"]: a for a in abilities}
 pos_by = {p["id"]: p for p in positions}
 sub_by = {s["id"]: s for s in subs}
@@ -95,15 +102,30 @@ m = re.search(r"<!-- RULES:START -->(.*?)<!-- RULES:END -->", skill_md, re.S)
 assert m, f"{skill_path} 缺少 RULES:START / RULES:END 标记"
 selfcheck_rules = m.group(1).strip()
 
-DATA = {"industry": dict(K.INDUSTRY), "subIndustries": subs,
+DATA = {"industry": {**dict(K.INDUSTRY), "detail": industry_detail}, "subIndustries": subs,
         "positions": positions, "abilities": abilities, "skills": skills, "skillNodes": nodes,
         "selfCheckRules": selfcheck_rules}
 payload = json.dumps(DATA, ensure_ascii=False, separators=(",", ":"))
 
+# AI 预置配置：ai_config.json 存在则注入（部署时把 Key 写在这里），不存在则空配置（保持现状，需使用者自填）
+AI_CFG_PATH = os.path.join(HERE, "ai_config.json")
+ai_cfg = {}
+if os.path.exists(AI_CFG_PATH):
+    try:
+        raw_cfg = json.load(open(AI_CFG_PATH, encoding="utf-8"))
+        for k in ("type", "url", "model", "key"):
+            if k in raw_cfg and isinstance(raw_cfg[k], str):
+                ai_cfg[k] = raw_cfg[k]
+    except Exception as e:
+        print(f"警告：ai_config.json 解析失败，已按空配置处理（{e}）")
+ai_cfg_json = json.dumps(ai_cfg, ensure_ascii=False, separators=(",", ":"))
+
 tpl = open(os.path.join(HERE, "kmap_template.html"), encoding="utf-8").read()
 assert "/*__DATA__*/" in tpl, "模板缺少数据占位符"
+assert "/*__AI_CFG__*/" in tpl, "模板缺少 AI 配置占位符"
 out_path = os.path.join(HERE, "kmap.html")
-open(out_path, "w", encoding="utf-8").write(tpl.replace("/*__DATA__*/", payload))
+html = tpl.replace("/*__DATA__*/", payload).replace("/*__AI_CFG__*/", ai_cfg_json)
+open(out_path, "w", encoding="utf-8").write(html)
 
 print(f"子行业 {sum(1 for s in subs if s['built'])}（共 {len(subs)}）· 岗位 {len(positions)} · "
       f"能力项 {len(abilities)} · 能力要求 {len(K.POSITION_ABILITY)} · "
@@ -111,3 +133,7 @@ print(f"子行业 {sum(1 for s in subs if s['built'])}（共 {len(subs)}）· �
       f"下级节点 {len(nodes)}（技能 → 下级节点 {len(K.SKILL_CHILD)}）")
 print(f"自检规则 {len(selfcheck_rules)} 字（来自 .claude/skills/kmap-ai-selfcheck/SKILL.md）")
 print(f"输出 {out_path}（{len(payload)/1024:.0f} KB 数据）")
+if ai_cfg.get("key"):
+    print(f"AI 预置配置：已注入 {ai_cfg.get('type', '')} / {ai_cfg.get('model', '')}")
+else:
+    print("AI 预置配置：Key 为空（未提供 ai_config.json 或其中 key 为空），AI 功能需使用者自填 Key")

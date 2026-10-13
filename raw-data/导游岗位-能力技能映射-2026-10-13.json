@@ -1,0 +1,796 @@
+[
+    {
+        "skills": [
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_e74a367130c54cadb279a695d1c42dbc",
+                "service_level": "L2",
+                "name": "智慧服务质量评价与优化"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_b80822310d604413b7cfa24975c6dbca",
+                "service_level": "L2",
+                "name": "游客满意度监测与改进"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_fc4ce2b371c04b82be7e0bf7f2141376",
+                "service_level": "L2",
+                "name": "质量检查与持续改进"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_9417c7c8c1bc4a19977627287cdb58f7",
+                "service_level": "L2",
+                "name": "服务质量检查与改进"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_0aac1b6a2c9447f89da267545846c0d4",
+                "service_level": "L2",
+                "name": "服务质量全过程控制与改进"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_f40441979dd847b092c2a4a65fa58e94",
+        "name": "服务质量检查与改进",
+        "weight": 0.31
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_3636a4fc0c504f369abf9ca05e7be22d",
+                "service_level": "L2",
+                "name": "大规模团队组织与管理"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_0e11227398af49dcacc56989e8226546",
+                "service_level": "L2",
+                "name": "行程监控与应急协调"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_0835fb980df941e49d8d267f96a624e9",
+                "service_level": null,
+                "name": "现场执行与应急管控"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_5b26c1fc4560473ebcefb5c2c9f06c40",
+        "name": "带团组织与行程执行",
+        "weight": 1
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_17cac229642243be883a3e1e7f31eca5",
+                "service_level": "L2",
+                "name": "景点导览与讲解实施"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_63e08a78f4ad4a63bc648e0419289e01",
+                "service_level": "L1",
+                "name": "景点实地导览讲解"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_220a2e5e82fe43b18889328b401170bb",
+                "service_level": "L2",
+                "name": "多元化讲解方法灵活运用"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_0cc9d57805634e37b472d2b89bdaf33a",
+                "service_level": "L2",
+                "name": "沿途风光与风情讲解"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_574418ff2093426d8f724bedbe16455e",
+                "service_level": "L2",
+                "name": "首次沿途导游讲解"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_bd90f676bc5e4dea9266e2c8da162e0f",
+                "service_level": "L2",
+                "name": "现场导览与茶文化解说"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_efbade0406674d62a1e744752c35c9f4",
+                "service_level": "L1",
+                "name": "规范化导游讲解与服务流程执行"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_25153167cc6642cd9964ec49f1d25987",
+                "service_level": "L2",
+                "name": "景点英文讲解能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_cb2d1fa63a164703819ab68a930faebd",
+                "service_level": "L2",
+                "name": "景点导览与深度讲解"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_beb9efb8c3fe4ad3bc24789caaecac12",
+        "name": "现场导览讲解",
+        "weight": 0.37
+    },
+    {
+        "skills": [],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_2eae2a52ddaf4d468febbd3a14b4e8eb",
+        "name": "接待计划审核与行程要素核验",
+        "weight": 0.31
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_21058648d9154789997663c44264941a",
+                "service_level": "L2",
+                "name": "旅游线路设计与优化"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_276d2bc3efb648b98467eeb1a59a8770",
+                "service_level": "L2",
+                "name": "旅游资源筛选与线路规划能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_afa06ed16b1c41aca2ec49280a7bb520",
+                "service_level": "L2",
+                "name": "研学行程规划与后勤保障编制能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_b15d91d6c34141bd9d44ee0f2f3f60bd",
+                "service_level": "L2",
+                "name": "研学行程规划与后勤保障编制能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_071b62c8d48d4f8599b9ba0e238e3ea3",
+                "service_level": "L2",
+                "name": "行程方案定制与成本核算"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_f4001df81b634b3c8056682afcdb9e43",
+                "service_level": "L2",
+                "name": "行程方案定制与成本核算"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_b303ac6642d440de849a371766d19e81",
+                "service_level": "L2",
+                "name": "研学主题线路策划与设计"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_b48b1926643e4672a94d478a0e8d43d3",
+                "service_level": null,
+                "name": "空间布局与功能分区"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_642dd2e20bb64901a3b674d6a7f09939",
+                "service_level": "L2",
+                "name": "行程线路设计与优化"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_0d497154e1824586bcf4feddc40324ad",
+                "service_level": "L2",
+                "name": "旅游线路设计与成本核算"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_e74ca4a9b4f44c7a8283de402715fd57",
+                "service_level": "L2",
+                "name": "旅游线路策划与版面整合"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_59925c1b5c9f4f7aa12f456dc8ba7ec2",
+                "service_level": "L2",
+                "name": "茶旅主题策划与线路设计"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_f22ea11accd14e25bf65418bd51f65fa",
+                "service_level": "L2",
+                "name": "研学行程线路编排"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_0cce621555064cf5b3bcdc508f392eed",
+                "service_level": "L2",
+                "name": "基于资源特色的旅游线路设计能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_9f9699023d4e4aba93c49509bd4c18cb",
+                "service_level": "L2",
+                "name": "线路规划与资源整合"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_2b5e654ae20641ebaa87deeba9fd36df",
+                "service_level": "L2",
+                "name": "线路规划与资源整合能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_335d4fa16f234d6386f8dd515009b201",
+                "service_level": "L2",
+                "name": "线路规划与资源整合能力"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_c5bbc533960c4b109783c5818222113e",
+        "name": "旅游线路设计与行程编排",
+        "weight": 0.37
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_7f14f18a0761436d8fa34bd9c7a11979",
+                "service_level": "L2",
+                "name": "旅游突发事件应急响应与报告"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_8979e5b8a79e404bba44883ba71c9d38",
+                "service_level": "L2",
+                "name": "急救技能与伤员初步处理"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_82dd3b8aae2d47b398c9ac9a398d8d58",
+                "service_level": "L2",
+                "name": "旅游安全突发事件应急流程执行"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_fda9394ccc444026a2b9f414444d65d3",
+                "service_level": "L2",
+                "name": "旅游突发事件应急处置与报告"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_050d3b4d66cb471f92cac055492c6d8f",
+                "service_level": "L2",
+                "name": "旅游安全突发事件应急响应"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_d2f5a81e6e7e48909a0e0aa86a8e81ac",
+                "service_level": "L2",
+                "name": "旅游突发事件应急流程执行"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_7267979b101d4e2aa61878894ec9c9e5",
+                "service_level": "L2",
+                "name": "突发事件应急处置"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_1d8e47fbbb38479eb78b4b6c0bd815d9",
+                "service_level": "L2",
+                "name": "突发事件应急救援"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_b4a3e5871caf45d19abad4f5105dde93",
+                "service_level": "L2",
+                "name": "旅游突发事件现场应急处置"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_b2e55eddbdbb4d36a6184dc8c03a8395",
+                "service_level": "L2",
+                "name": "旅游突发事件应急报告与处置技能"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_fa4ef5438284416dadd9de2769206689",
+                "service_level": "L2",
+                "name": "火情报警与人员疏散引导"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_80d24df7ae524fd780754fb4a243f25f",
+                "service_level": "L2",
+                "name": "突发事件现场先期处置与疏散"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_a8dafa033b5a491199e118345273f9e9",
+        "name": "旅游突发事件应急处置与急救",
+        "weight": 0.37
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_0d3149b20bbc458e8713ea1473aa8919",
+                "service_level": "L1",
+                "name": "不文明行为劝阻与干预"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_024af6b7561745b5aa70cf21a6cf4811",
+        "name": "生态保护与文明旅游引导",
+        "weight": 0.12
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_5be611f6fe884b889b2f3eff8478f5fa",
+                "service_level": "L1",
+                "name": "游客心理与行为特征分析能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_6e229282be2b41b0bf9387ce53c28a4a",
+                "service_level": "L2",
+                "name": "用户画像构建与需求洞察能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_cc8e6f72fdf8435da626d8db8cdd3a19",
+                "service_level": "L2",
+                "name": "目标用户画像构建与竞品分析"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_3ca7d0da66984141bb2895c5608d8bce",
+                "service_level": "L2",
+                "name": "客群需求洞察与分析能力"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_468f2f004eb142168ca6535c6145920b",
+                "service_level": "L2",
+                "name": "客户画像构建与需求挖掘"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_916c2950af0f423baa494dbc30205169",
+                "service_level": "L2",
+                "name": "客户画像构建与需求挖掘"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_3672db36c1aa4d39b2a73e7a18f7d4f4",
+                "service_level": "L2",
+                "name": "旅游业务场景需求挖掘与分析"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_7e2bdd08da8b42d3b5b51bc4481d5946",
+                "service_level": "L2",
+                "name": "客户画像构建与需求挖掘"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_02fd578b7fb34be38947f77dc8753d64",
+        "name": "游客客群画像构建与需求分析",
+        "weight": 0.25
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_215a64c3a3ac4dd2b0f4996dbd1fefc5",
+                "service_level": null,
+                "name": "接驳车辆调度与引导"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_088c8797ceef4625b7b93dd2a5dcf36d",
+                "service_level": "L2",
+                "name": "旅游违约行为定性与责任划分"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_28a347a586644a16aef94dcddd098e15",
+                "service_level": "L2",
+                "name": "旅游合同条款合规性审查"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_6c53d82c963b4075baf64a78a33f077f",
+                "service_level": "L2",
+                "name": "旅游合同条款审查与拟定"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_26b3ff151daf40ea8d3acb6b7abd8ec3",
+                "service_level": null,
+                "name": "应急信息报送与多方协调"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_b52ff0676375465e84d34e6edbdd3693",
+                "service_level": "L2",
+                "name": "旅游违约责任的界定与赔偿计算"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_a60ac35c3c9d440f8491c7824e082db4",
+                "service_level": "L2",
+                "name": "旅游违约责任的认定与赔偿计算"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_3bb765b4ce3b4c9c848bf6902a97359c",
+                "service_level": "L2",
+                "name": "旅游合同履行中的变更与解除处理"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_0bab44090b864d36965b8e38b6263f0b",
+                "service_level": null,
+                "name": "旅游安全风险识别与评估"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_0028cd3fbfd0468784bad30e2ec63237",
+                "service_level": "L2",
+                "name": "旅游违约责任的认定与承担"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_559a5b86d34c4eedbfd1240933a509c5",
+                "service_level": null,
+                "name": "旅游安全教育与提示实施"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_cd113babb16c45338264369e9cf01f72",
+                "service_level": null,
+                "name": "应急预案结构化编制"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_75319ffdc7914866a20a9bb6f6680461",
+                "service_level": "L2",
+                "name": "旅游合同条款审核与拟定"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_80d24df7ae524fd780754fb4a243f25f",
+                "service_level": null,
+                "name": "突发事件现场先期处置与疏散"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_23e2d93b751a424bb6461ad0faf39c4d",
+                "service_level": null,
+                "name": "应急管理与事故处置"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_4bd90ffe7d8d432ba91a97c87d617325",
+                "service_level": "L2",
+                "name": "旅游合同效力与条款审查"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_4bee726cd589424892267ada26f63c08",
+                "service_level": "L2",
+                "name": "旅游保险理赔协助"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_b75fd93d42e34765bea2e90c6c812893",
+                "service_level": null,
+                "name": "应急演练策划与评估改进"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_40dab4fc8bde494d879beb66cda13c53",
+                "service_level": null,
+                "name": "道路交通与公共区域秩序管理"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_4c579ff0366f40ec97489e661f42d578",
+                "service_level": null,
+                "name": "预约渠道操作与信息核验"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_65e8682301ab455c80eea40b1fc04c5a",
+                "service_level": null,
+                "name": "商业配套服务（餐饮/购物）"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_ff116a2db638424197125f16b8d1ef4a",
+                "service_level": "L2",
+                "name": "旅游合同条款合规性审查"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_226789db48ed40c5ad5c4fac63f43271",
+                "service_level": "L2",
+                "name": "旅游合同条款合规性审查"
+            },
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_bda36784f7ee457f84b8f6b4d868ed19",
+                "service_level": null,
+                "name": "风险识别与日常安全监管"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_deac6f983e4b421c84674102e5151aa6",
+        "name": "旅游业务合规应用",
+        "weight": 0.25
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_3a9f4af838284df4a657420ba7515837",
+                "service_level": "L1",
+                "name": "预订执行与资金结算"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_a4d13f4a4d2e46408d8531ce6c612c3a",
+                "service_level": "L2",
+                "name": "成本预算编制与资源采购"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_78d3b0a2933847adbe4e6484bd5318c7",
+        "name": "旅游资源采购与供应商管理",
+        "weight": 0.31
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_2fb9d9a18fa04479945d73631dacaf35",
+                "service_level": "L2",
+                "name": "投诉受理与共情沟通"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_658e1e6531524faf9715710f0e34879b",
+                "service_level": "L2",
+                "name": "投诉受理与情绪安抚"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_11774bd5a6414c31b3d49987d9154a1a",
+                "service_level": "L2",
+                "name": "旅游投诉受理与调解技巧"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_85fc3ab9fa0a47b9b61c20bc0fc30871",
+                "service_level": "L2",
+                "name": "投诉受理与共情沟通"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_e4e343a62f2247ca982c109392795e40",
+                "service_level": "L2",
+                "name": "旅游投诉受理与调解技巧"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_2057540b53bc49d99f9580864096d222",
+                "service_level": "L2",
+                "name": "旅游投诉受理与调解技巧"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_bc566426090e450c848759943ddf4cc5",
+                "service_level": "L2",
+                "name": "投诉受理与危机化解"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_602d892b9c41477eb49d493824e3f591",
+                "service_level": "L2",
+                "name": "客户投诉分级与处理"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_ee5318cea7724a0c8ceee23eae85eb72",
+                "service_level": "L2",
+                "name": "旅游投诉受理与调解技巧"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_f342369a517048ae95e407549996002d",
+                "service_level": "L2",
+                "name": "危机公关与投诉处理能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_7f89dfe86e074f50a39921ee816c22c7",
+                "service_level": "L2",
+                "name": "售后投诉处理与危机化解"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_86829c8ef9544a38a2699d069d20c71e",
+                "service_level": "L2",
+                "name": "投诉受理与事实核查"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_737f8ae4b22649c0a0004be4085ac4c8",
+                "service_level": "L2",
+                "name": "旅游服务质量监控与投诉处理"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_ab7b36c4c30142378a82fe779b2d88f8",
+                "service_level": "L2",
+                "name": "方案提出与闭环处理"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_56081b119c454779a532d56a3a55355d",
+                "service_level": "L2",
+                "name": "旅游投诉调解与协商技巧"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_b4d09a9d43cc48fc971a99641e7b20b7",
+        "name": "旅游投诉受理与处理",
+        "weight": 1
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_382a9ca79d7e427ab37d430ccb61c9c6",
+                "service_level": "L2",
+                "name": "旅游安全风险识别与防控"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_7a94454353cf4c87ab0d00983e399b8b",
+                "service_level": "L2",
+                "name": "安全风险识别与防范"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_1dbbcd00c4c948eb9641d90dc8bb14f3",
+                "service_level": "L3",
+                "name": "户外风险识别与应急预案制定"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_214020e4824a4415850ca0ed252b9a63",
+                "service_level": "L2",
+                "name": "旅游安全风险识别与防范"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_502578d68af84a8085198e233c77d8c1",
+        "name": "旅游安全风险识别与防范",
+        "weight": 1
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "相关但不构成覆盖",
+                "identity": "instance_4b6fde080b664857918a74eb91e0b53c",
+                "service_level": null,
+                "name": "活动现场执行与协调"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_0703f41480454af2be22ff0a03e41b50",
+        "name": "跨岗位信息通报与内部协作",
+        "weight": 0.19
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_8acb3557e88d4f31b11603fbe4242fb0",
+                "service_level": "L2",
+                "name": "主题化导游词撰写能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_16128b95a3884b40bb6db793d799ff66",
+                "service_level": "L2",
+                "name": "导游词文化转化能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_567fec47471d4c5ea4a60cab20e73dd7",
+                "service_level": "L2",
+                "name": "区域概况与历史文化深度解读能力"
+            },
+            {
+                "mapping_type": "直接支撑",
+                "identity": "instance_5d6dca98e5404447b9a21350ed00b231",
+                "service_level": "L2",
+                "name": "文化素材提炼与内涵转化"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_295f973cf7d04fedbe157d53920ca4f3",
+        "name": "讲解词撰写与文化资源转化",
+        "weight": 0.25
+    },
+    {
+        "skills": [
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_13a56b96c156484a8bef1e2838a8e989",
+                "service_level": "L1",
+                "name": "生活照料与服务程序执行"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_215a64c3a3ac4dd2b0f4996dbd1fefc5",
+                "service_level": "L1",
+                "name": "接驳车辆调度与引导"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_aefc3db507754740bb2792dc9c5fd084",
+                "service_level": "L1",
+                "name": "食宿服务安排与监督"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_534aa65c23a64f11b9c4e217d2e62ef1",
+                "service_level": "L1",
+                "name": "点餐推荐与特殊需求确认"
+            },
+            {
+                "mapping_type": "部分支撑",
+                "identity": "instance_2e019e4e171b4d748aa94f916e754082",
+                "service_level": "L1",
+                "name": "游客流量管理与服务"
+            }
+        ],
+        "node_type": "能力",
+        "required_level": "L2",
+        "identity": "instance_835c390672354afd859b1bbfb88c485a",
+        "name": "游客生活服务与特殊需求照料",
+        "weight": 1
+    }
+]
