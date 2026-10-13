@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>行业图谱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --plane:#f5f3f9; --card:#ffffff; --card-2:#faf9fd;
+  --ink:#191524; --ink-2:#5c5670; --muted:#8e88a1;
+  --rule:#e7e3f0; --rule-2:#f0edf7;
+  --brand:#5b3fd6; --brand-soft:#ede9fb; --brand-ink:#3d29a0;
+  --lv1:#b9a9ee; --lv2:#7f63d8; --lv3:#4a3aa7;
+  --kgt-kp:#6366f1; --kgt-step:#64748b; --kgt-std:#d946ef; --kgt-case:#f59e0b;
+  --good:#0ca30c; --warn:#fab219; --crit:#d03b3b; --warn-ink:#7a5a08;
+  --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --plane:#0f0d16; --card:#1c1a26; --card-2:#232030;
+    --ink:#f4f2fa; --ink-2:#b0aac2; --muted:#847e96;
+    --rule:#2b2739; --rule-2:#252132;
+    --brand:#9b8bef; --brand-soft:#282343; --brand-ink:#c3b8f7;
+    --lv1:#54477f; --lv2:#8371d6; --lv3:#b8aaf2;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --plane:#0f0d16; --card:#1c1a26; --card-2:#232030;
+  --ink:#f4f2fa; --ink-2:#b0aac2; --muted:#847e96;
+  --rule:#2b2739; --rule-2:#252132;
+  --brand:#9b8bef; --brand-soft:#282343; --brand-ink:#c3b8f7;
+  --lv1:#54477f; --lv2:#8371d6; --lv3:#b8aaf2;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);font-family:var(--sans);
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1{margin:0;text-wrap:balance;font-weight:700;letter-spacing:-.012em}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+/* ── platform shell（与 panorama.html 保持一致） ── */
+.app{display:flex;min-height:100vh}
+.lnav{width:206px;flex:0 0 206px;background:var(--card);border-right:1px solid var(--rule);
+  position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:0}
+.lbrand{display:flex;align-items:center;gap:9px;padding:18px 18px 16px;border-bottom:1px solid var(--rule-2)}
+.ldot{width:22px;height:22px;border-radius:7px;flex:0 0 22px;
+  background:linear-gradient(140deg,#7b5cf0,#4a2fc4 60%,#6b3fd0)}
+.lname{font-size:12.5px;font-weight:700;line-height:1.3}
+.lgroup{padding:14px 10px 4px}
+.lgt{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);padding:0 10px 7px}
+.lmenu{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:8px 10px;
+  border-radius:8px;color:var(--ink-2);font-size:13px;transition:background .12s,color .12s}
+.lmenu:hover{background:var(--rule-2);color:var(--ink)}
+.lmenu.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
+a.lmenu{text-decoration:none}
+.lmenu i{width:15px;height:15px;flex:0 0 15px;display:block;opacity:.75}
+.lmenu.on i{opacity:1}
+.lfoot{margin-top:auto;padding:14px 18px 16px;border-top:1px solid var(--rule-2);
+  font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.7}
+
+.panel{flex:1;min-width:0;display:flex;flex-direction:column}
+.ptop{background:var(--card);border-bottom:1px solid var(--rule);padding:16px 28px 14px;
+  position:sticky;top:0;z-index:20}
+.pt-t{font-size:17px}
+.pt-d{font-size:12px;color:var(--muted);margin-top:3px}
+.body{padding:22px 28px 60px;max-width:1360px;width:100%}
+@media (max-width:1000px){
+  .app{display:block}
+  .lnav{position:static;width:auto;height:auto;flex:none;border-right:none;border-bottom:1px solid var(--rule)}
+  .lgroup{display:flex;flex-wrap:wrap;gap:2px;padding:8px}.lgt{display:none}.lmenu{width:auto}
+  .lfoot{display:none}
+  .ptop{padding:14px 16px;position:static}.body{padding:16px 16px 48px}
+}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:13px}
+.burst{position:relative;padding:14px 14px 10px;display:flex;flex-direction:column}
+.burst-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:2px 6px 8px}
+.burst-t{font-size:13px;font-weight:700}
+.blegend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 6px 2px;border-top:1px solid var(--rule-2);
+  margin-top:6px}
+.bl{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2)}
+.bl i{width:12px;height:12px;border-radius:3px;display:block;flex:0 0 12px}
+
+/* 树形连线图 */
+.tree{overflow:auto;flex:1;min-height:360px;max-height:min(700px,74vh);padding:6px 0 6px}
+.tree svg{display:block}
+.gch{font-family:var(--mono);font-size:9px;letter-spacing:.12em;fill:var(--muted);
+  text-transform:uppercase;dominant-baseline:hanging}
+.glink{fill:none;stroke-width:1.4;transition:opacity .18s,stroke-width .18s}
+.glink.base{stroke:var(--rule);opacity:.95}
+.glink.lv1{stroke:var(--lv1);opacity:.22}
+.glink.lv2{stroke:var(--lv2);opacity:.22}
+.glink.lv3{stroke:var(--lv3);opacity:.22}
+.glink.on{opacity:.85;stroke-width:1.7}
+.glink.off{opacity:.05}
+.gnode{cursor:pointer;transition:opacity .18s}
+.gnode rect{transition:fill .15s,stroke .15s}
+.gnode:hover rect{stroke:var(--brand)}
+.gnode.off{opacity:.2}
+.gnode.sel rect{stroke:var(--brand);stroke-width:2;fill:var(--brand-soft)}
+.gnode.ab .abbg{fill:transparent}
+.gnode.ab.on .abbg{fill:var(--rule-2)}
+.gnode.ab:hover .abbg{fill:var(--rule-2);stroke:var(--brand);stroke-width:1}
+.gnode.ab.sel .abbg{fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5}
+.gnode.sk .abbg{fill:var(--card-2);stroke:var(--rule);stroke-width:1}
+.gnode.sk{cursor:pointer}
+.gnode.sk:hover .abbg{stroke:var(--brand)}
+.gnode.sk.sel .abbg{fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5}
+.gnode.lf{cursor:default}
+.gnode.lf .abbg{fill:transparent}
+.gnode.lf:hover .abbg{fill:var(--rule-2)}
+.gt-kind{font-size:9.5px;font-weight:500}
+.gnode.lf.open{cursor:pointer}
+.gnode.lf.open:hover .abbg{stroke:var(--brand);stroke-width:1}
+.gnode.lf.sel .abbg{fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5}
+.gnode.lf.off{opacity:.35}
+.gnode.ai .abbg{stroke:var(--rule);stroke-dasharray:3 2;stroke-width:1;fill:var(--card)}
+.gt-ai{font-family:var(--mono);font-size:8.5px;font-weight:600;fill:var(--brand)}
+.btn-s:disabled{opacity:.45;cursor:not-allowed;border-color:var(--rule);color:var(--ink-2)}
+.scbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 6px 8px;padding:7px 12px;
+  border:1px solid var(--rule);border-radius:9px;background:var(--card-2);font-size:12px;color:var(--ink-2)}
+.scbar[hidden]{display:none}
+.scbar b{font-weight:600;color:var(--ink)}
+.scbar .sc-n{display:inline-flex;align-items:center;gap:4px}
+.scbar .sc-miss{flex-basis:100%;color:var(--ink-2);line-height:1.6}
+.scbar .sc-act{margin-left:auto;display:flex;gap:6px}
+/* 自检报告 */
+.aidlg.wide{width:min(920px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+.rpt{padding:18px 22px 16px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 50px)}
+.rpt-h{display:flex;align-items:flex-start;gap:12px}
+.rpt-h h2{font-size:16px;margin:0}
+.rpt-meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+.rpt-tools{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.rpt-tools label{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-2);cursor:pointer}
+.rpt-sum{display:flex;gap:10px;flex-wrap:wrap}
+.rpt-k{flex:1;min-width:110px;border:1px solid var(--rule);border-radius:10px;padding:8px 12px;background:var(--card-2)}
+.rpt-k b{display:block;font-size:20px;font-family:var(--mono);font-weight:600}
+.rpt-k span{font-size:11.5px;color:var(--muted)}
+.rpt-body{overflow:auto;display:flex;flex-direction:column;gap:14px;padding-right:2px}
+.rpt-lv{border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.rpt-lv-h{padding:8px 12px;background:var(--card-2);border-bottom:1px solid var(--rule-2)}
+.rpt-lv-h b{font-size:13px}
+.rpt-chain{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.6}
+.rpt-lv table{width:100%;border-collapse:collapse;font-size:12px}
+.rpt-lv th{text-align:left;font-weight:500;color:var(--muted);font-size:11px;padding:6px 10px;border-bottom:1px solid var(--rule-2)}
+.rpt-lv td{padding:7px 10px;border-bottom:1px solid var(--rule-2);vertical-align:top;line-height:1.55}
+.rpt-lv tr:last-child td{border-bottom:none}
+.rpt-lv td.v{white-space:nowrap;font-weight:600}
+.rpt-lv td.n{min-width:140px}
+.rpt-lv td.n small{display:block;color:var(--muted);font-size:11px}
+.rpt-miss{padding:7px 12px;font-size:12px;color:var(--ink-2);border-top:1px dashed var(--rule);background:var(--card)}
+.rpt-empty{font-size:12.5px;color:var(--muted);padding:10px 2px}
+.rpt-src{font-size:10.5px;color:var(--muted);border:1px solid var(--rule);border-radius:4px;padding:0 4px;margin-left:4px}
+.rpt-lv td.op{white-space:nowrap;width:1%}
+.rpt-lv td.op button+button{margin-left:6px}
+.sc-pass{color:var(--good)} .sc-doubt{color:var(--warn-ink)} .sc-fail{color:var(--crit)}
+.gt-sc{font-size:11px;font-weight:700}
+.gt-sc.pass{fill:var(--good)} .gt-sc.doubt{fill:var(--warn)} .gt-sc.fail{fill:var(--crit)}
+.gnode.ai.sc-fail .abbg{stroke:var(--crit);stroke-dasharray:none}
+.gnode.ai.sc-doubt .abbg{stroke:var(--warn);stroke-dasharray:none}
+/* AI 列末尾的「添加节点」 */
+.gnode.aiadd{cursor:pointer}
+.gnode.aiadd .abbg{fill:transparent;stroke:var(--rule);stroke-dasharray:3 2}
+.gnode.aiadd:hover .abbg{stroke:var(--brand);fill:var(--brand-soft)}
+.gnode.aiadd text{font-size:11.5px;fill:var(--muted)}
+.gnode.aiadd:hover text{fill:var(--brand-ink)}
+.gt-ai.man{fill:var(--ink-2)}
+/* AI 节点右键菜单 */
+.ctxmenu{position:fixed;z-index:85;min-width:128px;padding:4px;background:var(--card);border:1px solid var(--rule);
+  border-radius:9px;box-shadow:0 12px 32px -12px rgba(25,21,36,.35)}
+.ctxmenu[hidden]{display:none}
+.ctxmenu button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:6px 10px;border-radius:6px;
+  font-size:12.5px;color:var(--ink)}
+.ctxmenu button:hover,.ctxmenu button:focus-visible{background:var(--rule-2);outline:none}
+.ctxmenu button.danger{color:var(--crit)}
+.ctxmenu .ctx-h{padding:4px 10px 5px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--rule-2);margin-bottom:3px;
+  max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aidlg textarea{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--rule);border-radius:8px;
+  background:var(--card-2);color:var(--ink);resize:vertical;min-height:56px}
+.aidlg textarea:focus{outline:none;border-color:var(--brand)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:12px;
+  background:var(--ink);color:var(--plane);border-radius:9px;padding:9px 14px;font-size:12.5px;
+  box-shadow:0 8px 24px -8px rgba(0,0,0,.4)}
+.toast[hidden]{display:none}
+.toast button{color:#b9a9ee;font-weight:600}
+.gt-status{font-size:12px;fill:var(--muted)}
+.gnode.retry .gt-status{fill:var(--brand);text-decoration:underline}
+@keyframes kmPulse{0%,100%{opacity:.45}50%{opacity:1}}
+.gt-loading{animation:kmPulse 1.2s ease-in-out infinite}
+
+/* AI 设置 */
+.btn-s{font-size:12px;padding:4px 11px;border-radius:7px;border:1px solid var(--rule);color:var(--ink-2);background:var(--card)}
+.btn-s:hover{border-color:var(--brand);color:var(--brand-ink)}
+.btn-p{font-size:12.5px;padding:6px 14px;border-radius:8px;background:var(--brand);color:#fff}
+.aidlg{border:1px solid var(--rule);border-radius:13px;padding:0;background:var(--card);color:var(--ink);
+  width:min(440px,calc(100vw - 32px));box-shadow:0 12px 40px -12px rgba(25,21,36,.3)}
+.aidlg::backdrop{background:rgba(15,13,22,.35)}
+.aidlg form{padding:18px 20px 16px;display:flex;flex-direction:column;gap:11px}
+.aidlg h2{font-size:15px;margin:0}
+.aidlg label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink-2)}
+.aidlg input{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--rule);border-radius:8px;
+  background:var(--card-2);color:var(--ink)}
+.aidlg input:focus,.aidlg select:focus{outline:none;border-color:var(--brand)}
+.aidlg select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--rule);border-radius:8px;
+  background:var(--card-2);color:var(--ink)}
+.aidlg .presets{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.aidlg .note{font-size:11.5px;color:var(--muted);line-height:1.55}
+.aidlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.gt{font-family:var(--sans);font-size:11.5px;fill:var(--ink)}
+.gt-ind{font-size:13px;font-weight:700;fill:var(--brand-ink)}
+.gt-ab{font-size:11px}
+.gt-n{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.gt-tier{font-family:var(--mono);font-size:9px;fill:var(--brand)}
+.gt-chev{font-size:14px;fill:var(--muted)}
+.gnode.sel .gt-chev{fill:var(--brand)}
+.gt-empty{font-size:12px;fill:var(--muted)}
+
+#tip{position:fixed;z-index:80;pointer-events:auto;background:var(--ink);color:var(--plane);
+  border-radius:8px;padding:8px 11px;font-size:11.5px;line-height:1.55;max-width:260px;opacity:0;
+  transition:opacity .12s;box-shadow:0 8px 24px -8px rgba(0,0,0,.4)}
+#tip.on{opacity:1}
+#tip b{font-weight:700}
+#tip .tk{font-family:var(--mono);font-size:10px;opacity:.72;display:block;margin-top:3px}
+#tip .tip-detail{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:6px;
+  background:var(--brand);color:#fff;font-size:11px;font-weight:500;cursor:pointer}
+#tip .tip-detail:hover{background:var(--brand-ink)}
+
+/* 节点详情弹窗 */
+.nd{padding:18px 22px 16px;display:flex;flex-direction:column;gap:4px;max-height:calc(100vh - 50px)}
+.nd-h{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px}
+.nd-h h2{font-size:16px;margin:0}
+.nd-sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+.nd-h .btn-s{margin-left:auto}
+.nd-body{overflow:auto;display:flex;flex-direction:column;gap:12px;padding-right:2px}
+.nd-sec{display:flex;flex-direction:column;gap:6px}
+.nd-sec-h{font-size:12px;font-weight:600;color:var(--brand-ink);border-bottom:1px solid var(--rule-2);padding-bottom:3px}
+.nd-p{font-size:13px;color:var(--ink-2);line-height:1.7;margin:0}
+.nd-tags{display:flex;flex-wrap:wrap;gap:6px}
+.nd-tag{font-size:11.5px;color:var(--ink-2);background:var(--card-2);border:1px solid var(--rule);
+  border-radius:99px;padding:2px 10px}
+.nd-tag.hl{color:var(--brand-ink);background:var(--brand-soft);border-color:transparent}
+.nd-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--ink-2)}
+.nd-lv{border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.nd-lv-h{padding:6px 12px;background:var(--card-2);border-bottom:1px solid var(--rule-2);
+  display:flex;align-items:center;gap:8px}
+.nd-lv-h b{font-size:12.5px;font-family:var(--mono)}
+.nd-lv-h span{font-size:11px;color:var(--muted)}
+.nd-lv-b{padding:8px 12px;display:flex;flex-direction:column;gap:5px}
+.nd-kv{font-size:12.5px;color:var(--ink-2)}
+.nd-kv b{color:var(--ink);font-weight:600;margin-right:6px}
+.nd-pts{margin:2px 0 0;padding-left:16px;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--ink-2)}
+.nd-ev{border:1px solid var(--rule);border-radius:9px;padding:8px 12px;display:flex;flex-direction:column;gap:4px}
+.nd-ev-c{font-size:11.5px;font-family:var(--mono);color:var(--brand-ink)}
+.nd-ev-x{font-size:12.5px;color:var(--ink);line-height:1.6}
+.nd-ev-s{font-size:11px;color:var(--muted)}
+.nd-empty{font-size:12.5px;color:var(--muted);padding:4px 0}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav">
+    <div class="lbrand"><div class="ldot" aria-hidden="true"></div>
+      <div class="lname">AIGC 智慧课堂<br>教学平台 · 管理端</div></div>
+    <div class="lgroup">
+      <div class="lgt">概览</div>
+      <button class="lmenu"><i>▤</i>数据概览</button>
+      <a class="lmenu" href="panorama.html"><i>◎</i>行业分析</a>
+      <button class="lmenu on" aria-current="page"><i>◇</i>行业图谱</button>
+    </div>
+    <div class="lgroup">
+      <div class="lgt">教务</div>
+      <button class="lmenu"><i>▤</i>教务基础数据</button>
+      <button class="lmenu"><i>▤</i>课程计划管理</button>
+      <button class="lmenu"><i>▤</i>账号与角色</button>
+    </div>
+    <div class="lgroup">
+      <div class="lgt">系统</div>
+      <button class="lmenu"><i>▤</i>系统配置</button>
+    </div>
+    <div class="lfoot" id="lfoot"></div>
+  </aside>
+
+  <div class="panel">
+    <div class="ptop">
+      <h1 class="pt-t">行业图谱</h1>
+      <div class="pt-d" id="kmapDesc"></div>
+    </div>
+    <div class="body">
+      <div class="card burst">
+        <div class="burst-h"><span class="burst-t">行业能力全景</span><span style="flex:1"></span>
+          <button class="btn-s" id="saveBtn" type="button" disabled>保存</button>
+          <button class="btn-s" id="scBtn" type="button" disabled>自检</button>
+          <button class="btn-s" id="aiCfgBtn" type="button">AI 设置</button></div>
+        <div class="scbar" id="scBar" hidden></div>
+        <div class="tree" id="posTree"></div>
+        <div class="blegend">
+          <span class="bl"><i style="background:var(--lv1)"></i>L1</span>
+          <span class="bl"><i style="background:var(--lv2)"></i>L2</span>
+          <span class="bl"><i style="background:var(--lv3)"></i>L3</span>
+          <span class="bl" style="color:var(--muted)">连线颜色 = 该岗位对该能力的要求等级</span>
+          <span class="bl" style="color:var(--muted)">点岗位展开能力项　点能力项展开技能并反推要求它的岗位　点技能展开下级节点　点末级节点由 AI 继续细分　点子行业高亮所属岗位　★ 核心能力　×N 被几个岗位要求</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="tip" role="status"></div>
+<dialog class="aidlg wide" id="nodeDetail" aria-labelledby="ndTitle">
+  <div class="nd">
+    <div class="nd-h">
+      <div><h2 id="ndTitle">详情</h2><div class="nd-sub" id="ndSub"></div></div>
+      <button class="btn-s" type="button" data-nd="close">关闭</button>
+    </div>
+    <div class="nd-body" id="ndBody"></div>
+  </div>
+</dialog>
+<dialog class="aidlg" id="nodeDlg">
+  <form method="dialog" id="nodeForm">
+    <h2 id="nodeDlgTitle">编辑节点</h2>
+    <label>名称<input id="nodeName" type="text" maxlength="20" required></label>
+    <label>说明<textarea id="nodeDesc" maxlength="40" rows="2"></textarea></label>
+    <div class="note" id="nodeDlgNote"></div>
+    <div class="acts"><button class="btn-s" value="cancel" formnovalidate>取消</button><button class="btn-p" value="save">保存</button></div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+<dialog class="aidlg wide" id="scReport" aria-labelledby="rptTitle">
+  <div class="rpt">
+    <div class="rpt-h">
+      <div><h2 id="rptTitle">AI 延展内容自检报告</h2><div class="rpt-meta" id="rptMeta"></div></div>
+      <div class="rpt-tools">
+        <label><input type="checkbox" id="rptOnlyIssue"> 只看存疑和有问题</label>
+        <button class="btn-s" type="button" data-rpt="copy">复制报告</button>
+        <button class="btn-s" type="button" data-rpt="close">关闭</button>
+      </div>
+    </div>
+    <div class="rpt-sum" id="rptSum"></div>
+    <div class="rpt-body" id="rptBody"></div>
+  </div>
+</dialog>
+<div class="ctxmenu" id="ctxMenu" role="menu" hidden>
+  <div class="ctx-h" id="ctxTitle"></div>
+  <button type="button" role="menuitem" data-ctx="edit">✎ 编辑</button>
+  <button type="button" role="menuitem" data-ctx="regen">↻ 重新生成</button>
+  <button type="button" role="menuitem" class="danger" data-ctx="del">✕ 删除</button>
+</div>
+<dialog class="aidlg" id="aiDlg">
+  <form method="dialog" id="aiForm">
+    <h2>AI 设置</h2>
+    <label>接口类型<select id="aiType">
+      <option value="anthropic">Anthropic（Claude）</option>
+      <option value="openai">OpenAI 兼容（DeepSeek 等）</option>
+    </select></label>
+    <div class="presets">快速填入：<button class="btn-s" type="button" data-preset="deepseek">DeepSeek</button><button class="btn-s" type="button" data-preset="claude">Claude</button></div>
+    <label>接口地址<input id="aiUrl" type="url" required></label>
+    <label>模型<input id="aiModel" type="text" required></label>
+    <label>API Key<input id="aiKey" type="password" autocomplete="off" required></label>
+    <div class="note">点击末级节点时，页面直接调用该接口生成下级节点。已预置接口与 Key，打开即可用；如需换用可在下方修改，只保存在本机浏览器中。</div>
+    <div class="acts"><button class="btn-s" value="cancel" formnovalidate>取消</button><button class="btn-p" value="save">保存</button></div>
+  </form>
+</dialog>
+
+<script>
+const D = {"industry":{"id":"IND-01","name":"旅游业","version":"v1.3","builtAt":"2026-09-09","detail":{}},"subIndustries":[{"id":"SUB-01","name":"旅行社与组团服务","detail":{},"positionIds":["POS-01","POS-02","POS-04","POS-05"],"distinctAbilityCount":23,"built":true},{"id":"SUB-02","name":"游览景区服务","detail":{},"positionIds":["POS-03","POS-06","POS-07"],"distinctAbilityCount":16,"built":true},{"id":"SUB-03","name":"研学与定制旅游","detail":{},"positionIds":["POS-08","POS-09"],"distinctAbilityCount":24,"built":true},{"id":"SUB-04","name":"在线旅游服务","detail":{},"positionIds":[],"distinctAbilityCount":0,"built":false}],"positions":[{"id":"POS-01","name":"地接导游","sub":"SUB-01","aliases":["地陪","导游","带团导游"],"detail":{},"abilities":[{"ability":"ABL-04","weight":0.95,"level":"L3"},{"ability":"ABL-01","weight":0.9,"level":"L2"},{"ability":"ABL-06","weight":0.9,"level":"L3"},{"ability":"ABL-03","weight":0.85,"level":"L2"},{"ability":"ABL-07","weight":0.85,"level":"L2"},{"ability":"ABL-11","weight":0.85,"level":"L2"},{"ability":"ABL-02","weight":0.8,"level":"L2"},{"ability":"ABL-10","weight":0.8,"level":"L2"},{"ability":"ABL-13","weight":0.8,"level":"L2"},{"ability":"ABL-19","weight":0.8,"level":"L2"},{"ability":"ABL-09","weight":0.7,"level":"L2"},{"ability":"ABL-20","weight":0.7,"level":"L2"},{"ability":"ABL-05","weight":0.6,"level":"L2"},{"ability":"ABL-12","weight":0.6,"level":"L1"},{"ability":"ABL-08","weight":0.5,"level":"L1"},{"ability":"ABL-14","weight":0.5,"level":"L1"}],"abilityCount":16,"l3Count":2},{"id":"POS-02","name":"旅行社计调","sub":"SUB-01","aliases":["计调","产品操作","OP","线路操作"],"detail":{},"abilities":[{"ability":"ABL-15","weight":0.95,"level":"L3"},{"ability":"ABL-16","weight":0.9,"level":"L2"},{"ability":"ABL-17","weight":0.9,"level":"L2"},{"ability":"ABL-09","weight":0.85,"level":"L3"},{"ability":"ABL-13","weight":0.85,"level":"L3"},{"ability":"ABL-08","weight":0.75,"level":"L2"},{"ability":"ABL-14","weight":0.7,"level":"L2"},{"ability":"ABL-01","weight":0.6,"level":"L2"},{"ability":"ABL-07","weight":0.6,"level":"L2"},{"ability":"ABL-10","weight":0.6,"level":"L1"}],"abilityCount":10,"l3Count":3},{"id":"POS-03","name":"景区讲解员","sub":"SUB-02","aliases":["讲解员","解说员","场馆讲解"],"detail":{},"abilities":[{"ability":"ABL-02","weight":0.95,"level":"L3"},{"ability":"ABL-04","weight":0.95,"level":"L2"},{"ability":"ABL-19","weight":0.85,"level":"L2"},{"ability":"ABL-20","weight":0.85,"level":"L3"},{"ability":"ABL-03","weight":0.8,"level":"L2"},{"ability":"ABL-05","weight":0.8,"level":"L2"},{"ability":"ABL-01","weight":0.7,"level":"L2"},{"ability":"ABL-06","weight":0.6,"level":"L1"},{"ability":"ABL-07","weight":0.6,"level":"L1"},{"ability":"ABL-10","weight":0.6,"level":"L1"},{"ability":"ABL-11","weight":0.6,"level":"L1"},{"ability":"ABL-18","weight":0.6,"level":"L2"}],"abilityCount":12,"l3Count":2},{"id":"POS-04","name":"全陪领队","sub":"SUB-01","aliases":["全陪","领队","带团经理"],"detail":{},"abilities":[{"ability":"ABL-06","weight":0.95,"level":"L3"},{"ability":"ABL-11","weight":0.9,"level":"L3"},{"ability":"ABL-07","weight":0.85,"level":"L3"},{"ability":"ABL-09","weight":0.85,"level":"L3"},{"ability":"ABL-10","weight":0.85,"level":"L3"},{"ability":"ABL-13","weight":0.85,"level":"L3"},{"ability":"ABL-19","weight":0.8,"level":"L2"},{"ability":"ABL-01","weight":0.7,"level":"L2"},{"ability":"ABL-08","weight":0.7,"level":"L2"},{"ability":"ABL-12","weight":0.7,"level":"L2"},{"ability":"ABL-20","weight":0.7,"level":"L2"},{"ability":"ABL-14","weight":0.65,"level":"L2"},{"ability":"ABL-28","weight":0.6,"level":"L2"}],"abilityCount":13,"l3Count":6},{"id":"POS-05","name":"旅游产品策划","sub":"SUB-01","aliases":["产品经理","线路策划","产品设计师"],"detail":{},"abilities":[{"ability":"ABL-15","weight":0.95,"level":"L3"},{"ability":"ABL-25","weight":0.9,"level":"L3"},{"ability":"ABL-01","weight":0.8,"level":"L3"},{"ability":"ABL-16","weight":0.8,"level":"L2"},{"ability":"ABL-24","weight":0.8,"level":"L2"},{"ability":"ABL-13","weight":0.7,"level":"L2"},{"ability":"ABL-26","weight":0.7,"level":"L2"},{"ability":"ABL-02","weight":0.6,"level":"L2"},{"ability":"ABL-17","weight":0.6,"level":"L1"}],"abilityCount":9,"l3Count":3},{"id":"POS-06","name":"景区游客服务专员","sub":"SUB-02","aliases":["游客中心接待","咨询服务岗","票务咨询"],"detail":{},"abilities":[{"ability":"ABL-19","weight":0.9,"level":"L2"},{"ability":"ABL-07","weight":0.85,"level":"L2"},{"ability":"ABL-10","weight":0.7,"level":"L2"},{"ability":"ABL-11","weight":0.7,"level":"L2"},{"ability":"ABL-01","weight":0.6,"level":"L1"},{"ability":"ABL-02","weight":0.6,"level":"L1"},{"ability":"ABL-06","weight":0.6,"level":"L1"},{"ability":"ABL-14","weight":0.6,"level":"L1"}],"abilityCount":8,"l3Count":0},{"id":"POS-07","name":"场馆讲解与教育推广","sub":"SUB-02","aliases":["博物馆讲解员","社教专员","教育推广专员"],"detail":{},"abilities":[{"ability":"ABL-02","weight":0.95,"level":"L3"},{"ability":"ABL-04","weight":0.9,"level":"L3"},{"ability":"ABL-20","weight":0.9,"level":"L3"},{"ability":"ABL-03","weight":0.85,"level":"L3"},{"ability":"ABL-05","weight":0.85,"level":"L3"},{"ability":"ABL-19","weight":0.8,"level":"L2"},{"ability":"ABL-18","weight":0.7,"level":"L2"},{"ability":"ABL-21","weight":0.7,"level":"L2"},{"ability":"ABL-22","weight":0.65,"level":"L2"},{"ability":"ABL-28","weight":0.6,"level":"L2"}],"abilityCount":10,"l3Count":5},{"id":"POS-08","name":"研学旅行指导师","sub":"SUB-03","aliases":["研学导师","研学老师","营地导师"],"detail":{},"abilities":[{"ability":"ABL-21","weight":0.95,"level":"L3"},{"ability":"ABL-06","weight":0.9,"level":"L3"},{"ability":"ABL-10","weight":0.9,"level":"L3"},{"ability":"ABL-22","weight":0.9,"level":"L3"},{"ability":"ABL-05","weight":0.85,"level":"L3"},{"ability":"ABL-11","weight":0.85,"level":"L3"},{"ability":"ABL-23","weight":0.85,"level":"L3"},{"ability":"ABL-04","weight":0.8,"level":"L2"},{"ability":"ABL-12","weight":0.8,"level":"L2"},{"ability":"ABL-20","weight":0.8,"level":"L2"},{"ability":"ABL-02","weight":0.7,"level":"L2"},{"ability":"ABL-19","weight":0.7,"level":"L2"}],"abilityCount":12,"l3Count":7},{"id":"POS-09","name":"定制旅行管家","sub":"SUB-03","aliases":["旅行管家","定制师","私人旅行顾问"],"detail":{},"abilities":[{"ability":"ABL-24","weight":0.95,"level":"L3"},{"ability":"ABL-09","weight":0.9,"level":"L3"},{"ability":"ABL-15","weight":0.85,"level":"L3"},{"ability":"ABL-19","weight":0.85,"level":"L3"},{"ability":"ABL-07","weight":0.8,"level":"L2"},{"ability":"ABL-25","weight":0.8,"level":"L2"},{"ability":"ABL-01","weight":0.75,"level":"L3"},{"ability":"ABL-08","weight":0.75,"level":"L2"},{"ability":"ABL-13","weight":0.75,"level":"L2"},{"ability":"ABL-27","weight":0.75,"level":"L2"},{"ability":"ABL-16","weight":0.7,"level":"L2"},{"ability":"ABL-28","weight":0.7,"level":"L2"},{"ability":"ABL-26","weight":0.6,"level":"L1"}],"abilityCount":13,"l3Count":5}],"abilities":[{"id":"ABL-01","name":"全国旅游资源与人文景观知识","type":"knowledge","domain":"资源与产品","core":true,"detail":{},"requiredBy":[{"position":"POS-01","weight":0.9,"level":"L2"},{"position":"POS-05","weight":0.8,"level":"L3"},{"position":"POS-09","weight":0.75,"level":"L3"},{"position":"POS-03","weight":0.7,"level":"L2"},{"position":"POS-04","weight":0.7,"level":"L2"},{"position":"POS-02","weight":0.6,"level":"L2"},{"position":"POS-06","weight":0.6,"level":"L1"}],"positionCount":7,"maxRequiredLevel":"L3","typeCn":"知识","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-01","SKS-02","SKS-36","SKS-37","SKS-38"]},{"id":"ABL-02","name":"地方历史文化与非遗知识","type":"knowledge","domain":"资源与产品","core":false,"detail":{},"requiredBy":[{"position":"POS-03","weight":0.95,"level":"L3"},{"position":"POS-07","weight":0.95,"level":"L3"},{"position":"POS-01","weight":0.8,"level":"L2"},{"position":"POS-08","weight":0.7,"level":"L2"},{"position":"POS-05","weight":0.6,"level":"L2"},{"position":"POS-06","weight":0.6,"level":"L1"}],"positionCount":6,"maxRequiredLevel":"L3","typeCn":"知识","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-03","SKS-39","SKS-40","SKS-41","SKS-42"]},{"id":"ABL-03","name":"导游讲解词编创","type":"skill","domain":"讲解与表达","core":false,"detail":{},"requiredBy":[{"position":"POS-01","weight":0.85,"level":"L2"},{"position":"POS-07","weight":0.85,"level":"L3"},{"position":"POS-03","weight":0.8,"level":"L2"}],"positionCount":3,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-02"],"skills":["SKS-07","SKS-15","SKS-16","SKS-43","SKS-44"]},{"id":"ABL-04","name":"现场讲解与节奏控制","type":"skill","domain":"讲解与表达","core":false,"detail":{},"requiredBy":[{"position":"POS-01","weight":0.95,"level":"L3"},{"position":"POS-03","weight":0.95,"level":"L2"},{"position":"POS-07","weight":0.9,"level":"L3"},{"position":"POS-08","weight":0.8,"level":"L2"}],"positionCount":4,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-17","SKS-18","SKS-45","SKS-46","SKS-47"]},{"id":"ABL-05","name":"分众化讲解适配","type":"skill","domain":"讲解与表达","core":false,"detail":{},"requiredBy":[{"position":"POS-07","weight":0.85,"level":"L3"},{"position":"POS-08","weight":0.85,"level":"L3"},{"position":"POS-03","weight":0.8,"level":"L2"},{"position":"POS-01","weight":0.6,"level":"L2"}],"positionCount":4,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-48","SKS-49","SKS-50","SKS-51","SKS-52"]},{"id":"ABL-06","name":"团队组织与集合调度","type":"skill","domain":"行程组织与调度","core":false,"detail":{},"requiredBy":[{"position":"POS-04","weight":0.95,"level":"L3"},{"position":"POS-01","weight":0.9,"level":"L3"},{"position":"POS-08","weight":0.9,"level":"L3"},{"position":"POS-03","weight":0.6,"level":"L1"},{"position":"POS-06","weight":0.6,"level":"L1"}],"positionCount":5,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-04","SKS-06","SKS-53","SKS-54","SKS-55"]},{"id":"ABL-07","name":"客诉情绪安抚与共情表达","type":"skill","domain":"服务与沟通","core":true,"detail":{},"requiredBy":[{"position":"POS-01","weight":0.85,"level":"L2"},{"position":"POS-04","weight":0.85,"level":"L3"},{"position":"POS-06","weight":0.85,"level":"L2"},{"position":"POS-09","weight":0.8,"level":"L2"},{"position":"POS-02","weight":0.6,"level":"L2"},{"position":"POS-03","weight":0.6,"level":"L1"}],"positionCount":6,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-09","SKS-10","SKS-56","SKS-57","SKS-58"]},{"id":"ABL-08","name":"补偿方案设计与权限判断","type":"skill","domain":"服务与沟通","core":true,"detail":{},"requiredBy":[{"position":"POS-02","weight":0.75,"level":"L2"},{"position":"POS-09","weight":0.75,"level":"L2"},{"position":"POS-04","weight":0.7,"level":"L2"},{"position":"POS-01","weight":0.5,"level":"L1"}],"positionCount":4,"maxRequiredLevel":"L2","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-03"],"skills":["SKS-11","SKS-12","SKS-59","SKS-60","SKS-61"]},{"id":"ABL-09","name":"行程变更协调与替代方案生成","type":"skill","domain":"行程组织与调度","core":true,"detail":{},"requiredBy":[{"position":"POS-09","weight":0.9,"level":"L3"},{"position":"POS-02","weight":0.85,"level":"L3"},{"position":"POS-04","weight":0.85,"level":"L3"},{"position":"POS-01","weight":0.7,"level":"L2"}],"positionCount":4,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-03"],"skills":["SKS-05","SKS-62","SKS-63","SKS-64","SKS-65"]},{"id":"ABL-10","name":"旅游安全风险识别与预警","type":"knowledge","domain":"安全与应急","core":true,"detail":{},"requiredBy":[{"position":"POS-08","weight":0.9,"level":"L3"},{"position":"POS-04","weight":0.85,"level":"L3"},{"position":"POS-01","weight":0.8,"level":"L2"},{"position":"POS-06","weight":0.7,"level":"L2"},{"position":"POS-02","weight":0.6,"level":"L1"},{"position":"POS-03","weight":0.6,"level":"L1"}],"positionCount":6,"maxRequiredLevel":"L3","typeCn":"知识","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-08","SKS-66","SKS-67","SKS-68","SKS-69"]},{"id":"ABL-11","name":"突发事件现场处置与上报","type":"skill","domain":"安全与应急","core":true,"detail":{},"requiredBy":[{"position":"POS-04","weight":0.9,"level":"L3"},{"position":"POS-01","weight":0.85,"level":"L2"},{"position":"POS-08","weight":0.85,"level":"L3"},{"position":"POS-06","weight":0.7,"level":"L2"},{"position":"POS-03","weight":0.6,"level":"L1"}],"positionCount":5,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-13","SKS-14","SKS-70","SKS-71","SKS-72"]},{"id":"ABL-12","name":"现场急救基本操作","type":"skill","domain":"安全与应急","core":false,"detail":{},"requiredBy":[{"position":"POS-08","weight":0.8,"level":"L2"},{"position":"POS-04","weight":0.7,"level":"L2"},{"position":"POS-01","weight":0.6,"level":"L1"}],"positionCount":3,"maxRequiredLevel":"L2","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-03"],"skills":["SKS-73","SKS-74","SKS-75","SKS-76","SKS-77"]},{"id":"ABL-13","name":"旅游法与合同条款应用","type":"knowledge","domain":"政策法规与合规","core":true,"detail":{},"requiredBy":[{"position":"POS-02","weight":0.85,"level":"L3"},{"position":"POS-04","weight":0.85,"level":"L3"},{"position":"POS-01","weight":0.8,"level":"L2"},{"position":"POS-09","weight":0.75,"level":"L2"},{"position":"POS-05","weight":0.7,"level":"L2"}],"positionCount":5,"maxRequiredLevel":"L3","typeCn":"知识","acrossSubIndustries":["SUB-01","SUB-03"],"skills":["SKS-04","SKS-11","SKS-78","SKS-79","SKS-80"]},{"id":"ABL-14","name":"涉旅投诉受理规则与时限认知","type":"knowledge","domain":"政策法规与合规","core":true,"detail":{},"requiredBy":[{"position":"POS-02","weight":0.7,"level":"L2"},{"position":"POS-04","weight":0.65,"level":"L2"},{"position":"POS-06","weight":0.6,"level":"L1"},{"position":"POS-01","weight":0.5,"level":"L1"}],"positionCount":4,"maxRequiredLevel":"L2","typeCn":"知识","acrossSubIndustries":["SUB-01","SUB-02"],"skills":["SKS-81","SKS-82","SKS-83","SKS-84","SKS-85"]},{"id":"ABL-15","name":"旅游产品线路设计与成本核算","type":"skill","domain":"资源与产品","core":false,"detail":{},"requiredBy":[{"position":"POS-02","weight":0.95,"level":"L3"},{"position":"POS-05","weight":0.95,"level":"L3"},{"position":"POS-09","weight":0.85,"level":"L3"}],"positionCount":3,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-03"],"skills":["SKS-21","SKS-22","SKS-86","SKS-87","SKS-88"]},{"id":"ABL-16","name":"地接资源询价与合同签订","type":"skill","domain":"资源与产品","core":false,"detail":{},"requiredBy":[{"position":"POS-02","weight":0.9,"level":"L2"},{"position":"POS-05","weight":0.8,"level":"L2"},{"position":"POS-09","weight":0.7,"level":"L2"}],"positionCount":3,"maxRequiredLevel":"L2","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-03"],"skills":["SKS-24","SKS-25","SKS-89","SKS-90","SKS-91"]},{"id":"ABL-17","name":"计调操作系统与订单处理","type":"skill","domain":"数字工具与新媒体","core":false,"detail":{},"requiredBy":[{"position":"POS-02","weight":0.9,"level":"L2"},{"position":"POS-05","weight":0.6,"level":"L1"}],"positionCount":2,"maxRequiredLevel":"L2","typeCn":"技能","acrossSubIndustries":["SUB-01"],"skills":["SKS-26","SKS-92","SKS-93","SKS-94","SKS-95"]},{"id":"ABL-18","name":"讲解类短视频策划与制作","type":"skill","domain":"数字工具与新媒体","core":false,"detail":{},"requiredBy":[{"position":"POS-07","weight":0.7,"level":"L2"},{"position":"POS-03","weight":0.6,"level":"L2"}],"positionCount":2,"maxRequiredLevel":"L2","typeCn":"技能","acrossSubIndustries":["SUB-02"],"skills":["SKS-30","SKS-31","SKS-96","SKS-97","SKS-98"]},{"id":"ABL-19","name":"服务礼仪与职业形象呈现","type":"literacy","domain":"服务与沟通","core":false,"detail":{},"requiredBy":[{"position":"POS-06","weight":0.9,"level":"L2"},{"position":"POS-03","weight":0.85,"level":"L2"},{"position":"POS-09","weight":0.85,"level":"L3"},{"position":"POS-01","weight":0.8,"level":"L2"},{"position":"POS-04","weight":0.8,"level":"L2"},{"position":"POS-07","weight":0.8,"level":"L2"},{"position":"POS-08","weight":0.7,"level":"L2"}],"positionCount":7,"maxRequiredLevel":"L3","typeCn":"素养","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-07","SKS-99","SKS-100","SKS-101","SKS-102"]},{"id":"ABL-20","name":"文化自信与价值引导意识","type":"literacy","domain":"讲解与表达","core":true,"detail":{},"requiredBy":[{"position":"POS-07","weight":0.9,"level":"L3"},{"position":"POS-03","weight":0.85,"level":"L3"},{"position":"POS-08","weight":0.8,"level":"L2"},{"position":"POS-01","weight":0.7,"level":"L2"},{"position":"POS-04","weight":0.7,"level":"L2"}],"positionCount":5,"maxRequiredLevel":"L3","typeCn":"素养","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-03","SKS-15","SKS-103","SKS-104","SKS-105"]},{"id":"ABL-21","name":"研学课程方案设计","type":"skill","domain":"研学与教育设计","core":true,"detail":{},"requiredBy":[{"position":"POS-08","weight":0.95,"level":"L3"},{"position":"POS-07","weight":0.7,"level":"L2"}],"positionCount":2,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-02","SUB-03"],"skills":["SKS-27","SKS-106","SKS-107","SKS-108","SKS-109"]},{"id":"ABL-22","name":"学段学情与学习目标适配","type":"knowledge","domain":"研学与教育设计","core":true,"detail":{},"requiredBy":[{"position":"POS-08","weight":0.9,"level":"L3"},{"position":"POS-07","weight":0.65,"level":"L2"}],"positionCount":2,"maxRequiredLevel":"L3","typeCn":"知识","acrossSubIndustries":["SUB-02","SUB-03"],"skills":["SKS-28","SKS-110","SKS-111","SKS-112","SKS-113"]},{"id":"ABL-23","name":"团队破冰与活动带领","type":"skill","domain":"服务与沟通","core":false,"detail":{},"requiredBy":[{"position":"POS-08","weight":0.85,"level":"L3"}],"positionCount":1,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-03"],"skills":["SKS-29","SKS-114","SKS-115","SKS-116","SKS-117"]},{"id":"ABL-24","name":"客户需求访谈与画像提炼","type":"skill","domain":"服务与沟通","core":false,"detail":{},"requiredBy":[{"position":"POS-09","weight":0.95,"level":"L3"},{"position":"POS-05","weight":0.8,"level":"L2"}],"positionCount":2,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-03"],"skills":["SKS-118","SKS-119","SKS-120","SKS-121","SKS-122"]},{"id":"ABL-25","name":"目的地资源踩线与评估","type":"skill","domain":"资源与产品","core":false,"detail":{},"requiredBy":[{"position":"POS-05","weight":0.9,"level":"L3"},{"position":"POS-09","weight":0.8,"level":"L2"}],"positionCount":2,"maxRequiredLevel":"L3","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-03"],"skills":["SKS-23","SKS-123","SKS-124","SKS-125","SKS-126"]},{"id":"ABL-26","name":"在线产品内容与详情页运营","type":"skill","domain":"数字工具与新媒体","core":true,"detail":{},"requiredBy":[{"position":"POS-05","weight":0.7,"level":"L2"},{"position":"POS-09","weight":0.6,"level":"L1"}],"positionCount":2,"maxRequiredLevel":"L2","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-03"],"skills":["SKS-32","SKS-127","SKS-128","SKS-129","SKS-130"]},{"id":"ABL-27","name":"用户评价管理与口碑修复","type":"skill","domain":"数字工具与新媒体","core":false,"detail":{},"requiredBy":[{"position":"POS-09","weight":0.75,"level":"L2"}],"positionCount":1,"maxRequiredLevel":"L2","typeCn":"技能","acrossSubIndustries":["SUB-03"],"skills":["SKS-33","SKS-131","SKS-132","SKS-133","SKS-134"]},{"id":"ABL-28","name":"跨文化沟通与外语服务","type":"skill","domain":"讲解与表达","core":false,"detail":{},"requiredBy":[{"position":"POS-09","weight":0.7,"level":"L2"},{"position":"POS-04","weight":0.6,"level":"L2"},{"position":"POS-07","weight":0.6,"level":"L2"}],"positionCount":3,"maxRequiredLevel":"L2","typeCn":"技能","acrossSubIndustries":["SUB-01","SUB-02","SUB-03"],"skills":["SKS-34","SKS-35","SKS-135","SKS-136","SKS-137"]}],"skills":[{"id":"SKS-01","name":"旅游资源归类识别","abilityIds":["ABL-01"],"children":["KNP-01","KNP-02","KNP-03","KNP-04","STD-01","CAS-01"]},{"id":"SKS-02","name":"古建类型现场辨识","abilityIds":["ABL-01"],"children":["KNP-05","KNP-06","KNP-07","CAS-02"]},{"id":"SKS-03","name":"民俗禁忌场景判断","abilityIds":["ABL-02","ABL-20"],"children":["KNP-08","KNP-09","KNP-10","STD-02","CAS-03"]},{"id":"SKS-04","name":"接待计划要素核对","abilityIds":["ABL-06","ABL-13"],"children":["KNP-11","KNP-12","STP-01","STP-02","STD-03"]},{"id":"SKS-05","name":"交通动态跟踪与预案触发判断","abilityIds":["ABL-09"],"children":["KNP-13","KNP-14","STP-01","STP-02"]},{"id":"SKS-06","name":"团队人数清点","abilityIds":["ABL-06"],"children":["KNP-15","KNP-16","STP-03","STP-04","STD-04"]},{"id":"SKS-07","name":"欢迎词致辞与行程宣布","abilityIds":["ABL-03","ABL-19"],"children":["KNP-17","KNP-18","STP-03","STP-04","STD-05","CAS-04"]},{"id":"SKS-08","name":"行前安全告知实施","abilityIds":["ABL-10"],"children":["KNP-17","KNP-18","STP-03","STP-04","STD-05","CAS-04"]},{"id":"SKS-09","name":"投诉要素倾听与记录","abilityIds":["ABL-07"],"children":["KNP-19","KNP-20","STP-05","STP-06","STD-06"]},{"id":"SKS-10","name":"情绪安抚与复述确认","abilityIds":["ABL-07"],"children":["KNP-21","KNP-22","STP-05","STP-06","CAS-05"]},{"id":"SKS-11","name":"争议责任归属判定","abilityIds":["ABL-08","ABL-13"],"children":["KNP-23","KNP-24","STP-07","STP-08"]},{"id":"SKS-12","name":"补偿方案设计与书面确认","abilityIds":["ABL-08"],"children":["KNP-25","KNP-26","STP-07","STP-08","STD-07"]},{"id":"SKS-13","name":"现场警戒与人员疏导","abilityIds":["ABL-11"],"children":["KNP-27","KNP-28","STP-09","STP-10"]},{"id":"SKS-14","name":"应急上报与事件记录","abilityIds":["ABL-11"],"children":["KNP-29","STP-09","STP-10","STD-08","CAS-06"]},{"id":"SKS-15","name":"素材采集与出处核验","abilityIds":["ABL-03","ABL-20"],"children":["KNP-30","KNP-31"]},{"id":"SKS-16","name":"讲解词结构编排","abilityIds":["ABL-03"],"children":["KNP-32","KNP-33","KNP-34","STD-09","CAS-07"]},{"id":"SKS-17","name":"讲解站位设计与设备调试","abilityIds":["ABL-04"],"children":["KNP-35","KNP-36"]},{"id":"SKS-18","name":"现场讲解实施与时长控制","abilityIds":["ABL-04"],"children":["KNP-37","KNP-38","KNP-39","STD-10","CAS-08"]},{"id":"SKS-21","name":"主题线路设计与行程编排","abilityIds":["ABL-15"],"children":["KNP-41","KNP-42"]},{"id":"SKS-22","name":"线路成本测算与报价","abilityIds":["ABL-15"],"children":["KNP-41","KNP-42"]},{"id":"SKS-23","name":"目的地踩线记录与资源评估","abilityIds":["ABL-25"],"children":["KNP-41","KNP-42"]},{"id":"SKS-24","name":"地接资源询价与比价","abilityIds":["ABL-16"],"children":["KNP-43","KNP-44"]},{"id":"SKS-25","name":"地接合同要素审核与签订","abilityIds":["ABL-16"],"children":["KNP-43","KNP-44"]},{"id":"SKS-26","name":"业务系统订单全流程操作","abilityIds":["ABL-17"],"children":["KNP-43","KNP-44"]},{"id":"SKS-27","name":"研学课程方案编写","abilityIds":["ABL-21"],"children":["KNP-45","KNP-46"]},{"id":"SKS-28","name":"学段学情分析与目标适配","abilityIds":["ABL-22"],"children":["KNP-45","KNP-46"]},{"id":"SKS-29","name":"破冰与分组活动带领","abilityIds":["ABL-23"],"children":["KNP-47"]},{"id":"SKS-30","name":"讲解类短视频脚本与拍摄","abilityIds":["ABL-18"],"children":["KNP-48"]},{"id":"SKS-31","name":"短视频剪辑与成片输出","abilityIds":["ABL-18"],"children":["KNP-48"]},{"id":"SKS-32","name":"在线产品详情页撰写","abilityIds":["ABL-26"],"children":["KNP-49","KNP-50"]},{"id":"SKS-33","name":"用户评价回复与口碑处置","abilityIds":["ABL-27"],"children":["KNP-49","KNP-50"]},{"id":"SKS-34","name":"涉外接待场景英语应对","abilityIds":["ABL-28"],"children":["KNP-51","KNP-52"]},{"id":"SKS-35","name":"跨文化服务禁忌识别","abilityIds":["ABL-28"],"children":["KNP-51","KNP-52"]},{"id":"SKS-36","name":"全国旅游区划与主题线路资源","abilityIds":["ABL-01"],"children":["KNP-53","CAS-09"]},{"id":"SKS-37","name":"世界遗产与地质公园知识","abilityIds":["ABL-01"],"children":["KNP-54","STD-11"]},{"id":"SKS-38","name":"旅游资源数字化采集与建档","abilityIds":["ABL-01"],"children":["KNP-55","STP-11"]},{"id":"SKS-39","name":"地方节庆与庙会习俗解读","abilityIds":["ABL-02"],"children":["KNP-56","CAS-10"]},{"id":"SKS-40","name":"地方戏曲与方言文化识读","abilityIds":["ABL-02"],"children":["KNP-57","KNP-58"]},{"id":"SKS-41","name":"非遗技艺的现场演示配合","abilityIds":["ABL-02"],"children":["STP-12","STD-12"]},{"id":"SKS-42","name":"地方饮食与特产文化讲解","abilityIds":["ABL-02"],"children":["KNP-59","CAS-11"]},{"id":"SKS-43","name":"讲解词的口语化改写","abilityIds":["ABL-03"],"children":["KNP-60","STP-13"]},{"id":"SKS-44","name":"讲解主题立意与故事线设计","abilityIds":["ABL-03"],"children":["KNP-61","CAS-12"]},{"id":"SKS-45","name":"语速停顿与重音控制","abilityIds":["ABL-04"],"children":["KNP-62","STP-14"]},{"id":"SKS-46","name":"游客注意力回收与互动提问","abilityIds":["ABL-04"],"children":["KNP-63","CAS-13"]},{"id":"SKS-47","name":"讲解时长与行程节点匹配","abilityIds":["ABL-04"],"children":["KNP-64","STD-13"]},{"id":"SKS-48","name":"青少年团讲解适配","abilityIds":["ABL-05"],"children":["KNP-65","STP-15"]},{"id":"SKS-49","name":"老年团讲解适配","abilityIds":["ABL-05"],"children":["KNP-66","CAS-14"]},{"id":"SKS-50","name":"亲子团讲解适配","abilityIds":["ABL-05"],"children":["KNP-67","STP-16"]},{"id":"SKS-51","name":"境外游客讲解适配","abilityIds":["ABL-05"],"children":["KNP-68","CAS-15"]},{"id":"SKS-52","name":"专业团体讲解适配","abilityIds":["ABL-05"],"children":["KNP-69","STP-17"]},{"id":"SKS-53","name":"集合点位与举牌引导","abilityIds":["ABL-06"],"children":["KNP-70","STP-18"]},{"id":"SKS-54","name":"团队行进与节奏把控","abilityIds":["ABL-06"],"children":["KNP-71","STP-19"]},{"id":"SKS-55","name":"特殊游客的随行照护","abilityIds":["ABL-06"],"children":["KNP-72","CAS-16"]},{"id":"SKS-56","name":"共情表达与情绪承接","abilityIds":["ABL-07"],"children":["KNP-73","STP-20"]},{"id":"SKS-57","name":"投诉场景隔离与降温","abilityIds":["ABL-07"],"children":["KNP-74","STP-21"]},{"id":"SKS-58","name":"处理时限承诺与跟进","abilityIds":["ABL-07"],"children":["KNP-75","STD-14"]},{"id":"SKS-59","name":"不可抗力与责任区分","abilityIds":["ABL-08"],"children":["KNP-76","STP-22"]},{"id":"SKS-60","name":"补偿组合方案设计","abilityIds":["ABL-08"],"children":["KNP-77","STP-23"]},{"id":"SKS-61","name":"补偿授权额度与上报","abilityIds":["ABL-08"],"children":["KNP-78","STD-15"]},{"id":"SKS-62","name":"行程变更的方案比选","abilityIds":["ABL-09"],"children":["KNP-79","STP-24"]},{"id":"SKS-63","name":"替代交通与住宿资源协调","abilityIds":["ABL-09"],"children":["KNP-80","CAS-17"]},{"id":"SKS-64","name":"变更告知与游客同意确认","abilityIds":["ABL-09"],"children":["KNP-81","STP-25"]},{"id":"SKS-65","name":"变更成本核算与结算","abilityIds":["ABL-09"],"children":["KNP-82","STP-26"]},{"id":"SKS-66","name":"高风险环节识别与分级","abilityIds":["ABL-10"],"children":["KNP-83","STP-27"]},{"id":"SKS-67","name":"气象与交通预警研判","abilityIds":["ABL-10"],"children":["KNP-84","STP-28"]},{"id":"SKS-68","name":"安全警示与防护提示","abilityIds":["ABL-10"],"children":["KNP-85","STD-16"]},{"id":"SKS-69","name":"儿童老人等重点人群防护","abilityIds":["ABL-10"],"children":["KNP-86","CAS-18"]},{"id":"SKS-70","name":"现场秩序维护与隔离","abilityIds":["ABL-11"],"children":["KNP-87","STP-29"]},{"id":"SKS-71","name":"伤情初步评估与处置","abilityIds":["ABL-11"],"children":["KNP-88","STP-30"]},{"id":"SKS-72","name":"事件记录与证据留存","abilityIds":["ABL-11"],"children":["KNP-89","STP-31"]},{"id":"SKS-73","name":"心肺复苏与 AED 使用","abilityIds":["ABL-12"],"children":["KNP-90","STP-32"]},{"id":"SKS-74","name":"外伤止血与包扎固定","abilityIds":["ABL-12"],"children":["KNP-91","STP-33"]},{"id":"SKS-75","name":"中暑晕厥等突发状况处置","abilityIds":["ABL-12"],"children":["KNP-92","CAS-19"]},{"id":"SKS-76","name":"急救物资的携带与检查","abilityIds":["ABL-12"],"children":["KNP-93","STP-34"]},{"id":"SKS-77","name":"送医转运与家属联系","abilityIds":["ABL-12"],"children":["KNP-94","STP-35"]},{"id":"SKS-78","name":"包价旅游合同条款应用","abilityIds":["ABL-13"],"children":["KNP-95","STD-17"]},{"id":"SKS-79","name":"不可抗力条款的适用","abilityIds":["ABL-13"],"children":["KNP-96","CAS-20"]},{"id":"SKS-80","name":"购物与自费项目的合规把握","abilityIds":["ABL-13"],"children":["KNP-97","STD-18"]},{"id":"SKS-81","name":"投诉受理机构与时限","abilityIds":["ABL-14"],"children":["KNP-98","STD-19"]},{"id":"SKS-82","name":"投诉证据的固定与整理","abilityIds":["ABL-14"],"children":["KNP-99","STP-36"]},{"id":"SKS-83","name":"投诉分级与转办流程","abilityIds":["ABL-14"],"children":["KNP-100","STP-37"]},{"id":"SKS-84","name":"投诉答复口径与文书","abilityIds":["ABL-14"],"children":["KNP-101","CAS-21"]},{"id":"SKS-85","name":"行业投诉典型案例复盘","abilityIds":["ABL-14"],"children":["KNP-102","CAS-22"]},{"id":"SKS-86","name":"线路节奏与容量设计","abilityIds":["ABL-15"],"children":["KNP-103","STP-38"]},{"id":"SKS-87","name":"成本项拆解与毛利测算","abilityIds":["ABL-15"],"children":["KNP-104","STP-39"]},{"id":"SKS-88","name":"差异化产品定价","abilityIds":["ABL-15"],"children":["KNP-105","CAS-23"]},{"id":"SKS-89","name":"供应商资质审核与评级","abilityIds":["ABL-16"],"children":["KNP-106","STP-40"]},{"id":"SKS-90","name":"报价单比对与谈判","abilityIds":["ABL-16"],"children":["KNP-107","STP-41"]},{"id":"SKS-91","name":"合同违约责任与结算条款","abilityIds":["ABL-16"],"children":["KNP-108","STD-20"]},{"id":"SKS-92","name":"订单录入与状态流转","abilityIds":["ABL-17"],"children":["KNP-109","STP-42"]},{"id":"SKS-93","name":"退改规则与系统操作","abilityIds":["ABL-17"],"children":["KNP-110","CAS-24"]},{"id":"SKS-94","name":"数据核对与报表导出","abilityIds":["ABL-17"],"children":["KNP-111","STP-43"]},{"id":"SKS-95","name":"系统异常与线下补录","abilityIds":["ABL-17"],"children":["KNP-112","STP-44"]},{"id":"SKS-96","name":"选题与前三秒钩子","abilityIds":["ABL-18"],"children":["KNP-113","STP-45"]},{"id":"SKS-97","name":"脚本分镜与运镜设计","abilityIds":["ABL-18"],"children":["KNP-114","STP-46"]},{"id":"SKS-98","name":"字幕与封面排版","abilityIds":["ABL-18"],"children":["KNP-115","STP-47"]},{"id":"SKS-99","name":"仪容仪表与着装规范","abilityIds":["ABL-19"],"children":["KNP-116","STD-21"]},{"id":"SKS-100","name":"迎送接待的礼仪动作","abilityIds":["ABL-19"],"children":["KNP-117","STP-48"]},{"id":"SKS-101","name":"餐饮与住宿服务礼仪","abilityIds":["ABL-19"],"children":["KNP-118","CAS-25"]},{"id":"SKS-102","name":"团队服务中的语言温度","abilityIds":["ABL-19"],"children":["KNP-119","STP-49"]},{"id":"SKS-103","name":"讲解中的价值导向把握","abilityIds":["ABL-20"],"children":["KNP-120","STD-22"]},{"id":"SKS-104","name":"文化认同与情感共鸣营造","abilityIds":["ABL-20"],"children":["KNP-121","CAS-26"]},{"id":"SKS-105","name":"敏感话题的规范表述","abilityIds":["ABL-20"],"children":["KNP-122","STD-23"]},{"id":"SKS-106","name":"研学目标与课程框架设计","abilityIds":["ABL-21"],"children":["KNP-123","STP-50"]},{"id":"SKS-107","name":"研学资源与任务点选取","abilityIds":["ABL-21"],"children":["KNP-124","CAS-27"]},{"id":"SKS-108","name":"研学手册与评价量表编制","abilityIds":["ABL-21"],"children":["KNP-125","STP-51"]},{"id":"SKS-109","name":"研学课程的安全与备案","abilityIds":["ABL-21"],"children":["KNP-126","STD-24"]},{"id":"SKS-110","name":"学段学情差异识别","abilityIds":["ABL-22"],"children":["KNP-127","STP-52"]},{"id":"SKS-111","name":"学习目标分层设计","abilityIds":["ABL-22"],"children":["KNP-128","STP-53"]},{"id":"SKS-112","name":"学情评估与反馈调整","abilityIds":["ABL-22"],"children":["KNP-129","CAS-28"]},{"id":"SKS-113","name":"特殊学生的适配支持","abilityIds":["ABL-22"],"children":["KNP-130","STP-54"]},{"id":"SKS-114","name":"破冰游戏设计与带领","abilityIds":["ABL-23"],"children":["KNP-131","STP-55"]},{"id":"SKS-115","name":"分组与角色分配","abilityIds":["ABL-23"],"children":["KNP-132","STP-56"]},{"id":"SKS-116","name":"活动氛围调控与收束","abilityIds":["ABL-23"],"children":["KNP-133","CAS-29"]},{"id":"SKS-117","name":"活动安全与秩序维护","abilityIds":["ABL-23"],"children":["KNP-134","STD-25"]},{"id":"SKS-118","name":"需求访谈与提问设计","abilityIds":["ABL-24"],"children":["KNP-135","STP-57"]},{"id":"SKS-119","name":"客户画像要素提炼","abilityIds":["ABL-24"],"children":["KNP-136","STP-58"]},{"id":"SKS-120","name":"需求优先级排序与确认","abilityIds":["ABL-24"],"children":["KNP-137","STP-59"]},{"id":"SKS-121","name":"高净值客户需求识别","abilityIds":["ABL-24"],"children":["KNP-138","CAS-30"]},{"id":"SKS-122","name":"需求变更的跟踪管理","abilityIds":["ABL-24"],"children":["KNP-139","STP-60"]},{"id":"SKS-123","name":"踩线记录与影像归档","abilityIds":["ABL-25"],"children":["KNP-140","STP-61"]},{"id":"SKS-124","name":"资源可进入性评估","abilityIds":["ABL-25"],"children":["KNP-141","STP-62"]},{"id":"SKS-125","name":"供应商与配套评估","abilityIds":["ABL-25"],"children":["KNP-142","CAS-31"]},{"id":"SKS-126","name":"资源分级与线路匹配","abilityIds":["ABL-25"],"children":["KNP-143","STP-63"]},{"id":"SKS-127","name":"详情页结构与卖点提炼","abilityIds":["ABL-26"],"children":["KNP-144","STP-64"]},{"id":"SKS-128","name":"图文素材的合规使用","abilityIds":["ABL-26"],"children":["KNP-145","STD-26"]},{"id":"SKS-129","name":"详情页 SEO 与关键词","abilityIds":["ABL-26"],"children":["KNP-146","STP-65"]},{"id":"SKS-130","name":"转化率优化与 A/B 测试","abilityIds":["ABL-26"],"children":["KNP-147","CAS-32"]},{"id":"SKS-131","name":"评价分类与处置口径","abilityIds":["ABL-27"],"children":["KNP-148","STP-66"]},{"id":"SKS-132","name":"差评的安抚与闭环","abilityIds":["ABL-27"],"children":["KNP-149","CAS-33"]},{"id":"SKS-133","name":"口碑监测与预警","abilityIds":["ABL-27"],"children":["KNP-150","STP-67"]},{"id":"SKS-134","name":"好评素材的二次运营","abilityIds":["ABL-27"],"children":["KNP-151","STP-68"]},{"id":"SKS-135","name":"常用英语场景会话","abilityIds":["ABL-28"],"children":["KNP-152","STP-69"]},{"id":"SKS-136","name":"多语种基础应对","abilityIds":["ABL-28"],"children":["KNP-153","CAS-34"]},{"id":"SKS-137","name":"文化禁忌与礼仪差异","abilityIds":["ABL-28"],"children":["KNP-154","STD-27"]}],"skillNodes":[{"id":"KNP-01","kind":"知识点","name":"旅游资源的概念与构成要素"},{"id":"KNP-02","kind":"知识点","name":"自然旅游资源的分类体系"},{"id":"KNP-03","kind":"知识点","name":"人文旅游资源的分类体系"},{"id":"KNP-04","kind":"知识点","name":"旅游资源等级评定与 A 级景区划分"},{"id":"STD-01","kind":"标准","name":"旅游资源分类、调查与评价"},{"id":"CAS-01","kind":"案例","name":"同一景区中自然与人文资源交叉的归类判定"},{"id":"KNP-05","kind":"知识点","name":"中国古代建筑的基本构架与屋顶形制"},{"id":"KNP-06","kind":"知识点","name":"宫殿、坛庙、陵墓、园林的功能差异"},{"id":"KNP-07","kind":"知识点","name":"古建等级制度与色彩、开间的对应关系"},{"id":"CAS-02","kind":"案例","name":"将寺庙山门误判为宫殿式建筑的讲解差错"},{"id":"KNP-08","kind":"知识点","name":"主要少数民族的分布与代表性民俗"},{"id":"KNP-09","kind":"知识点","name":"非物质文化遗产的类别与代表性项目"},{"id":"KNP-10","kind":"知识点","name":"民族与宗教场所的服务禁忌"},{"id":"STD-02","kind":"标准","name":"讲解内容导向与史实准确性要求"},{"id":"CAS-03","kind":"案例","name":"讲解中使用未经证实野史引发游客投诉"},{"id":"KNP-11","kind":"知识点","name":"接待计划的构成要素与核对要点"},{"id":"KNP-12","kind":"知识点","name":"旅游合同必备条款与行程约定的对应关系"},{"id":"STP-01","kind":"操作步骤","name":"核对接待计划与团队信息"},{"id":"STP-02","kind":"操作步骤","name":"备齐接站物料并确认交通动态"},{"id":"STD-03","kind":"标准","name":"包价旅游合同必备条款要求"},{"id":"KNP-13","kind":"知识点","name":"接站物料清单与用途"},{"id":"KNP-14","kind":"知识点","name":"航班与列车动态查询渠道及时效"},{"id":"KNP-15","kind":"知识点","name":"接站定位与举牌规范"},{"id":"KNP-16","kind":"知识点","name":"人数清点的三种方法与适用场景"},{"id":"STP-03","kind":"操作步骤","name":"定点举牌接站并清点人数"},{"id":"STP-04","kind":"操作步骤","name":"致欢迎词并宣布行程与安全提示"},{"id":"STD-04","kind":"标准","name":"导游证佩戴与仪容仪表规范"},{"id":"KNP-17","kind":"知识点","name":"欢迎词的结构与要素"},{"id":"KNP-18","kind":"知识点","name":"行前安全告知的必告事项"},{"id":"STD-05","kind":"标准","name":"旅游安全说明与警示义务要求"},{"id":"CAS-04","kind":"案例","name":"未作高原反应提示导致游客不适"},{"id":"KNP-19","kind":"知识点","name":"投诉四要素与记录表填写规范"},{"id":"KNP-20","kind":"知识点","name":"投诉场景隔离的目的与操作要点"},{"id":"STP-05","kind":"操作步骤","name":"隔离场景并倾听记录投诉要素"},{"id":"STP-06","kind":"操作步骤","name":"共情回应并承诺处理时限"},{"id":"STD-06","kind":"标准","name":"旅游投诉受理机构、时限与程序"},{"id":"KNP-21","kind":"知识点","name":"共情表达的语言结构与禁用表述"},{"id":"KNP-22","kind":"知识点","name":"处理时限承诺的合规边界"},{"id":"CAS-05","kind":"案例","name":"五分钟内完成情绪安抚的成功处置"},{"id":"KNP-23","kind":"知识点","name":"常见旅游争议的责任判定规则"},{"id":"KNP-24","kind":"知识点","name":"不可抗力与经营者过错的区分"},{"id":"STP-07","kind":"操作步骤","name":"依据合同与旅游法判定责任归属"},{"id":"STP-08","kind":"操作步骤","name":"在授权范围内提出补偿方案并书面确认"},{"id":"KNP-25","kind":"知识点","name":"补偿授权额度与上报路径"},{"id":"KNP-26","kind":"知识点","name":"现金与非现金补偿的组合设计方法"},{"id":"STD-07","kind":"标准","name":"旅行社违约责任承担要求"},{"id":"KNP-27","kind":"知识点","name":"突发事件的分级与现场控制要点"},{"id":"KNP-28","kind":"知识点","name":"常见旅途伤病的初步判断与禁忌动作"},{"id":"STP-09","kind":"操作步骤","name":"现场控制与伤情初步处置"},{"id":"STP-10","kind":"操作步骤","name":"分级上报并形成事件记录"},{"id":"KNP-29","kind":"知识点","name":"应急上报的层级、时限与信息要素"},{"id":"STD-08","kind":"标准","name":"突发事件报告时限要求"},{"id":"CAS-06","kind":"案例","name":"游客走失后五分钟启动寻人流程"},{"id":"KNP-30","kind":"知识点","name":"讲解素材的来源渠道与可信度判别"},{"id":"KNP-31","kind":"知识点","name":"讲解主题立意的确立方法"},{"id":"KNP-32","kind":"知识点","name":"导游词的四段式结构"},{"id":"KNP-33","kind":"知识点","name":"设问、悬念与互动设计的技法"},{"id":"KNP-34","kind":"知识点","name":"讲解词的口语化改写要求"},{"id":"STD-09","kind":"标准","name":"导游词内容准确性与结构完整性要求"},{"id":"CAS-07","kind":"案例","name":"同一景点面向研学与银发团的两版讲解词对比"},{"id":"KNP-35","kind":"知识点","name":"讲解站位选择的判据"},{"id":"KNP-36","kind":"知识点","name":"扩音设备的使用与故障排除"},{"id":"KNP-37","kind":"知识点","name":"语速、停顿与重音的控制方法"},{"id":"KNP-38","kind":"知识点","name":"注意力回收的四种手段"},{"id":"KNP-39","kind":"知识点","name":"讲解时长与行程节点的匹配规则"},{"id":"STD-10","kind":"标准","name":"景区讲解服务时间控制与语言规范要求"},{"id":"CAS-08","kind":"案例","name":"因讲解超时导致后续行程压缩"},{"id":"KNP-41","kind":"知识点","name":"旅游线路设计的节奏与容量原则"},{"id":"KNP-42","kind":"知识点","name":"旅游产品成本构成与毛利测算"},{"id":"KNP-43","kind":"知识点","name":"地接合同的必备条款"},{"id":"KNP-44","kind":"知识点","name":"旅行社业务管理系统的数据流"},{"id":"KNP-45","kind":"知识点","name":"研学课程的目标设计方法"},{"id":"KNP-46","kind":"知识点","name":"不同学段学生的认知特点"},{"id":"KNP-47","kind":"知识点","name":"团队活动的分组与角色分配"},{"id":"KNP-48","kind":"知识点","name":"短视频选题与前三秒法则"},{"id":"KNP-49","kind":"知识点","name":"在线旅游产品信息的合规要求"},{"id":"KNP-50","kind":"知识点","name":"用户评价的分类与处置口径"},{"id":"KNP-51","kind":"知识点","name":"涉外接待常用句式与信息要素"},{"id":"KNP-52","kind":"知识点","name":"主要客源国的文化禁忌"},{"id":"KNP-53","kind":"知识点","name":"全国七大旅游区划的划分与代表性资源"},{"id":"CAS-09","kind":"案例","name":"以丝绸之路主题串联西北五省代表性资源"},{"id":"KNP-54","kind":"知识点","name":"世界自然与文化双重遗产的判定标准"},{"id":"STD-11","kind":"标准","name":"世界遗产申报与保护要求"},{"id":"STP-11","kind":"操作步骤","name":"用采集工具记录资源影像与坐标"},{"id":"KNP-55","kind":"知识点","name":"资源档案字段与命名规范"},{"id":"KNP-56","kind":"知识点","name":"主要地方节庆的时间节点与礼俗"},{"id":"CAS-10","kind":"案例","name":"讲解中误把农历节气当阳历日期的差错"},{"id":"KNP-57","kind":"知识点","name":"代表性地方剧种的声腔与代表剧目"},{"id":"KNP-58","kind":"知识点","name":"讲解中对方言词汇的规范转述"},{"id":"STP-12","kind":"操作步骤","name":"配合非遗传承人组织现场演示"},{"id":"STD-12","kind":"标准","name":"非遗展示与讲解的行为规范"},{"id":"KNP-59","kind":"知识点","name":"地方特色饮食的来历与食用礼俗"},{"id":"CAS-11","kind":"案例","name":"因未说明忌口食材引发游客不适"},{"id":"KNP-60","kind":"知识点","name":"书面语向口语转化的改写要点"},{"id":"STP-13","kind":"操作步骤","name":"将资料稿改写为带互动钩子的口语稿"},{"id":"KNP-61","kind":"知识点","name":"讲解主题立意的确立方法"},{"id":"CAS-12","kind":"案例","name":"同一景点面向不同团型的两版主题设计"},{"id":"KNP-62","kind":"知识点","name":"语速、停顿与重音的控制方法"},{"id":"STP-14","kind":"操作步骤","name":"按讲解要点标注停顿与重音"},{"id":"KNP-63","kind":"知识点","name":"注意力回收的四种手段"},{"id":"CAS-13","kind":"案例","name":"用设问法在长讲解中段回收注意力"},{"id":"KNP-64","kind":"知识点","name":"讲解时长与行程节点的匹配规则"},{"id":"STD-13","kind":"标准","name":"景区讲解服务时间控制要求"},{"id":"KNP-65","kind":"知识点","name":"青少年游客的认知特点与兴趣点"},{"id":"STP-15","kind":"操作步骤","name":"为青少年团设计提问与游戏化讲解"},{"id":"KNP-66","kind":"知识点","name":"老年游客的体力与信息接收特点"},{"id":"CAS-14","kind":"案例","name":"面向银发团放慢语速并加大重复"},{"id":"KNP-67","kind":"知识点","name":"亲子团互动设计与家长参与方式"},{"id":"STP-16","kind":"操作步骤","name":"设计亲子问答与打卡式讲解"},{"id":"KNP-68","kind":"知识点","name":"境外游客的文化差异与讲解禁忌"},{"id":"CAS-15","kind":"案例","name":"涉外团避开敏感历史表述的讲解调整"},{"id":"KNP-69","kind":"知识点","name":"专业团体的知识深度与术语使用"},{"id":"STP-17","kind":"操作步骤","name":"根据受众专业背景调整讲解深度"},{"id":"KNP-70","kind":"知识点","name":"接站定位与举牌规范"},{"id":"STP-18","kind":"操作步骤","name":"定点举牌并引导团队集合"},{"id":"KNP-71","kind":"知识点","name":"团队行进的间距与节奏控制要点"},{"id":"STP-19","kind":"操作步骤","name":"在人多区域组织团队有序通过"},{"id":"KNP-72","kind":"知识点","name":"老人儿童等重点游客的照护要点"},{"id":"CAS-16","kind":"案例","name":"在陡坡路段协助行动不便游客通行"},{"id":"KNP-73","kind":"知识点","name":"共情表达的语言结构与禁用表述"},{"id":"STP-20","kind":"操作步骤","name":"用复述确认承接游客情绪"},{"id":"KNP-74","kind":"知识点","name":"投诉场景隔离的目的与操作要点"},{"id":"STP-21","kind":"操作步骤","name":"隔离场景并给游客降温缓冲"},{"id":"KNP-75","kind":"知识点","name":"处理时限承诺的合规边界"},{"id":"STD-14","kind":"标准","name":"旅游投诉受理机构、时限与程序"},{"id":"KNP-76","kind":"知识点","name":"不可抗力与经营者过错的区分"},{"id":"STP-22","kind":"操作步骤","name":"依据合同与旅游法判定责任归属"},{"id":"KNP-77","kind":"知识点","name":"现金与非现金补偿的组合设计方法"},{"id":"STP-23","kind":"操作步骤","name":"在授权范围内提出补偿方案并书面确认"},{"id":"KNP-78","kind":"知识点","name":"补偿授权额度与上报路径"},{"id":"STD-15","kind":"标准","name":"旅行社违约责任承担要求"},{"id":"KNP-79","kind":"知识点","name":"行程变更的常见触发场景与应对原则"},{"id":"STP-24","kind":"操作步骤","name":"列出替代方案并比较可行性"},{"id":"KNP-80","kind":"知识点","name":"应急交通与住宿资源的协调渠道"},{"id":"CAS-17","kind":"案例","name":"航班取消后半小时内完成改签与住宿调整"},{"id":"KNP-81","kind":"知识点","name":"行程变更告知与确认的合规要求"},{"id":"STP-25","kind":"操作步骤","name":"向游客说明变更并取得书面确认"},{"id":"KNP-82","kind":"知识点","name":"变更产生的差价核算与分摊规则"},{"id":"STP-26","kind":"操作步骤","name":"核算变更差价并与游客/社内结算"},{"id":"KNP-83","kind":"知识点","name":"行程中高风险环节的识别与分级"},{"id":"STP-27","kind":"操作步骤","name":"编制行程风险清单并标注等级"},{"id":"KNP-84","kind":"知识点","name":"气象预警与交通管制的信息渠道"},{"id":"STP-28","kind":"操作步骤","name":"出发前研判预警并触发预案"},{"id":"KNP-85","kind":"知识点","name":"行前安全告知的必告事项"},{"id":"STD-16","kind":"标准","name":"旅游安全说明与警示义务要求"},{"id":"KNP-86","kind":"知识点","name":"重点人群的安全防护要点"},{"id":"CAS-18","kind":"案例","name":"暑期高温团对老年游客的防暑防护"},{"id":"KNP-87","kind":"知识点","name":"突发事件现场的控制与隔离要点"},{"id":"STP-29","kind":"操作步骤","name":"设置警戒并疏导无关人员"},{"id":"KNP-88","kind":"知识点","name":"常见旅途伤病的初步判断与禁忌动作"},{"id":"STP-30","kind":"操作步骤","name":"现场控制与伤情初步处置"},{"id":"KNP-89","kind":"知识点","name":"事件记录要素与影像证据留存"},{"id":"STP-31","kind":"操作步骤","name":"分级上报并形成事件记录"},{"id":"KNP-90","kind":"知识点","name":"心肺复苏的操作要点与禁忌"},{"id":"STP-32","kind":"操作步骤","name":"按流程实施胸外按压与人工呼吸"},{"id":"KNP-91","kind":"知识点","name":"常见外伤的止血与包扎方法"},{"id":"STP-33","kind":"操作步骤","name":"对擦伤扭伤进行止血与固定"},{"id":"KNP-92","kind":"知识点","name":"中暑、低血糖、晕厥的判别与处置"},{"id":"CAS-19","kind":"案例","name":"景区内游客中暑的现场急救处置"},{"id":"KNP-93","kind":"知识点","name":"随团急救包的必备物资清单"},{"id":"STP-34","kind":"操作步骤","name":"出团前检查并补齐急救物资"},{"id":"KNP-94","kind":"知识点","name":"送医转运的流程与信息要素"},{"id":"STP-35","kind":"操作步骤","name":"联系急救并同步家属信息"},{"id":"KNP-95","kind":"知识点","name":"包价旅游合同必备条款与行程约定的对应关系"},{"id":"STD-17","kind":"标准","name":"包价旅游合同必备条款要求"},{"id":"KNP-96","kind":"知识点","name":"不可抗力条款的适用情形与免责边界"},{"id":"CAS-20","kind":"案例","name":"因疫情不可抗力解除合同的责任认定"},{"id":"KNP-97","kind":"知识点","name":"指定购物与自费项目的合规红线"},{"id":"STD-18","kind":"标准","name":"旅行社禁止强制购物相关规定"},{"id":"KNP-98","kind":"知识点","name":"旅游投诉的受理机构、范围与时限"},{"id":"STD-19","kind":"标准","name":"旅游投诉处理办法的时限要求"},{"id":"KNP-99","kind":"知识点","name":"投诉证据的类型与固定方法"},{"id":"STP-36","kind":"操作步骤","name":"整理行程单、票据与沟通记录作为证据"},{"id":"KNP-100","kind":"知识点","name":"投诉分级标准与内部转办流程"},{"id":"STP-37","kind":"操作步骤","name":"按分级将投诉转交对应部门"},{"id":"KNP-101","kind":"知识点","name":"投诉答复的规范口径与文书要素"},{"id":"CAS-21","kind":"案例","name":"一次因答复不当被二次投诉的教训"},{"id":"KNP-102","kind":"知识点","name":"高频投诉类型的典型情形与预防"},{"id":"CAS-22","kind":"案例","name":"行程变更类投诉的合规处置复盘"},{"id":"KNP-103","kind":"知识点","name":"旅游线路设计的节奏与容量原则"},{"id":"STP-38","kind":"操作步骤","name":"按游览节奏编排每日行程"},{"id":"KNP-104","kind":"知识点","name":"旅游产品成本构成与毛利测算"},{"id":"STP-39","kind":"操作步骤","name":"逐项拆解成本并测算毛利"},{"id":"KNP-105","kind":"知识点","name":"不同客群与淡旺季的定价策略"},{"id":"CAS-23","kind":"案例","name":"同一线路的平日价与旺季价设计"},{"id":"KNP-106","kind":"知识点","name":"地接社资质审核的要点与评级方法"},{"id":"STP-40","kind":"操作步骤","name":"核对地接社证照与历史履约记录"},{"id":"KNP-107","kind":"知识点","name":"报价单比对的维度与谈判技巧"},{"id":"STP-41","kind":"操作步骤","name":"对多份报价做同口径比对并议价"},{"id":"KNP-108","kind":"知识点","name":"地接合同违约责任与结算条款要点"},{"id":"STD-20","kind":"标准","name":"地接合同的必备条款要求"},{"id":"KNP-109","kind":"知识点","name":"业务系统订单状态与流转逻辑"},{"id":"STP-42","kind":"操作步骤","name":"完成订单录入与状态更新"},{"id":"KNP-110","kind":"知识点","name":"退改规则与系统操作对应关系"},{"id":"CAS-24","kind":"案例","name":"一笔退改订单的多退少补处理"},{"id":"KNP-111","kind":"知识点","name":"订单数据的核对要点与报表口径"},{"id":"STP-43","kind":"操作步骤","name":"导出并核对周期订单报表"},{"id":"KNP-112","kind":"知识点","name":"系统异常的常见类型与应急处理"},{"id":"STP-44","kind":"操作步骤","name":"系统故障时线下登记并事后补录"},{"id":"KNP-113","kind":"知识点","name":"短视频选题与前三秒法则"},{"id":"STP-45","kind":"操作步骤","name":"按钩子公式设计开头三秒"},{"id":"KNP-114","kind":"知识点","name":"讲解类短视频的分镜与运镜手法"},{"id":"STP-46","kind":"操作步骤","name":"编写分镜脚本并标注运镜"},{"id":"KNP-115","kind":"知识点","name":"字幕规范与封面排版要点"},{"id":"STP-47","kind":"操作步骤","name":"制作封面与规范字幕"},{"id":"KNP-116","kind":"知识点","name":"导游仪容仪表与着装规范"},{"id":"STD-21","kind":"标准","name":"导游证佩戴与仪容仪表规范"},{"id":"KNP-117","kind":"知识点","name":"迎送接待的站位、手势与用语"},{"id":"STP-48","kind":"操作步骤","name":"按标准完成迎客与送客礼仪"},{"id":"KNP-118","kind":"知识点","name":"餐饮住宿场景的服务礼仪要点"},{"id":"CAS-25","kind":"案例","name":"用餐引导中的位次安排失误"},{"id":"KNP-119","kind":"知识点","name":"服务用语的分寸与温度"},{"id":"STP-49","kind":"操作步骤","name":"用规范礼貌用语进行全程服务"},{"id":"KNP-120","kind":"知识点","name":"讲解内容导向与史实准确性要求"},{"id":"STD-22","kind":"标准","name":"讲解内容导向与史实准确性要求"},{"id":"KNP-121","kind":"知识点","name":"用情感叙事增强文化认同的方法"},{"id":"CAS-26","kind":"案例","name":"用乡土记忆引发游客情感共鸣的讲解"},{"id":"KNP-122","kind":"知识点","name":"民族宗教等敏感话题的规范表述"},{"id":"STD-23","kind":"标准","name":"讲解用语的政治与历史规范"},{"id":"KNP-123","kind":"知识点","name":"研学课程的目标设计方法"},{"id":"STP-50","kind":"操作步骤","name":"按三维目标搭建课程框架"},{"id":"KNP-124","kind":"知识点","name":"研学资源的选取标准与任务点设计"},{"id":"CAS-27","kind":"案例","name":"围绕一个主题串联多个研学任务点"},{"id":"KNP-125","kind":"知识点","name":"研学手册与评价量表的编制要点"},{"id":"STP-51","kind":"操作步骤","name":"编制研学手册与过程性评价表"},{"id":"KNP-126","kind":"知识点","name":"研学课程的安全预案与备案要求"},{"id":"STD-24","kind":"标准","name":"研学旅行活动规范要求"},{"id":"KNP-127","kind":"知识点","name":"不同学段学生的认知特点"},{"id":"STP-52","kind":"操作步骤","name":"根据学段识别学情差异"},{"id":"KNP-128","kind":"知识点","name":"学习目标的分层设计方法"},{"id":"STP-53","kind":"操作步骤","name":"为不同学段设定梯度目标"},{"id":"KNP-129","kind":"知识点","name":"学情评估的方法与反馈时机"},{"id":"CAS-28","kind":"案例","name":"根据课堂反馈即时调整讲解深度"},{"id":"KNP-130","kind":"知识点","name":"特殊学生的特点与适配支持"},{"id":"STP-54","kind":"操作步骤","name":"为特殊学生提供个别化支持"},{"id":"KNP-131","kind":"知识点","name":"破冰游戏的类型与适用场景"},{"id":"STP-55","kind":"操作步骤","name":"按团队状态选取并带领破冰游戏"},{"id":"KNP-132","kind":"知识点","name":"团队活动的分组与角色分配"},{"id":"STP-56","kind":"操作步骤","name":"按人数与任务完成分组"},{"id":"KNP-133","kind":"知识点","name":"活动氛围的调控与收束技巧"},{"id":"CAS-29","kind":"案例","name":"在冷场时用一个小游戏重新带动气氛"},{"id":"KNP-134","kind":"知识点","name":"团队活动的安全要点与秩序维护"},{"id":"STD-25","kind":"标准","name":"团队活动安全注意事项"},{"id":"KNP-135","kind":"知识点","name":"客户需求访谈的提问设计与话术"},{"id":"STP-57","kind":"操作步骤","name":"用开放式问题挖掘客户真实需求"},{"id":"KNP-136","kind":"知识点","name":"客户画像的核心要素与标签"},{"id":"STP-58","kind":"操作步骤","name":"从访谈记录中提炼客户画像"},{"id":"KNP-137","kind":"知识点","name":"需求优先级排序与确认方法"},{"id":"STP-59","kind":"操作步骤","name":"与客户确认需求优先级清单"},{"id":"KNP-138","kind":"知识点","name":"高净值客户的旅行偏好与决策特征"},{"id":"CAS-30","kind":"案例","name":"为高净值客户定制私人行程的画像分析"},{"id":"KNP-139","kind":"知识点","name":"需求变更的跟踪与版本管理"},{"id":"STP-60","kind":"操作步骤","name":"记录并跟进需求变更事项"},{"id":"KNP-140","kind":"知识点","name":"踩线记录要素与影像归档规范"},{"id":"STP-61","kind":"操作步骤","name":"按模板记录踩线信息并归档"},{"id":"KNP-141","kind":"知识点","name":"资源的可进入性与承载力评估"},{"id":"STP-62","kind":"操作步骤","name":"评估景点的可进入性与接待能力"},{"id":"KNP-142","kind":"知识点","name":"配套餐饮住宿的评估维度"},{"id":"CAS-31","kind":"案例","name":"踩线中发现住宿点交通不便而更换"},{"id":"KNP-143","kind":"知识点","name":"目的地资源分级与线路匹配方法"},{"id":"STP-63","kind":"操作步骤","name":"按线路主题对资源进行分级匹配"},{"id":"KNP-144","kind":"知识点","name":"在线旅游详情页的结构与卖点提炼"},{"id":"STP-64","kind":"操作步骤","name":"提炼卖点并组织详情页结构"},{"id":"KNP-145","kind":"知识点","name":"在线旅游产品信息的合规要求"},{"id":"STD-26","kind":"标准","name":"在线旅游产品信息发布合规要求"},{"id":"KNP-146","kind":"知识点","name":"详情页关键词与搜索优化要点"},{"id":"STP-65","kind":"操作步骤","name":"为详情页配置关键词与标题"},{"id":"KNP-147","kind":"知识点","name":"详情页转化率的影响因素"},{"id":"CAS-32","kind":"案例","name":"一次改版后点击率提升的详情页优化"},{"id":"KNP-148","kind":"知识点","name":"用户评价的分类与处置口径"},{"id":"STP-66","kind":"操作步骤","name":"按分类对评价做差异回复"},{"id":"KNP-149","kind":"知识点","name":"差评安抚话术与闭环处理流程"},{"id":"CAS-33","kind":"案例","name":"一条差评经闭环处理转为好评的复盘"},{"id":"KNP-150","kind":"知识点","name":"口碑监测的指标与预警阈值"},{"id":"STP-67","kind":"操作步骤","name":"设置口碑预警并定期巡检"},{"id":"KNP-151","kind":"知识点","name":"好评素材的合规引用与二次运营"},{"id":"STP-68","kind":"操作步骤","name":"将优质好评整理为宣传素材"},{"id":"KNP-152","kind":"知识点","name":"涉外接待常用句式与信息要素"},{"id":"STP-69","kind":"操作步骤","name":"用英语完成迎送与用餐引导"},{"id":"KNP-153","kind":"知识点","name":"多语种的礼貌用语与应急表达"},{"id":"CAS-34","kind":"案例","name":"用简单外语化解一次误机沟通"},{"id":"KNP-154","kind":"知识点","name":"主要客源国的文化禁忌"},{"id":"STD-27","kind":"标准","name":"涉外接待礼仪规范"}],"selfCheckRules":"## 自检规则\n\n你在检查「行业图谱」中由 AI 从末级节点逐层细分出来的节点。每个待检查的层给出：归属链（从行业到上级节点）、上级节点的类型、本层全部 AI 节点（id、名称、说明），以及上级节点的同层节点。\n\n### 检查维度\n\n1. **归属与粒度**\n   - 节点必须是上级节点的合理细分，内容不跑出上级节点的范围，也不跑出归属链里的岗位和技能场景。\n   - 类型与上级一致：知识点下仍是知识点（可单独讲授的概念或要点）；操作步骤下是可执行的子步骤且顺序合理；标准下是该标准中的具体条款或要求；案例下是该案例的关键情节、问题或可借鉴要点。\n   - 粒度必须比上级更细；与上级几乎同义、只是换了说法的，算有问题。\n2. **重复与遗漏**\n   - 本层节点之间不能重复或互相包含；也不能与上级的同层节点内容重复。\n   - 按上级节点的常规内容，指出本层明显遗漏的关键子项（只列确有必要的，不凑数）。\n3. **事实准确**\n   - 不得编造法规、国家 / 行业标准的名称与编号、条款号、数据、机构名称。\n   - 内容不能与行业常识或现行规定冲突。\n   - 提到了具体的法规、标准、数据但无法确认真实性的，判「存疑」。\n4. **表述规范**\n   - 名称不超过 20 个汉字，是名词短语或动宾短语，不写成句子；用词专业、与归属链中的术语一致。\n   - 说明一句话、通顺，不超过 40 个汉字，不与名称简单重复。\n\n### 判定\n\n- **通过**：四个维度都没有问题。\n- **存疑**：有轻微问题，或涉及无法确认的事实，需要人工复核。\n- **有问题**：跑题、类型不符、与上级同义、与其他节点重复、事实错误或编造。\n- 一个节点有多个问题时，只报最严重的一个维度（顺序：事实准确 > 归属与粒度 > 重复与遗漏 > 表述规范），原因里可以顺带提及其他问题。\n- 原因和修改建议各一句话，具体到怎么改；判「通过」时原因和建议留空。"};
+const $ = (s,r)=>(r||document).querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const abl = Object.fromEntries(D.abilities.map(a=>[a.id,a]));
+const pos = Object.fromEntries(D.positions.map(p=>[p.id,p]));
+const sub = Object.fromEntries(D.subIndustries.map(s=>[s.id,s]));
+const skl = Object.fromEntries(D.skills.map(s=>[s.id,s]));
+const snode = Object.fromEntries(D.skillNodes.map(n=>[n.id,n]));
+const KIND = {'知识点':{tag:'知识点',c:'kp'}, '操作步骤':{tag:'步骤',c:'step'}, '标准':{tag:'标准',c:'std'}, '案例':{tag:'案例',c:'case'}};
+const I = D.industry;
+function fit(text, maxPx, px){ const n = Math.floor(maxPx/px); return text.length>n ? text.slice(0,Math.max(1,n-1))+'…' : text; }
+
+$('#lfoot').innerHTML = `图谱 ${esc(I.version)} · ${esc(I.builtAt)}<br>四层能力图谱 V2 流水线`;
+$('#kmapDesc').textContent = `${I.name} · 行业 → 子行业 → 岗位 → 能力项 → 技能 → 知识点 / 操作步骤 / 标准 / 案例`;
+
+/* ═══ 四层能力全景 · 树形（连线图） ═══
+   初始复制自 panorama_template.html「4b」，此后独立维护；不含测评叠加标记与详情下钻。 */
+const LV = {L1:1,L2:2,L3:3};
+const builtSubs = D.subIndustries.filter(s=>s.built).map(s=>s.id);
+// 全行业通用 = 被全部已建图子行业要求
+const isInd = new Set(D.abilities.filter(a=>a.acrossSubIndustries.length===builtSubs.length).map(a=>a.id));
+const subSharedSet = {};
+builtSubs.forEach(sid=>{
+  const need = Math.max(2, Math.ceil(sub[sid].positionIds.length/2));
+  subSharedSet[sid] = new Set(D.abilities.filter(a=>!isInd.has(a.id) &&
+    a.requiredBy.filter(r=>pos[r.position].sub===sid).length >= need).map(a=>a.id));
+});
+function breakdown(pid){
+  const p = pos[pid]; let ind=0, sh=0, own=0;
+  p.abilities.forEach(r=>{
+    if(isInd.has(r.ability)) ind++;
+    else if(subSharedSet[p.sub].has(r.ability)) sh++;
+    else own++;
+  });
+  return {ind, sh, own};
+}
+
+/* ---- 布局 ----
+   默认只画「行业 - 子行业 - 岗位」三层；点某个岗位，在第四列展开该岗位的能力项（同一时间只展开一个岗位）；
+   再点其中一条能力项，在第五列展开归属该能力项的技能；再点技能，在第六列按类型分组展开其下级节点。 */
+const GW0 = 1260, ROWH = 23, TOP = 16, PSTEP = 46, GGAP = 8;
+const XI=[8,92], XS=[128,276], XP=[306,468], XA=[504,756], XK=[792,956], XL=[992,GW0];
+// 第 7 列起为 AI 细分列，每列等宽，不限层数
+const AIW = 240, AIGAP = 36;
+const XAI = i => { const x0 = XL[1] + AIGAP + i*(AIW + AIGAP); return [x0, x0 + AIW]; };
+
+const posLayout = [];          // {id, y}
+(function(){
+  let y = TOP + 26, prev = null;
+  builtSubs.forEach(sid=>{
+    if(prev !== null) y += PSTEP*0.7;
+    sub[sid].positionIds.forEach(pid=>{ posLayout.push({id:pid, y}); y += PSTEP; });
+    prev = sid;
+  });
+})();
+const posY = Object.fromEntries(posLayout.map(p=>[p.id,p.y]));
+const posBottom = Math.max(...posLayout.map(p=>p.y)) + 24;
+
+const subY = {};
+builtSubs.forEach(sid=>{
+  const ys = sub[sid].positionIds.map(p=>posY[p]);
+  subY[sid] = (Math.min(...ys)+Math.max(...ys))/2;
+});
+const indY = (TOP + 12 + posBottom)/2;
+
+// 展开的一列：纵向以上一级节点为中心，超出上沿时贴顶
+function colLayout(ids, cy){
+  const y0 = Math.max(TOP + 26, cy - (ids.length-1)*ROWH/2);
+  return ids.map((id,i)=>({id, y:y0 + i*ROWH}));
+}
+// 展开岗位的能力项：按权重排序
+function ablLayout(pid){
+  const rows = pos[pid].abilities;
+  return colLayout(rows.map(r=>r.ability), posY[pid]).map((a,i)=>({...a, level:rows[i].level}));
+}
+
+// 技能下级节点：按类型分组（数据已排好序），组间留空
+function leafLayout(kid, cy){
+  const ids = skl[kid].children;
+  const gaps = ids.filter((id,i)=>i>0 && snode[id].kind!==snode[ids[i-1]].kind).length;
+  const y0 = Math.max(TOP + 26, cy - ((ids.length-1)*ROWH + gaps*GGAP)/2);
+  let y = y0;
+  return ids.map((id,i)=>{
+    if(i>0 && snode[id].kind!==snode[ids[i-1]].kind) y += GGAP;
+    const r = {id, y}; y += ROWH; return r;
+  });
+}
+
+/* ---- 状态 ----
+   exp：当前展开的岗位；sel：在此基础上的高亮（子行业 / 能力项）；skx：展开下级节点的技能；
+   ai：从某个末级节点起由 AI 逐层细分的各列，ai[i] = {parent, parentName, kind, status, items, err}
+   （只保存在当前页面，收起即丢弃，再展开会重新生成） */
+let exp = null, sel = null, skx = null, ai = [];
+let scState = {status:'idle', err:''};   // 自检状态：idle / loading / done / error
+function activeSets(){
+  const subs=new Set(), poss=new Set(), abls=new Set();
+  if(sel && sel.type==='sub'){
+    subs.add(sel.id); sub[sel.id].positionIds.forEach(p=>poss.add(p));
+    if(exp && poss.has(exp)) pos[exp].abilities.forEach(r=>abls.add(r.ability));
+  } else if(sel && sel.type==='abl'){
+    abls.add(sel.id);
+    abl[sel.id].requiredBy.forEach(r=>{ poss.add(r.position); subs.add(pos[r.position].sub); });
+  } else if(exp){
+    poss.add(exp); subs.add(pos[exp].sub);
+    pos[exp].abilities.forEach(r=>abls.add(r.ability));
+  } else return null;
+  return {subs, poss, abls};
+}
+
+function link(x1,y1,x2,y2){
+  const dx = (x2-x1)*0.5;
+  return `M ${x1} ${y1.toFixed(1)} C ${x1+dx} ${y1.toFixed(1)}, ${x2-dx} ${y2.toFixed(1)}, ${x2} ${y2.toFixed(1)}`;
+}
+const cls = (on)=> on===null ? '' : (on ? ' on' : ' off');
+
+function renderGraph(){
+  const A = activeSets();
+  const sOn = id => A ? A.subs.has(id) : null;
+  const pOn = id => A ? A.poss.has(id) : null;
+  const aOn = id => A ? A.abls.has(id) : null;
+  const AL = exp ? ablLayout(exp) : [];
+  const selAbl = sel && sel.type==='abl' ? AL.find(a=>a.id===sel.id) : null;
+  const KL = selAbl ? colLayout(abl[selAbl.id].skills, selAbl.y) : [];
+  const selSk = skx ? KL.find(k=>k.id===skx) : null;
+  const LL = selSk ? leafLayout(selSk.id, selSk.y) : [];
+  // AI 列：父节点为上一列中被选中的那一个
+  const AIL = [];
+  let py = ai.length ? (LL.find(l=>l.id===ai[0].parent)||{}).y : null;
+  ai.forEach((lv,i)=>{
+    if(py==null) return;
+    const items = lv.status==='ok' ? lv.items : [];
+    const rows = colLayout(items.map((_,j)=>j), py);
+    AIL.push({lv, py, rows});
+    const nx = ai[i+1];
+    py = nx ? (rows.find(r=>lv.items[r.id] && lv.items[r.id].key===nx.parent)||{}).y : null;
+  });
+  const last = arr => arr.length ? arr[arr.length-1].y + 16 : 0;
+  const addY = c => c.rows.length ? c.rows[c.rows.length-1].y + ROWH : c.py + ROWH;   // 「+ 添加节点」所在行
+  const GH = Math.max(posBottom, last(AL), last(KL), last(LL),
+    ...AIL.map(c=>Math.max(last(c.rows), c.py + 16, c.lv.status==='ok' ? addY(c) + 16 : 0))) + TOP;
+  // 图宽只到当前已展开的最后一列，不为未展开的层级预留位置
+  let GW = (AIL.length ? XAI(AIL.length-1)[1] : selSk ? XL[1] : selAbl && KL.length ? XK[1] : exp ? XA[1] : XP[1]) + 8;
+  if(AIL.length && AIL[AIL.length-1].lv.status==='error') GW += 70;   // 失败提示较长
+  let links = '', nodes = '';
+
+  // 行业 → 子行业
+  builtSubs.forEach(sid=>{
+    links += `<path class="glink base${cls(sOn(sid))}" d="${link(XI[1], indY, XS[0], subY[sid])}"></path>`;
+  });
+  // 子行业 → 岗位
+  posLayout.forEach(p=>{
+    const sid = pos[p.id].sub;
+    links += `<path class="glink base${cls(A ? (A.subs.has(sid)&&A.poss.has(p.id)) : null)}"
+      d="${link(XS[1], subY[sid], XP[0], p.y)}"></path>`;
+  });
+  // 岗位 → 能力项（颜色 = 要求等级）。选中能力项时，从所有要求它的岗位连过来
+  if(exp){
+    const ay = Object.fromEntries(AL.map(a=>[a.id,a.y]));
+    AL.forEach(a=>{
+      const on = A ? A.poss.has(exp) && A.abls.has(a.id) : null;
+      links += `<path class="glink lv${LV[a.level]}${cls(on)}" d="${link(XP[1], posY[exp], XA[0]-6, a.y)}"></path>`;
+    });
+    if(sel && sel.type==='abl'){
+      abl[sel.id].requiredBy.filter(r=>r.position!==exp).forEach(r=>{
+        links += `<path class="glink lv${LV[r.level]} on" d="${link(XP[1], posY[r.position], XA[0]-6, ay[sel.id])}"></path>`;
+      });
+    }
+  }
+
+  // 能力项 → 技能
+  KL.forEach(k=>{
+    const on = selSk ? k.id===selSk.id : true;
+    links += `<path class="glink base${on?' on':' off'}" d="${link(XA[1], selAbl.y, XK[0]-6, k.y)}"></path>`;
+  });
+  // 技能 → 下级节点
+  const aiRoot = ai.length ? ai[0].parent : null;
+  LL.forEach(l=>{
+    const on = aiRoot ? l.id===aiRoot : true;
+    links += `<path class="glink base${on?' on':' off'}" d="${link(XK[1], selSk.y, XL[0]-6, l.y)}"></path>`;
+  });
+  // 末级节点 → AI 细分各列
+  AIL.forEach((c,i)=>{
+    const [x0] = XAI(i), px = i===0 ? XL[1] : XAI(i-1)[1];
+    const nx = ai[i+1];
+    c.rows.forEach(r=>{
+      const on = nx ? c.lv.items[r.id].key===nx.parent : true;
+      links += `<path class="glink base${on?' on':' off'}" d="${link(px, c.py, x0-6, r.y)}"></path>`;
+    });
+  });
+
+  // 行业节点
+  nodes += `<g class="gnode" data-n="ind|${esc(I.id)}">
+    <rect x="${XI[0]}" y="${indY-17}" width="${XI[1]-XI[0]}" height="34" rx="9"
+      fill="var(--brand-soft)" stroke="var(--brand)"></rect>
+    <text x="${(XI[0]+XI[1])/2}" y="${indY}" text-anchor="middle" dominant-baseline="central"
+      class="gt gt-ind">${esc(I.name)}</text></g>`;
+
+  // 子行业节点
+  builtSubs.forEach(sid=>{
+    const s = sub[sid], on = sOn(sid), w = XS[1]-XS[0];
+    nodes += `<g class="gnode${cls(on)}${sel&&sel.type==='sub'&&sel.id===sid?' sel':''}" data-n="sub|${sid}">
+      <rect x="${XS[0]}" y="${subY[sid]-15}" width="${w}" height="30" rx="8"
+        fill="var(--card-2)" stroke="var(--rule)"></rect>
+      <text x="${XS[0]+11}" y="${subY[sid]}" dominant-baseline="central" class="gt">${esc(fit(s.name, w-38, 11.5))}</text>
+      <text x="${XS[1]-10}" y="${subY[sid]}" text-anchor="end" dominant-baseline="central"
+        class="gt gt-n">${s.positionIds.length}</text></g>`;
+  });
+
+  // 岗位节点：右侧数字为能力项数，箭头表示可展开 / 已展开
+  posLayout.forEach(p=>{
+    const P = pos[p.id], on = pOn(p.id), w = XP[1]-XP[0], open = exp===p.id;
+    nodes += `<g class="gnode${cls(on)}${open?' sel':''}" data-n="pos|${p.id}">
+      <rect x="${XP[0]}" y="${p.y-14}" width="${w}" height="28" rx="8"
+        fill="var(--card-2)" stroke="var(--rule)"></rect>
+      <text x="${XP[0]+11}" y="${p.y}" dominant-baseline="central" class="gt">${esc(fit(P.name, w-46, 11.5))}</text>
+      <text x="${XP[1]-22}" y="${p.y}" text-anchor="end" dominant-baseline="central"
+        class="gt gt-n">${P.abilityCount}</text>
+      <text x="${XP[1]-9}" y="${p.y}" text-anchor="middle" dominant-baseline="central"
+        class="gt gt-chev">${open?'‹':'›'}</text></g>`;
+  });
+
+  // 能力项节点（仅展开岗位的）
+  AL.forEach(r=>{
+    const a = abl[r.id], on = aOn(a.id), y = r.y;
+    const tier = isInd.has(a.id) ? '通用' : '';
+    nodes += `<g class="gnode ab${cls(on)}${sel&&sel.type==='abl'&&sel.id===a.id?' sel':''}" data-n="abl|${a.id}">
+      <rect x="${XA[0]-4}" y="${y-10}" width="${XA[1]-XA[0]+4}" height="20" rx="6"
+        class="abbg"></rect>
+      <circle cx="${XA[0]+4}" cy="${y}" r="3" fill="var(--${a.core?'brand':'muted'})"></circle>
+      <text x="${XA[0]+14}" y="${y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(a.name, 182, 11))}${a.core?' ★':''}</text>
+      ${tier?`<text x="${XA[1]-42}" y="${y}" text-anchor="end" dominant-baseline="central" class="gt gt-tier">${tier}</text>`:''}
+      <text x="${XA[1]-4}" y="${y}" text-anchor="end" dominant-baseline="central" class="gt gt-n">×${a.positionCount}</text></g>`;
+  });
+  // 技能节点（仅选中能力项的）
+  KL.forEach(k=>{
+    const K = skl[k.id];
+    const on = selSk ? k.id===selSk.id : null;
+    nodes += `<g class="gnode sk${cls(on)}${on?' sel':''}" data-n="skl|${k.id}">
+      <rect x="${XK[0]-4}" y="${k.y-10}" width="${XK[1]-XK[0]+4}" height="20" rx="6" class="abbg"></rect>
+      <rect x="${XK[0]+1}" y="${k.y-3}" width="6" height="6" rx="1.5" fill="var(--brand)"></rect>
+      <text x="${XK[0]+14}" y="${k.y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(K.name, XK[1]-XK[0]-40, 11))}</text>
+      <text x="${XK[1]-4}" y="${k.y}" text-anchor="end" dominant-baseline="central" class="gt gt-n">${K.children.length}</text></g>`;
+  });
+
+  // 下级节点（仅展开技能的）：类型标签 + 名称
+  LL.forEach(l=>{
+    const n = snode[l.id], k = KIND[n.kind];
+    const open = aiRoot===l.id;
+    nodes += `<g class="gnode lf open${aiRoot ? (open?' sel':' off') : ''}" data-n="lf|${l.id}">
+      <rect x="${XL[0]-4}" y="${l.y-10}" width="${XL[1]-XL[0]+4}" height="20" rx="6" class="abbg"></rect>
+      <rect x="${XL[0]}" y="${l.y-8}" width="3" height="16" rx="1.5" fill="var(--kgt-${k.c})"></rect>
+      <text x="${XL[0]+9}" y="${l.y}" dominant-baseline="central" class="gt gt-kind" fill="var(--kgt-${k.c})">${k.tag}</text>
+      <text x="${XL[0]+44}" y="${l.y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(n.name, XL[1]-XL[0]-48, 11))}</text></g>`;
+  });
+
+  // AI 细分节点：类型只用左侧色条表示（与末级节点同色），不再逐个写类型文字；虚线框 + 「AI」标记
+  AIL.forEach((c,i)=>{
+    const [x0, x1] = XAI(i), k = KIND[c.lv.kind], nx = ai[i+1];
+    c.rows.forEach(r=>{
+      const it = c.lv.items[r.id];
+      const st = nx ? (it.key===nx.parent ? ' sel' : ' off') : '';
+      const sc = it.check ? SC_MARK[it.check.verdict] : null;
+      nodes += `<g class="gnode lf open ai${st}${sc?' sc-'+sc.c:''}" data-n="ai|${i}|${r.id}">
+        <rect x="${x0-4}" y="${r.y-10}" width="${x1-x0+4}" height="20" rx="6" class="abbg"></rect>
+        <rect x="${x0}" y="${r.y-8}" width="3" height="16" rx="1.5" fill="var(--kgt-${k.c})"></rect>
+        <text x="${x0+10}" y="${r.y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(it.name + (it.genning?'…':''), x1-x0-(it.manual?62:50), 11))}</text>
+        ${sc?`<text x="${x1-20}" y="${r.y}" text-anchor="end" dominant-baseline="central" class="gt gt-sc ${sc.c}">${sc.icon}</text>`:''}
+        <text x="${x1-4}" y="${r.y}" text-anchor="end" dominant-baseline="central" class="gt gt-ai${it.manual?' man':''}">${it.manual?'人工':'AI'}</text></g>`;
+    });
+    if(c.lv.status==='loading'){
+      nodes += `<text x="${x0}" y="${c.py}" dominant-baseline="central" class="gt gt-status gt-loading">AI 生成中…</text>`;
+    } else if(c.lv.status==='error'){
+      nodes += `<g class="gnode retry" data-n="retry|${i}"><text x="${x0}" y="${c.py}" dominant-baseline="central" class="gt gt-status">${esc(fit('生成失败：'+c.lv.err, AIW+60, 12))} · 重试</text></g>`;
+    } else if(!c.rows.length){
+      nodes += `<text x="${x0}" y="${c.py}" dominant-baseline="central" class="gt gt-status">没有可细分的下级</text>`;
+    }
+    if(c.lv.status==='ok'){
+      const y = addY(c);
+      const half = (x1 - x0 + 4 - 6) / 2;
+      nodes += `<g class="gnode aiadd" data-n="aiadd|${i}">
+        <rect x="${x0-4}" y="${y-10}" width="${half}" height="20" rx="6" class="abbg"></rect>
+        <text x="${x0+9}" y="${y}" dominant-baseline="central">＋ 添加节点</text></g>
+      <g class="gnode aiadd" data-n="airegen|${i}">
+        <rect x="${x0-4+half+6}" y="${y-10}" width="${half}" height="20" rx="6" class="abbg"></rect>
+        <text x="${x0+half+15}" y="${y}" dominant-baseline="central">↻ 重新生成</text></g>`;
+    }
+  });
+
+  // 操作提示：紧跟在最后一列右侧，图宽随之加上提示所需的宽度
+  const hint = !exp ? [XP[1]+36, indY, '点击岗位，展开该岗位的能力项']
+    : !selAbl ? [XA[1]+36, posY[exp], '点击能力项，展开归属的技能']
+    : !KL.length ? [XA[1]+36, selAbl.y, '暂无相关技能']
+    : !selSk ? [XK[1]+36, selAbl.y, '点击技能，展开下级节点']
+    : !LL.length ? [XK[1]+36, selSk.y, '暂无下级节点'] : null;
+  if(hint){
+    nodes += `<text x="${hint[0]}" y="${hint[1]}" dominant-baseline="central" class="gt gt-empty">${hint[2]}</text>`;
+    GW = Math.max(GW, hint[0] + hint[2].length*12 + 16);
+  }
+
+  // 列头只给已展开的列
+  const heads = [[XI[0],'行业'], [XS[0],`子行业 ${builtSubs.length}`], [XP[0],`岗位 ${D.positions.length}`]];
+  if(exp) heads.push([XA[0], `能力项 ${AL.length} · ${pos[exp].name}`]);
+  if(selAbl && KL.length) heads.push([XK[0], `技能 ${KL.length}`]);
+  if(selSk) heads.push([XL[0], `下级节点 ${LL.length} · ${skl[selSk.id].name}`]);
+  const aiHeads = AIL.map((c,i)=>`<text x="${XAI(i)[0]}" y="8" class="gch">${esc(fit('AI 细分 · '+c.lv.parentName, AIW, 9))}</text>`).join('');
+  $('#posTree').innerHTML = `<svg width="${GW}" height="${GH}" viewBox="0 0 ${GW} ${GH}"
+    role="img" aria-label="行业能力树形图：行业、子行业、岗位三列，点击岗位展开其能力项，点击能力项展开其技能，点击技能展开其下级节点，点击末级节点由 AI 逐层细分">
+    <g class="colhead">
+      ${heads.map(([x,t])=>`<text x="${x}" y="8" class="gch">${esc(t)}</text>`).join('')}
+      ${aiHeads}
+    </g>
+    ${links}${nodes}</svg>`;
+  renderSelfCheckBar();
+  renderSaveBtn();
+}
+
+// 点岗位：展开 / 收起该岗位的能力项（换岗位即切换）；点子行业：高亮所属岗位；
+// 点能力项：展开归属的技能，并反推所有要求它的岗位；点技能：展开 / 收起其下级节点；
+// 点末级节点 / AI 节点：由 AI 生成下一层（再点同一节点收起）；再次点同一节点、点空白处或点行业节点取消
+// 画布向左平移，让最右侧新展开的一列完整露出来
+function revealRight(){
+  const t = $('#posTree');
+  t.scrollTo({left: t.scrollWidth - t.clientWidth, behavior: document.hidden ? 'auto' : 'smooth'});
+}
+const svgWidth = () => +(($('#posTree svg')||{}).getAttribute?.('width') || 0);
+
+$('#posTree').addEventListener('click', e=>{
+  const g = e.target.closest('[data-n]');
+  const [t,id,j] = g ? g.dataset.n.split('|') : ['none'];
+  tip.classList.remove('on');
+  if(scState.status==='error') scState = {status:'idle', err:''};
+  if(t==='none') return;                     // 点击空白处：保持当前展开状态，不回到默认树
+  const w0 = svgWidth();
+  if(t==='aiadd'){ openNodeEdit(+id, null); return; }
+  if(t==='airegen'){ regenerateLevel(+id); renderGraph(); return; }
+  if(t==='lf'){
+    if(ai.length && ai[0].parent===id) ai = [];
+    else { const n = snode[id]; ai = []; openLevel(0, {key:id, name:n.name, kind:n.kind}); }
+  } else if(t==='ai'){
+    const i = +id, it = ai[i].items[+j];
+    if(ai[i+1] && ai[i+1].parent===it.key) ai = ai.slice(0, i+1);
+    else { ai = ai.slice(0, i+1); openLevel(i+1, {key:it.key, name:it.name, kind:ai[i].kind}); }
+  } else if(t==='retry'){
+    const i = +id, lv = ai[i];
+    aiExpand(i, {key:lv.parent, name:lv.parentName, kind:lv.kind}, lv.keep || []);
+  } else {
+    ai = [];
+    if(t==='skl'){ skx = skx===id ? null : id; }
+    else if(t==='pos'){ exp = exp===id ? null : id; sel = null; skx = null; }
+    else if(t==='sub' || t==='abl'){ sel = (sel && sel.type===t && sel.id===id) ? null : {type:t, id}; skx = null; }
+    else { exp = null; sel = null; skx = null; }
+  }
+  renderGraph();
+  // 展开了新的一列（含 AI 生成中的那一列）就立即左移，不等 AI 返回
+  if(svgWidth() > w0) revealRight();
+});
+
+/* ═══ AI 列里节点的新增 / 编辑 / 删除（只改当前页面里的内容） ═══ */
+let editing = null;   // {i, j, it}：正在编辑的节点；新增时 j、it 为空
+function openNodeEdit(i, j){
+  const lv = ai[i]; if(!lv) return;
+  const it = j==null ? null : lv.items[j];
+  if(j!=null && !it) return;
+  editing = {i, j, it, lv};
+  $('#nodeDlgTitle').textContent = it ? '编辑节点' : `新增节点 · ${lv.parentName}`;
+  $('#nodeDlgNote').textContent = it
+    ? '名称不超过 20 个字，说明不超过 40 个字。修改后该节点需要重新自检。'
+    : `添加到「${lv.parentName}」下，类型为${lv.kind}。名称不超过 20 个字，说明不超过 40 个字；添加后也可以点它由 AI 继续细分。`;
+  $('#nodeName').value = it ? it.name : ''; $('#nodeDesc').value = it ? (it.desc || '') : '';
+  $('#nodeDlg').showModal(); $('#nodeName').select();
+}
+$('#nodeForm').addEventListener('submit', ev=>{
+  const e = editing; editing = null;
+  if(!e || !ev.submitter || ev.submitter.value!=='save') return;
+  if(!ai.includes(e.lv)) return;                                // 期间这一列已被收起
+  const name = $('#nodeName').value.trim(), desc = $('#nodeDesc').value.trim();
+  if(!e.it){                                                    // 新增：放在该列末尾
+    if(!name) return;
+    e.lv.items.push({key:`${e.lv.parent}/${newKeyPart('m')}`, name, desc, manual:true});
+    renderGraph(); if($('#scReport').open) renderReport(); return;
+  }
+  if(e.lv.items[e.j]!==e.it) return;                            // 期间内容已变化
+  if(!name || (name===e.it.name && desc===(e.it.desc||''))) return;
+  e.it.name = name; e.it.desc = desc; e.it.edited = true;
+  e.it.check = null;                                          // 内容变了，自检结论作废
+  const child = ai[e.i+1];
+  if(child && child.parent===e.it.key) child.parentName = name;   // 已展开的下一列列头跟着改
+  renderGraph(); if($('#scReport').open) renderReport();
+});
+
+// 右键 AI 节点：弹出「编辑 / 删除」
+let ctxTarget = null;   // {i, j}
+function hideCtx(){ $('#ctxMenu').hidden = true; ctxTarget = null; }
+$('#posTree').addEventListener('contextmenu', e=>{
+  const g = e.target.closest('[data-n^="ai|"]');
+  if(!g){ hideCtx(); return; }
+  e.preventDefault();
+  const [,i,j] = g.dataset.n.split('|');
+  const it = ai[+i] && ai[+i].items[+j]; if(!it) return;
+  ctxTarget = {i:+i, j:+j};
+  tip.classList.remove('on');
+  const m = $('#ctxMenu');
+  $('#ctxTitle').textContent = it.name;
+  m.hidden = false;
+  const w = m.offsetWidth, h = m.offsetHeight;
+  m.style.left = Math.min(e.clientX, innerWidth - w - 8) + 'px';
+  m.style.top  = Math.min(e.clientY, innerHeight - h - 8) + 'px';
+  m.querySelector('button').focus();
+});
+$('#ctxMenu').addEventListener('click', e=>{
+  const b = e.target.closest('[data-ctx]'); if(!b || !ctxTarget) return;
+  const {i, j} = ctxTarget; hideCtx();
+  if(b.dataset.ctx==='edit') openNodeEdit(i, j);
+  else if(b.dataset.ctx==='regen') regenerateNode(i, j);
+  else deleteAiNode(i, j);
+});
+document.addEventListener('mousedown', e=>{ if(!(e.target.closest && e.target.closest('#ctxMenu'))) hideCtx(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') hideCtx(); });
+$('#posTree').addEventListener('scroll', hideCtx);
+window.addEventListener('blur', hideCtx);
+
+/* ═══ AI 节点的暂存与保存 ═══
+   aiStore：上级节点 key → 该上级下已生成的一列（含人工新增 / 编辑、自检结论）。
+   本次打开页面期间生成过的都在这里，收起再展开直接复用；点「保存」写入本机浏览器，下次打开页面还在。 */
+const AI_SAVE_KEY = 'kmapAiSaved';
+const aiStore = {};
+const newKeyPart = p => p + Math.random().toString(36).slice(2, 8);
+
+// 从末级节点出发仍挂得上的各列（删掉的节点下面的列不再保存）
+function aiReachable(){
+  const out = [], seen = new Set(), queue = Object.keys(aiStore).filter(k=>snode[k]);
+  while(queue.length){
+    const k = queue.shift(); if(seen.has(k)) continue; seen.add(k);
+    const lv = aiStore[k]; if(!lv || lv.status!=='ok') continue;
+    out.push(lv);
+    lv.items.forEach(it=>{ if(aiStore[it.key]) queue.push(it.key); });
+  }
+  return out;
+}
+function aiSnapshot(){
+  return JSON.stringify(aiReachable().map(lv=>({
+    parent: lv.parent, parentName: lv.parentName, kind: lv.kind, missing: lv.missing || '', checkedAt: lv.checkedAt || '',
+    items: lv.items.map(it=>({key:it.key, name:it.name, desc:it.desc||'',
+      ...(it.manual?{manual:true}:{}), ...(it.edited?{edited:true}:{}), ...(it.regen?{regen:true}:{}), ...(it.check?{check:it.check}:{})})),
+  })));
+}
+let savedSnapshot = '[]';
+(function loadSaved(){
+  let raw = null;
+  try { raw = localStorage.getItem(AI_SAVE_KEY); } catch(e){}
+  if(!raw) return;
+  try {
+    JSON.parse(raw).forEach(l=>{
+      aiStore[l.parent] = {parent:l.parent, parentName:l.parentName, kind:l.kind, status:'ok', err:'', missing:l.missing||'', checkedAt:l.checkedAt||'',
+        items: l.items.map(it=>({...it}))};
+    });
+    savedSnapshot = aiSnapshot();
+  } catch(e){}
+})();
+function openLevel(level, parent){
+  const lv = aiStore[parent.key];
+  if(lv && lv.status==='ok'){
+    ai = ai.slice(0, level);
+    lv.parentName = parent.name;                  // 上级可能被改过名
+    ai[level] = lv;
+  } else aiExpand(level, parent);
+}
+const isDirty = () => aiSnapshot() !== savedSnapshot;
+function renderSaveBtn(){
+  const b = $('#saveBtn'), dirty = isDirty();
+  b.disabled = !dirty;
+  b.textContent = dirty ? '保存' : (savedSnapshot!=='[]' ? '已保存' : '保存');
+  b.title = dirty ? '保存后，下次打开页面展开这些节点时直接显示，不再调用 AI（只保存在本机浏览器）'
+                  : (savedSnapshot!=='[]' ? '当前内容已保存在本机浏览器' : '还没有可保存的 AI 节点');
+}
+$('#saveBtn').addEventListener('click', ()=>{
+  const snap = aiSnapshot();
+  try { localStorage.setItem(AI_SAVE_KEY, snap); }
+  catch(e){ showToast('保存失败：浏览器不允许本地存储'); return; }
+  savedSnapshot = snap;
+  const n = JSON.parse(snap).reduce((s,l)=>s+l.items.length, 0);
+  showToast(`已保存 ${n} 个节点，下次展开时直接显示`);
+  renderSaveBtn();
+});
+window.addEventListener('beforeunload', e=>{ if(isDirty()){ e.preventDefault(); e.returnValue = ''; } });
+
+// 重新生成一列：保留人工新增 / 人工编辑过的节点，其余由 AI 重新生成；下面已展开的列收起；可撤销
+function regenerateLevel(i){
+  const old = ai[i]; if(!old) return;
+  const below = ai.slice(i+1);
+  const keep = old.items.filter(it=>it.manual || it.edited);
+  aiExpand(i, {key:old.parent, name:old.parentName, kind:old.kind}, keep);
+  const fresh = ai[i];
+  showToast(`正在重新生成「${old.parentName}」的下级${keep.length?`（保留 ${keep.length} 个人工节点）`:''}`, '撤销', ()=>{
+    if(ai[i]!==fresh) return;                     // 之后又有别的改动，不再撤销
+    ai = ai.slice(0, i).concat([old], below);
+    aiStore[old.parent] = old;
+    renderGraph();
+  });
+}
+
+// 重新生成单个节点：只重写该节点的名称/说明，位置不变，下面已展开的列收起；可撤销
+async function regenerateNode(i, j){
+  const lv = ai[i], it = lv && lv.items[j];
+  if(!it || it.genning || ai.some(l=>l.items.some(x=>x.genning))) return;
+  const cfg = aiCfg();
+  if(!cfg.key){ openAiCfg(); return; }
+  const old = {name:it.name, desc:it.desc, check:it.check, edited:!!it.edited, regen:!!it.regen};
+  const below = ai[i+1] && ai[i+1].parent===it.key ? ai.slice(i+1) : null;
+  it.genning = true; renderGraph(); if($('#scReport').open) renderReport();
+  const chain = aiChain(i).concat([`${lv.kind}：${it.name}`]);
+  const siblings = lv.items.filter(x=>x!==it).map(x=>x.name);
+  const ck = it.check;
+  const hint = (ck && ck.verdict!=='pass')
+    ? `\n该节点自检判定为「${SC_MARK[ck.verdict].label}」${ck.reason?`：${ck.reason}`:''}${ck.suggestion?`；修改建议：${ck.suggestion}`:''}`
+    : '';
+  const system = '你是职业教育课程设计与行业能力分析专家。用户给出从行业到当前节点的归属链与同层节点，请你重新生成其中一个节点，内容要准确、具体、可教学，不编造法规条款编号。';
+  const prompt =
+    `归属链：\n${chain.join('\n')}\n\n` +
+    `同层节点（重新生成的名称/说明不要与它们重复）：${siblings.join('、') || '（无）'}\n\n` +
+    `请重新生成节点「${it.name}」（类型：${lv.kind}）。${hint}\n` +
+    `要求：name 不超过 20 个汉字；desc 一句话说明，不超过 40 个汉字。`;
+  let out;
+  try {
+    out = await aiCallJSON(cfg, system, prompt, NODE_REG_OPT);
+  } catch(err){
+    if(ai[i]===lv && lv.items[j]===it){ delete it.genning; renderGraph(); if($('#scReport').open) renderReport(); showToast(`重新生成失败：${err.message||err}`); }
+    return;
+  }
+  if(ai[i]!==lv || lv.items[j]!==it) return;
+  if(below) ai = ai.slice(0, i+1);
+  it.name = ((out.name||'').trim()) || it.name;
+  it.desc = (out.desc||'').trim();
+  it.check = null; delete it.edited; it.regen = true;
+  delete it.genning;
+  aiStore[lv.parent] = lv;
+  renderGraph(); if($('#scReport').open) renderReport();
+  showToast(`已重新生成「${it.name}」`, '撤销', ()=>{
+    if(ai[i]!==lv || lv.items[j]!==it) return;
+    it.name = old.name; it.desc = old.desc; it.check = old.check;
+    if(old.edited) it.edited = true; else delete it.edited;
+    if(old.regen) it.regen = true; else delete it.regen;
+    if(below) ai = ai.concat(below);
+    aiStore[lv.parent] = lv;
+    renderGraph(); if($('#scReport').open) renderReport();
+  });
+}
+
+// 删除：已展开在它下面的各列一并收起；提供一次撤销
+let undo = null, toastTimer = 0;
+function deleteAiNode(i, j){
+  const lv = ai[i], it = lv && lv.items[j]; if(!it) return;
+  const below = ai[i+1] && ai[i+1].parent===it.key ? ai.slice(i+1) : null;
+  if(below) ai = ai.slice(0, i+1);
+  lv.items.splice(j, 1);
+  undo = {lv, j, it, below};
+  showToast(`已删除「${it.name}」`, '撤销', ()=>{
+    if(!undo || !ai.includes(undo.lv)) return;
+    undo.lv.items.splice(Math.min(undo.j, undo.lv.items.length), 0, undo.it);
+    if(undo.below && ai[ai.length-1]===undo.lv) ai = ai.concat(undo.below);
+    undo = null; renderGraph();
+  });
+  renderGraph();
+}
+function showToast(text, actLabel, act){
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(text)}</span>${actLabel?`<button type="button">${esc(actLabel)}</button>`:''}`;
+  t.hidden = false;
+  if(act) t.querySelector('button').onclick = ()=>{ act(); t.hidden = true; };
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.hidden = true; undo = null; }, 6000);
+}
+
+/* ═══ AI 细分：页面直接调用 Anthropic Messages API ═══
+   AI_BUILTIN 由构建脚本注入（ai_config.json，部署时预置的接口与 Key）；
+   使用者仍可在「AI 设置」里改成自己的 Key，只存本机浏览器 localStorage。 */
+const AI_PRESETS = {
+  claude:   {type:'anthropic', url:'https://api.anthropic.com/v1/messages', model:'claude-opus-5-5'},
+  deepseek: {type:'openai',    url:'https://api.deepseek.com/chat/completions', model:'deepseek-chat'},
+};
+const AI_BUILTIN = {"type":"openai","url":"https://api.deepseek.com/chat/completions","model":"deepseek-reasoner","key":"sk-494a69387a1a4cde8b265db37a695cf5"};
+const AI_DEFAULT = {...AI_PRESETS.claude, ...AI_BUILTIN};
+const AI_FALLBACK_MODELS = new Set(['claude-fable-5-1','claude-opus-5-5','claude-opus-5','claude-sonnet-5-5']);
+function aiCfg(){
+  try { return {...AI_DEFAULT, ...JSON.parse(localStorage.getItem('kmapAi')||'{}')}; }
+  catch(e){ return {...AI_DEFAULT}; }
+}
+function openAiCfg(){
+  const c = aiCfg();
+  $('#aiType').value = c.type; $('#aiUrl').value = c.url; $('#aiModel').value = c.model; $('#aiKey').value = c.key;
+  $('#aiDlg').showModal();
+}
+$('#aiCfgBtn').addEventListener('click', openAiCfg);
+// 一键填入：只改接口类型 / 地址 / 模型，Key 由使用者自己填
+$('#aiDlg').addEventListener('click', e=>{
+  const b = e.target.closest('[data-preset]'); if(!b) return;
+  const p = AI_PRESETS[b.dataset.preset];
+  $('#aiType').value = p.type; $('#aiUrl').value = p.url; $('#aiModel').value = p.model;
+  $('#aiKey').focus();
+});
+$('#aiForm').addEventListener('submit', ev=>{
+  if(!ev.submitter || ev.submitter.value!=='save') return;
+  const c = {type:$('#aiType').value, url:$('#aiUrl').value.trim(), model:$('#aiModel').value.trim(), key:$('#aiKey').value.trim()};
+  try { localStorage.setItem('kmapAi', JSON.stringify(c)); } catch(e){}
+  // 保存后，把因缺少设置而失败的那一列重新生成
+  const i = ai.findIndex(l=>l.status==='error');
+  if(i>=0){ const lv = ai[i]; aiExpand(i, {key:lv.parent, name:lv.parentName, kind:lv.kind}); renderGraph(); }
+});
+
+const AI_RULE = {
+  '知识点':'拆成更细的子知识点，每个是一个可以单独讲授的概念或要点',
+  '操作步骤':'拆成可执行的子步骤，按实际操作的先后顺序排列',
+  '标准':'拆成该标准中具体的条款或要求，写明要求本身',
+  '案例':'拆成该案例的关键情节、问题或可借鉴的要点',
+};
+const AI_SCHEMA = {
+  type:'object', additionalProperties:false, required:['children'],
+  properties:{ children:{ type:'array', items:{
+    type:'object', additionalProperties:false, required:['name','desc'],
+    properties:{ name:{type:'string'}, desc:{type:'string'} } } } },
+};
+
+// 当前展开路径：行业 › 子行业 › 岗位 › 能力项 › 技能 › 末级节点 › AI 节点…
+function aiChain(level){
+  const c = [`行业：${I.name}`, `子行业：${sub[pos[exp].sub].name}`, `岗位：${pos[exp].name}`,
+             `能力项：${abl[sel.id].name}`, `技能：${skl[skx].name}`];
+  const root = snode[ai[0].parent];
+  c.push(`${root.kind}：${root.name}`);
+  for(let i=0;i<level;i++){
+    const lv = ai[i], nx = ai[i+1];
+    const it = lv.items.find(x=>x.key===nx.parent);
+    c.push(`${lv.kind}（细分第 ${i+1} 层）：${it.name}`);
+  }
+  return c;
+}
+
+// Anthropic Messages API：结构化输出保证返回符合 schema 的 JSON
+async function aiCallAnthropic(cfg, system, prompt, opt){
+  const body = {
+    model: cfg.model, max_tokens: opt.maxTokens,
+    output_config: {effort:opt.effort, format:{type:'json_schema', schema:opt.schema}},
+    system, messages: [{role:'user', content:prompt}],
+  };
+  if(AI_FALLBACK_MODELS.has(cfg.model)) body.fallbacks = 'default';
+  const res = await fetch(cfg.url, {
+    method:'POST',
+    headers:{
+      'content-type':'application/json',
+      'x-api-key': cfg.key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true',
+      ...(body.fallbacks ? {'anthropic-beta':'server-side-fallback-2026-07-01'} : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error((data.error && data.error.message) || `HTTP ${res.status}`);
+  if(data.stop_reason==='refusal') throw new Error('模型拒绝了这次生成');
+  if(data.stop_reason==='max_tokens') throw new Error('输出被截断');
+  return (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+}
+
+// OpenAI 兼容接口（DeepSeek 等）：JSON 模式，需在提示里写明 JSON 格式
+async function aiCallOpenAI(cfg, system, prompt, opt){
+  const res = await fetch(cfg.url, {
+    method:'POST',
+    headers:{'content-type':'application/json', 'authorization':`Bearer ${cfg.key}`},
+    body: JSON.stringify({
+      model: cfg.model, max_tokens: opt.maxTokens,
+      response_format: {type:'json_object'},
+      messages: [
+        {role:'system', content: system + '\n只输出 JSON，格式为：' + opt.formatHint},
+        {role:'user', content: prompt},
+      ],
+    }),
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error((data.error && data.error.message) || `HTTP ${res.status}`);
+  const ch = (data.choices||[])[0];
+  if(!ch) throw new Error('接口没有返回内容');
+  if(ch.finish_reason==='length') throw new Error('输出被截断');
+  return (ch.message && ch.message.content) || '';
+}
+
+// 按「AI 设置」里的接口类型调用，返回解析后的 JSON
+async function aiCallJSON(cfg, system, prompt, opt){
+  const text = cfg.type==='openai' ? await aiCallOpenAI(cfg, system, prompt, opt)
+                                   : await aiCallAnthropic(cfg, system, prompt, opt);
+  return JSON.parse(text.replace(/^\s*```(?:json)?\s*|\s*```\s*$/g, ''));
+}
+const AI_EXPAND_OPT = {schema:AI_SCHEMA, effort:'low', maxTokens:4000,
+  formatHint:'{"children":[{"name":"下级节点名称","desc":"一句话说明"}]}'};
+const NODE_REG_SCHEMA = {
+  type:'object', additionalProperties:false, required:['name','desc'],
+  properties:{ name:{type:'string'}, desc:{type:'string'} },
+};
+const NODE_REG_OPT = {schema:NODE_REG_SCHEMA, effort:'low', maxTokens:1200,
+  formatHint:'{"name":"节点名称","desc":"一句话说明"}'};
+
+/* ═══ 自检：按 skill「kmap-ai-selfcheck」的规则检查当前所有 AI 节点 ═══
+   规则在 .claude/skills/kmap-ai-selfcheck/SKILL.md，构建时带入 D.selfCheckRules。
+   结果挂在各 AI 节点上（it.check）、各层上（lv.missing），重新生成即消失。 */
+const SC_MARK = {
+  pass:  {icon:'✓', label:'通过',   c:'pass'},
+  doubt: {icon:'!', label:'存疑',   c:'doubt'},
+  fail:  {icon:'✕', label:'有问题', c:'fail'},
+};
+const SC_DIMS = ['归属与粒度','重复与遗漏','事实准确','表述规范'];
+const SC_SCHEMA = {
+  type:'object', additionalProperties:false, required:['nodes','levels'],
+  properties:{
+    nodes:{ type:'array', items:{ type:'object', additionalProperties:false,
+      required:['id','verdict','dimension','reason','suggestion'],
+      properties:{ id:{type:'string'}, verdict:{type:'string', enum:['pass','doubt','fail']},
+        dimension:{type:'string', enum:['', ...SC_DIMS]}, reason:{type:'string'}, suggestion:{type:'string'} } } },
+    levels:{ type:'array', items:{ type:'object', additionalProperties:false, required:['id','missing'],
+      properties:{ id:{type:'string'}, missing:{type:'string'} } } },
+  },
+};
+const SC_OPT = {schema:SC_SCHEMA, effort:'medium', maxTokens:8000,
+  formatHint:'{"nodes":[{"id":"节点 id","verdict":"pass|doubt|fail","dimension":"归属与粒度|重复与遗漏|事实准确|表述规范，通过时为空","reason":"一句话原因，通过时为空","suggestion":"一句话修改建议，通过时为空"}],"levels":[{"id":"层 id","missing":"该层明显遗漏的关键子项，没有则为空"}]}'};
+
+// 待检查内容：当前展开路径上每一个已生成的 AI 层
+function selfCheckPayload(){
+  const levels = ai.filter(l=>l.status==='ok' && l.items.length);
+  return levels.map(lv=>{
+    const i = ai.indexOf(lv);
+    const siblings = i===0 ? skl[skx].children.map(id=>snode[id].name)
+                           : ai[i-1].items.map(x=>x.name);
+    return {
+      id: lv.parent, 归属链: aiChain(i), 上级节点: lv.parentName, 类型: lv.kind,
+      上级的同层节点: siblings.filter(n=>n!==lv.parentName),
+      本层AI节点: lv.items.map(it=>({id:it.key, 名称:it.name, 说明:it.desc, ...(it.manual?{来源:'人工新增'}:it.edited?{来源:'AI 生成后人工编辑'}:{})})),
+    };
+  });
+}
+
+async function runSelfCheck(){
+  const cfg = aiCfg();
+  if(!cfg.key){ openAiCfg(); return; }
+  const payload = selfCheckPayload();
+  if(!payload.length) return;
+  const snapshot = ai.slice();
+  scState = {status:'loading', err:''}; renderSelfCheckBar();
+  const system = '你是职业教育课程与行业能力领域的审核专家，严格按下面的自检规则检查 AI 生成的节点，结论要有依据、不放过问题、也不吹毛求疵。\n\n' + D.selfCheckRules;
+  const prompt = '待检查内容（JSON，每一项是一层）：\n' + JSON.stringify(payload, null, 1) +
+    '\n\n请对「本层AI节点」里的每一个节点给出判定（nodes 中逐个列出，id 原样返回），并对每一层给出遗漏提示（levels，id 为层 id）。';
+  try {
+    const out = await aiCallJSON(cfg, system, prompt, SC_OPT);
+    if(ai.length!==snapshot.length || ai.some((l,k)=>l!==snapshot[k])) throw new Error('自检期间内容已变化，请重新自检');
+    const byId = Object.fromEntries((out.nodes||[]).map(n=>[n.id, n]));
+    const lvById = Object.fromEntries((out.levels||[]).map(l=>[l.id, l]));
+    ai.forEach(lv=>{
+      lv.items.forEach(it=>{
+        const n = byId[it.key];
+        it.check = n && SC_MARK[n.verdict] ? {verdict:n.verdict, dimension:n.dimension||'', reason:n.reason||'', suggestion:n.suggestion||''} : null;
+      });
+      if(lvById[lv.parent]) lv.missing = (lvById[lv.parent].missing||'').trim();
+    });
+    const at = new Date().toLocaleString('zh-CN', {hour12:false});
+    ai.forEach(lv=>{ if(lv.items.some(it=>it.check)) lv.checkedAt = at; });
+    scState = {status:'done', err:''};
+  } catch(err){
+    scState = {status:'error', err: err.message || String(err)};
+  }
+  renderGraph();
+}
+
+function renderSelfCheckBar(){
+  const items = ai.filter(l=>l.status==='ok').flatMap(l=>l.items);
+  const btn = $('#scBtn'), bar = $('#scBar');
+  btn.disabled = !items.length || scState.status==='loading';
+  btn.title = items.length ? '按自检规则检查当前所有 AI 节点' : '先点末级节点，由 AI 生成下级后再自检';
+  btn.textContent = scState.status==='loading' ? '自检中…' : '自检';
+  if(scState.status==='loading'){ bar.hidden = false; bar.innerHTML = `<span>正在检查 ${items.length} 个 AI 节点…</span>`; return; }
+  if(scState.status==='error'){ bar.hidden = false;
+    bar.innerHTML = `<span class="sc-fail">自检失败：${esc(scState.err)}</span><span class="sc-act"><button class="btn-s" data-sc="run">重试</button></span>`; return; }
+  const checked = items.filter(it=>it.check);
+  if(!checked.length){ bar.hidden = true; return; }
+  const cnt = v => checked.filter(it=>it.check.verdict===v).length;
+  const unchecked = items.length - checked.length;
+  const miss = ai.filter(l=>l.status==='ok' && l.missing).map(l=>`「${esc(l.parentName)}」可补充：${esc(l.missing)}`);
+  bar.hidden = false;
+  bar.innerHTML = `<span><b>自检</b>　已检查 ${checked.length} 个 AI 节点</span>
+    <span class="sc-n sc-pass">✓ 通过 ${cnt('pass')}</span>
+    <span class="sc-n sc-doubt">! 存疑 ${cnt('doubt')}</span>
+    <span class="sc-n sc-fail">✕ 有问题 ${cnt('fail')}</span>
+    ${unchecked?`<span>${unchecked} 个新生成的节点未检查</span>`:''}
+    <span class="sc-act"><button class="btn-p" data-sc="report">查看报告</button><button class="btn-s" data-sc="copy">复制自检内容</button><button class="btn-s" data-sc="run">重新自检</button></span>
+    ${miss.length?`<span class="sc-miss">遗漏提示：${miss.join('；')}</span>`:''}`;
+}
+$('#scBtn').addEventListener('click', runSelfCheck);
+
+/* ═══ 自检报告：当前展开路径上各 AI 列的自检结论 ═══ */
+function reportData(){
+  return ai.filter(l=>l.status==='ok' && l.items.length).map(lv=>{
+    const i = ai.indexOf(lv);
+    return { lv, i, chain: aiChain(i), rows: lv.items.map((it, j)=>({it, ck: it.check, i, j})) };
+  });
+}
+function renderReport(){
+  const data = reportData(), only = $('#rptOnlyIssue').checked;
+  const all = data.flatMap(d=>d.rows), checked = all.filter(r=>r.ck);
+  const cnt = v => checked.filter(r=>r.ck.verdict===v).length;
+  const times = [...new Set(data.map(d=>d.lv.checkedAt).filter(Boolean))];
+  $('#rptMeta').textContent = `${I.name} · ${pos[exp].name} › ${abl[sel.id].name} › ${skl[skx].name}` +
+    (times.length ? ` · 自检时间 ${times.join(' / ')}` : '') + ` · 规则：kmap-ai-selfcheck`;
+  $('#rptSum').innerHTML = [
+    ['已检查', `${checked.length}<small style="font-size:12px;color:var(--muted)"> / ${all.length}</small>`, ''],
+    ['✓ 通过', cnt('pass'), 'sc-pass'], ['! 存疑', cnt('doubt'), 'sc-doubt'], ['✕ 有问题', cnt('fail'), 'sc-fail'],
+  ].map(([k,v,c])=>`<div class="rpt-k"><b class="${c}">${v}</b><span>${k}</span></div>`).join('');
+  const body = data.map(d=>{
+    const rows = d.rows.filter(r=> !only || (r.ck && r.ck.verdict!=='pass'));
+    if(only && !rows.length && !d.lv.missing) return '';
+    const tr = rows.map(({it, ck, i, j})=>{
+      const mk = ck && SC_MARK[ck.verdict];
+      const src = it.manual ? '<span class="rpt-src">人工新增</span>' : it.edited ? '<span class="rpt-src">人工编辑</span>' : it.regen ? '<span class="rpt-src">重新生成</span>' : '';
+      return `<tr><td class="n">${esc(it.name)}${src}${it.desc?`<small>${esc(it.desc)}</small>`:''}</td>
+        <td class="v ${mk?'sc-'+mk.c:''}">${mk ? mk.icon+' '+mk.label : '<span style="color:var(--muted);font-weight:400">未检查</span>'}</td>
+        <td>${ck && ck.dimension ? esc(ck.dimension) : '—'}</td>
+        <td>${ck && ck.reason ? esc(ck.reason) : '—'}</td>
+        <td>${ck && ck.suggestion ? esc(ck.suggestion) : '—'}</td>
+        <td class="op">${it.genning ? '<span style="color:var(--muted)">生成中…</span>' : `<button class="btn-s" data-rpt-act="edit" data-i="${i}" data-j="${j}">修改</button><button class="btn-s" data-rpt-act="regen" data-i="${i}" data-j="${j}">重新生成</button>`}</td></tr>`;
+    }).join('');
+    return `<section class="rpt-lv">
+      <div class="rpt-lv-h"><b>${esc(d.lv.parentName)}</b> 的下级 · ${d.lv.items.length} 个
+        <div class="rpt-chain">${d.chain.map(esc).join(' › ')}</div></div>
+      ${rows.length ? `<table><thead><tr><th>节点</th><th>判定</th><th>问题维度</th><th>原因</th><th>修改建议</th><th>操作</th></tr></thead><tbody>${tr}</tbody></table>` : ''}
+      ${d.lv.missing ? `<div class="rpt-miss">遗漏提示：${esc(d.lv.missing)}</div>` : ''}
+    </section>`;
+  }).join('');
+  $('#rptBody').innerHTML = body || `<div class="rpt-empty">${only ? '没有存疑或有问题的节点。' : '当前没有已生成的 AI 节点。'}</div>`;
+}
+function openReport(){ renderReport(); $('#scReport').showModal(); }
+$('#rptOnlyIssue').addEventListener('change', renderReport);
+$('#scReport').addEventListener('click', async e=>{
+  if(e.target===$('#scReport')){ $('#scReport').close(); return; }      // 点遮罩关闭
+  const act = e.target.closest('[data-rpt-act]');
+  if(act){
+    const i = +act.dataset.i, j = +act.dataset.j;
+    if(act.dataset.rptAct==='edit') openNodeEdit(i, j);
+    else if(act.dataset.rptAct==='regen') regenerateNode(i, j);
+    return;
+  }
+  const b = e.target.closest('[data-rpt]'); if(!b) return;
+  if(b.dataset.rpt==='close') $('#scReport').close();
+  if(b.dataset.rpt==='copy'){
+    // 纯文本，便于贴到文档或发给同事
+    const lines = [`AI 延展内容自检报告`, $('#rptMeta').textContent, ''];
+    reportData().forEach(d=>{
+      lines.push(`【${d.lv.parentName} 的下级】${d.chain.join(' › ')}`);
+      d.rows.forEach(({it, ck})=>{
+        const mk = ck && SC_MARK[ck.verdict];
+        lines.push(`- ${it.name}：${mk ? mk.label : '未检查'}` + (ck && ck.dimension ? `（${ck.dimension}）` : '') +
+          (ck && ck.reason ? ` 原因：${ck.reason}` : '') + (ck && ck.suggestion ? ` 建议：${ck.suggestion}` : ''));
+      });
+      if(d.lv.missing) lines.push(`  遗漏提示：${d.lv.missing}`);
+      lines.push('');
+    });
+    try { await navigator.clipboard.writeText(lines.join('\n')); b.textContent = '已复制'; }
+    catch(err){ b.textContent = '复制失败'; }
+    setTimeout(()=>{ b.textContent = '复制报告'; }, 1600);
+  }
+});
+$('#scBar').addEventListener('click', async e=>{
+  const b = e.target.closest('[data-sc]'); if(!b) return;
+  if(b.dataset.sc==='run') runSelfCheck();
+  if(b.dataset.sc==='report') openReport();
+  if(b.dataset.sc==='copy'){
+    // 供在 Claude Code 里用 kmap-ai-selfcheck skill 做更深入的检查
+    const data = selfCheckPayload().map(l=>({...l, 本层AI节点: l.本层AI节点.map(n=>{
+      const it = ai.flatMap(x=>x.items).find(x=>x.key===n.id);
+      return it && it.check ? {...n, 页面自检: {判定: SC_MARK[it.check.verdict].label, 维度: it.check.dimension, 原因: it.check.reason, 建议: it.check.suggestion}} : n;
+    })}));
+    try { await navigator.clipboard.writeText(JSON.stringify(data, null, 2)); b.textContent = '已复制'; }
+    catch(err){ b.textContent = '复制失败'; }
+    setTimeout(()=>{ b.textContent = '复制自检内容'; }, 1600);
+  }
+});
+
+async function aiExpand(level, parent, keep=[]){
+  ai = ai.slice(0, level);
+  ai[level] = {parent:parent.key, parentName:parent.name, kind:parent.kind, status:'loading', items:[], err:'', keep};
+  const lv = ai[level];
+  const cfg = aiCfg();
+  if(!cfg.key){ lv.status='error'; lv.err='尚未填写 API Key'; openAiCfg(); return; }
+  const chain = aiChain(level);
+  const siblings = (level===0 ? skl[skx].children.map(id=>snode[id].name)
+                              : ai[level-1].items.map(x=>x.name)).filter(n=>n!==parent.name);
+  const system = '你是职业教育课程设计与行业能力分析专家。用户给出从行业到当前节点的归属链，你把最后一个节点拆分为更细的下级节点，内容要准确、具体、可教学，不编造法规条款编号。';
+  const prompt =
+      `归属链：\n${chain.join('\n')}\n\n` +
+      (siblings.length ? `与「${parent.name}」同层的其它节点（下级节点不要与它们的内容重复）：${siblings.join('、')}\n\n` : '') +
+      (keep.length ? `「${parent.name}」下已有以下节点（会保留，新生成的不要与它们重复）：${keep.map(x=>x.name).join('、')}\n\n` : '') +
+      `请把最后一个节点「${parent.name}」${AI_RULE[parent.kind]}。\n` +
+      `要求：生成 3–6 个下级节点；name 不超过 20 个汉字；desc 一句话说明，不超过 40 个汉字；` +
+      `如果该节点已经无法再合理细分，返回空数组。`;
+  try {
+    const out = await aiCallJSON(cfg, system, prompt, AI_EXPAND_OPT);
+    if(ai[level]!==lv) return;      // 期间已切换到别处
+    lv.items = keep.concat((out.children||[]).filter(x=>x && x.name).map(x=>({key:`${parent.key}/${newKeyPart('a')}`, name:x.name.trim(), desc:(x.desc||'').trim()})));
+    lv.status = 'ok';
+    aiStore[parent.key] = lv;
+  } catch(err){
+    if(ai[level]!==lv) return;
+    lv.status = 'error'; lv.err = err.message || String(err);
+  }
+  if(ai[level]!==lv) return;
+  renderGraph();
+  revealRight();   // 生成完成后再对齐一次（失败提示会让图变宽）
+}
+
+/* ═══ 节点详情弹窗：行业 / 子行业 / 岗位 / 能力 ═══ */
+function ndSec(title, body){ return `<section class="nd-sec"><div class="nd-sec-h">${esc(title)}</div>${body}</section>`; }
+function ndTags(items, hl){ return items && items.length ? `<div class="nd-tags">${items.map(x=>`<span class="nd-tag${hl?' hl':''}">${esc(x)}</span>`).join('')}</div>` : ''; }
+function openNodeDetail(type, id){
+  let title='', label='', html='';
+  if(type==='ind'){
+    const dt = I.detail || {};
+    title = I.name; label = '行业';
+    html += dt.describe ? ndSec('简介', `<p class="nd-p">${esc(dt.describe)}</p>`) : '';
+    html += dt.aliases && dt.aliases.length ? ndSec('别名', ndTags(dt.aliases)) : '';
+    html += dt.trends && dt.trends.length ? ndSec('行业趋势', `<ul class="nd-list">${dt.trends.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`) : '';
+  } else if(type==='sub'){
+    const s = sub[id]; const dt = s.detail || {};
+    title = s.name; label = '子行业';
+    html += dt.priority ? ndSec('优先级', ndTags([dt.priority==='core'?'核心子行业':dt.priority], true)) : '';
+    html += dt.describe ? ndSec('简介', `<p class="nd-p">${esc(dt.describe)}</p>`) : '';
+    html += dt.typicalEmployers && dt.typicalEmployers.length ? ndSec('典型用人单位', ndTags(dt.typicalEmployers)) : '';
+  } else if(type==='pos'){
+    const p = pos[id]; const dt = p.detail || {};
+    title = p.name; label = '岗位 · ' + sub[p.sub].name;
+    html += p.aliases && p.aliases.length ? ndSec('别名', ndTags(p.aliases)) : '';
+    html += dt.careerLevel ? ndSec('职业等级', ndTags([dt.careerLevel], true)) : '';
+    html += dt.describe ? ndSec('简介', `<p class="nd-p">${esc(dt.describe)}</p>`) : '';
+  } else if(type==='abl'){
+    const a = abl[id]; const dt = a.detail || {};
+    title = a.name; label = '能力项';
+    const flags = [];
+    if(dt.core) flags.push('核心能力');
+    if(dt.flag) flags.push(dt.flag);
+    if(dt.crossSubIndustry) flags.push('跨子行业');
+    html += flags.length ? ndSec('标注', ndTags(flags, true)) : '';
+    html += dt.aliases && dt.aliases.length ? ndSec('别名', ndTags(dt.aliases)) : '';
+    html += a.domain ? ndSec('能力领域', `<div class="nd-kv">${esc(a.domain)}</div>`) : '';
+    html += dt.definition ? ndSec('定义', `<p class="nd-p">${esc(dt.definition)}</p>`) : (dt.describe? ndSec('简介', `<p class="nd-p">${esc(dt.describe)}</p>`) : '');
+    html += dt.crossSubIndustry && dt.acrossSubIndustries && dt.acrossSubIndustries.length ? ndSec('跨子行业', ndTags(dt.acrossSubIndustries)) : '';
+    if(dt.levels && dt.levels.length){
+      const lvs = dt.levels.map(lv=>{
+        const pts = lv.observablePoints && lv.observablePoints.length ? `<ul class="nd-pts">${lv.observablePoints.map(o=>`<li>${esc(o)}</li>`).join('')}</ul>` : '';
+        return `<div class="nd-lv"><div class="nd-lv-h"><b>${esc(lv.level)}</b><span>${esc(lv.assessMethod||'')}</span></div>
+          <div class="nd-lv-b"><div class="nd-kv"><b>行为描述</b>${esc(lv.behaviorDesc||'')}</div>${pts}</div></div>`;
+      }).join('');
+      html += ndSec('三级评估（L1 / L2 / L3）', lvs);
+    }
+    if(dt.evidences && dt.evidences.length){
+      const evs = dt.evidences.map(ev=>{
+        const src = [ev.sourceTitle, ev.sourceLevel, ev.sourceType].filter(Boolean).join(' · ');
+        return `<div class="nd-ev">${ev.clause?`<div class="nd-ev-c">${esc(ev.clause)}</div>`:''}
+          <div class="nd-ev-x">${esc(ev.excerpt||'')}</div>
+          <div class="nd-ev-s">${esc(src)}</div></div>`;
+      }).join('');
+      html += ndSec('证据引用', evs);
+    }
+  } else return;
+  $('#ndTitle').textContent = title;
+  $('#ndSub').textContent = label;
+  $('#ndBody').innerHTML = html || `<div class="nd-empty">暂无详情</div>`;
+  $('#nodeDetail').showModal();
+}
+$('#nodeDetail').addEventListener('click', e=>{
+  if(e.target===$('#nodeDetail')){ $('#nodeDetail').close(); return; }   // 点遮罩关闭
+  if(e.target.closest('[data-nd="close"]')) $('#nodeDetail').close();
+});
+
+/* ---- 悬停提示 ---- */
+const tip = $('#tip');
+let tipDetail = null, tipHover = false, tipHideTimer = 0;
+let tipNode = null, tipShowTimer = 0, lastX = 0, lastY = 0;
+function positionTip(x, y){
+  const w=tip.offsetWidth, h=tip.offsetHeight;
+  let px=x+14, py=y+16;
+  if(px+w>innerWidth-10) px=x-w-14;
+  if(py+h>innerHeight-10) py=y-h-16;
+  tip.style.left=px+'px'; tip.style.top=py+'px';
+}
+function scheduleTipHide(){ clearTimeout(tipHideTimer); tipHideTimer = setTimeout(()=>{ if(!tipHover) tip.classList.remove('on'); }, 160); }
+function tipHideNow(){ clearTimeout(tipShowTimer); tip.classList.remove('on'); }
+function tipShowNow(){ tipShowTimer = 0; tip.classList.add('on'); positionTip(lastX, lastY); }
+const TIP_DELAY = 350;
+$('#posTree').addEventListener('mouseover', e=>{
+  const g = e.target.closest('[data-n]');
+  const key = g ? g.dataset.n : null;
+  if(key === tipNode){ lastX = e.clientX; lastY = e.clientY; return; }
+  tipNode = key;
+  if(!g){ tipHideNow(); tipDetail = null; return; }
+  tipHideNow();
+  const [t,id] = g.dataset.n.split('|');
+  tipDetail = null;
+  const detailBtn = () => `<button class="tip-detail" type="button" data-tip-detail>查看详情</button>`;
+  if(t==='ind'){ tipDetail={type:'ind', id:I.id};
+    tip.innerHTML = `<b>${esc(I.name)}</b><span class="tk">${D.subIndustries.filter(s=>s.built).length} 个子行业 · ${D.positions.length} 个岗位 · ${D.abilities.length} 条能力项</span>${detailBtn()}`;
+  } else if(t==='sub'){ const s=sub[id]; tipDetail={type:'sub', id};
+    tip.innerHTML = `<b>${esc(s.name)}</b><span class="tk">${s.positionIds.length} 个岗位 · ${s.distinctAbilityCount} 条去重能力项</span>${detailBtn()}`;
+  } else if(t==='pos'){ const p=pos[id], b=breakdown(id); tipDetail={type:'pos', id};
+    tip.innerHTML = `<b>${esc(p.name)}</b><span class="tk">${esc(p.aliases.join(' / '))}</span>
+      <span class="tk">通用 ${b.ind} · 岗位专项 ${b.sh + b.own}　${p.l3Count} 条需 L3</span>${detailBtn()}`;
+  } else if(t==='abl'){ const a=abl[id]; tipDetail={type:'abl', id};
+    tip.innerHTML = `<b>${esc(a.name)}</b><span class="tk">${a.typeCn} · ${esc(a.domain)}</span>
+      <span class="tk">${a.positionCount} 个岗位要求 · 最高 ${a.maxRequiredLevel}${a.core?' · 核心能力':''} · 技能 ${a.skills.length}</span>${detailBtn()}`;
+  } else if(t==='skl'){ const k=skl[id];
+    const cnt = {}; k.children.forEach(n=>{ const t=snode[n].kind; cnt[t]=(cnt[t]||0)+1; });
+    tip.innerHTML = `<b>${esc(k.name)}</b><span class="tk">归属能力项：${k.abilityIds.map(x=>esc(abl[x].name)).join(' / ')}</span>
+      <span class="tk">${Object.keys(KIND).filter(t=>cnt[t]).map(t=>`${t} ${cnt[t]}`).join(' · ') || '暂无下级节点'}</span>`;
+  } else if(t==='lf'){ const n=snode[id];
+    tip.innerHTML = `<b>${esc(n.name)}</b><span class="tk">${esc(n.kind)} · 点击由 AI 继续细分</span>`;
+  } else if(t==='retry'){ const lv=ai[+id]; if(!lv){ tipHideNow(); return; }
+    tip.innerHTML = `<b>生成失败</b><span class="tk">${esc(lv.err)}</span><span class="tk">点击重试，或在「AI 设置」中检查接口地址、模型与 Key</span>`;
+  } else if(t==='airegen'){
+    tip.innerHTML = `<b>重新生成</b><span class="tk">让 AI 重新生成这一列；人工新增和人工编辑过的节点保留，下面已展开的列会收起</span>`;
+  } else if(t==='aiadd'){
+    tip.innerHTML = `<b>添加节点</b><span class="tk">在这一列末尾手动添加一个节点</span>`;
+  } else if(t==='ai'){ const it=ai[+id] && ai[+id].items[+g.dataset.n.split('|')[2]]; if(!it){ tipHideNow(); return; }
+    const ck = it.check, mk = ck && SC_MARK[ck.verdict];
+    tip.innerHTML = `<b>${esc(it.name)}</b><span class="tk">${esc(ai[+id].kind)}</span>${it.desc?`<span class="tk">${esc(it.desc)}</span>`:''}` +
+      (ck ? `<span class="tk">自检：${mk.icon} ${mk.label}${ck.dimension?' · '+esc(ck.dimension):''}</span>` +
+            (ck.reason?`<span class="tk">原因：${esc(ck.reason)}</span>`:'') +
+            (ck.suggestion?`<span class="tk">建议：${esc(ck.suggestion)}</span>`:'') : '') +
+      `<span class="tk">${it.manual?'人工新增':'AI 生成'}${it.edited?' · 已人工编辑':it.regen?' · 已重新生成':''} · 点击由 AI 继续细分 · 右键编辑或删除</span>`;
+  } else { tipHideNow(); return; }
+  lastX = e.clientX; lastY = e.clientY;
+  tipShowTimer = setTimeout(tipShowNow, TIP_DELAY);
+});
+$('#posTree').addEventListener('mouseleave', ()=>{ tipNode = null; tipHover = false; clearTimeout(tipShowTimer); scheduleTipHide(); });
+tip.addEventListener('mouseenter', ()=>{ tipHover=true; clearTimeout(tipHideTimer); });
+tip.addEventListener('mouseleave', ()=>{ tipHover=false; tip.classList.remove('on'); });
+tip.addEventListener('click', e=>{
+  const b = e.target.closest('[data-tip-detail]'); if(!b || !tipDetail) return;
+  tip.classList.remove('on');
+  openNodeDetail(tipDetail.type, tipDetail.id);
+});
+
+// 首次渲染放在最后：用到的状态（自检、已保存的 AI 节点等）都已声明并载入
+renderGraph();
+</script>
+</body>
+</html>
