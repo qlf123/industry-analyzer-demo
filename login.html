@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登录 · AIGC 智慧课堂教学平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<style>
+/* 登录页：居中卡片，复用 common.css 的设计变量 */
+.login-body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;box-sizing:border-box}
+.login-card{width:380px;max-width:100%;background:var(--card);border:1px solid var(--rule);border-radius:16px;box-shadow:var(--pop-shadow);padding:38px 32px 30px;text-align:center}
+.login-logo{width:54px;height:54px;border-radius:14px;background:var(--brand);color:#fff;font-size:28px;line-height:54px;margin:0 auto 16px}
+.login-card h1{font-size:18px;margin:0 0 6px;color:var(--ink)}
+.login-sub{font-size:12px;color:var(--muted);margin:0 0 26px}
+.login-form{text-align:left;margin-bottom:4px}
+.login-form label{display:block;font-size:12px;color:var(--ink-2);margin-bottom:8px}
+.login-form select{width:100%;box-sizing:border-box;font:inherit;font-size:13px;padding:9px 10px;border:1px solid var(--rule);border-radius:9px;background:var(--card);color:var(--ink)}
+.login-form select:focus{outline:none;border-color:var(--brand)}
+.login-form .btn{width:100%;height:42px;margin-top:14px;font-size:14px}
+.login-portal{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:12px;min-height:15px}
+.login-portal.warn{color:var(--crit);font-weight:600}
+.login-error{color:var(--crit);font-size:12.5px;margin-top:8px}
+.login-note{font-size:11.5px;color:var(--muted);margin-top:20px}
+</style>
+</head>
+<body class="login-body">
+<main class="login-card">
+  <div class="login-logo">◈</div>
+  <h1>AIGC 智慧课堂教学平台</h1>
+  <p class="login-sub">权限管理升级 · 登录流程演示</p>
+  <div class="login-form">
+    <label for="demoAccount">演示账号</label>
+    <select id="demoAccount" aria-label="演示账号"></select>
+    <button class="btn" id="loginBtn" type="button">进入平台</button>
+  </div>
+  <div class="login-portal" id="portalHint"></div>
+  <div class="login-error" id="loginError" hidden></div>
+  <p class="login-note">本页仅演示登录流程，不做真实身份验证。</p>
+</main>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var sel = document.getElementById('demoAccount');
+  var btn = document.getElementById('loginBtn');
+  var portalHint = document.getElementById('portalHint');
+  var errEl = document.getElementById('loginError');
+
+  function portalNameCn(p) {
+    return p === 'admin' ? '管理端' : (p === 'teacher' ? '教师端' : (p === 'student' ? '学生端' : p));
+  }
+
+  // 渲染演示账号下拉（复用 mock 数据，默认选超管）
+  var state = DEMO.getState();
+  (state.demoIdentities || []).forEach(function (d) {
+    var o = document.createElement('option');
+    o.value = d.accountId;
+    o.textContent = d.label;
+    sel.appendChild(o);
+  });
+  if (sel.options.length) sel.value = 'ACC-SUPER';
+
+  function refreshPortalHint() {
+    var ctx = DEMO.getState();
+    var identity = Perm.getIdentity(ctx, sel.value);
+    var portals = Perm.rolePortals(ctx, identity);
+    if (!portals.length) {
+      portalHint.textContent = '该账号无可用权限';
+      portalHint.className = 'login-portal warn';
+    } else {
+      portalHint.textContent = '可进入：' + portals.map(portalNameCn).join('、');
+      portalHint.className = 'login-portal';
+    }
+  }
+
+  function setError(msg) {
+    errEl.textContent = msg || '';
+    errEl.hidden = !msg;
+  }
+
+  function login() {
+    var accountId = sel.value;
+    var ctx = DEMO.getState();
+    var identity = Perm.getIdentity(ctx, accountId);
+    var portals = Perm.rolePortals(ctx, identity);
+    if (!portals.length) {
+      setError('账号无可用权限，请联系管理员');
+      return;
+    }
+    setError('');
+    if (portals.length > 1) {
+      UI.promptPortal(ctx, identity, portals, function (portal) {
+        identity.currentPortal = portal;
+        var target = UI.firstPage(ctx, identity, portal);
+        location.href = target + (target.indexOf('?') >= 0 ? '&' : '?') + 'u=' + encodeURIComponent(accountId);
+      }, function () {
+        // 取消：停留在登录页，不跳转
+      });
+      return;
+    }
+    var target = UI.firstPage(ctx, identity);
+    location.href = target + (target.indexOf('?') >= 0 ? '&' : '?') + 'u=' + encodeURIComponent(accountId);
+  }
+
+  sel.addEventListener('change', function () { setError(''); refreshPortalHint(); });
+  sel.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
+  btn.addEventListener('click', login);
+
+  refreshPortalHint();
+})();
+</script>
+</body>
+</html>

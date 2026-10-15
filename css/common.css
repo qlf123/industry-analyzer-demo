@@ -1,6 +1,6 @@
 /* 权限管理升级 Demo · 公共样式
  * 从 panorama.html / kmap.html 抽取的通用件：外壳（侧栏/页头）、卡片、tab、表格、
- * 按钮、标签、表单、抽屉、轻提示，以及新增的「演示身份条」。
+ * 按钮、标签、表单、抽屉、轻提示。
  * 只承载跨页通用件，各页面业务布局仍内联在各自 .html。视觉与现有两页保持一致。
  */
 :root{
@@ -16,7 +16,6 @@
   --pop-shadow:0 12px 40px -12px rgba(25,21,36,.3), 0 2px 6px rgba(25,21,36,.06);
   --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
-  --demobar-h:46px;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -57,24 +56,10 @@ input,select,textarea{font:inherit}
 .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--muted);font-weight:500}
 
-/* ── 演示身份条（固定顶部，浅色） ── */
-.demobar{position:sticky;top:0;z-index:100;height:var(--demobar-h);
-  display:flex;align-items:center;gap:16px;padding:0 18px;white-space:nowrap;overflow-x:auto;
-  background:var(--brand-soft);border-bottom:1px solid var(--rule);font-size:12.5px;color:var(--ink-2)}
-.demobar .dbl{display:flex;align-items:center;gap:7px;flex:0 0 auto}
-.demobar .dbl b{font-weight:600;color:var(--ink);font-size:12px}
-.demobar select{font:inherit;font-size:12.5px;padding:5px 8px;border:1px solid var(--rule);border-radius:8px;
-  background:var(--card);color:var(--ink);max-width:250px;outline:none}
-.demobar select:focus{border-color:var(--brand)}
-.demobar .dbtoggle{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;flex:0 0 auto}
-.demobar .dbtoggle input{accent-color:var(--brand);margin:0}
-.demobar .sp{flex:1}
-.demobar .dbr{height:30px;padding:0 13px;font-size:12px;flex:0 0 auto}
-
 /* ── 平台外壳 ── */
-.app{display:flex;min-height:calc(100vh - var(--demobar-h))}
+.app{display:flex;min-height:100vh}
 .lnav{width:206px;flex:0 0 206px;background:var(--card);border-right:1px solid var(--rule);
-  position:sticky;top:var(--demobar-h);height:calc(100vh - var(--demobar-h));
+  position:sticky;top:0;height:100vh;
   display:flex;flex-direction:column;padding:0;overflow-y:auto}
 .lbrand{display:flex;align-items:center;gap:9px;padding:18px 18px 16px;border-bottom:1px solid var(--rule-2)}
 .ldot{width:22px;height:22px;border-radius:7px;flex:0 0 22px;
@@ -95,7 +80,7 @@ a.lmenu{text-decoration:none}
 
 .panel{flex:1;min-width:0;display:flex;flex-direction:column}
 .ptop{background:var(--card);border-bottom:1px solid var(--rule);padding:16px 28px 14px;
-  position:sticky;top:var(--demobar-h);z-index:20}
+  position:sticky;top:0;z-index:20}
 .ptop-r{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap}
 .pt-l{flex:1;min-width:260px}
 .pt-t{font-size:17px}
@@ -103,7 +88,6 @@ a.lmenu{text-decoration:none}
 .pt-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .body{padding:22px 28px 60px;max-width:1360px;width:100%}
 @media (max-width:1000px){
-  .demobar{gap:10px;padding:0 12px}
   .app{display:block;min-height:0}
   .lnav{position:static;width:auto;height:auto;flex:none;border-right:none;border-bottom:1px solid var(--rule)}
   .lgroup{display:flex;flex-wrap:wrap;gap:2px;padding:8px}.lgt{display:none}.lmenu{width:auto}
@@ -216,6 +200,18 @@ a.lmenu{text-decoration:none}
 .aidlg input:focus,.aidlg select:focus,.aidlg textarea:focus{outline:none;border-color:var(--brand)}
 .aidlg .note{font-size:11.5px;color:var(--muted);line-height:1.55}
 .aidlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+/* 选择进入的端（多端身份切换时弹出） */
+.aidlg.pp{width:min(400px,calc(100vw - 32px))}
+.pp-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pp-head h2{font-size:15px;margin:0;flex:1 1 auto;min-width:0}
+.pp-note{font-size:12px;color:var(--ink-2);line-height:1.6}
+.pp-list{display:flex;flex-direction:column;gap:9px}
+.pp-opt{display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;width:100%;
+  padding:11px 13px;border:1px solid var(--rule);border-radius:10px;background:var(--card);
+  color:var(--ink);font:inherit;cursor:pointer}
+.pp-opt:hover{border-color:var(--brand);background:var(--brand-soft)}
+.pp-name{font-size:13.5px;font-weight:600}
+.pp-roles{font-size:11.5px;color:var(--muted);line-height:1.5}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:12px;
   background:var(--ink);color:var(--plane);border-radius:9px;padding:9px 14px;font-size:12.5px;
   box-shadow:0 8px 24px -8px rgba(0,0,0,.4);max-width:min(560px,86vw)}

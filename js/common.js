@@ -1,7 +1,7 @@
 /* 权限管理升级 V2.1 · 公共框架
  * 只用于新的权限演示页面（system / basedata / account / teacher-* / student）。
  * 依赖 js/mock-data.js（window.DEMO）与 js/permission.js（window.Perm）。
- * 职责：一套菜单配置渲染三套侧栏（管理端 / 教师端 / 学生端）+ 顶部演示身份条。
+ * 职责：一套菜单配置渲染三套侧栏（管理端 / 教师端 / 学生端）。
  * 不修改 panorama.html / kmap.html。
  */
 (function (root, factory) {
@@ -10,29 +10,46 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var UI_KEY = 'permission-demo-ui'; // 演示身份条的跨页选择（与 mock 数据分开存）
-
-  /* ── 端 → 角色 key 映射（决定演示身份属于哪个端） ── */
-  var ADMIN_ROLES = { super: 1, orgAdmin: 1, majorLead: 1, counselor: 1, headTeacher: 1, academic: 1, studentAffairs: 1, supervisor: 1, info: 1 };
-  var TEACHER_ROLES = { teacher: 1, enterprise: 1 };
-  var STUDENT_ROLES = { student: 1 };
-
-  function roleKeys(ctx, identity) {
-    var set = {};
-    (identity.assignments || []).forEach(function (a) {
-      var role = (ctx.roles || []).filter(function (r) { return r.id === a.roleId; })[0];
-      if (role) set[role.key] = 1;
-    });
-    return set;
+  /* ── 端名称 ── */
+  function portalName(p) {
+    if (p === 'admin') return '管理端';
+    if (p === 'teacher') return '教师端';
+    if (p === 'student') return '学生端';
+    return p || '';
   }
 
+  function roleById(ctx, id) { return (ctx.roles || []).find(function (r) { return r.id === id; }); }
+  function orgById(ctx, id) { return (ctx.orgs || []).find(function (o) { return o.id === id; }); }
+  function klassById(ctx, id) { return (ctx.klasses || []).find(function (k) { return k.id === id; }); }
+  function majorById(ctx, id) { return (ctx.majors || []).find(function (m) { return m.id === id; }); }
+
+  /* 一条分配的范围摘要（用于身份条「角色（范围）」） */
+  function scopeSummary(ctx, a) {
+    var ts = a.teachingScope || {};
+    var ids = [];
+    if ((a.scopeClassIds || []).length) ids = a.scopeClassIds;
+    else if ((ts.classIds || []).length) ids = ts.classIds;
+    else if ((ts.majorIds || []).length) ids = ts.majorIds;
+    else if ((a.scopeOrgIds || []).length) ids = a.scopeOrgIds;
+    return ids.map(function (id) {
+      var o = klassById(ctx, id) || majorById(ctx, id) || orgById(ctx, id);
+      return o ? o.name : id;
+    }).join('、');
+  }
+
+  /* 身份所属端：单端→该端；多端→管理端（不再记忆上次使用的端）；无有效分配→null */
   function portalOf(ctx, identity) {
-    var keys = roleKeys(ctx, identity);
-    var k;
-    for (k in STUDENT_ROLES) if (keys[k]) return 'student';
-    for (k in ADMIN_ROLES) if (keys[k]) return 'admin';
-    for (k in TEACHER_ROLES) if (keys[k]) return 'teacher';
+    var enterable = Perm.rolePortals(ctx, identity);
+    if (!enterable.length) return null;
+    if (enterable.length === 1) return enterable[0];
     return 'admin';
+  }
+
+  /* 当前端：页面 cfg.portal 在可进入集合里→该端；否则按身份默认端 */
+  function currentPortalFor(ctx, identity) {
+    var enterable = Perm.rolePortals(ctx, identity);
+    if (_config && enterable.indexOf(_config.portal) >= 0) return _config.portal;
+    return portalOf(ctx, identity);
   }
 
   function hasPerm(ctx, identity, code) {
@@ -57,15 +74,10 @@
           { key: 'kmap', label: '行业图谱', icon: '◇', href: 'kmap.html', external: true }
         ] },
         { label: '教务', items: [
-          { key: 'basedata', label: '教务基础数据', icon: '▤', href: 'basedata.html',
-            perms: ['student:info:view', 'student:score:view', 'teaching:content:view', 'teaching:content:audit', 'org:node:view'] },
-          { key: 'courseplan', label: '课程计划管理', icon: '▤', empty: true },
-          { key: 'account', label: '账号与角色', icon: '▤', href: 'account.html',
-            perms: ['org:account:view', 'org:role:define'] },
-          { key: 'schoolpub', label: '校本资源库', icon: '▤', href: 'teacher-resources.html',
-            perms: ['resource:schoolpub:publish'] },
-          { key: 'teacherprofile', label: '教师档案', icon: '▤', href: 'teacher-profile.html',
-            perms: ['teaching:profile:view'] }
+          { key: 'account', label: '账号管理', icon: '▤', href: 'account-v1.html',
+            perms: ['org:account:view'] },
+          { key: 'accountrole', label: '角色管理', icon: '▤', href: 'account-v1.html?tab=role',
+            perms: ['org:role:define'] }
         ] },
         { label: '系统', items: [
           { key: 'system', label: '组织管理', icon: '▤', href: 'system.html',
@@ -108,22 +120,28 @@
   function $(sel, root) { return (root || document).querySelector(sel); }
 
   var memUi = null;
+  /* 初始身份：地址栏 ?u=<账号> 传入（登录页跳转用），否则默认「超管」；仅内存，不持久化 */
+  function initialAccountId() {
+    try {
+      if (typeof location !== 'undefined' && location.search) {
+        var m = location.search.match(/[?&]u=([^&]+)/);
+        if (m) return decodeURIComponent(m[1]);
+      }
+    } catch (e) {}
+    return 'ACC-SUPER';
+  }
+  /* 演示状态只在当前页内存中保留（每次打开页面默认「超管」，不持久化到任何存储） */
   function loadUi() {
     if (memUi) return memUi;
-    var fallback = { accountId: 'ACC-SUPER', orgId: '', why: false };
-    try {
-      var raw = localStorage.getItem(UI_KEY);
-      memUi = raw ? JSON.parse(raw) : fallback;
-    } catch (e) { memUi = fallback; }
-    if (!memUi.accountId) memUi.accountId = 'ACC-SUPER';
+    memUi = { accountId: initialAccountId(), orgId: '', why: false };
     return memUi;
   }
-  function saveUi() {
-    try { localStorage.setItem(UI_KEY, JSON.stringify(memUi)); } catch (e) {}
-  }
+  function saveUi() {}
 
   function currentIdentity(ctx) {
-    return Perm.getIdentity(ctx, loadUi().accountId);
+    var identity = Perm.getIdentity(ctx, loadUi().accountId);
+    identity.currentPortal = currentPortalFor(ctx, identity);
+    return identity;
   }
 
   /* 组织树深度（用于「当前组织」下拉的缩进） */
@@ -143,10 +161,11 @@
     return hasAnyPerm(ctx, identity, item.perms);
   }
 
-  /* 该身份所属端的「第一个可见新页面」（切换身份后跳转目标） */
-  function firstPage(ctx, identity) {
-    var portal = portalOf(ctx, identity);
-    var groups = MENUS[portal].groups;
+  /* 该身份所属端的「第一个可见新页面」（切换身份后跳转目标）；可显式指定端 */
+  function firstPage(ctx, identity, portal) {
+    var p = portal || portalOf(ctx, identity);
+    if (!p) return 'system.html'; // 无可用端（停用身份）兜底，正常不会走到
+    var groups = MENUS[p].groups;
     for (var g = 0; g < groups.length; g++) {
       var items = groups[g].items;
       for (var i = 0; i < items.length; i++) {
@@ -154,7 +173,7 @@
         if (it.href && !it.external && itemVisible(ctx, identity, it)) return it.href;
       }
     }
-    return portal === 'student' ? 'student.html' : 'system.html';
+    return p === 'student' ? 'student.html' : 'system.html';
   }
 
   /* ── 渲染侧栏 ── */
@@ -184,71 +203,45 @@
     nav.innerHTML = html;
   }
 
-  /* ── 渲染演示身份条 ── */
-  function renderDemobar(ctx) {
-    var bar = $('#demobar');
-    if (!bar) return;
-    var identity = currentIdentity(ctx);
-    var ui = loadUi();
-    var hasOrg = Perm.hasOrgScope(ctx, identity);
-
-    var html = '<span class="dbl"><b>当前身份</b><select id="dIdentity" aria-label="当前身份">';
-    (ctx.demoIdentities || []).forEach(function (d) {
-      html += '<option value="' + esc(d.accountId) + '"' + (d.accountId === ui.accountId ? ' selected' : '') + '>' + esc(d.label) + '</option>';
-    });
-    html += '</select></span>';
-
-    if (hasOrg) {
-      var opts = Perm.currentOrgOptions(ctx, identity);
-      html += '<span class="dbl"><b>当前组织</b><select id="dOrg" aria-label="当前组织">';
-      html += '<option value=""' + (!ui.orgId ? ' selected' : '') + '>全部授权范围</option>';
-      opts.forEach(function (o) {
-        html += '<option value="' + esc(o.id) + '"' + (o.id === ui.orgId ? ' selected' : '') + '>' + esc(indent(orgDepth(ctx, o.id)) + o.name) + '</option>';
-      });
-      html += '</select></span>';
+  /* 多端身份切换时弹出「选择进入的端」，选完后跳到该端首页（带 ?u= 保持身份） */
+  function promptPortal(ctx, identity, enterable, onPick, onCancel) {
+    var accountName = identity.account ? identity.account.name : '';
+    var active = Perm.allActiveAssignments(ctx, identity);
+    var rows = enterable.map(function (p) {
+      var roles = active.filter(function (a) {
+        var r = roleById(ctx, a.roleId);
+        return r && r.portal === p;
+      }).map(function (a) {
+        var r = roleById(ctx, a.roleId);
+        var scope = scopeSummary(ctx, a);
+        return (r ? r.name : a.roleId) + (scope ? '（' + scope + '）' : '');
+      }).join('、');
+      return '<button type="button" class="pp-opt" data-portal="' + esc(p) + '">'
+        + '<span class="pp-name">' + esc(portalName(p)) + '</span>'
+        + '<span class="pp-roles">' + esc(roles) + '</span>'
+        + '</button>';
+    }).join('');
+    var dlg = document.createElement('dialog');
+    dlg.className = 'aidlg pp';
+    dlg.innerHTML = '<form>'
+      + '<div class="pp-head"><h2>选择要进入的端</h2>'
+      + '<button type="button" class="x" data-pp-close aria-label="关闭">×</button></div>'
+      + '<div class="pp-note">「' + esc(accountName) + '」可进入多个端，请选择本次进入哪个端。</div>'
+      + '<div class="pp-list">' + rows + '</div>'
+      + '</form>';
+    document.body.appendChild(dlg);
+    function finish(portal) {
+      dlg.remove();
+      if (portal) { if (onPick) onPick(portal); }
+      else { if (onCancel) onCancel(); }
     }
-
-    html += '<label class="dbtoggle"><input type="checkbox" id="dWhy"' + (ui.why ? ' checked' : '') + '>为什么能看到 / 看不到</label>';
-    html += '<span class="sp"></span>';
-    html += '<button class="btn ghost dbr" id="dReset" type="button">重置演示数据</button>';
-    bar.innerHTML = html;
-
-    $('#dIdentity').addEventListener('change', function () { onIdentityChange(this.value); });
-    if (hasOrg) $('#dOrg').addEventListener('change', function () { onOrgChange(this.value); });
-    $('#dWhy').addEventListener('change', function () { onWhyChange(this.checked); });
-    $('#dReset').addEventListener('click', onReset);
-  }
-
-  function onIdentityChange(accountId) {
-    memUi = loadUi();
-    memUi.accountId = accountId;
-    memUi.orgId = ''; // 切换身份时重置为「全部授权范围」
-    saveUi();
-    var ctx = DEMO.getState();
-    var identity = Perm.getIdentity(ctx, accountId);
-    var target = firstPage(ctx, identity);
-    var here = (location.pathname.split('/').pop() || 'system.html');
-    if (here !== target) location.href = target;
-    else refresh();
-  }
-
-  function onOrgChange(orgId) {
-    memUi = loadUi();
-    memUi.orgId = orgId || '';
-    saveUi();
-    refresh();
-  }
-
-  function onWhyChange(checked) {
-    memUi = loadUi();
-    memUi.why = !!checked;
-    saveUi();
-    refresh();
-  }
-
-  function onReset() {
-    DEMO.resetDemoData();
-    refresh();
+    dlg.querySelector('[data-pp-close]').addEventListener('click', function () { finish(null); });
+    dlg.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-portal]');
+      if (b) finish(b.getAttribute('data-portal'));
+    });
+    dlg.addEventListener('cancel', function () { finish(null); });
+    dlg.showModal();
   }
 
   var _config = null;
@@ -256,8 +249,13 @@
 
   function renderAll(ctx, cfg) {
     var identity = currentIdentity(ctx);
+    var enterable = Perm.rolePortals(ctx, identity);
+    if (!enterable.length) {
+      var nav = $('#lnav');
+      if (nav) nav.innerHTML = '';
+      return;
+    }
     renderSidebar(ctx, identity, cfg.portal, cfg.active);
-    renderDemobar(ctx);
   }
 
   /* ── 页面内容刷新钩子（身份/组织/为什么/重置变化后通知各页面重渲染） ── */
@@ -279,23 +277,23 @@
     _config = cfg || { portal: 'admin', active: 'system' };
     var ctx = DEMO.getState();
     var identity = currentIdentity(ctx);
-    var portal = portalOf(ctx, identity);
-    if (portal !== cfg.portal) {
-      // 身份所属的端与当前页面不符（如：以教师身份直接打开管理端页）→ 跳回其可见首屏
+    var enterable = Perm.rolePortals(ctx, identity);
+    // 当前页面的端不在身份可进入的端集合里才跳回；在集合里就把当前端设为该页面的端
+    if (enterable.length && enterable.indexOf(_config.portal) < 0) {
       location.replace(firstPage(ctx, identity));
       return;
     }
-    renderAll(ctx, cfg);
+    renderAll(ctx, _config);
   }
 
   return {
     boot: boot,
     portalOf: portalOf,
     firstPage: firstPage,
+    promptPortal: promptPortal,
     hasPerm: hasPerm,
     hasAnyPerm: hasAnyPerm,
     MENUS: MENUS,
-    UI_KEY: UI_KEY,
     onChange: onChange,
     ui: uiSnapshot,
     currentIdentity: currentIdentity

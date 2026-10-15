@@ -28,7 +28,6 @@
 </style>
 </head>
 <body>
-<div class="demobar" id="demobar"></div>
 <div class="app">
   <aside class="lnav" id="lnav"></aside>
   <div class="panel">
@@ -82,7 +81,7 @@
   function reload() {
     ctx = DEMO.getState();
     ui = UI.ui();
-    identity = Perm.getIdentity(ctx, ui.accountId);
+    identity = UI.currentIdentity(ctx);
   }
 
   function audit(action, object, before, after, result, orgId) {
@@ -439,6 +438,7 @@
       return r.name + (scope ? ' @' + scope : '');
     }).join('；') || '无';
   }
+  function portalNameCn(p) { return p === 'teacher' ? '教师端' : (p === 'student' ? '学生端' : '管理端'); }
   function showTip(anchor, html) {
     var t = ensureTip();
     t.innerHTML = html;
@@ -457,10 +457,12 @@
     var t = Perm.explain(ctx, identity, 'student:info:view', student, 'student', ui.orgId);
     var lines = ['<b>' + esc(student.name) + ' · 学生信息</b>',
       '<span class="tk">账号：' + esc(identity.account.name) + '（' + esc(identity.account.status) + '）</span>',
+      '<span class="tk">当前端：' + portalNameCn(t.currentPortal) + '，只计入' + portalNameCn(t.currentPortal) + '角色的分配</span>',
       '<span class="tk">角色：' + esc(roleSummary()) + '</span>'];
     (t.assignments || []).forEach(function (a) {
       lines.push('<span class="tk">' + esc(a.roleName) + '：功能 ' + (a.hasPerm ? '✓' : '✗')
-        + (a.hasPerm ? ' · 范围 ' + (a.scopePass === true ? '✓' : (a.scopePass === false ? '✗' : '✓')) : '') + '</span>');
+        + (a.hasPerm ? ' · 范围 ' + (a.scopePass === true ? '✓' : (a.scopePass === false ? '✗' : '✓')) : '')
+        + (a.inPortal === false ? ' · ' + portalNameCn(a.portal) + '分配，本端不参与' : '') + '</span>');
     });
     var ms = Perm.maskStudent(ctx, identity, student, 'student');
     lines.push('<span class="tk">脱敏档：手机 ' + esc(ms.phone.tier) + ' · 身份证 ' + esc(ms.idCard.tier) + ' · 住址 ' + esc(ms.address.tier) + ' · 成绩 ' + esc(ms.score.tier) + '</span>');
@@ -476,10 +478,12 @@
     var t = Perm.explain(ctx, identity, 'teaching:content:audit', content, 'content');
     var lines = ['<b>' + esc(content.title) + ' · 审核</b>',
       '<span class="tk">账号：' + esc(identity.account.name) + '（' + esc(identity.account.status) + '）</span>',
+      '<span class="tk">当前端：' + portalNameCn(t.currentPortal) + '，只计入' + portalNameCn(t.currentPortal) + '角色的分配</span>',
       '<span class="tk">角色：' + esc(roleSummary()) + '</span>'];
     (t.assignments || []).forEach(function (a) {
       lines.push('<span class="tk">' + esc(a.roleName) + '：功能 ' + (a.hasPerm ? '✓' : '✗')
-        + (a.hasPerm ? ' · 范围 ' + (a.scopePass === true ? '✓' : (a.scopePass === false ? '✗' : '✓')) : '') + '</span>');
+        + (a.hasPerm ? ' · 范围 ' + (a.scopePass === true ? '✓' : (a.scopePass === false ? '✗' : '✓')) : '')
+        + (a.inPortal === false ? ' · ' + portalNameCn(a.portal) + '分配，本端不参与' : '') + '</span>');
     });
     if (!t.allowed) lines.push('<span class="tk">结果：无审核按钮 — ' + esc(t.denyReason || '范围不通过') + '</span>');
     return lines.join('');

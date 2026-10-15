@@ -22,7 +22,6 @@
 </style>
 </head>
 <body>
-<div class="demobar" id="demobar"></div>
 <div class="app">
   <aside class="lnav" id="lnav"></aside>
   <div class="panel">
@@ -64,7 +63,7 @@
   function reload() {
     ctx = DEMO.getState();
     ui = UI.ui();
-    identity = Perm.getIdentity(ctx, ui.accountId);
+    identity = UI.currentIdentity(ctx);
   }
 
   function isEnterprise() {

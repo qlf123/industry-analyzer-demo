@@ -42,7 +42,6 @@
 </style>
 </head>
 <body>
-<div class="demobar" id="demobar"></div>
 <div class="app">
   <aside class="lnav" id="lnav"></aside>
   <div class="panel">
@@ -93,7 +92,7 @@
   function reload() {
     ctx = DEMO.getState();
     ui = UI.ui();
-    identity = Perm.getIdentity(ctx, ui.accountId);
+    identity = UI.currentIdentity(ctx);
   }
 
   /* ── 审计：所有操作（含被拒绝 / 越权尝试）都落库 ── */

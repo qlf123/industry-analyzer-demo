@@ -175,45 +175,45 @@
 
   /* ── 角色（type：内置 / 预设 / 部门模板 / 自定义；key 供权限模块判定用） ── */
   var ROLES = [
-    { id: 'R-SUPER', key: 'super', name: '平台超级管理员', type: '内置',     status: '启用', aiQuota: 200,
+    { id: 'R-SUPER', key: 'super', portal: 'admin', name: '平台超级管理员', type: '内置',     status: '启用', aiQuota: 200,
       description: '系统内置的最高权限角色，覆盖全校全部功能与数据', createdBy: '系统', createdAt: '2024-09-01', permissionIds: [
       'org:node:view','org:node:edit','org:account:view','org:account:edit','org:account:assign','org:teachingScope:grant',
       'org:role:define','org:audit:view','student:info:view','student:score:view','student:idcard:plain','teaching:profile:view',
       'teaching:content:view','teaching:content:audit','intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view' ] },
-    { id: 'R-ORG-ADMIN', key: 'orgAdmin', name: '组织管理员', type: '预设', status: '启用', aiQuota: 100,
+    { id: 'R-ORG-ADMIN', key: 'orgAdmin', portal: 'admin', name: '组织管理员', type: '预设', status: '启用', aiQuota: 100,
       description: '负责本单位组织、账号与基础数据的日常维护', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'org:node:view','org:node:edit','org:account:view','org:account:edit','org:account:assign','org:teachingScope:grant',
       'org:audit:view','student:info:view','student:score:view','teaching:profile:view','teaching:content:view','teaching:content:audit',
       'intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view' ] },
-    { id: 'R-MAJOR-LEAD', key: 'majorLead', name: '专业负责人', type: '预设', status: '启用', aiQuota: 50,
+    { id: 'R-MAJOR-LEAD', key: 'majorLead', portal: 'teacher', name: '专业负责人', type: '预设', status: '启用', aiQuota: 50,
       description: '负责本专业教学与人才培养相关的查看与协作', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'teaching:profile:view','teaching:content:view','student:score:view','resource:share','resource:schoolpub:view' ] },
-    { id: 'R-TEACHER', key: 'teacher', name: '教师', type: '预设', status: '启用', aiQuota: 30,
+    { id: 'R-TEACHER', key: 'teacher', portal: 'teacher', name: '教师', type: '预设', status: '启用', aiQuota: 30,
       description: '授课教师，可查看所带班级学生与备课资源', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'student:info:view','student:score:view','teaching:profile:view','resource:share','resource:schoolpub:view' ] },
-    { id: 'R-HEAD-TEACHER', key: 'headTeacher', name: '班主任', type: '预设', status: '启用', aiQuota: 30,
+    { id: 'R-HEAD-TEACHER', key: 'headTeacher', portal: 'admin', name: '班主任', type: '预设', status: '启用', aiQuota: 30,
       description: '负责本班学生信息与成绩管理', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'student:info:view','student:score:view' ] },
-    { id: 'R-COUNSELOR', key: 'counselor', name: '辅导员', type: '预设', status: '启用', aiQuota: 30,
+    { id: 'R-COUNSELOR', key: 'counselor', portal: 'admin', name: '辅导员', type: '预设', status: '启用', aiQuota: 30,
       description: '负责所辖学生日常事务与实习任务跟进', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'student:info:view','student:score:view','intern:task:view' ] },
-    { id: 'R-STUDENT', key: 'student', name: '学生', type: '预设', status: '启用', aiQuota: 0,
+    { id: 'R-STUDENT', key: 'student', portal: 'student', name: '学生', type: '预设', status: '启用', aiQuota: 0,
       description: '学生角色，查看本人信息与成绩', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'student:info:view','student:score:view' ] },
-    { id: 'R-ACADEMIC', key: 'academic', name: '教务', type: '部门模板', status: '启用', aiQuota: 100,
+    { id: 'R-ACADEMIC', key: 'academic', portal: 'admin', name: '教务', type: '部门模板', status: '启用', aiQuota: 100,
       description: '教务管理，负责教学安排、成绩与课程内容', createdBy: '超管', createdAt: '2024-10-15', permissionIds: [
       'org:account:view','org:teachingScope:grant','org:audit:view','student:info:view','student:score:view','teaching:profile:view',
       'teaching:content:view','teaching:content:audit','resource:share','resource:schoolpub:publish','resource:schoolpub:view' ] },
-    { id: 'R-STUDENT-AFFAIRS', key: 'studentAffairs', name: '学工', type: '部门模板', status: '启用', aiQuota: 50,
+    { id: 'R-STUDENT-AFFAIRS', key: 'studentAffairs', portal: 'admin', name: '学工', type: '部门模板', status: '启用', aiQuota: 50,
       description: '学生工作管理，负责学生信息与实习任务', createdBy: '超管', createdAt: '2024-10-15', permissionIds: [
       'org:account:view','org:audit:view','student:info:view','student:score:view','intern:task:view' ] },
-    { id: 'R-SUPERVISOR', key: 'supervisor', name: '督导', type: '部门模板', status: '启用', aiQuota: 50,
+    { id: 'R-SUPERVISOR', key: 'supervisor', portal: 'admin', name: '督导', type: '部门模板', status: '启用', aiQuota: 50,
       description: '教学督导，负责课程内容与教师档案的督导查看', createdBy: '超管', createdAt: '2024-10-15', permissionIds: [
       'org:audit:view','teaching:profile:view','student:score:view','teaching:content:view' ] },
-    { id: 'R-INFO', key: 'info', name: '信息中心', type: '部门模板', status: '启用', aiQuota: 50,
+    { id: 'R-INFO', key: 'info', portal: 'admin', name: '信息中心', type: '部门模板', status: '启用', aiQuota: 50,
       description: '信息化运维，负责账号与审计相关维护', createdBy: '超管', createdAt: '2024-10-15', permissionIds: [
       'org:account:view','org:account:edit','org:audit:view' ] },
-    { id: 'R-ENTERPRISE', key: 'enterprise', name: '企业导师', type: '自定义', status: '启用', aiQuota: 50,
+    { id: 'R-ENTERPRISE', key: 'enterprise', portal: 'teacher', name: '企业导师', type: '自定义', status: '启用', aiQuota: 50,
       description: '企业导师，负责实习学生与实习任务管理', createdBy: '超管', createdAt: '2025-03-20', permissionIds: [
       'student:info:view','student:score:view','intern:task:view','resource:share','resource:schoolpub:view' ] }
   ];
@@ -225,7 +225,7 @@
     { id: 'ACC-LIU',   name: '刘院管',   orgId: 'ORG-TOURISM',    kind: '管理员',   status: '正常', studentId: null, phone: '13800000003', lastLoginAt: '2026-10-11 16:30', createdAt: '2024-09-06', createdBy: '系统',     updatedAt: '2026-10-10 10:05', updatedBy: '张校管' },
     { id: 'ACC-CHEN',  name: '陈双管',   orgId: 'ORG-EAST',       kind: '管理员',   status: '正常', studentId: null, phone: '13800000004', lastLoginAt: '2026-10-11 14:20', createdAt: '2024-09-07', createdBy: '系统',     updatedAt: '2026-10-09 11:40', updatedBy: '张校管' },
     { id: 'ACC-LI',    name: '李老师',   orgId: 'ORG-HOTEL',      kind: '教师',     status: '正常', studentId: null, phone: '13800000005', lastLoginAt: '2026-10-12 07:55', createdAt: '2024-09-08', createdBy: '系统',     updatedAt: '2026-10-08 09:12', updatedBy: '刘院管' },
-    { id: 'ACC-WANG',  name: '王老师',   orgId: 'ORG-BASE-DEPT',  kind: '教师',     status: '正常', studentId: null, phone: '13800000006', lastLoginAt: '2026-10-11 20:15', createdAt: '2024-09-09', createdBy: '系统',     updatedAt: '2026-10-07 15:33', updatedBy: '刘院管' },
+    { id: 'ACC-WANG',  name: '王老师',   orgId: 'ORG-BASE-DEPT',  partOrgIds: ['ORG-TOURISM'], kind: '教师',     status: '正常', studentId: null, phone: '13800000006', lastLoginAt: '2026-10-11 20:15', createdAt: '2024-09-09', createdBy: '系统',     updatedAt: '2026-10-07 15:33', updatedBy: '刘院管' },
     { id: 'ACC-HE',    name: '何老师',   orgId: 'ORG-TOUR-DEPT',  kind: '教师',     status: '正常', studentId: null, phone: '13800000007', lastLoginAt: '2026-10-10 11:02', createdAt: '2024-09-10', createdBy: '系统',     updatedAt: '2026-10-06 10:00', updatedBy: '张校管' },
     { id: 'ACC-MA',    name: '马老师',   orgId: 'ORG-HOTEL',      kind: '教师',     status: '正常', studentId: null, phone: '13800000008', lastLoginAt: '2026-10-09 08:30', createdAt: '2024-09-11', createdBy: '系统',     updatedAt: '2026-10-05 16:48', updatedBy: '张校管' },
     { id: 'ACC-ZHAO',  name: '赵辅导员', orgId: 'ORG-TOURISM',    kind: '辅导员',   status: '正常', studentId: null, phone: '13800000009', lastLoginAt: '2026-10-12 06:40', createdAt: '2024-09-12', createdBy: '系统',     updatedAt: '2026-10-04 14:21', updatedBy: '刘院管' },
@@ -282,7 +282,8 @@
     { id: 'D-14', label: '郑督导',   accountId: 'ACC-ZHENG' },
     { id: 'D-15', label: '钱信息',   accountId: 'ACC-QIAN' },
     { id: 'D-16', label: '冯导师',   accountId: 'ACC-FENG' },
-    { id: 'D-17', label: '已毕业学生', accountId: 'ACC-GRAD' }
+    { id: 'D-17', label: '已毕业学生', accountId: 'ACC-GRAD' },
+    { id: 'D-18', label: '停用老师', accountId: 'ACC-STOP' }
   ];
 
   /* ── 教师档案（简单档案，组织随账号） ── */

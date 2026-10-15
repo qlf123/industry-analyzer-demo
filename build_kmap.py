@@ -110,6 +110,7 @@ selfcheck_rules = m.group(1).strip()
 
 DATA = {"industry": {**dict(K.INDUSTRY), "detail": industry_detail}, "subIndustries": subs,
         "positions": positions, "abilities": abilities, "skills": skills, "skillNodes": nodes,
+        "emergingReasons": dict(getattr(K, "EMERGING_REASONS", {})),
         "selfCheckRules": selfcheck_rules}
 payload = json.dumps(DATA, ensure_ascii=False, separators=(",", ":"))
 

@@ -38,6 +38,7 @@ test('mock 数据引用一致', function () {
   });
   c.accounts.forEach(function (a) {
     assert.ok(orgIds.has(a.orgId), '账号组织存在 ' + a.id);
+    if (a.partOrgIds) a.partOrgIds.forEach(function (oid) { assert.ok(orgIds.has(oid), '账号兼职组织存在 ' + a.id); });
     if (a.studentId) assert.ok(studentIds.has(a.studentId), '账号学生存在 ' + a.id);
     if (a.baseId) assert.ok(baseIds.has(a.baseId), '账号基地存在 ' + a.id);
   });
@@ -70,10 +71,11 @@ test('D-01 组织管理员@旅游学院 账号列表只含本范围', function (
   assert.ok(visible.includes('ACC-HE'), '本范围账号可见');
   assert.ok(visible.includes('ACC-XU'), '本范围账号可见');
   assert.ok(!visible.includes('ACC-LI'), '酒店学院账号不可见');
-  assert.ok(!visible.includes('ACC-WANG'), '公共基础部账号不可见');
+  assert.ok(visible.includes('ACC-WANG'), '公共基础部账号因兼职旅游学院可见');
   assert.ok(!visible.includes('ACC-SUPER'), '根账号不可见');
   visible.forEach(function (aid) {
-    assert.ok(tourTree.has(c.accounts.find(function (a) { return a.id === aid; }).orgId), '账号组织均在旅游学院下级');
+    var a = c.accounts.find(function (x) { return x.id === aid; });
+    assert.ok(Perm.accountOrgIds(c, a).some(function (oid) { return tourTree.has(oid); }), '账号主/兼职组织均在旅游学院下级');
   });
 });
 
@@ -85,18 +87,24 @@ test('D-02 双节点组织管理员 两学院账号都可见', function () {
   assert.ok(visible.includes('ACC-LI'), '酒店学院账号可见');
   assert.ok(visible.includes('ACC-MA'), '酒店学院账号可见');
   assert.ok(visible.includes('ACC-HE'), '旅游学院账号可见');
-  assert.ok(!visible.includes('ACC-WANG'), '公共基础部账号不可见');
+  assert.ok(visible.includes('ACC-WANG'), '公共基础部账号因兼职旅游学院可见');
 });
 
 /* ── D-03 李老师：组织管理员@酒店学院 + 教师@旅游管理2026级1班 ── */
-test('D-03 李老师 旅游学院内容无审核按钮/账号不可见/本教学班成绩可见', function () {
+test('D-03 李老师 管理端看不到旅游学院内容/账号，教师端能看到本班成绩', function () {
   const c = ctx();
   const li = id(c, 'ACC-LI');
+  // 多端身份缺省按管理端判定：组织管理员@酒店学院
+  const liAdmin = id(c, 'ACC-LI');
   const contTour = c.contents.find(function (x) { return x.orgId === 'ORG-TOUR-DEPT'; });
-  assert.equal(Perm.check(c, li, 'teaching:content:audit', contTour, 'content').allowed, false, '旅游学院内容不可审核');
-  assert.equal(Perm.check(c, li, 'org:account:view', id(c, 'ACC-HE').account, 'account').allowed, false, '旅游学院账号不可见');
+  assert.equal(Perm.check(c, liAdmin, 'teaching:content:audit', contTour, 'content').allowed, false, '管理端：旅游学院内容不可审核');
+  assert.equal(Perm.check(c, liAdmin, 'org:account:view', id(c, 'ACC-HE').account, 'account').allowed, false, '管理端：旅游学院账号不可见');
+  // 切到教师端：教师@旅游管理 2026 级 1 班
+  const liTeacher = id(c, 'ACC-LI');
+  liTeacher.currentPortal = 'teacher';
   const stu = firstStudent(c, 'K-T26-1');
-  assert.equal(Perm.check(c, li, 'student:score:view', stu, 'score').allowed, true, '教学范围内班级成绩可见');
+  assert.equal(Perm.check(c, liTeacher, 'student:score:view', stu, 'score').allowed, true, '教师端：教学范围内班级成绩可见');
+  assert.equal(Perm.check(c, liTeacher, 'org:account:view', id(c, 'ACC-HE').account, 'account').allowed, false, '教师端：跨端无账号查看权限');
 });
 
 /* ── D-04 王老师：只能看教学范围两个班成绩 ── */
@@ -317,14 +325,18 @@ test('在读学生有提交按钮（正向）', function () {
 test('D-19 判定过程说明完整（命中分配/功能/范围/脱敏档）', function () {
   const c = ctx();
   const li = id(c, 'ACC-LI');
+  li.currentPortal = 'teacher'; // 李老师为多端身份，成绩命中在教师端
   const stu = firstStudent(c, 'K-T26-1');
   const t = Perm.explain(c, li, 'student:score:view', stu, 'score');
-  assert.equal(t.assignments.length, 2, '列出全部分配');
+  assert.equal(t.assignments.length, 2, '列出全部分配（含另一端）');
   t.assignments.forEach(function (a) {
     assert.equal(typeof a.hasPerm, 'boolean', '每条有功能判定');
     assert.ok(a.scopePass === true || a.scopePass === false || a.scopePass === null, '每条有范围判定');
     assert.ok(a.roleName, '每条有角色名');
+    assert.equal(typeof a.inPortal, 'boolean', '每条有是否当前端标记');
   });
+  assert.equal(t.currentPortal, 'teacher', '标注当前端');
+  assert.ok(t.assignments.some(function (a) { return a.inPortal === false; }), '另一端分配标记为不参与');
   assert.ok(t.winningAssignmentId, '有命中分配');
   assert.ok(t.maskGroup, '有脱敏档');
   const denied = Perm.explain(c, li, 'teaching:content:audit', c.contents[0], 'content');
@@ -345,7 +357,7 @@ test('D-20 组织管理员（+年级）学生按年级、教师档案不受年�
   const profVisible = Perm.listFilter(c, xu, 'teaching:profile:view', 'teacherProfile', c.teacherProfiles).map(function (p) { return p.id; });
   assert.ok(profVisible.includes('TP-HE'), '旅游学院教师档案可见');
   assert.ok(!profVisible.includes('TP-MA'), '酒店学院教师档案不可见');
-  assert.ok(!profVisible.includes('TP-WANG'), '公共基础部教师档案不可见');
+  assert.ok(profVisible.includes('TP-WANG'), '公共基础部教师档案因兼职旅游学院可见');
 });
 
 /* ── D-21 冯导师：只本基地实习学生；AI 配额可见 ── */
@@ -402,8 +414,8 @@ test('D-24 当前组织切换：过滤不改变权限，能区分被过滤与无
   assert.ok(!r.visible.some(function (a) { return a.id === 'ACC-LI'; }), '酒店学院账号不在可见列表');
   assert.ok(r.filteredOut.some(function (a) { return a.id === 'ACC-LI'; }), '酒店学院账号标注为被当前组织过滤');
   assert.ok(r.filteredOut.some(function (a) { return a.id === 'ACC-MA'; }), '另一酒店学院账号同样被过滤');
-  assert.ok(r.denied.some(function (a) { return a.id === 'ACC-WANG'; }), '公共基础部账号为无权限');
-  assert.ok(!r.filteredOut.some(function (a) { return a.id === 'ACC-WANG'; }), '无权限账号不算被过滤');
+  assert.ok(r.visible.some(function (a) { return a.id === 'ACC-WANG'; }), '公共基础部账号因兼职旅游学院可见');
+  assert.ok(!r.filteredOut.some(function (a) { return a.id === 'ACC-WANG'; }), '兼职账号不算被过滤');
   // 单条判定状态：酒店学院账号 = filteredOut（有权限被过滤）
   assert.equal(Perm.listItemStatus(c, chen, 'org:account:view', id(c, 'ACC-LI').account, 'account', 'ORG-TOURISM'), 'filteredOut');
   // 判定过程说明含「被当前组织过滤」
@@ -423,4 +435,109 @@ test('D-24 当前组织切换：过滤不改变权限，能区分被过滤与无
   assert.equal(Perm.currentOrgOptions(c, id(c, 'ACC-FENG')).length, 0, '企业导师无当前组织');
   assert.equal(Perm.currentOrgOptions(c, id(c, 'ACC-GRAD')).length, 0, '学生无当前组织');
   assert.ok(Perm.currentOrgOptions(c, id(c, 'ACC-ZHOU')).length > 0, '教务有当前组织');
+});
+
+/* ── D-31 刘院管：王老师兼职可见，不可维护主组织 ── */
+test('D-31 王老师兼职旅游学院：可查看、不可维护主组织、主+兼职组织口径', function () {
+  const c = ctx();
+  const liu = id(c, 'ACC-LIU');
+  const wang = id(c, 'ACC-WANG').account;
+  assert.deepEqual(Perm.accountOrgIds(c, wang), ['ORG-BASE-DEPT', 'ORG-TOURISM'], '主组织在前、兼职在后');
+  assert.equal(Perm.accountMainOrgId(wang), 'ORG-BASE-DEPT', '主组织为公共基础部');
+  assert.equal(Perm.accountPartOrgIds(wang).length, 1, '兼职组织为旅游学院一项');
+  assert.equal(Perm.check(c, liu, 'org:account:view', wang, 'account').allowed, true, '兼职命中可查看');
+  assert.equal(Perm.check(c, liu, 'org:account:edit', wang, 'account').allowed, false, '范围未覆盖主组织，不可维护');
+});
+
+/* ── D-32 刘院管：为马老师增删兼职组织 ── */
+test('D-32 为马老师增删兼职组织：增可见、删不可见、主组织不可改', function () {
+  const c = ctx();
+  const liu = id(c, 'ACC-LIU');
+  const ma = id(c, 'ACC-MA').account;
+  // 增加兼职组织「导游教研室」（旅游学院下级）
+  ma.partOrgIds = ['ORG-GUIDE-ROOM'];
+  assert.equal(Perm.check(c, liu, 'org:account:view', ma, 'account').allowed, true, '兼职导游教研室命中可见');
+  assert.equal(Perm.check(c, liu, 'org:account:edit', ma, 'account').allowed, false, '主组织酒店学院不在范围，不可维护');
+  // 移除兼职组织
+  ma.partOrgIds = [];
+  assert.equal(Perm.check(c, liu, 'org:account:view', ma, 'account').allowed, false, '移除兼职后不可见');
+});
+
+/* ── D-33 主组织单选、兼职组织扁平且不与主组织重复 ── */
+test('D-33 主组织单选、兼职组织扁平且不与主组织重复', function () {
+  const c = ctx();
+  const wang = id(c, 'ACC-WANG').account;
+  assert.equal(typeof wang.orgId, 'string', '主组织为单个值');
+  assert.ok(!wang.partOrgIds.includes(wang.orgId), '兼职组织不包含主组织');
+  assert.deepEqual(wang.partOrgIds, ['ORG-TOURISM'], '兼职组织为扁平选中节点（无级联下级自动填充）');
+});
+
+/* ── D-34 张校管：删除旅游学院因王老师兼职组织被拒 ── */
+test('D-34 删除旅游学院：王老师兼职组织阻塞删除', function () {
+  const c = ctx();
+  const zhang = id(c, 'ACC-ZHANG');
+  const r = Perm.checkDeleteOrg(c, zhang, 'ORG-TOURISM');
+  assert.equal(r.allowed, false, '删除被拒绝');
+  assert.ok(r.blockers.some(function (b) { return b.type === '账号' && b.name === '王老师'; }), '阻塞对象含王老师');
+});
+
+/* ── D-35 陈双管/周教务：只有管理端（无切换按钮），同端多分配取并集 ── */
+test('D-35 陈双管/周教务 仅管理端，同端多条分配合并生效', function () {
+  const c = ctx();
+  const chen = id(c, 'ACC-CHEN');
+  const zhou = id(c, 'ACC-ZHOU');
+  // 只有一个端 → 无「切换到教师端」按钮（rolePortals 长度 1）
+  assert.deepEqual(Perm.rolePortals(c, chen), ['admin'], '陈双管仅管理端');
+  assert.deepEqual(Perm.rolePortals(c, zhou), ['admin'], '周教务仅管理端');
+  assert.equal(Perm.defaultPortal(c, chen), 'admin', '陈双管默认管理端');
+  assert.equal(Perm.defaultPortal(c, zhou), 'admin', '周教务默认管理端');
+  // 陈双管两条组织管理员分配（旅游学院 + 酒店学院）同端取并集
+  assert.equal(Perm.check(c, chen, 'org:account:view', id(c, 'ACC-HE').account, 'account').allowed, true, '旅游学院账号可见');
+  assert.equal(Perm.check(c, chen, 'org:account:view', id(c, 'ACC-MA').account, 'account').allowed, true, '酒店学院账号可见');
+  // 周教务：加第二条管理端分配（东校区），两条都在当前端生效、范围取并集
+  c.assignments.push({ id: 'A-ZHOU-2', accountId: 'ACC-ZHOU', roleId: 'R-ACADEMIC', scopeOrgIds: ['ORG-EAST'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] });
+  const zhou2 = id(c, 'ACC-ZHOU');
+  assert.equal(Perm.activeAssignments(c, zhou2).length, 2, '两条分配都在管理端生效');
+  assert.equal(Perm.check(c, zhou2, 'student:score:view', firstStudent(c, 'K-H25-1'), 'score').allowed, true, '东校区范围分配生效');
+  assert.equal(Perm.check(c, zhou2, 'student:score:view', firstStudent(c, 'K-S25-1'), 'score').allowed, true, '根范围分配仍生效（并集）');
+});
+
+/* ── D-36 李老师：跨端不混、默认进入管理端 ── */
+test('D-36 李老师 跨端不混，默认进入管理端', function () {
+  const c = ctx();
+  const li = id(c, 'ACC-LI');
+  // 可进入两个端
+  assert.deepEqual(Perm.rolePortals(c, li), ['admin', 'teacher'], '李老师可进入管理端与教师端');
+  assert.equal(Perm.defaultPortal(c, li), 'admin', '多端无记录默认管理端');
+  // 管理端（缺省）：组织管理员@酒店学院
+  assert.equal(Perm.check(c, li, 'org:account:view', id(c, 'ACC-MA').account, 'account').allowed, true, '管理端：酒店学院账号可见');
+  assert.equal(Perm.check(c, li, 'org:account:view', id(c, 'ACC-HE').account, 'account').allowed, false, '管理端：旅游学院账号不可见');
+  // 教师端：教师@旅游管理 2026 级 1 班；跨端角色不参与
+  const liTeacher = id(c, 'ACC-LI');
+  liTeacher.currentPortal = 'teacher';
+  assert.equal(Perm.check(c, liTeacher, 'student:score:view', firstStudent(c, 'K-T26-1'), 'score').allowed, true, '教师端：本班成绩可见');
+  assert.equal(Perm.check(c, liTeacher, 'org:account:view', id(c, 'ACC-MA').account, 'account').allowed, false, '教师端：跨端不混，酒店学院账号不可见');
+  assert.equal(Perm.check(c, liTeacher, 'student:score:view', firstStudent(c, 'K-T25-1'), 'score').allowed, false, '教师端：非教学班成绩不可见');
+  // 停用老师：无任何可进入的端
+  assert.deepEqual(Perm.rolePortals(c, id(c, 'ACC-STOP')), [], '停用老师无可进入端');
+  assert.equal(Perm.defaultPortal(c, id(c, 'ACC-STOP')), null, '停用老师默认端为空');
+});
+
+/* ── D-35 / D-36 补充：common.js 的端判定（不持久化，多端默认管理端） ── */
+function freshUI() {
+  global.Perm = Perm;
+  global.DEMO = DEMO;
+  global.window = global.window || { console: console };
+  delete require.cache[require.resolve('../js/common.js')];
+  return require('../js/common.js');
+}
+
+test('common.js portalOf：单端 / 多端默认管理端 / 无有效分配（不记忆）', function () {
+  const UI = freshUI();
+  const c = ctx();
+  assert.equal(UI.portalOf(c, id(c, 'ACC-CHEN')), 'admin', '陈双管单端→管理端');
+  assert.equal(UI.portalOf(c, id(c, 'ACC-WANG')), 'teacher', '王老师单端→教师端');
+  assert.equal(UI.portalOf(c, id(c, 'ACC-GRAD')), 'student', '已毕业学生→学生端');
+  assert.equal(UI.portalOf(c, id(c, 'ACC-LI')), 'admin', '李老师多端→默认管理端（不再记忆上次端）');
+  assert.equal(UI.portalOf(c, id(c, 'ACC-STOP')), null, '停用老师→无可用端');
 });

@@ -105,18 +105,43 @@
   function klassOfStudent(ctx, student) { return klassOf(ctx, student.klassId); }
   function gradeOfStudent(ctx, student) { return gradeOf(klassOfStudent(ctx, student).gradeId); }
 
-  /* 账号「所属组织」数组（多选；兼容旧的单 orgId） */
-  function accountOrgIds(ctx, account) {
-    if (!account) return [];
-    if (account.orgIds && account.orgIds.length) return account.orgIds;
-    return account.orgId ? [account.orgId] : [];
+  /* 账号「主组织」id（必填，单个；兼容旧 orgIds 时取第一个） */
+  function accountMainOrgId(account) {
+    if (!account) return null;
+    if (account.orgId) return account.orgId;
+    return (account.orgIds && account.orgIds.length) ? account.orgIds[0] : null;
   }
 
-  /* 账号是否归属某组织（父级代表其整个子树：账号 org 与目标组织在同一组织链上即命中） */
+  /* 账号「兼职组织」id 数组（可为空；兼容旧 orgIds 时取第一个之后的） */
+  function accountPartOrgIds(account) {
+    if (!account) return [];
+    if (account.partOrgIds) return account.partOrgIds;
+    return (account.orgIds && account.orgIds.length) ? account.orgIds.slice(1) : [];
+  }
+
+  /* 账号「所属组织」数组（主组织 + 兼职组织；兼容旧 orgIds 时主取第一个） */
+  function accountOrgIds(ctx, account) {
+    if (!account) return [];
+    if (account.orgId) {
+      var ids = [account.orgId];
+      (account.partOrgIds || []).forEach(function (o) { if (ids.indexOf(o) < 0) ids.push(o); });
+      return ids;
+    }
+    if (account.orgIds && account.orgIds.length) return account.orgIds.slice();
+    return [];
+  }
+
+  /* 账号是否归属某组织（只向下：账号的主组织或任一兼职组织落在「目标组织及其下级」内才命中） */
   function accountInOrg(ctx, account, orgId) {
     return accountOrgIds(ctx, account).some(function (o) {
-      return descendants(ctx, o).has(orgId) || descendants(ctx, orgId).has(o);
+      return descendants(ctx, orgId).has(o);
     });
+  }
+
+  /* 账号「主组织」是否落在目标组织及其下级内（账号维护类操作只看主组织） */
+  function accountMainInOrg(ctx, account, orgId) {
+    var main = accountMainOrgId(account);
+    return main != null && descendants(ctx, orgId).has(main);
   }
 
   /* 目标对象「所属组织」数组（账号/教师档案为多选，其余仍单一） */
@@ -127,9 +152,13 @@
     return [targetOrgId(ctx, target, dataType)];
   }
 
-  /* scopeOrgId 的组织及下级是否覆盖目标（任一所属组织命中即可） */
-  function anyOrgIn(ctx, scopeOrgId, target, dataType) {
-    if (dataType === 'account') return accountInOrg(ctx, target, scopeOrgId);
+  /* scopeOrgId 的组织及下级是否覆盖目标（任一所属组织命中即可）；
+   * 账号维护类操作（org:account:edit）只按「主组织」判断，其余（查看 / 教师档案 / 共享等）按「主 + 兼职」判断。 */
+  function anyOrgIn(ctx, scopeOrgId, target, dataType, permCode) {
+    if (dataType === 'account') {
+      if (permCode === CODES.accountEdit) return accountMainInOrg(ctx, target, scopeOrgId);
+      return accountInOrg(ctx, target, scopeOrgId);
+    }
     if (dataType === 'teacherProfile') return accountInOrg(ctx, accountOf(ctx, target.accountId), scopeOrgId);
     var desc = descendants(ctx, scopeOrgId);
     return targetOrgIds(ctx, target, dataType).some(function (t) { return t != null && desc.has(t); });
@@ -139,9 +168,9 @@
   function targetOrgId(ctx, target, dataType) {
     switch (dataType) {
       case 'org': return target.id;
-      case 'account': return accountOrgIds(ctx, target)[0] || null;
+      case 'account': return accountMainOrgId(target);
       case 'major': return target.orgId;
-      case 'teacherProfile': return accountOrgIds(ctx, accountOf(ctx, target.accountId))[0] || null;
+      case 'teacherProfile': return accountMainOrgId(accountOf(ctx, target.accountId));
       case 'klass': return majorOf(ctx, target.majorId).orgId;
       case 'student': case 'score': case 'internship': return majorOf(ctx, klassOfStudent(ctx, target).majorId).orgId;
       case 'resource': case 'content': case 'audit': return target.orgId;
@@ -162,9 +191,41 @@
     return { account: account, assignments: assignments };
   }
 
-  function activeAssignments(ctx, identity) {
+  /* 全部有效分配：账号未停用时的全部分配（不按端过滤，供「可进入的端」与判定说明使用） */
+  function allActiveAssignments(ctx, identity) {
     if (identity.account.status === '停用') return [];
-    return identity.assignments;
+    return identity.assignments || [];
+  }
+
+  /* 身份「可进入的端」= 全部有效分配的所属端集合（去重，按 admin→teacher→student 排序） */
+  function rolePortals(ctx, identity) {
+    var set = {};
+    allActiveAssignments(ctx, identity).forEach(function (a) {
+      var role = roleOf(ctx, a.roleId);
+      if (role && role.portal) set[role.portal] = 1;
+    });
+    var order = ['admin', 'teacher', 'student'];
+    var out = order.filter(function (p) { return set[p]; });
+    Object.keys(set).forEach(function (p) { if (out.indexOf(p) < 0) out.push(p); });
+    return out;
+  }
+
+  /* 默认端：只有一个端→该端；多个端→管理端（无记录时）；无端→null */
+  function defaultPortal(ctx, identity) {
+    var portals = rolePortals(ctx, identity);
+    if (!portals.length) return null;
+    if (portals.length === 1) return portals[0];
+    return portals.indexOf('admin') >= 0 ? 'admin' : portals[0];
+  }
+
+  /* 当前端下的有效分配：同端合并；跨端角色在此端不生效。currentPortal 缺省时按默认端。 */
+  function activeAssignments(ctx, identity) {
+    var portal = (identity.currentPortal != null) ? identity.currentPortal : defaultPortal(ctx, identity);
+    if (portal == null) return [];
+    return allActiveAssignments(ctx, identity).filter(function (a) {
+      var role = roleOf(ctx, a.roleId);
+      return role && role.portal === portal;
+    });
   }
 
   function isSuper(ctx, identity) {
@@ -189,7 +250,7 @@
     return (ts.majorIds || []).indexOf(majorId) >= 0;
   }
 
-  function scopeMatches(ctx, assignment, target, dataType) {
+  function scopeMatches(ctx, assignment, target, dataType, permCode) {
     var role = roleOf(ctx, assignment.roleId);
     var key = role.key;
 
@@ -197,7 +258,10 @@
 
     if (key === 'student') {
       if (dataType === 'student' || dataType === 'score' || dataType === 'internship') {
-        return target.id === accountOf(ctx, assignment.accountId).studentId;
+        var stAcct = accountOf(ctx, assignment.accountId);
+        if (stAcct.studentId) return target.id === stAcct.studentId;
+        // 未绑定具体学生时：按「专业 + 班级」范围（本班 / 本专业可见）
+        return teachingScopeContainsClass(ctx, assignment, target.klassId);
       }
       return false;
     }
@@ -252,7 +316,7 @@
 
     for (var i = 0; i < (assignment.scopeOrgIds || []).length; i++) {
       var oid = assignment.scopeOrgIds[i];
-      if (!anyOrgIn(ctx, oid, target, dataType)) continue;
+      if (!anyOrgIn(ctx, oid, target, dataType, permCode)) continue;
       if (gradeScoped) {
         var grades = (assignment.scopeGrades || {})[oid];
         if (!grades || grades.length === 0) return true; // 未选年级 = 全部
@@ -270,43 +334,48 @@
     var active = activeAssignments(ctx, identity);
 
     if (account.status === '停用') {
-      return { allowed: false, denyReason: '账号已停用，所有分配失效', trace: traceBody(ctx, account, active, permCode, target, dataType, null, '账号已停用') };
+      return { allowed: false, denyReason: '账号已停用，所有分配失效', trace: traceBody(ctx, identity, active, permCode, target, dataType, null, '账号已停用') };
     }
 
     var matches = active.filter(function (a) { return hasPermInAssignment(ctx, a, permCode); });
     if (!matches.length) {
-      return { allowed: false, denyReason: '无该功能权限点（' + permCode + '）', trace: traceBody(ctx, account, active, permCode, target, dataType, null, '无该功能权限点') };
+      return { allowed: false, denyReason: '无该功能权限点（' + permCode + '）', trace: traceBody(ctx, identity, active, permCode, target, dataType, null, '无该功能权限点') };
     }
 
     if (target == null) {
       var first = matches[0];
-      return { allowed: true, denyReason: null, winningAssignmentId: first.id, trace: traceBody(ctx, account, active, permCode, target, dataType, first, null) };
+      return { allowed: true, denyReason: null, winningAssignmentId: first.id, trace: traceBody(ctx, identity, active, permCode, target, dataType, first, null) };
     }
 
     for (var i = 0; i < matches.length; i++) {
-      if (scopeMatches(ctx, matches[i], target, dataType)) {
-        return { allowed: true, denyReason: null, winningAssignmentId: matches[i].id, trace: traceBody(ctx, account, active, permCode, target, dataType, matches[i], null) };
+      if (scopeMatches(ctx, matches[i], target, dataType, permCode)) {
+        return { allowed: true, denyReason: null, winningAssignmentId: matches[i].id, trace: traceBody(ctx, identity, active, permCode, target, dataType, matches[i], null) };
       }
     }
-    return { allowed: false, denyReason: '范围不通过', trace: traceBody(ctx, account, active, permCode, target, dataType, null, '范围不通过') };
+    return { allowed: false, denyReason: '范围不通过', trace: traceBody(ctx, identity, active, permCode, target, dataType, null, '范围不通过') };
   }
 
-  function traceBody(ctx, account, active, permCode, target, dataType, winning, denyReason) {
+  function traceBody(ctx, identity, active, permCode, target, dataType, winning, denyReason) {
+    var account = identity.account;
+    var currentPortal = (identity.currentPortal != null) ? identity.currentPortal : defaultPortal(ctx, identity);
+    var all = allActiveAssignments(ctx, identity);
     return {
       accountId: account.id,
       accountName: account.name,
       accountStatus: account.status,
+      currentPortal: currentPortal,
       permCode: permCode,
       allowed: !!winning,
       denyReason: denyReason,
       winningAssignmentId: winning ? winning.id : null,
       maskGroup: winning ? maskGroupFor(ctx, account, winning, target, dataType) : null,
-      assignments: active.map(function (a) {
+      assignments: all.map(function (a) {
         var role = roleOf(ctx, a.roleId);
-        var hasPerm = hasPermInAssignment(ctx, a, permCode);
+        var inPortal = role && role.portal === currentPortal;
+        var hasPerm = inPortal && hasPermInAssignment(ctx, a, permCode);
         var scopePass = null;
-        if (hasPerm && target != null) scopePass = scopeMatches(ctx, a, target, dataType);
-        return { id: a.id, roleId: a.roleId, roleName: role.name, hasPerm: hasPerm, scopePass: scopePass };
+        if (hasPerm && target != null) scopePass = scopeMatches(ctx, a, target, dataType, permCode);
+        return { id: a.id, roleId: a.roleId, roleName: role ? role.name : a.roleId, portal: role ? role.portal : null, inPortal: inPortal, hasPerm: hasPerm, scopePass: scopePass };
       })
     };
   }
@@ -477,7 +546,9 @@
     var I = idx(ctx);
     (I.children[orgId] || []).forEach(function (cid) { blockers.push({ type: '下级节点', id: cid, name: I.orgs[cid].name }); });
     (ctx.majors || []).forEach(function (m) { if (m.orgId === orgId) blockers.push({ type: '专业', id: m.id, name: m.name }); });
-    (ctx.accounts || []).forEach(function (ac) { if (accountInOrg(ctx, ac, orgId)) blockers.push({ type: '账号', id: ac.id, name: ac.name }); });
+    (ctx.accounts || []).forEach(function (ac) {
+      if (accountMainOrgId(ac) === orgId || accountPartOrgIds(ac).indexOf(orgId) >= 0) blockers.push({ type: '账号', id: ac.id, name: ac.name });
+    });
     (ctx.resources || []).forEach(function (r) { if (r.orgId === orgId) blockers.push({ type: '资源', id: r.id, name: r.title }); });
     // 被角色分配的数据范围引用（7.1）
     (ctx.assignments || []).forEach(function (a) {
@@ -670,6 +741,9 @@
     ROLE_TO_MASK: ROLE_TO_MASK,
     getIdentity: getIdentity,
     activeAssignments: activeAssignments,
+    allActiveAssignments: allActiveAssignments,
+    rolePortals: rolePortals,
+    defaultPortal: defaultPortal,
     isSuper: isSuper,
     hasPermInAssignment: hasPermInAssignment,
     check: check,
@@ -702,7 +776,10 @@
     targetOrgId: targetOrgId,
     targetOrgIds: targetOrgIds,
     accountOrgIds: accountOrgIds,
+    accountMainOrgId: accountMainOrgId,
+    accountPartOrgIds: accountPartOrgIds,
     accountInOrg: accountInOrg,
+    accountMainInOrg: accountMainInOrg,
     isSelfStudentView: isSelfStudentView
   };
 }));
