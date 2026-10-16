@@ -75,9 +75,7 @@
         ] },
         { label: '教务', items: [
           { key: 'account', label: '账号管理', icon: '▤', href: 'account-v1.html',
-            perms: ['org:account:view'] },
-          { key: 'accountrole', label: '角色管理', icon: '▤', href: 'account-v1.html?tab=role',
-            perms: ['org:role:define'] }
+            perms: ['org:account:view'] }
         ] },
         { label: '系统', items: [
           { key: 'system', label: '组织管理', icon: '▤', href: 'system.html',

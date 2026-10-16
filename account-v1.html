@@ -196,15 +196,12 @@
     <div class="ptop">
       <div class="ptop-r">
         <div class="pt-l">
-          <h1 class="pt-t">账号与角色</h1>
-          <div class="pt-d">账号管理 · 角色管理</div>
+          <h1 class="pt-t">账号管理</h1>
         </div>
       </div>
     </div>
     <div class="body" id="body">
-      <div class="tabs l2" id="acctTabs" role="tablist"></div>
       <div class="pane" id="paneAccount"></div>
-      <div class="pane" id="paneRole" hidden></div>
     </div>
   </div>
 </div>
@@ -216,26 +213,10 @@
   'use strict';
 
   var ctx = null, identity = null, ui = null;
-  /* 初始 tab：地址栏 ?tab=role 进入角色管理，否则默认账号管理 */
-  function urlTab() {
-    try {
-      if (typeof location !== 'undefined' && location.search) {
-        var m = location.search.match(/[?&]tab=([^&]+)/);
-        if (m) return m[1];
-      }
-    } catch (e) {}
-    return 'account';
-  }
-  var activeTab = urlTab();
 
   var TYPE_ORDER = ['内置', '预设', '部门模板', '自定义'];
   var ORG_SCOPED = { orgAdmin: 1, counselor: 1, academic: 1, studentAffairs: 1, supervisor: 1, info: 1, majorLead: 1 };
   var COL_GRID = 'minmax(150px,1.4fr) minmax(106px,1.1fr) minmax(160px,1.7fr) minmax(104px,1.1fr) minmax(82px,0.9fr) minmax(126px,1.3fr) minmax(118px,1.2fr) 62px minmax(102px,1fr) minmax(216px,auto)';
-
-  var TABS = [
-    { key: 'account', label: '账号管理', perms: ['org:account:view'] },
-    { key: 'role',    label: '角色管理', perms: ['org:role:define'] }
-  ];
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -287,28 +268,7 @@
   /* ── 渲染入口 ── */
   function render() {
     reload();
-    renderTabs();
-    $('#paneAccount').hidden = activeTab !== 'account';
-    $('#paneRole').hidden = activeTab !== 'role';
-    if (activeTab === 'account') renderAccount();
-    else if (activeTab === 'role') renderRole();
-  }
-
-  function renderTabs() {
-    var el = $('#acctTabs');
-    var visible = TABS.filter(function (t) {
-      return t.perms.some(function (p) { return Perm.check(ctx, identity, p, null, null).allowed; });
-    });
-    if (!visible.find(function (t) { return t.key === activeTab; })) activeTab = visible.length ? visible[0].key : null;
-    el.innerHTML = visible.map(function (t) {
-      return '<button class="tab" data-tab="' + t.key + '" role="tab"'
-        + (t.key === activeTab ? ' aria-selected="true"' : '') + '>' + esc(t.label) + '</button>';
-    }).join('');
-    if (!visible.length) {
-      $('#paneAccount').hidden = false;
-      $('#paneRole').hidden = true;
-      $('#paneAccount').innerHTML = '<div class="empty">当前身份无权访问账号与角色。</div>';
-    }
+    renderAccount();
   }
 
   /* ── Tab1：账号管理（7.4） ── */
@@ -1051,272 +1011,6 @@
     dlg.addEventListener('close', function () { dlg.remove(); });
   }
 
-  /* ── Tab2：角色管理（7.5，左右分栏 + 增删改） ── */
-  var roleState = { search: '', selectedId: null, tab: 'basic' };
-
-  function roleScope(r) {
-    if (r.portal === 'student') return '学生端';
-    if (r.portal === 'teacher') return '教师端';
-    return '管理后台';
-  }
-  function isSystemRole(r) { return r.type === '内置'; }
-  function roleCode(r) { return r.code || r.id; }
-  function roleStatus(r) { return r.status || '启用'; }
-
-  function permTreeHtml(role) {
-    var granted = {};
-    (role.permissionIds || []).forEach(function (c) { granted[c] = 1; });
-    var byMod = {};
-    ctx.permissions.forEach(function (p) {
-      (byMod[p.module] = byMod[p.module] || {});
-      (byMod[p.module][p.resource] = byMod[p.module][p.resource] || []).push(p);
-    });
-    return Object.keys(byMod).map(function (mod) {
-      var res = byMod[mod];
-      return '<div class="rm">' + esc(mod) + '</div>'
-        + Object.keys(res).map(function (resName) {
-          return '<div class="rr">' + esc(resName) + '　'
-            + res[resName].map(function (p) {
-              return '<span class="op' + (granted[p.code] ? ' on' : '') + '">' + esc(p.action) + '</span>';
-            }).join('')
-            + '</div>';
-        }).join('');
-    }).join('') || '<div class="empty">该角色暂无权限点</div>';
-  }
-
-  /* 配置菜单权限：模块 → 权限点 复选框树 */
-  function permCheckTree(checkedSet) {
-    var byMod = {};
-    ctx.permissions.forEach(function (p) { (byMod[p.module] = byMod[p.module] || []).push(p); });
-    return Object.keys(byMod).map(function (mod) {
-      var perms = byMod[mod];
-      var allChecked = perms.every(function (p) { return checkedSet.has(p.code); });
-      return '<div class="pgroup">'
-        + '<label class="pgroup-h"><input type="checkbox" data-pmod="' + esc(mod) + '"' + (allChecked ? ' checked' : '') + '> ' + esc(mod) + '</label>'
-        + '<div class="pitems">' + perms.map(function (p) {
-          return '<label class="pitem"><input type="checkbox" data-pcode="' + esc(p.code) + '" data-pmod="' + esc(mod) + '"' + (checkedSet.has(p.code) ? ' checked' : '') + '> ' + esc(p.resource) + ' · ' + esc(p.action) + '</label>';
-        }).join('') + '</div>'
-        + '</div>';
-    }).join('');
-  }
-
-  function roleItemHtml(r) {
-    var st = roleStatus(r);
-    return '<button type="button" class="role-item' + (r.id === roleState.selectedId ? ' is-active' : '') + '" data-rsel="' + esc(r.id) + '">'
-      + '<div class="role-item-head"><span class="role-item-title">' + esc(r.name) + '</span>'
-      + '<span class="role-status ' + (st === '启用' ? 'enabled' : 'disabled') + '">' + esc(st) + '</span></div>'
-      + '<div class="role-item-desc">' + esc(r.description || '—') + '</div>'
-      + '<div class="role-item-meta">创建人：' + esc(r.createdBy || '—') + '　' + esc(r.createdAt || '') + '</div>'
-      + '</button>';
-  }
-
-  function switchHtml(r, st, sys) {
-    return '<span class="switch' + (st === '启用' ? ' on' : '') + (sys ? ' locked' : '') + '"'
-      + (sys ? '' : ' data-rstatus="' + esc(r.id) + '" role="switch" tabindex="0"')
-      + ' aria-checked="' + (st === '启用') + '"></span>';
-  }
-
-  function basicInfoHtml(r, st, sys) {
-    return '<div class="form-grid">'
-      + '<div class="field-group"><div class="field-label">角色名称</div><div class="field-value">' + esc(r.name) + '</div></div>'
-      + '<div class="field-group"><div class="field-label">角色编码</div><div class="field-value mono">' + esc(roleCode(r)) + '</div></div>'
-      + '<div class="field-group"><div class="field-label">所属端</div><div class="field-value">' + esc(roleScope(r)) + '</div></div>'
-      + '<div class="field-group"><div class="field-label">状态</div><div class="field-value">'
-      + switchHtml(r, st, sys) + '<span class="m-hid">' + esc(st) + '</span></div></div>'
-      + '<div class="field-group field-full"><div class="field-label">角色说明</div><div class="field-value" style="align-items:flex-start">' + esc(r.description || '—') + '</div></div>'
-      + '</div>'
-      + '<div class="kv2" style="margin-top:16px;border-top:1px solid var(--rule-2);padding-top:14px">'
-      + '<div><div class="kk">AI 每日配额</div><div class="vv">' + esc(r.aiQuota) + ' 次</div></div>'
-      + '<div><div class="kk">创建人</div><div class="vv">' + esc(r.createdBy || '—') + '</div></div>'
-      + '<div><div class="kk">创建时间</div><div class="vv">' + esc(r.createdAt || '—') + '</div></div>'
-      + '<div><div class="kk">角色类型</div><div class="vv">' + esc(r.type) + '</div></div></div>';
-  }
-
-  function roleDetailHtml(r) {
-    if (!r) return '<div class="empty">请选择角色</div>';
-    var sys = isSystemRole(r);
-    var st = roleStatus(r);
-    return '<div class="detail-topbar">'
-      + '<div class="detail-name">' + esc(r.name) + '<span class="detail-badge">' + esc(roleScope(r)) + '</span></div>'
-      + '<div class="detail-actions">'
-      + '<button class="btn-s" data-redit="' + esc(r.id) + '"' + (sys ? ' disabled' : '') + '>编辑</button>'
-      + '<button class="btn-s" data-rperm="' + esc(r.id) + '"' + (sys ? ' disabled' : '') + '>配置角色菜单</button>'
-      + '<button class="btn-s" data-rdel="' + esc(r.id) + '"' + (sys ? ' disabled' : '') + '>删除</button>'
-      + '</div></div>'
-      + '<div class="role-tabs">'
-      + '<button class="rtab' + (roleState.tab === 'basic' ? ' on' : '') + '" data-rtab="basic">基础信息</button>'
-      + '<button class="rtab' + (roleState.tab === 'perm' ? ' on' : '') + '" data-rtab="perm">菜单权限</button>'
-      + '</div>'
-      + '<div class="role-tab-pane">' + (roleState.tab === 'basic' ? basicInfoHtml(r, st, sys) : permTreeHtml(r)) + '</div>';
-  }
-
-  function renderRole() {
-    var pane = $('#paneRole');
-    if (!can('org:role:define')) {
-      pane.innerHTML = '<div class="empty">当前身份无权访问角色管理。</div>';
-      return;
-    }
-    var roles = ctx.roles.slice();
-    var q = (roleState.search || '').trim().toLowerCase();
-    if (q) roles = roles.filter(function (r) { return r.name.toLowerCase().indexOf(q) >= 0; });
-    if (!roles.length) {
-      pane.innerHTML = '<div class="scbar"><b>角色管理</b>　维护全校角色、所属端与菜单权限。</div>'
-        + '<div class="card"><div class="empty">' + (q ? '未找到匹配「' + esc(roleState.search) + '」的角色' : '暂无角色') + '</div></div>';
-      return;
-    }
-    if (!roleState.selectedId || !roles.some(function (r) { return r.id === roleState.selectedId; })) {
-      roleState.selectedId = roles[0].id;
-    }
-    var cur = byId('roles', roleState.selectedId);
-    pane.innerHTML = '<div class="scbar"><b>角色管理</b>　共 ' + ctx.roles.length + ' 个角色；权限点细化到操作级。选中左侧角色查看详情并维护。</div>'
-      + '<div class="role-layout">'
-      + '<section class="role-list-panel">'
-      + '<div class="role-toolbar"><input class="role-search" id="roleSearch" placeholder="搜索角色" value="' + esc(roleState.search) + '"><button class="btn-s" data-radd="1">+ 新增</button></div>'
-      + '<div class="role-list">' + roles.map(roleItemHtml).join('') + '</div>'
-      + '</section>'
-      + '<section class="role-detail-panel">' + roleDetailHtml(cur) + '</section>'
-      + '</div>';
-  }
-
-  /* ── 角色 CRUD ── */
-  function scopeToKey(scope) {
-    if (scope === '学生端') return 'student';
-    if (scope === '教师端') return 'teacher';
-    return 'orgAdmin';
-  }
-  function scopeToPortal(scope) {
-    if (scope === '学生端') return 'student';
-    if (scope === '教师端') return 'teacher';
-    return 'admin';
-  }
-
-  function openRoleForm(role) {
-    var isAdd = !role;
-    var curScope = role ? roleScope(role) : '管理后台';
-    var dlg = openDialog('<form><h2>' + (isAdd ? '新增角色' : '编辑角色' + (role ? ' · ' + esc(role.name) : '')) + '</h2>'
-      + '<label>角色名称<input name="rname" value="' + esc(role ? role.name : '') + '" placeholder="请输入角色名称"></label>'
-      + '<label>角色编码<input name="rcode" value="' + esc(isAdd ? '' : roleCode(role)) + '" placeholder="字母、数字或符号"' + (isAdd ? '' : ' disabled') + '>'
-      + (isAdd ? '' : '<span class="m-hid" style="margin-top:2px">角色编码为系统标识，创建后不可修改</span>') + '</label>'
-      + '<label>所属端<select name="rscope"' + (isAdd ? '' : ' disabled') + '>'
-      + ['管理后台', '教师端', '学生端'].map(function (s) {
-          return '<option value="' + s + '"' + (s === curScope ? ' selected' : '') + '>' + s + '</option>';
-        }).join('') + '</select>'
-      + (isAdd ? '' : '<span class="m-hid" style="margin-top:2px">所属端关联角色数据范围，创建后不可修改</span>') + '</label>'
-      + '<label>角色说明<textarea name="rdesc" rows="3" placeholder="请输入角色说明">' + esc(role ? (role.description || '') : '') + '</textarea></label>'
-      + '<div class="note" id="rErr" style="color:var(--crit)"></div>'
-      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div>'
-      + '</form>');
-    dlg.style.width = 'min(440px, calc(100vw - 32px))';
-    var err = dlg.querySelector('#rErr');
-    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
-    dlg.addEventListener('submit', function (ev) {
-      ev.preventDefault();
-      var name = dlg.querySelector('[name=rname]').value.trim();
-      var codeVal = (dlg.querySelector('[name=rcode]').value || '').trim();
-      var scope = dlg.querySelector('[name=rscope]').value;
-      var desc = dlg.querySelector('[name=rdesc]').value.trim();
-      if (!name) { err.textContent = '请输入角色名称'; return; }
-      if (isAdd) {
-        if (!codeVal) { err.textContent = '请输入角色编码'; return; }
-        if (!/^[A-Za-z0-9!-/:-@[-`{-~]+$/.test(codeVal)) { err.textContent = '角色编码只能包含字母、数字和符号'; return; }
-        if (byId('roles', codeVal)) { err.textContent = '角色编码已存在'; return; }
-      }
-      if (isAdd) {
-        var nRole = { id: codeVal, key: scopeToKey(scope), portal: scopeToPortal(scope), name: name, type: '自定义', status: '启用', aiQuota: 0,
-          description: desc, createdBy: identity.account.name, createdAt: new Date().toISOString().slice(0, 10),
-          permissionIds: [] };
-        ctx.roles.push(nRole);
-        audit('新增角色', name, null, { id: codeVal, scope: scope, description: desc }, '成功', null);
-        roleState.selectedId = codeVal;
-        toast('已新增角色「' + name + '」');
-      } else {
-        var before = { name: role.name, description: role.description };
-        role.name = name;
-        role.description = desc;
-        audit('编辑角色', name, before, { name: name, description: desc }, '成功', null);
-        toast('已保存「' + name + '」');
-      }
-      dlg.close();
-      render();
-    });
-    dlg.addEventListener('close', function () { dlg.remove(); });
-  }
-
-  function openRolePermConfig(role) {
-    var granted = new Set(role.permissionIds || []);
-    var dlg = openDialog('<form><h2>配置角色菜单 · ' + esc(role.name) + '</h2>'
-      + '<div style="max-height:52vh;overflow-y:auto;padding-right:4px">' + permCheckTree(granted) + '</div>'
-      + '<div class="note" id="pErr" style="color:var(--crit)"></div>'
-      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">保存</button></div>'
-      + '</form>');
-    dlg.style.width = 'min(520px, calc(100vw - 32px))';
-    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
-
-    function syncMod(mod) {
-      var items = Array.from(dlg.querySelectorAll('[data-pcode]')).filter(function (i) { return i.getAttribute('data-pmod') === mod; });
-      var modInput = Array.from(dlg.querySelectorAll('[data-pmod]')).filter(function (i) { return !i.hasAttribute('data-pcode') && i.getAttribute('data-pmod') === mod; })[0];
-      if (modInput) modInput.checked = items.length > 0 && items.every(function (i) { return i.checked; });
-    }
-    dlg.addEventListener('change', function (e) {
-      var el = e.target;
-      if (!el || !el.getAttribute) return;
-      var mod = el.getAttribute('data-pmod');
-      if (mod == null) return;
-      if (el.hasAttribute('data-pcode')) { syncMod(mod); }
-      else {
-        var on = el.checked;
-        dlg.querySelectorAll('[data-pcode]').forEach(function (i) {
-          if (i.getAttribute('data-pmod') === mod) i.checked = on;
-        });
-      }
-    });
-    dlg.addEventListener('submit', function (ev) {
-      ev.preventDefault();
-      var next = [];
-      dlg.querySelectorAll('[data-pcode]:checked').forEach(function (i) { next.push(i.getAttribute('data-pcode')); });
-      var before = (role.permissionIds || []).slice().sort().join(',');
-      var after = next.slice().sort().join(',');
-      role.permissionIds = next;
-      audit('配置角色菜单权限', role.name, { permissionIds: before }, { permissionIds: after }, '成功', null);
-      toast('已保存「' + role.name + '」的菜单权限');
-      dlg.close();
-      render();
-    });
-    dlg.addEventListener('close', function () { dlg.remove(); });
-  }
-
-  function deleteRole(role) {
-    var assigned = ctx.assignments.filter(function (a) { return a.roleId === role.id; }).length;
-    var dlg = openDialog('<form><h2>删除角色「' + esc(role.name) + '」</h2>'
-      + '<div class="note">' + (assigned
-          ? '该角色已被 ' + assigned + ' 个账号分配，删除后这些账号的该角色分配将一并移除，确定删除吗？'
-          : '确定删除该角色吗？删除后不可恢复。') + '</div>'
-      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">删除</button></div>'
-      + '</form>');
-    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
-    dlg.addEventListener('submit', function (ev) {
-      ev.preventDefault();
-      var before = { id: role.id, name: role.name, assigned: assigned };
-      ctx.assignments = ctx.assignments.filter(function (a) { return a.roleId !== role.id; });
-      ctx.roles = ctx.roles.filter(function (r) { return r.id !== role.id; });
-      audit('删除角色', role.name, before, null, '成功', null);
-      roleState.selectedId = null;
-      toast('已删除角色「' + role.name + '」');
-      dlg.close();
-      render();
-    });
-    dlg.addEventListener('close', function () { dlg.remove(); });
-  }
-
-  function toggleRoleStatus(role) {
-    var st = roleStatus(role);
-    var next = st === '启用' ? '停用' : '启用';
-    role.status = next;
-    audit(next === '停用' ? '停用角色' : '启用角色', role.name, { status: st }, { status: next }, '成功', null);
-    toast((next === '停用' ? '已停用' : '已启用') + '「' + role.name + '」');
-    render();
-  }
-
   /* ── 弹层 ── */
   function openDialog(html) {
     var dlg = document.createElement('dialog');
@@ -1378,8 +1072,6 @@
   /* ── 事件（委托到 #body） ── */
   function bindEvents() {
     $('#body').addEventListener('click', function (e) {
-      var tab = e.target.closest('[data-tab]');
-      if (tab) { activeTab = tab.getAttribute('data-tab'); render(); return; }
       var aadd = e.target.closest('[data-aadd]');
       if (aadd) {
         if (can('org:account:edit')) openAccountForm(null);
@@ -1407,28 +1099,8 @@
       if (aenable) { var an = byId('accounts', aenable.getAttribute('data-aenable')); if (an && Perm.check(ctx, identity, 'org:account:edit', an, 'account').allowed) toggleStatus(an); return; }
       var apwd = e.target.closest('[data-apwd]');
       if (apwd) { var ap = byId('accounts', apwd.getAttribute('data-apwd')); if (ap && Perm.check(ctx, identity, 'org:account:edit', ap, 'account').allowed) resetPassword(ap); return; }
-      var rsel = e.target.closest('[data-rsel]');
-      if (rsel) { roleState.selectedId = rsel.getAttribute('data-rsel'); roleState.tab = 'basic'; render(); return; }
-      var radd = e.target.closest('[data-radd]');
-      if (radd) { openRoleForm(null); return; }
-      var redit = e.target.closest('[data-redit]');
-      if (redit) { var re = byId('roles', redit.getAttribute('data-redit')); if (re && !isSystemRole(re)) openRoleForm(re); return; }
-      var rperm = e.target.closest('[data-rperm]');
-      if (rperm) { var rp = byId('roles', rperm.getAttribute('data-rperm')); if (rp && !isSystemRole(rp)) openRolePermConfig(rp); return; }
-      var rdel = e.target.closest('[data-rdel]');
-      if (rdel) { var rd = byId('roles', rdel.getAttribute('data-rdel')); if (rd && !isSystemRole(rd)) deleteRole(rd); return; }
-      var rtab = e.target.closest('[data-rtab]');
-      if (rtab) { roleState.tab = rtab.getAttribute('data-rtab'); render(); return; }
-      var rstatus = e.target.closest('[data-rstatus]');
-      if (rstatus) { var rs = byId('roles', rstatus.getAttribute('data-rstatus')); if (rs && !isSystemRole(rs)) toggleRoleStatus(rs); return; }
     });
     $('#body').addEventListener('input', function (e) {
-      if (e.target && e.target.id === 'roleSearch') {
-        roleState.search = e.target.value;
-        render();
-        var el = document.getElementById('roleSearch');
-        if (el) { el.focus(); try { el.setSelectionRange(el.value.length, el.value.length); } catch (x) {} }
-      }
       if (e.target && e.target.id === 'acctSearch') {
         acctFilter.q = e.target.value;
         render();
@@ -1452,7 +1124,7 @@
   }
 
   /* ── 启动 ── */
-  UI.boot({ portal: 'admin', active: activeTab === 'role' ? 'accountrole' : 'account' });
+  UI.boot({ portal: 'admin', active: 'account' });
   UI.onChange(function () { render(); });
   bindEvents();
   render();
