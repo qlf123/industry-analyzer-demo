@@ -21,9 +21,6 @@
 .login-form input:focus{outline:none;border-color:var(--brand)}
 .login-form label:not(:first-child){margin-top:12px}
 .login-form .btn{width:100%;height:42px;margin-top:14px;font-size:14px}
-.login-portal{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:12px;min-height:15px}
-.login-portal.warn{color:var(--crit);font-weight:600}
-.login-error{color:var(--crit);font-size:12.5px;margin-top:8px}
 .login-note{font-size:11.5px;color:var(--muted);margin-top:20px}
 </style>
 </head>
@@ -39,8 +36,6 @@
     <input id="loginPassword" type="password" value="123456" autocomplete="off" aria-label="密码">
     <button class="btn" id="loginBtn" type="button">登录</button>
   </div>
-  <div class="login-portal" id="portalHint"></div>
-  <div class="login-error" id="loginError" hidden></div>
   <p class="login-note">本页仅演示登录流程，不做真实身份验证。</p>
 </main>
 <script src="js/mock-data.js"></script>
@@ -53,85 +48,31 @@
   var accountInput = document.getElementById('loginAccount');
   var passwordInput = document.getElementById('loginPassword');
   var btn = document.getElementById('loginBtn');
-  var portalHint = document.getElementById('portalHint');
-  var errEl = document.getElementById('loginError');
 
-  function portalNameCn(p) {
-    return p === 'admin' ? '管理端' : (p === 'teacher' ? '教师端' : (p === 'student' ? '学生端' : p));
-  }
-
-  // 账号输入 → 账号 id（按 id / 姓名 / 演示账号 label 匹配）
-  function resolveAccountId(value) {
-    var ctx = DEMO.getState();
-    var v = String(value == null ? '' : value).trim();
-    if (!v) return '';
-    var byId = (ctx.accounts || []).find(function (a) { return a.id === v; });
-    if (byId) return byId.id;
-    var byName = (ctx.accounts || []).find(function (a) { return a.name === v; });
-    if (byName) return byName.id;
-    var byLabel = (ctx.demoIdentities || []).find(function (d) { return d.label === v; });
-    return byLabel ? byLabel.accountId : '';
-  }
-
-  function refreshPortalHint() {
-    var accountId = resolveAccountId(accountInput.value);
-    if (!accountId) {
-      portalHint.textContent = '';
-      portalHint.className = 'login-portal';
-      return;
-    }
-    var ctx = DEMO.getState();
-    var identity = Perm.getIdentity(ctx, accountId);
-    var portals = Perm.rolePortals(ctx, identity);
-    if (!portals.length) {
-      portalHint.textContent = '该账号无可用权限';
-      portalHint.className = 'login-portal warn';
-    } else {
-      portalHint.textContent = '可进入：' + portals.map(portalNameCn).join('、');
-      portalHint.className = 'login-portal';
-    }
-  }
-
-  function setError(msg) {
-    errEl.textContent = msg || '';
-    errEl.hidden = !msg;
-  }
+  // 演示登录：不做账号 / 密码校验，任何人点「登录」即以默认账号「李老师」进入
+  var DEFAULT_ACCOUNT_ID = 'ACC-LI';
 
   function login() {
-    var accountId = resolveAccountId(accountInput.value);
-    if (!accountId) {
-      setError('账号不存在，请重新输入');
-      return;
-    }
-    // 密码不校验（演示流程）
+    var accountId = DEFAULT_ACCOUNT_ID;
     var ctx = DEMO.getState();
     var identity = Perm.getIdentity(ctx, accountId);
     var portals = Perm.rolePortals(ctx, identity);
-    if (!portals.length) {
-      setError('账号无可用权限，请联系管理员');
-      return;
-    }
-    setError('');
+    var target = 'account-v1.html';
     if (portals.length > 1) {
-      UI.promptPortal(ctx, identity, portals, function (portal) {
-        identity.currentPortal = portal;
-        var target = UI.firstPage(ctx, identity, portal);
-        location.href = target + (target.indexOf('?') >= 0 ? '&' : '?') + 'u=' + encodeURIComponent(accountId);
+      UI.promptPortal(ctx, identity, portals, function () {
+        // 无论选择哪个端，都进入「账号管理」页
+        location.href = target + '?u=' + encodeURIComponent(accountId);
       }, function () {
         // 取消：停留在登录页，不跳转
       });
       return;
     }
-    var target = UI.firstPage(ctx, identity);
-    location.href = target + (target.indexOf('?') >= 0 ? '&' : '?') + 'u=' + encodeURIComponent(accountId);
+    location.href = target + '?u=' + encodeURIComponent(accountId);
   }
 
-  accountInput.addEventListener('input', function () { setError(''); refreshPortalHint(); });
   accountInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
   passwordInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
   btn.addEventListener('click', login);
-
-  refreshPortalHint();
 })();
 </script>
 </body>

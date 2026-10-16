@@ -211,8 +211,7 @@
         return r && r.portal === p;
       }).map(function (a) {
         var r = roleById(ctx, a.roleId);
-        var scope = scopeSummary(ctx, a);
-        return (r ? r.name : a.roleId) + (scope ? '（' + scope + '）' : '');
+        return r ? r.name : a.roleId;
       }).join('、');
       return '<button type="button" class="pp-opt" data-portal="' + esc(p) + '">'
         + '<span class="pp-name">' + esc(portalName(p)) + '</span>'
