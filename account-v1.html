@@ -62,9 +62,9 @@
 .org-sel-acts{display:flex;align-items:center;gap:9px;flex:0 0 auto}
 
 /* 所属组织：主组织标签 + 兼职灰色 */
-.org-main{font-weight:500}
+.org-main{font-weight:500;display:block}
 .org-tag{display:inline-block;font-size:10px;font-family:var(--mono);font-weight:500;padding:0 5px;border-radius:5px;background:var(--brand-soft,#eef2ff);color:var(--brand,#3b5bdb);margin-left:5px;vertical-align:1px}
-.org-part{color:var(--ink-2)}
+.org-part{color:var(--ink-2);display:block}
 .org-sep{color:var(--muted);margin:0 5px}
 .part-note{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6}
 .part-tree{max-height:220px;overflow-y:auto;border:1px solid var(--rule);border-radius:8px;padding:8px 10px;margin-top:4px}
@@ -122,8 +122,6 @@
 .teach-note{font-size:11.5px;color:var(--muted);margin:-2px 0 8px}
 .addorg{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-size:12.5px;padding:8px;border:1px dashed var(--rule);border-radius:9px;background:transparent;color:var(--ink-2);cursor:pointer}
 .addorg:hover{border-color:var(--brand);color:var(--brand, #3b5bdb);background:var(--brand-soft, #eef2ff)}
-.portal-line{font-size:11.5px;color:var(--muted);font-family:var(--mono)}
-.portal-line b{color:var(--ink-2);font-weight:500}
 .primary-line{font-size:11.5px;color:var(--muted);font-family:var(--mono)}
 .primary-line b{color:var(--ink-2);font-weight:500}
 .role-org-cell{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--ink-2)}
@@ -488,14 +486,6 @@
   }
   function roleName(id) { var r = roleById(id); return r ? r.name : id; }
   function orgName(id) { var o = orgById(id); return o ? o.name : id; }
-  function draftPortals() {
-    var set = {};
-    (editDraft.roleIds || []).forEach(function (rid) {
-      var r = roleById(rid);
-      if (r && r.portal) set[r.portal] = 1;
-    });
-    return PORTAL_ORDER.filter(function (p) { return set[p]; });
-  }
   function hasPortal(p) {
     return (editDraft.roleIds || []).some(function (rid) { var r = roleById(rid); return r && r.portal === p; });
   }
@@ -530,7 +520,7 @@
       html.push('<span class="org-main">' + esc(mo ? mo.name : main) + '<span class="org-tag">主</span></span>');
     }
     parts.forEach(function (oid) { var o = orgById(oid); html.push('<span class="org-part">' + esc(o ? o.name : oid) + '</span>'); });
-    return html.length ? html.join('<span class="org-sep">·</span>') : '<span class="m-hid">—</span>';
+    return html.length ? html.join('') : '<span class="m-hid">—</span>';
   }
 
   /* 账号详情「角色」：只显示关联角色列表，角色与组织无关 */
@@ -676,10 +666,6 @@
       if (pruned.majors || pruned.courses) toast('已移除 ' + (pruned.majors + pruned.courses) + ' 个不在所选组织内的专业 / 课程');
       return true;
     }
-    function portalLineHtml() {
-      var portals = draftPortals();
-      return '<div class="portal-line">可进入的端：<b>' + (portals.length ? portals.map(portalCn).join('、') : '—') + '</b></div>';
-    }
     function orgSectionHtml() {
       var tree = flattenOrgTree(orgPickCtx()).map(function (n) {
         var o = orgById(n.id);
@@ -771,7 +757,6 @@
     }
     function refreshDynamics() {
       var el;
-      if ((el = dlg.querySelector('#portalSec'))) el.innerHTML = portalLineHtml();
       if ((el = dlg.querySelector('#orgSec'))) el.innerHTML = orgSectionHtml();
       if ((el = dlg.querySelector('#roleSec'))) el.innerHTML = roleSectionHtml();
       if ((el = dlg.querySelector('#teachSec'))) el.innerHTML = teachSectionHtml();
@@ -785,7 +770,6 @@
       + (isStopped ? '<div class="note" style="color:var(--crit);font-weight:600">账号已停用，分配已失效</div>' : '')
       + '<label>姓名<input name="name" value="' + esc(editDraft.name) + '"' + (basicReadonly ? ' disabled' : '') + '></label>'
       + '<label>手机号<input name="phone" value="' + esc(editDraft.phone) + '" placeholder="11 位手机号"' + (basicReadonly ? ' disabled' : '') + '></label>'
-      + '<div id="portalSec">' + portalLineHtml() + '</div>'
       + '<div class="sec-h">所属组织 <span style="color:var(--crit)">*</span></div><div id="orgSec">' + orgSectionHtml() + '</div>'
       + '<div class="sec-h">角色 <span style="color:var(--crit)">*</span></div><div id="roleSec">' + roleSectionHtml() + '</div>'
       + '<div id="teachSec">' + teachSectionHtml() + '</div>'
