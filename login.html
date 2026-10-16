@@ -22,6 +22,14 @@
 .login-form label:not(:first-child){margin-top:12px}
 .login-form .btn{width:100%;height:42px;margin-top:14px;font-size:14px}
 .login-note{font-size:11.5px;color:var(--muted);margin-top:20px}
+.acct-wrap{position:relative;text-align:left}
+.acct-wrap input{padding-right:30px;cursor:pointer}
+.acct-caret{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:11px;pointer-events:none}
+.acct-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;max-height:264px;overflow:auto;background:var(--card);border:1px solid var(--rule);border-radius:10px;box-shadow:var(--pop-shadow);z-index:30;display:none;text-align:left}
+.acct-menu.open{display:block}
+.acct-item{padding:8px 12px;font-size:13px;color:var(--ink);cursor:pointer}
+.acct-item:hover{background:var(--brand-soft);color:var(--brand-ink)}
+.acct-empty{padding:8px 12px;font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body class="login-body">
@@ -31,7 +39,11 @@
   <p class="login-sub">权限管理升级 · 登录流程演示</p>
   <div class="login-form">
     <label for="loginAccount">账号</label>
-    <input id="loginAccount" type="text" value="李老师" autocomplete="off" aria-label="账号">
+    <div class="acct-wrap">
+      <input id="loginAccount" type="text" value="李老师" autocomplete="off" aria-label="账号">
+      <span class="acct-caret" aria-hidden="true">▾</span>
+      <div class="acct-menu" id="acctMenu" role="listbox"></div>
+    </div>
     <label for="loginPassword">密码</label>
     <input id="loginPassword" type="password" value="123456" autocomplete="off" aria-label="密码">
     <button class="btn" id="loginBtn" type="button">登录</button>
@@ -48,12 +60,58 @@
   var accountInput = document.getElementById('loginAccount');
   var passwordInput = document.getElementById('loginPassword');
   var btn = document.getElementById('loginBtn');
+  var acctMenu = document.getElementById('acctMenu');
 
-  // 演示登录：不做账号 / 密码校验，任何人点「登录」即以默认账号「李老师」进入
+  // 演示登录：不做账号 / 密码校验；输入账号名可切换身份，默认「李老师」
   var DEFAULT_ACCOUNT_ID = 'ACC-LI';
 
+  var DEMO_LIST = (DEMO.getState().demoIdentities || []);
+
+  // 渲染账号下拉：filter 为空时显示全部，否则按输入过滤
+  function renderMenu(filter) {
+    var q = String(filter == null ? '' : filter).trim();
+    var list = q ? DEMO_LIST.filter(function (x) { return x.label.indexOf(q) >= 0; }) : DEMO_LIST;
+    acctMenu.innerHTML = '';
+    if (!list.length) {
+      var empty = document.createElement('div');
+      empty.className = 'acct-empty';
+      empty.textContent = '未找到账号，将按默认「李老师」登录';
+      acctMenu.appendChild(empty);
+      return;
+    }
+    list.forEach(function (x) {
+      var item = document.createElement('div');
+      item.className = 'acct-item';
+      item.setAttribute('role', 'option');
+      item.textContent = x.label;
+      item.addEventListener('mousedown', function (e) {
+        e.preventDefault(); // 阻止 input 失焦，保持焦点
+        accountInput.value = x.label;
+        acctMenu.classList.remove('open');
+      });
+      acctMenu.appendChild(item);
+    });
+  }
+
+  function openMenu() { renderMenu(''); acctMenu.classList.add('open'); }
+  function closeMenu() { acctMenu.classList.remove('open'); }
+
+  // 按输入解析账号：演示身份 label → 账号姓名 → 账号 id → 回退默认「李老师」
+  function resolveAccountId(raw) {
+    var q = String(raw == null ? '' : raw).trim();
+    if (!q) return DEFAULT_ACCOUNT_ID;
+    var ctx = DEMO.getState();
+    var hit = (ctx.demoIdentities || []).filter(function (x) { return x.label === q; });
+    if (hit.length === 1) return hit[0].accountId;
+    var byName = (ctx.accounts || []).filter(function (x) { return x.name === q; });
+    if (byName.length === 1) return byName[0].id;
+    var byId = (ctx.accounts || []).filter(function (x) { return x.id === q; });
+    if (byId.length === 1) return byId[0].id;
+    return DEFAULT_ACCOUNT_ID;
+  }
+
   function login() {
-    var accountId = DEFAULT_ACCOUNT_ID;
+    var accountId = resolveAccountId(accountInput.value);
     var ctx = DEMO.getState();
     var identity = Perm.getIdentity(ctx, accountId);
     var portals = Perm.rolePortals(ctx, identity);
@@ -70,9 +128,21 @@
     location.href = target + '?u=' + encodeURIComponent(accountId);
   }
 
-  accountInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
+  accountInput.addEventListener('focus', openMenu);
+  accountInput.addEventListener('click', openMenu);
+  accountInput.addEventListener('input', function () {
+    renderMenu(accountInput.value);
+    acctMenu.classList.add('open');
+  });
+  accountInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { closeMenu(); login(); }
+    else if (e.key === 'Escape') { closeMenu(); }
+  });
   passwordInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
   btn.addEventListener('click', login);
+  document.addEventListener('click', function (e) {
+    if (e.target !== accountInput && !acctMenu.contains(e.target)) closeMenu();
+  });
 })();
 </script>
 </body>

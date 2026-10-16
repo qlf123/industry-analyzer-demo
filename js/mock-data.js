@@ -10,6 +10,7 @@
   'use strict';
 
   var STORAGE_KEY = 'permission-demo-state';
+  var DATA_VERSION = 1; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
 
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
@@ -170,7 +171,9 @@
     { id: 'P-INTERN-VIEW',       code: 'intern:task:view',         name: '实习任务查看',   module: '实践', resource: '实习任务', action: '查看' },
     { id: 'P-RESOURCE-SHARE',    code: 'resource:share',           name: '内容共享',       module: '资源', resource: '内容共享', action: '发起' },
     { id: 'P-SCHOOLPUB-PUBLISH', code: 'resource:schoolpub:publish', name: '发布到校本资源库', module: '资源', resource: '校本资源库', action: '发布' },
-    { id: 'P-SCHOOLPUB-VIEW',    code: 'resource:schoolpub:view',  name: '校本资源库查看复制', module: '资源', resource: '校本资源库', action: '查看复制' }
+    { id: 'P-SCHOOLPUB-VIEW',    code: 'resource:schoolpub:view',  name: '校本资源库查看复制', module: '资源', resource: '校本资源库', action: '查看复制' },
+    { id: 'P-MEMBER-MANAGE',     code: 'org:member:manage',        name: '组织成员管理',   module: '组织', resource: '成员', action: '管理' },
+    { id: 'P-ACCOUNT-CREATE',    code: 'account:account:create',   name: '账号新建',       module: '组织', resource: '账号', action: '新建' }
   ];
 
   /* ── 角色（type：内置 / 预设 / 部门模板 / 自定义；key 供权限模块判定用） ── */
@@ -179,12 +182,12 @@
       description: '系统内置的最高权限角色，覆盖全校全部功能与数据', createdBy: '系统', createdAt: '2024-09-01', permissionIds: [
       'org:node:view','org:node:edit','org:account:view','org:account:edit','org:account:assign','org:teachingScope:grant',
       'org:role:define','org:audit:view','student:info:view','student:score:view','student:idcard:plain','teaching:profile:view',
-      'teaching:content:view','teaching:content:audit','intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view' ] },
+      'teaching:content:view','teaching:content:audit','intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view','org:member:manage','account:account:create' ] },
     { id: 'R-ORG-ADMIN', key: 'orgAdmin', portal: 'admin', name: '组织管理员', type: '预设', status: '启用', aiQuota: 100,
       description: '负责本单位组织、账号与基础数据的日常维护', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'org:node:view','org:node:edit','org:account:view','org:account:edit','org:account:assign','org:teachingScope:grant',
       'org:audit:view','student:info:view','student:score:view','teaching:profile:view','teaching:content:view','teaching:content:audit',
-      'intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view' ] },
+      'intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view','org:member:manage','account:account:create' ] },
     { id: 'R-MAJOR-LEAD', key: 'majorLead', portal: 'teacher', name: '专业负责人', type: '预设', status: '启用', aiQuota: 50,
       description: '负责本专业教学与人才培养相关的查看与协作', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'teaching:profile:view','teaching:content:view','student:score:view','resource:share','resource:schoolpub:view' ] },
@@ -212,10 +215,13 @@
       'org:audit:view','teaching:profile:view','student:score:view','teaching:content:view' ] },
     { id: 'R-INFO', key: 'info', portal: 'admin', name: '信息中心', type: '部门模板', status: '启用', aiQuota: 50,
       description: '信息化运维，负责账号与审计相关维护', createdBy: '超管', createdAt: '2024-10-15', permissionIds: [
-      'org:account:view','org:account:edit','org:audit:view' ] },
+      'org:account:view','org:account:edit','org:audit:view','account:account:create' ] },
     { id: 'R-ENTERPRISE', key: 'enterprise', portal: 'teacher', name: '企业导师', type: '自定义', status: '启用', aiQuota: 50,
       description: '企业导师，负责实习学生与实习任务管理', createdBy: '超管', createdAt: '2025-03-20', permissionIds: [
-      'student:info:view','student:score:view','intern:task:view','resource:share','resource:schoolpub:view' ] }
+      'student:info:view','student:score:view','intern:task:view','resource:share','resource:schoolpub:view' ] },
+    { id: 'R-SECRETARY', key: 'secretary', portal: 'admin', name: '学院秘书', type: '自定义', status: '启用', aiQuota: 30,
+      description: '学院级成员与账号协作管理，仅限本学院范围', createdBy: '超管', createdAt: '2026-10-16', permissionIds: [
+      'org:node:view','org:account:view','org:member:manage' ] }
   ];
 
   /* ── 账号 ── */
@@ -237,7 +243,8 @@
     { id: 'ACC-QIAN',  name: '钱信息',   orgId: 'ORG-ROOT',       kind: '信息中心', status: '正常', studentId: null, phone: '13800000015', lastLoginAt: '2026-10-08 14:00', createdAt: '2024-09-18', createdBy: '系统',     updatedAt: '2026-09-28 09:30', updatedBy: '张校管' },
     { id: 'ACC-FENG',  name: '冯导师',   orgId: 'ORG-HOTEL', baseId: 'BASE-HOTEL', kind: '企业导师', status: '正常', studentId: null, phone: '13800000016', lastLoginAt: '2026-10-05 10:30', createdAt: '2024-09-19', createdBy: '系统', updatedAt: '2026-09-27 14:15', updatedBy: '张校管' },
     { id: 'ACC-GRAD',  name: '已毕业学生', orgId: 'ORG-TOUR-DEPT', kind: '学生',   status: '正常', studentId: 'STU-T23-1-01', phone: '13800000017', lastLoginAt: '2025-06-30 12:00', createdAt: '2024-09-20', createdBy: '系统', updatedAt: '2025-07-01 09:00', updatedBy: '系统' },
-    { id: 'ACC-STOP',  name: '停用老师', orgId: 'ORG-HOTEL',      kind: '教师',     status: '停用', studentId: null, phone: '13800000018', lastLoginAt: '2026-01-15 09:00', createdAt: '2024-09-21', createdBy: '系统',     updatedAt: '2026-02-10 10:00', updatedBy: '刘院管' }
+    { id: 'ACC-STOP',  name: '停用老师', orgId: 'ORG-HOTEL',      kind: '教师',     status: '停用', studentId: null, phone: '13800000018', lastLoginAt: '2026-01-15 09:00', createdAt: '2024-09-21', createdBy: '系统',     updatedAt: '2026-02-10 10:00', updatedBy: '刘院管' },
+    { id: 'ACC-QIN',   name: '秦秘书',   orgId: 'ORG-TOURISM',    kind: '管理员',   status: '正常', studentId: null, phone: '13800000019', lastLoginAt: null, createdAt: '2026-10-16', createdBy: '系统', updatedAt: '2026-10-16', updatedBy: '系统' }
   ];
 
   /* ── 角色分配（一条 = 角色 + 数据范围 + 教学范围 + 额外权限点） ── */
@@ -249,6 +256,7 @@
     { id: 'A-05', accountId: 'ACC-CHEN', roleId: 'R-ORG-ADMIN', scopeOrgIds: ['ORG-HOTEL'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-06', accountId: 'ACC-LI', roleId: 'R-ORG-ADMIN', scopeOrgIds: ['ORG-HOTEL'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-07', accountId: 'ACC-LI', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-T26-1'], courseIds: ['CRS-T1', 'CRS-T3'] }, extraPermIds: [] },
+    { id: 'A-22', accountId: 'ACC-LI', roleId: 'R-SUPER', scopeOrgIds: ['ORG-HOTEL'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-08', accountId: 'ACC-WANG', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-T26-1', 'K-H26-1'], courseIds: ['CRS-T1', 'CRS-T2', 'CRS-H1', 'CRS-H2'] }, extraPermIds: [] },
     { id: 'A-09', accountId: 'ACC-HE', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-T25-1'], courseIds: ['CRS-T1', 'CRS-T2'] }, extraPermIds: [] },
     { id: 'A-10', accountId: 'ACC-MA', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-H25-1'], courseIds: ['CRS-H2', 'CRS-H3'] }, extraPermIds: [] },
@@ -261,7 +269,8 @@
     { id: 'A-17', accountId: 'ACC-QIAN', roleId: 'R-INFO', scopeOrgIds: ['ORG-ROOT'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-18', accountId: 'ACC-FENG', roleId: 'R-ENTERPRISE', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-19', accountId: 'ACC-GRAD', roleId: 'R-STUDENT', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
-    { id: 'A-20', accountId: 'ACC-STOP', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-H26-1'], courseIds: ['CRS-H1'] }, extraPermIds: [] }
+    { id: 'A-20', accountId: 'ACC-STOP', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-H26-1'], courseIds: ['CRS-H1'] }, extraPermIds: [] },
+    { id: 'A-21', accountId: 'ACC-QIN', roleId: 'R-SECRETARY', scopeOrgIds: ['ORG-TOURISM'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] }
   ];
 
   /* ── 演示身份（下拉用；停用老师不进下拉） ── */
@@ -283,7 +292,8 @@
     { id: 'D-15', label: '钱信息',   accountId: 'ACC-QIAN' },
     { id: 'D-16', label: '冯导师',   accountId: 'ACC-FENG' },
     { id: 'D-17', label: '已毕业学生', accountId: 'ACC-GRAD' },
-    { id: 'D-18', label: '停用老师', accountId: 'ACC-STOP' }
+    { id: 'D-18', label: '停用老师', accountId: 'ACC-STOP' },
+    { id: 'D-19', label: '秦秘书', accountId: 'ACC-QIN' }
   ];
 
   /* ── 教师档案（简单档案，组织随账号） ── */
@@ -345,7 +355,8 @@
     teacherProfiles: TEACHER_PROFILES,
     resources: RESOURCES,
     contents: CONTENTS,
-    audits: AUDITS
+    audits: AUDITS,
+    __version: DATA_VERSION
   };
 
   /* ── 存储（localStorage，Node 下退化为内存） ── */
@@ -363,7 +374,11 @@
     if (typeof localStorage !== 'undefined') {
       try {
         var raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) { memState = JSON.parse(raw); return clone(memState); }
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (parsed && parsed.__version === DATA_VERSION) { memState = parsed; return clone(memState); }
+          localStorage.removeItem(STORAGE_KEY); // 数据版本不符（seed 有更新），丢弃旧缓存
+        }
       } catch (e) {}
     }
     if (memState) return clone(memState);

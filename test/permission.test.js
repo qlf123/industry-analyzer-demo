@@ -90,16 +90,16 @@ test('D-02 双节点组织管理员 两学院账号都可见', function () {
   assert.ok(visible.includes('ACC-WANG'), '公共基础部账号因兼职旅游学院可见');
 });
 
-/* ── D-03 李老师：组织管理员@酒店学院 + 教师@旅游管理2026级1班 ── */
-test('D-03 李老师 管理端看不到旅游学院内容/账号，教师端能看到本班成绩', function () {
+/* ── D-03 李老师：平台超级管理员（全权限）+ 教师@旅游管理2026级1班 ── */
+test('D-03 李老师 管理端全平台可见，教师端仍限本班', function () {
   const c = ctx();
   const li = id(c, 'ACC-LI');
-  // 多端身份缺省按管理端判定：组织管理员@酒店学院
+  // 多端身份缺省按管理端判定：超管全平台
   const liAdmin = id(c, 'ACC-LI');
   const contTour = c.contents.find(function (x) { return x.orgId === 'ORG-TOUR-DEPT'; });
-  assert.equal(Perm.check(c, liAdmin, 'teaching:content:audit', contTour, 'content').allowed, false, '管理端：旅游学院内容不可审核');
-  assert.equal(Perm.check(c, liAdmin, 'org:account:view', id(c, 'ACC-HE').account, 'account').allowed, false, '管理端：旅游学院账号不可见');
-  // 切到教师端：教师@旅游管理 2026 级 1 班
+  assert.equal(Perm.check(c, liAdmin, 'teaching:content:audit', contTour, 'content').allowed, true, '管理端：旅游学院内容可审核');
+  assert.equal(Perm.check(c, liAdmin, 'org:account:view', id(c, 'ACC-HE').account, 'account').allowed, true, '管理端：旅游学院账号可见');
+  // 切到教师端：教师@旅游管理 2026 级 1 班（超管不跨端）
   const liTeacher = id(c, 'ACC-LI');
   liTeacher.currentPortal = 'teacher';
   const stu = firstStudent(c, 'K-T26-1');
@@ -328,7 +328,7 @@ test('D-19 判定过程说明完整（命中分配/功能/范围/脱敏档）', 
   li.currentPortal = 'teacher'; // 李老师为多端身份，成绩命中在教师端
   const stu = firstStudent(c, 'K-T26-1');
   const t = Perm.explain(c, li, 'student:score:view', stu, 'score');
-  assert.equal(t.assignments.length, 2, '列出全部分配（含另一端）');
+  assert.equal(t.assignments.length, 3, '列出全部分配（含另一端）');
   t.assignments.forEach(function (a) {
     assert.equal(typeof a.hasPerm, 'boolean', '每条有功能判定');
     assert.ok(a.scopePass === true || a.scopePass === false || a.scopePass === null, '每条有范围判定');
@@ -509,9 +509,9 @@ test('D-36 李老师 跨端不混，默认进入管理端', function () {
   // 可进入两个端
   assert.deepEqual(Perm.rolePortals(c, li), ['admin', 'teacher'], '李老师可进入管理端与教师端');
   assert.equal(Perm.defaultPortal(c, li), 'admin', '多端无记录默认管理端');
-  // 管理端（缺省）：组织管理员@酒店学院
+  // 管理端（缺省）：超管全平台
   assert.equal(Perm.check(c, li, 'org:account:view', id(c, 'ACC-MA').account, 'account').allowed, true, '管理端：酒店学院账号可见');
-  assert.equal(Perm.check(c, li, 'org:account:view', id(c, 'ACC-HE').account, 'account').allowed, false, '管理端：旅游学院账号不可见');
+  assert.equal(Perm.check(c, li, 'org:account:view', id(c, 'ACC-HE').account, 'account').allowed, true, '管理端：旅游学院账号可见（超管全平台）');
   // 教师端：教师@旅游管理 2026 级 1 班；跨端角色不参与
   const liTeacher = id(c, 'ACC-LI');
   liTeacher.currentPortal = 'teacher';
@@ -540,4 +540,87 @@ test('common.js portalOf：单端 / 多端默认管理端 / 无有效分配（�
   assert.equal(UI.portalOf(c, id(c, 'ACC-GRAD')), 'student', '已毕业学生→学生端');
   assert.equal(UI.portalOf(c, id(c, 'ACC-LI')), 'admin', '李老师多端→默认管理端（不再记忆上次端）');
   assert.equal(UI.portalOf(c, id(c, 'ACC-STOP')), null, '停用老师→无可用端');
+});
+
+/* ── 成员批量操作（js/member.js）与新增权限点 ── */
+const Member = require('../js/member.js');
+
+test('新增权限点：组织成员管理 / 账号新建 已注册', function () {
+  const c = ctx();
+  const codes = c.permissions.map(function (p) { return p.code; });
+  assert.ok(codes.indexOf('org:member:manage') >= 0, '有 组织成员管理');
+  assert.ok(codes.indexOf('account:account:create') >= 0, '有 账号新建');
+});
+
+test('学院秘书 / 信息中心 / 组织管理员 的成员与账号新建权限差异', function () {
+  const c = ctx();
+  function perms(roleId) { return c.roles.find(function (r) { return r.id === roleId; }).permissionIds; }
+  assert.ok(perms('R-SECRETARY').indexOf('org:member:manage') >= 0, '学院秘书有成员管理');
+  assert.ok(perms('R-SECRETARY').indexOf('account:account:create') < 0, '学院秘书无账号新建');
+  assert.ok(perms('R-SECRETARY').indexOf('org:account:view') >= 0, '学院秘书有账号查看');
+  assert.ok(perms('R-SECRETARY').indexOf('org:node:view') >= 0, '学院秘书有节点查看');
+  assert.ok(perms('R-INFO').indexOf('account:account:create') >= 0, '信息中心有账号新建');
+  assert.ok(perms('R-INFO').indexOf('org:member:manage') < 0, '信息中心无成员管理');
+  assert.ok(perms('R-ORG-ADMIN').indexOf('org:member:manage') >= 0, '组织管理员有成员管理');
+  assert.ok(perms('R-ORG-ADMIN').indexOf('account:account:create') >= 0, '组织管理员有账号新建');
+});
+
+test('秦秘书身份：主组织旅游学院、角色学院秘书、可进入管理端', function () {
+  const c = ctx();
+  const qin = id(c, 'ACC-QIN');
+  assert.equal(Perm.accountMainOrgId(qin.account), 'ORG-TOURISM', '主组织旅游学院');
+  const roleIds = c.assignments.filter(function (a) { return a.accountId === 'ACC-QIN'; }).map(function (a) { return a.roleId; });
+  assert.deepEqual(roleIds, ['R-SECRETARY'], '角色学院秘书');
+  assert.deepEqual(Perm.rolePortals(c, qin), ['admin'], '可进入管理端');
+});
+
+test('秦秘书 组织成员管理范围：旅游学院账号允许、酒店学院账号拒绝', function () {
+  const c = ctx();
+  const qin = id(c, 'ACC-QIN');
+  const tourAcc = id(c, 'ACC-LIU');   // 刘院管，orgId ORG-TOURISM
+  const hotelAcc = id(c, 'ACC-MA');   // 马老师，orgId ORG-HOTEL
+  assert.equal(Perm.check(c, qin, 'org:member:manage', tourAcc.account, 'account').allowed, true, '旅游学院账号允许');
+  assert.equal(Perm.check(c, qin, 'org:member:manage', hotelAcc.account, 'account').allowed, false, '酒店学院账号拒绝');
+});
+
+test('member.js 成员口径：加入/移出组织、添加角色 scopeOrgIds=全部所属组织、主组织校验', function () {
+  const c = ctx();
+  const qin = c.accounts.find(function (a) { return a.id === 'ACC-QIN'; });
+  assert.deepEqual(Member.memberOrgIds(c, qin), ['ORG-TOURISM'], '初始仅旅游学院');
+
+  Member.addOrgs(c, qin, ['ORG-HOTEL']);
+  assert.deepEqual(Member.memberOrgIds(c, qin).slice().sort(), ['ORG-HOTEL', 'ORG-TOURISM'].sort(), '加入后两个组织');
+
+  Member.addRoles(c, qin, ['R-INFO']);
+  const infoAs = c.assignments.find(function (a) { return a.accountId === 'ACC-QIN' && a.roleId === 'R-INFO'; });
+  assert.ok(infoAs, '新分配存在');
+  assert.ok(infoAs.scopeOrgIds.indexOf('ORG-TOURISM') >= 0 && infoAs.scopeOrgIds.indexOf('ORG-HOTEL') >= 0, '新分配 scopeOrgIds 含全部所属组织');
+
+  assert.equal(Member.canRemoveOrg(c, qin, 'ORG-TOURISM').ok, false, '主组织不可移出');
+  assert.match(Member.canRemoveOrg(c, qin, 'ORG-TOURISM').reason, /主组织/, '主组织提示语');
+
+  assert.equal(Member.canRemoveOrg(c, qin, 'ORG-HOTEL').ok, true, '非主组织可移出');
+  Member.removeOrg(c, qin, 'ORG-HOTEL');
+  assert.deepEqual(Member.memberOrgIds(c, qin), ['ORG-TOURISM'], '移出后回到旅游学院');
+
+  assert.equal(Member.canRemoveOrg(c, qin, 'ORG-TOURISM').ok, false, '唯一组织也不可移出');
+  assert.match(Member.canRemoveOrg(c, qin, 'ORG-TOURISM').reason, /唯一组织/, '唯一组织提示语');
+});
+
+test('member.js addRoles 显式 orgs：新建账号分配 scopeOrgIds 用传入的组织', function () {
+  const c = ctx();
+  const newAcc = { id: 'ACC-TMP', name: '临时账号', orgId: 'ORG-TOURISM', status: '正常' };
+  c.accounts.push(newAcc);
+  Member.addRoles(c, newAcc, ['R-SECRETARY'], ['ORG-TOURISM', 'ORG-HOTEL']);
+  const as = c.assignments.find(function (a) { return a.accountId === 'ACC-TMP' && a.roleId === 'R-SECRETARY'; });
+  assert.deepEqual(as.scopeOrgIds.slice().sort(), ['ORG-HOTEL', 'ORG-TOURISM'].sort(), 'scopeOrgIds 用传入组织');
+});
+
+test('member.js 移除角色：删除分配、可移除到零角色', function () {
+  const c = ctx();
+  const qin = c.accounts.find(function (a) { return a.id === 'ACC-QIN'; });
+  assert.deepEqual(Member.accountRoleIds(c, qin), ['R-SECRETARY'], '初始一个角色');
+  Member.removeRoles(c, qin, ['R-SECRETARY']);
+  assert.deepEqual(Member.accountRoleIds(c, qin), [], '移除后无角色');
+  assert.ok(!c.assignments.some(function (a) { return a.accountId === 'ACC-QIN'; }), '分配已删除');
 });

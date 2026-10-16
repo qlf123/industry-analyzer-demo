@@ -36,6 +36,14 @@
 .act-table{overflow-x:auto}
 .act-table .dt-row{min-width:1190px}
 .cell-list{font-size:11px;color:var(--ink-2);line-height:1.55;word-break:break-all}
+/* 成员批量操作：勾选列 + 批量栏 + 提示条 */
+.chkcell{display:flex;align-items:center;justify-content:center}
+.chkcell input{accent-color:var(--brand);width:14px;height:14px;margin:0;cursor:pointer}
+.batch-zone{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 14px;border-bottom:1px solid var(--rule);background:var(--card-2)}
+.batch-zone .b-count{font-size:12.5px;font-weight:600;color:var(--ink);margin-right:2px}
+.member-hint{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--brand-soft,#eef2ff);border-bottom:1px solid var(--rule);padding:8px 14px;font-size:12.5px;color:var(--ink-2)}
+.member-hint a{color:var(--brand,#3b5bdb);text-decoration:none;font-weight:500}
+.member-hint a:hover{text-decoration:underline}
 .detail-sec{margin-top:14px}
 .detail-sec:first-child{margin-top:0}
 /* 所属组织多选：左组织树 + 右已选 */
@@ -68,6 +76,17 @@
 .org-sep{color:var(--muted);margin:0 5px}
 .part-note{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6}
 .part-tree{max-height:220px;overflow-y:auto;border:1px solid var(--rule);border-radius:8px;padding:8px 10px;margin-top:4px}
+/* 批量管理账号：成员两行式 + 组织树层级引导 */
+.bm-acct{display:flex;align-items:flex-start;gap:8px;padding:5px 6px;font-size:12.5px;color:var(--ink);cursor:pointer;border-radius:6px}
+.bm-acct:hover{background:var(--card-2)}
+.bm-acct input{flex:0 0 auto;margin:2px 0 0}
+.bm-acct-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.bm-acct-name{font-weight:600;color:var(--ink);line-height:1.35}
+.bm-acct-sub{font-size:11px;color:var(--muted);line-height:1.4;word-break:break-all}
+.bm-acct.dis{opacity:.55;cursor:default}
+.bm-acct.dis:hover{background:transparent}
+.bm-acct .rtag.ro{flex:0 0 auto;margin-top:1px}
+.otp-guide{color:var(--muted);margin:0 3px 0 0;font-size:10.5px}
 
 /* 角色分配卡片 */
 .asgcard{border:1px solid var(--rule);border-radius:11px;padding:13px 14px;margin-bottom:12px;background:var(--card-2)}
@@ -205,6 +224,7 @@
 </div>
 <script src="js/mock-data.js"></script>
 <script src="js/permission.js"></script>
+<script src="js/member.js"></script>
 <script src="js/common.js"></script>
 <script>
 (function () {
@@ -214,7 +234,8 @@
 
   var TYPE_ORDER = ['内置', '预设', '部门模板', '自定义'];
   var ORG_SCOPED = { orgAdmin: 1, counselor: 1, academic: 1, studentAffairs: 1, supervisor: 1, info: 1, majorLead: 1 };
-  var COL_GRID = 'minmax(150px,1.4fr) minmax(106px,1.1fr) minmax(160px,1.7fr) minmax(104px,1.1fr) minmax(82px,0.9fr) minmax(126px,1.3fr) minmax(118px,1.2fr) 62px minmax(102px,1fr) minmax(216px,auto)';
+  var COL_GRID_BASE = 'minmax(150px,1.4fr) minmax(106px,1.1fr) minmax(160px,1.7fr) minmax(104px,1.1fr) minmax(82px,0.9fr) minmax(126px,1.3fr) minmax(118px,1.2fr) 62px minmax(102px,1fr) minmax(216px,auto)';
+  var COL_GRID = '28px ' + COL_GRID_BASE;
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -298,6 +319,25 @@
   }
 
   var acctFilter = { q: '', roleId: '', status: '', major: '', orgId: '' };
+  var viewOrgId = null;          // 成员视图：来自 ?org= 参数；用户手动改筛选后清空
+  var selectedIds = {};          // 批量勾选的账号 id 集合
+  var lastVisibleIds = [];       // 当前页可见账号 id（供全选当页）
+
+  function maskPhone(p) { return p ? (String(p).slice(0, 3) + '****' + String(p).slice(-4)) : '—'; }
+  function canMember() { return can('org:member:manage'); }
+  /* 当前身份的数据范围覆盖集合（scopeOrgIds 及其全部下级） */
+  function scopeCoverage() {
+    var set = new Set();
+    Perm.activeAssignments(ctx, identity).forEach(function (a) {
+      (a.scopeOrgIds || []).forEach(function (oid) { Perm.descendants(ctx, oid).forEach(function (d) { set.add(d); }); });
+    });
+    return set;
+  }
+  function orgInCoverage(oid) { return scopeCoverage().has(oid); }
+  /* 成员是否在操作人范围之外（存在一个所属组织不被覆盖） */
+  function memberOutOfScope(a) {
+    return Member.memberOrgIds(ctx, a).some(function (oid) { return !orgInCoverage(oid); });
+  }
 
   function klassShort(k) {
     var m = majorById(k.majorId);
@@ -354,6 +394,9 @@
     var idn = accountIdentity(a);
     var canEditMain = Perm.check(ctx, identity, 'org:account:edit', a, 'account').allowed;
     var canAssign = can('org:account:assign');
+    var hasChk = false; // 列表勾选列已隐藏
+    var chkCell = hasChk ? '<div class="chkcell"><input type="checkbox" data-accchk="' + esc(a.id) + '"'
+      + (selectedIds[a.id] ? ' checked' : '') + '></div>' : '';
     var acts = '<button class="btn-s" data-adetail="' + esc(a.id) + '">详情</button>';
     if (canEditMain) {
       acts += ' <button class="btn-s" data-aedit="' + esc(a.id) + '">编辑</button> '
@@ -370,7 +413,8 @@
       + '<span class="cell-s">' + esc(a.id) + '</span></div>';
     var orgCell = '<div class="cell-t">' + accountOrgNameCell(a)
       + (filtered ? '<span class="cell-s">有权限，被当前组织过滤</span>' : '') + '</div>';
-    return '<div class="dt-row' + (filtered ? ' filt' : '') + '" data-acc="' + esc(a.id) + '" style="grid-template-columns:' + COL_GRID + '">'
+    return '<div class="dt-row' + (filtered ? ' filt' : '') + '" data-acc="' + esc(a.id) + '" style="grid-template-columns:' + (hasChk ? COL_GRID : COL_GRID_BASE) + '">'
+      + chkCell
       + nameCell + orgCell
       + '<div>' + accountRoleCell(a) + '</div>'
       + cellList(idn.majors)
@@ -394,8 +438,13 @@
     if (acctFilter.status && a.status !== acctFilter.status) return false;
     if (acctFilter.major && accountIdentity(a).majors.indexOf(acctFilter.major) < 0) return false;
     if (acctFilter.orgId) {
-      var tree = Perm.descendants(ctx, acctFilter.orgId);
-      if (!Perm.accountOrgIds(ctx, a).some(function (oid) { return tree.has(oid); })) return false;
+      if (viewOrgId === acctFilter.orgId) {
+        // 成员视图：精确匹配「是该组织成员」（不含下级）
+        if (Member.memberOrgIds(ctx, a).indexOf(acctFilter.orgId) < 0) return false;
+      } else {
+        var tree = Perm.descendants(ctx, acctFilter.orgId);
+        if (!Perm.accountOrgIds(ctx, a).some(function (oid) { return tree.has(oid); })) return false;
+      }
     }
     return true;
   }
@@ -405,6 +454,7 @@
     var parts = Perm.listFilterWithOrg(ctx, identity, 'org:account:view', 'account', ctx.accounts, ui.orgId);
     var visible = parts.visible.filter(matchAccount);
     var filteredOut = ui.why ? parts.filteredOut.filter(matchAccount) : [];
+    lastVisibleIds = visible.map(function (a) { return a.id; });
     var rows = visible.map(function (a) { return accountRow(a, false); }).join('');
     if (ui.why) rows += filteredOut.map(function (a) { return accountRow(a, true); }).join('');
 
@@ -424,8 +474,14 @@
       return '<option value="' + esc(n.id) + '"' + (acctFilter.orgId === n.id ? ' selected' : '') + '>' + indent(n.depth) + esc(o ? o.name : n.id) + '</option>';
     }).join('');
 
+    var selCount = Object.keys(selectedIds).length;
     var addBtns = '';
-    if (can('org:account:edit')) addBtns += '<button class="btn-s" data-aadd="1">新建账号</button>';
+    if (canMember() && selCount === 0) addBtns += '<button class="btn-s" data-batch="manage">批量管理账号</button>';
+    if (can('account:account:create')) addBtns += '<button class="btn-s" data-aadd="1">新建账号</button>';
+
+    var countNote = '';
+    if (filteredOut.length) countNote += '被当前组织过滤 ' + filteredOut.length + ' 条';
+    if (parts.denied.length) countNote += (countNote ? ' · ' : '') + '无权限 ' + parts.denied.length + ' 条';
 
     var filterHtml = '<div class="act-filter">'
       + '<input class="f-search" id="acctSearch" placeholder="搜索姓名 / 账号" value="' + esc(acctFilter.q) + '">'
@@ -433,16 +489,49 @@
       + '<select id="acctStatus" aria-label="状态筛选">' + statusOpts + '</select>'
       + '<select id="acctMajor" aria-label="专业筛选"><option value="">全部专业</option>' + majorOpts + '</select>'
       + '<select id="acctOrg" aria-label="所属组织筛选">' + orgFilterOpts + '</select>'
-      + '<span class="f-count">可见 ' + visible.length + ' 条'
-      + (filteredOut.length ? ' · 被当前组织过滤 ' + filteredOut.length + ' 条' : '')
-      + (parts.denied.length ? ' · 无权限 ' + parts.denied.length + ' 条' : '') + '</span>'
+      + '<span class="f-count">' + countNote + '</span>'
       + addBtns
       + '</div>';
 
+    // 成员视图提示条（?org= 进入）
+    var memberHint = '';
+    if (viewOrgId) {
+      var voname = orgById(viewOrgId) ? orgById(viewOrgId).name : viewOrgId;
+      var vcount = ctx.accounts.filter(function (a) { return Member.memberOrgIds(ctx, a).indexOf(viewOrgId) >= 0; }).length;
+      memberHint = '<div class="member-hint"><span>正在查看：' + esc(voname) + ' 的成员（共 ' + vcount + ' 人）</span>'
+        + '<a href="system.html?node=' + encodeURIComponent(viewOrgId) + '">返回组织管理</a></div>';
+    }
+
+    // 批量操作栏（勾选 + 成员管理权限）
+    var batchZone = '';
+    if (canMember()) {
+      var extras = '';
+      if (viewOrgId) {
+        extras += '<button class="btn-s" data-batch="addmember">添加成员到 ' + esc(orgById(viewOrgId) ? orgById(viewOrgId).name : viewOrgId) + '</button>';
+      }
+      if (selCount > 0) {
+        batchZone = '<div class="batch-zone"><span class="b-count">已选 ' + selCount + ' 人：</span>'
+          + '<button class="btn-s" data-batch="addorg">加入组织</button>'
+          + '<button class="btn-s" data-batch="removeorg">移出组织</button>'
+          + '<button class="btn-s" data-batch="addrole">添加角色</button>'
+          + '<button class="btn-s" data-batch="removerole">移除角色</button>'
+          + extras + '</div>';
+      } else if (extras) {
+        batchZone = '<div class="batch-zone">' + extras + '</div>';
+      }
+    }
+
+    var hasChk = false; // 列表勾选列已隐藏
+    var allSelected = hasChk && lastVisibleIds.length > 0 && lastVisibleIds.every(function (id) { return selectedIds[id]; });
+    var headChk = hasChk ? '<div class="chkcell"><input type="checkbox" data-accall="1" aria-label="全选当页"'
+      + (allSelected ? ' checked' : '') + '></div>' : '';
+
     pane.innerHTML = '<div class="card">'
       + filterHtml
+      + memberHint
+      + batchZone
       + '<div class="dtable act-table">'
-      + '<div class="dt-row dt-head" style="grid-template-columns:' + COL_GRID + '"><div>账号</div><div>所属组织</div><div>角色</div><div>所属专业</div><div>所属年级</div><div>所属班级</div><div>可授课程</div><div>状态</div><div class="dt-num">最近登录</div><div class="dt-num">操作</div></div>'
+      + '<div class="dt-row dt-head" style="grid-template-columns:' + (hasChk ? COL_GRID : COL_GRID_BASE) + '">' + headChk + '<div>账号</div><div>所属组织</div><div>角色</div><div>所属专业</div><div>所属年级</div><div>所属班级</div><div>可授课程</div><div>状态</div><div class="dt-num">最近登录</div><div class="dt-num">操作</div></div>'
       + (rows || '<div class="empty">暂无可见账号</div>')
       + '</div>'
       + '</div>';
@@ -566,9 +655,10 @@
     editAccount = account;
     var isAdd = !account;
     var canAssign = can('org:account:assign');
+    var canCreate = can('account:account:create');
     var isStopped = account && account.status === '停用';
     var basicReadonly = !!assignOnly || isStopped;
-    var locked = isStopped || !canAssign;
+    var locked = isStopped || (isAdd ? !canCreate : !canAssign);
 
     var origAssigns = account ? ctx.assignments.filter(function (x) { return x.accountId === account.id; }) : [];
     var existingCombos = {};
@@ -611,6 +701,10 @@
 
     var mainId = account ? Perm.accountMainOrgId(account) : null;
     var primaryOrgId = (mainId && origOrgIds.indexOf(mainId) >= 0) ? mainId : (origOrgIds[0] || null);
+    if (isAdd && viewOrgId && origOrgIds.length === 0) {
+      origOrgIds = [viewOrgId];
+      primaryOrgId = viewOrgId;
+    }
 
     editDraft = {
       name: account ? account.name : '',
@@ -1005,6 +1099,659 @@
     return dlg;
   }
 
+  /* ── 成员批量操作 ── */
+  function selectedAccounts() {
+    return ctx.accounts.filter(function (a) { return selectedIds[a.id]; });
+  }
+
+  function confirmDialog(title, bodyHtml, onOk) {
+    var dlg = openDialog('<form><h2>' + esc(title) + '</h2><div class="note">' + bodyHtml + '</div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">确定</button></div></form>');
+    dlg.querySelector('[data-x]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('submit', function (ev) { ev.preventDefault(); dlg.close(); onOk(); });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function showBatchResult(title, okCount, skipped) {
+    var list = skipped.length
+      ? '<div class="sec-h">跳过原因</div><div>' + skipped.map(function (s) { return '<div style="padding:3px 0">' + esc(s.name) + '：' + esc(s.reason) + '</div>'; }).join('') + '</div>'
+      : '';
+    var dlg = openDialog('<form><h2>' + esc(title) + '完成</h2>'
+      + '<div class="note">成功 ' + okCount + ' 人，跳过 ' + skipped.length + ' 人' + (list ? '，跳过原因如下：' : '') + '</div>'
+      + list
+      + '<div class="acts"><button type="submit" class="btn">知道了</button></div></form>');
+    dlg.addEventListener('submit', function (ev) { ev.preventDefault(); dlg.close(); });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  function openBatchOrg(mode, fromMember) {
+    if (mode === 'remove') return openBatchRemoveOrg();
+    return openBatchAddOrg(fromMember);
+  }
+
+  /* 移出组织 */
+  function openBatchRemoveOrg() {
+    var targets = selectedAccounts();
+    if (!targets.length) { toast('请先勾选要操作的成员'); return; }
+    var optNodes = flattenOrgTree(orgPickCtx());
+    function optsHtml(selId) {
+      return optNodes.map(function (n) {
+        var o = orgById(n.id);
+        return '<option value="' + esc(n.id) + '"' + (n.id === selId ? ' selected' : '') + '>' + indent(n.depth) + esc(o ? o.name : n.id) + '</option>';
+      }).join('');
+    }
+    var dlg = openDialog('<form style="max-height:88vh;overflow-y:auto">'
+      + '<div class="aidlg-h"><h2>移出组织</h2><button type="button" class="x" data-x aria-label="关闭">×</button></div>'
+      + '<label style="display:block;margin-bottom:4px">移出组织<select name="org">' + optsHtml(viewOrgId) + '</select></label>'
+      + '<div class="sec-h">已选成员（' + targets.length + ' 人）</div>'
+      + '<div id="rmPreview"></div>'
+      + '<div class="note" id="rmErr" style="color:var(--crit)"></div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">确认移出</button></div>'
+      + '</form>');
+    dlg.style.width = 'min(560px, calc(100vw - 32px))';
+    var preview = dlg.querySelector('#rmPreview');
+    var errEl = dlg.querySelector('#rmErr');
+    var orgSel = dlg.querySelector('[name=org]');
+    function refreshPreview() {
+      var oid = orgSel.value;
+      var okCount = 0;
+      var html = targets.map(function (a) {
+        var r = Member.canRemoveOrg(ctx, a, oid);
+        if (r.ok) { okCount++; return '<div style="padding:4px 0">' + esc(a.name) + ' <span class="pill good">可移出</span></div>'; }
+        return '<div style="padding:4px 0">' + esc(a.name) + ' <span class="pill warn">跳过</span> ' + esc(r.reason) + '</div>';
+      }).join('');
+      preview.innerHTML = html || '<span class="ro-note">无成员</span>';
+      return okCount;
+    }
+    refreshPreview();
+    orgSel.addEventListener('change', refreshPreview);
+    Array.prototype.forEach.call(dlg.querySelectorAll('[data-x]'), function (b) { b.addEventListener('click', function () { dlg.close(); }); });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var oid = orgSel.value;
+      var ok = [], skipped = [];
+      targets.forEach(function (a) {
+        var r = Member.canRemoveOrg(ctx, a, oid);
+        if (!r.ok) { skipped.push({ name: a.name, reason: r.reason }); return; }
+        ok.push(a);
+      });
+      if (!ok.length) { errEl.textContent = '没有可移出的成员'; return; }
+      dlg.close();
+      var okIds = ok.map(function (a) { return a.id; });
+      confirmDialog('确认移出', '移出后，所选成员的角色在该组织不再生效，在其他组织不受影响。', function () {
+        ok.forEach(function (a) {
+          var before = Member.memberOrgIds(ctx, a).map(orgName);
+          Member.removeOrg(ctx, a, oid);
+          var after = Member.memberOrgIds(ctx, a).map(orgName);
+          audit('移出组织成员', a.name, { 所属组织: before }, { 所属组织: after }, '成功', oid);
+        });
+        okIds.forEach(function (id) { delete selectedIds[id]; });
+        showBatchResult('移出组织', ok.length, skipped);
+        render();
+      });
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  /* 加入组织（fromMember = 从「添加成员到 X」入口进入：搜索选人，可新建账号） */
+  function openBatchAddOrg(fromMember) {
+    var pickCtx = orgPickCtx();
+    var canCreate = can('account:account:create');
+    var meId = identity.account.id;
+    var draft = {
+      orgIds: (fromMember && viewOrgId) ? [viewOrgId] : [],
+      roleIds: [],
+      accountIds: fromMember ? [] : Object.keys(selectedIds),
+      newAccounts: []
+    };
+    var searchQ = '';
+    function byAccountId(id) { return ctx.accounts.find(function (a) { return a.id === id; }); }
+    function enabledAccounts() { return ctx.accounts.filter(function (a) { return a.status === '正常'; }); }
+
+    var dlg = openDialog('<form style="max-height:88vh;overflow-y:auto">'
+      + '<div class="aidlg-h"><h2>加入组织</h2><button type="button" class="x" data-x aria-label="关闭">×</button></div>'
+      + '<div id="baSearch"></div>'
+      + '<div id="baBody"></div>'
+      + '<div class="note" id="baErr" style="color:var(--crit)"></div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">确认加入</button></div>'
+      + '</form>');
+    dlg.style.width = 'min(600px, calc(100vw - 32px))';
+    var errEl = dlg.querySelector('#baErr');
+    var searchEl = dlg.querySelector('#baSearch');
+    var bodyEl = dlg.querySelector('#baBody');
+
+    function orgTreeHtml() {
+      return flattenOrgTree(pickCtx).map(function (n) {
+        var o = orgById(n.id);
+        var checked = draft.orgIds.indexOf(n.id) >= 0;
+        return '<label class="otp-org"><input type="checkbox" data-borg="' + esc(n.id) + '"' + (checked ? ' checked' : '') + '>'
+          + '<span class="otp-name">' + indent(n.depth) + esc(o ? o.name : n.id) + '</span></label>';
+      }).join('');
+    }
+    function rolePickHtml() {
+      var opts = '';
+      PORTAL_ORDER.forEach(function (p) {
+        var roles = ctx.roles.filter(function (r) { return r.portal === p && r.status === '启用'; });
+        if (!roles.length) return;
+        opts += '<optgroup label="' + esc(portalCn(p)) + '">';
+        roles.forEach(function (r) { opts += '<option value="' + esc(r.id) + '">' + esc(r.name) + '</option>'; });
+        opts += '</optgroup>';
+      });
+      var tags = draft.roleIds.map(function (rid) {
+        return '<span class="rtag">' + esc(roleName(rid)) + '<button type="button" class="rtag-x" data-bdel-role="' + esc(rid) + '" aria-label="移除">×</button></span>';
+      }).join('');
+      return '<div class="orgrow-pick"><span class="field-label">同时新增角色（选填）</span>'
+        + '<div class="pick-body"><span class="role-tags">' + tags + '</span>'
+        + '<select class="addsel" data-baddrole="1"><option value="">＋ 添加角色</option>' + opts + '</select></div></div>';
+    }
+    function previewLine(name, a) {
+      var curRoles = Member.accountRoleIds(ctx, a);
+      var addRoles = draft.roleIds.filter(function (rid) { return curRoles.indexOf(rid) < 0; });
+      var adminNew = draft.roleIds.filter(function (rid) { var r = roleById(rid); return r && r.portal === 'admin'; });
+      var html = '<div style="padding:4px 0;border-bottom:1px solid var(--rule)"><b>' + esc(name) + '</b>：'
+        + '加入后，已有角色 ' + (curRoles.length ? curRoles.map(roleName).join('、') : '无') + ' 将在新组织生效';
+      if (addRoles.length) html += '；新增角色 ' + addRoles.map(roleName).join('、') + ' 将在其全部所属组织生效';
+      if (adminNew.length) html += '<div class="warn-banner" style="margin-top:5px">该成员的管理端角色将对新组织生效，请确认</div>';
+      return html + '</div>';
+    }
+    function previewHtml() {
+      if (!draft.orgIds.length) return '<span class="ro-note">请先选择组织</span>';
+      if (!draft.accountIds.length && !draft.newAccounts.length) return '<span class="ro-note">请选择要加入的成员</span>';
+      var lines = [];
+      draft.accountIds.forEach(function (aid) { var a = byAccountId(aid); if (a) lines.push(previewLine(a.name, a)); });
+      draft.newAccounts.forEach(function (n) {
+        lines.push('<div style="padding:4px 0"><b>' + esc(n.name) + '（新账号）</b>：新建后加入所选组织' + (draft.roleIds.length ? '，并赋予所选角色' : '') + '</div>');
+      });
+      return lines.join('');
+    }
+    function renderBody() {
+      bodyEl.innerHTML = '<div class="orgrow-pick"><span class="field-label">加入组织（多选）<span class="req">*</span></span>'
+        + '<div class="part-tree">' + orgTreeHtml() + '</div></div>'
+        + rolePickHtml()
+        + '<div class="sec-h">效果预览</div><div>' + previewHtml() + '</div>';
+    }
+    function searchListHtml() {
+      var q = searchQ.trim().toLowerCase();
+      var list = enabledAccounts().filter(function (a) {
+        if (q && a.name.toLowerCase().indexOf(q) < 0 && a.id.toLowerCase().indexOf(q) < 0) return false;
+        return true;
+      });
+      var rows = list.map(function (a) {
+        var inOrg = draft.orgIds.some(function (oid) { return Member.memberOrgIds(ctx, a).indexOf(oid) >= 0; });
+        var isMe = a.id === meId;
+        var dis = inOrg || isMe;
+        var checked = draft.accountIds.indexOf(a.id) >= 0;
+        return '<label class="otp-org' + (dis ? ' dis' : '') + '">'
+          + '<input type="checkbox" data-bacct="' + esc(a.id) + '"' + (checked ? ' checked' : '') + (dis ? ' disabled' : '') + '>'
+          + '<span class="otp-name">' + esc(a.name) + ' <span class="cell-s">' + maskPhone(a.phone) + ' · ' + esc(orgName(Perm.accountMainOrgId(a))) + '</span></span>'
+          + (inOrg ? '<span class="rtag ro">已在本组织</span>' : '')
+          + (isMe ? '<span class="rtag ro">本人</span>' : '')
+          + '</label>';
+      }).join('');
+      return rows || '<span class="ro-note">无匹配账号</span>';
+    }
+    function renderNewAccts() {
+      var el = dlg.querySelector('#newAcctList');
+      if (!el) return;
+      el.innerHTML = draft.newAccounts.map(function (n, i) {
+        return '<div style="padding:3px 0;display:flex;align-items:center;gap:6px">'
+          + '<span>' + esc(n.name) + (n.phone ? ' · ' + maskPhone(n.phone) : '') + '（新账号）</span>'
+          + '<button type="button" class="rtag-x" data-bdel-new="' + i + '" aria-label="移除">×</button></div>';
+      }).join('');
+    }
+    function renderSearch() {
+      if (!fromMember) {
+        searchEl.innerHTML = '<div class="sec-h">已选成员（' + draft.accountIds.length + ' 人）</div>'
+          + '<div class="ro-note">来自列表勾选，关闭弹窗后可重新勾选调整</div>';
+        return;
+      }
+      searchEl.innerHTML = '<div class="orgrow-pick"><span class="field-label">选择成员（可搜索全校账号）</span>'
+        + '<input class="f-search" data-bsearch placeholder="搜索姓名 / 账号">'
+        + '<div class="part-tree" id="baSearchList">' + searchListHtml() + '</div>'
+        + '<div style="margin-top:8px;display:flex;align-items:center;gap:8px">'
+        + (canCreate ? '<button type="button" class="btn-s" data-bnew="1">+ 新建账号</button>' : '<span class="ro-note">找不到此人？请联系账号管理员创建账号</span>')
+        + '</div><div id="newAcctList"></div></div>';
+      renderNewAccts();
+    }
+
+    renderSearch();
+    renderBody();
+
+    function openNewAccountForm() {
+      var nd = openDialog('<form><h2>新建账号</h2>'
+        + '<label style="display:block;margin-bottom:6px">姓名<input name="name" required></label>'
+        + '<label style="display:block;margin-bottom:6px">手机号<input name="phone" placeholder="11 位手机号"></label>'
+        + '<div class="note" id="nErr" style="color:var(--crit)"></div>'
+        + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">确定</button></div></form>');
+      var nErr = nd.querySelector('#nErr');
+      nd.querySelector('[data-x]').addEventListener('click', function () { nd.close(); });
+      nd.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var name = nd.querySelector('[name=name]').value.trim();
+        var phone = nd.querySelector('[name=phone]').value.trim();
+        if (!name) { nErr.textContent = '姓名不能为空'; return; }
+        var existing = phone ? ctx.accounts.find(function (a) { return a.phone && a.phone === phone; }) : null;
+        if (existing) {
+          if (draft.accountIds.indexOf(existing.id) < 0) draft.accountIds.push(existing.id);
+        } else {
+          draft.newAccounts.push({ name: name, phone: phone || null });
+        }
+        nd.close();
+        renderSearch();
+        renderBody();
+      });
+      nd.addEventListener('close', function () { nd.remove(); });
+    }
+
+    dlg.addEventListener('change', function (e) {
+      var org = e.target.closest('[data-borg]');
+      if (org) {
+        var oid = org.getAttribute('data-borg');
+        var i = draft.orgIds.indexOf(oid);
+        if (org.checked) { if (i < 0) draft.orgIds.push(oid); }
+        else if (i >= 0) draft.orgIds.splice(i, 1);
+        renderBody();
+        if (fromMember) { var list = dlg.querySelector('#baSearchList'); if (list) list.innerHTML = searchListHtml(); }
+        return;
+      }
+      var acct = e.target.closest('[data-bacct]');
+      if (acct) {
+        var aid = acct.getAttribute('data-bacct');
+        var j = draft.accountIds.indexOf(aid);
+        if (acct.checked) { if (j < 0) draft.accountIds.push(aid); }
+        else if (j >= 0) draft.accountIds.splice(j, 1);
+        var list2 = dlg.querySelector('#baSearchList'); if (list2) list2.innerHTML = searchListHtml();
+        renderBody();
+        return;
+      }
+      var addRole = e.target.closest('[data-baddrole]');
+      if (addRole && addRole.value) {
+        if (draft.roleIds.indexOf(addRole.value) < 0) draft.roleIds.push(addRole.value);
+        addRole.value = '';
+        renderBody();
+      }
+    });
+    dlg.addEventListener('input', function (e) {
+      if (e.target && e.target.getAttribute('data-bsearch') != null) {
+        searchQ = e.target.value;
+        var list = dlg.querySelector('#baSearchList');
+        if (list) list.innerHTML = searchListHtml();
+      }
+    });
+    dlg.addEventListener('click', function (e) {
+      var delRole = e.target.closest('[data-bdel-role]');
+      if (delRole) {
+        var rid = delRole.getAttribute('data-bdel-role');
+        var i = draft.roleIds.indexOf(rid);
+        if (i >= 0) draft.roleIds.splice(i, 1);
+        renderBody();
+        return;
+      }
+      var delNew = e.target.closest('[data-bdel-new]');
+      if (delNew) {
+        var idx = parseInt(delNew.getAttribute('data-bdel-new'), 10);
+        draft.newAccounts.splice(idx, 1);
+        renderNewAccts();
+        renderBody();
+        return;
+      }
+      var bnew = e.target.closest('[data-bnew]');
+      if (bnew) { openNewAccountForm(); return; }
+      if (e.target.closest('[data-x]')) dlg.close();
+    });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!draft.orgIds.length) { errEl.textContent = '请至少选择一个组织'; return; }
+      if (!draft.accountIds.length && !draft.newAccounts.length) { errEl.textContent = '请选择要加入的成员'; return; }
+      if (draft.newAccounts.length && !draft.roleIds.length) { errEl.textContent = '新建账号需至少选择一个角色'; return; }
+      doSave();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+
+    function doSave() {
+      var ok = [], skipped = [];
+      draft.accountIds.forEach(function (aid) {
+        var a = byAccountId(aid);
+        if (!a) { skipped.push({ name: aid, reason: '账号不存在' }); return; }
+        if (a.status !== '正常') { skipped.push({ name: a.name, reason: '账号已停用' }); return; }
+        var before = { 组织: Member.memberOrgIds(ctx, a).map(orgName), 角色: Member.accountRoleIds(ctx, a).map(roleName) };
+        Member.addOrgs(ctx, a, draft.orgIds);
+        Member.addRoles(ctx, a, draft.roleIds);
+        var after = { 组织: Member.memberOrgIds(ctx, a).map(orgName), 角色: Member.accountRoleIds(ctx, a).map(roleName) };
+        audit('添加组织成员', a.name, before, after, '成功', draft.orgIds[0] || null);
+        ok.push({ name: a.name });
+      });
+      draft.newAccounts.forEach(function (n) {
+        var existing = n.phone ? ctx.accounts.find(function (a) { return a.phone && a.phone === n.phone; }) : null;
+        var accId;
+        if (existing) accId = existing.id;
+        else {
+          accId = genId('ACC');
+          var firstRole = roleById(draft.roleIds[0]);
+          var stamp = new Date().toISOString().slice(0, 10);
+          ctx.accounts.push({
+            id: accId, name: n.name, orgId: draft.orgIds[0],
+            partOrgIds: draft.orgIds.slice(1),
+            kind: firstRole ? kindForRole(firstRole) : '管理员', status: '正常', studentId: null,
+            phone: n.phone || null, lastLoginAt: null,
+            createdAt: stamp, createdBy: identity.account.name, updatedAt: stamp, updatedBy: identity.account.name
+          });
+          audit('新建账号', n.name, null, { id: accId, 组织: orgName(draft.orgIds[0]) }, '成功', draft.orgIds[0]);
+        }
+        var ea = byAccountId(accId);
+        if (ea) {
+          var eb = { 组织: Member.memberOrgIds(ctx, ea).map(orgName), 角色: Member.accountRoleIds(ctx, ea).map(roleName) };
+          Member.addOrgs(ctx, ea, draft.orgIds);
+          Member.addRoles(ctx, ea, draft.roleIds, draft.orgIds);
+          var ea2 = { 组织: Member.memberOrgIds(ctx, ea).map(orgName), 角色: Member.accountRoleIds(ctx, ea).map(roleName) };
+          audit('添加组织成员', ea.name, eb, ea2, '成功', draft.orgIds[0] || null);
+        }
+        ok.push({ name: n.name });
+      });
+      DEMO.saveState(ctx);
+      selectedIds = {};
+      dlg.close();
+      showBatchResult('加入组织', ok.length, skipped);
+      render();
+    }
+  }
+
+  /* 批量管理账号（未勾选入口）：搜索选人，批量添加组织、角色（至少一项） */
+  function openBatchManage() {
+    var pickCtx = orgPickCtx();
+    var meId = identity.account.id;
+    var draft = { orgIds: [], roleIds: [], accountIds: [] };
+    var searchQ = '';
+    function byAccountId(id) { return ctx.accounts.find(function (a) { return a.id === id; }); }
+    function enabledAccounts() { return ctx.accounts.filter(function (a) { return a.status === '正常'; }); }
+
+    var dlg = openDialog('<form style="max-height:88vh;overflow-y:auto">'
+      + '<div class="aidlg-h"><h2>批量管理账号</h2><button type="button" class="x" data-x aria-label="关闭">×</button></div>'
+      + '<div class="note">为所选成员批量添加组织、角色（组织和角色至少选择一项）。</div>'
+      + '<div id="bmSearch"></div>'
+      + '<div id="bmBody"></div>'
+      + '<div class="note" id="bmErr" style="color:var(--crit)"></div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">确认</button></div>'
+      + '</form>');
+    dlg.style.width = 'min(600px, calc(100vw - 32px))';
+    var errEl = dlg.querySelector('#bmErr');
+    var searchEl = dlg.querySelector('#bmSearch');
+    var bodyEl = dlg.querySelector('#bmBody');
+
+    function orgTreeHtml() {
+      return flattenOrgTree(pickCtx).map(function (n) {
+        var o = orgById(n.id);
+        var checked = draft.orgIds.indexOf(n.id) >= 0;
+        return '<label class="otp-org"><input type="checkbox" data-bmorg="' + esc(n.id) + '"' + (checked ? ' checked' : '') + '>'
+          + '<span class="otp-name"><span class="otp-lv">' + indent(n.depth) + '</span><span class="otp-guide">▸</span>' + esc(o ? o.name : n.id) + '</span></label>';
+      }).join('');
+    }
+    function orgSelHtml() {
+      if (!draft.orgIds.length) return '<span class="ro-note">尚未选择组织</span>';
+      return draft.orgIds.map(function (oid) {
+        var o = orgById(oid); var name = o ? o.name : oid;
+        return '<div class="org-sel-item">'
+          + '<span class="org-sel-name">' + esc(name) + '</span>'
+          + '<span class="org-sel-acts"><button type="button" class="rtag-x" data-bmdel-org="' + esc(oid) + '" aria-label="移除">×</button></span>'
+          + '</div>';
+      }).join('');
+    }
+    function rolePickHtml() {
+      var opts = '';
+      PORTAL_ORDER.forEach(function (p) {
+        var roles = ctx.roles.filter(function (r) { return r.portal === p && r.status === '启用'; });
+        if (!roles.length) return;
+        opts += '<optgroup label="' + esc(portalCn(p)) + '">';
+        roles.forEach(function (r) { opts += '<option value="' + esc(r.id) + '">' + esc(r.name) + '</option>'; });
+        opts += '</optgroup>';
+      });
+      var tags = draft.roleIds.map(function (rid) {
+        return '<span class="rtag">' + esc(roleName(rid)) + '<button type="button" class="rtag-x" data-bmdel-role="' + esc(rid) + '" aria-label="移除">×</button></span>';
+      }).join('');
+      return '<div class="orgrow-pick"><span class="field-label">添加角色（选填）</span>'
+        + '<div class="pick-body"><span class="role-tags">' + tags + '</span>'
+        + '<select class="addsel" data-bmaddrole="1"><option value="">＋ 添加角色</option>' + opts + '</select></div></div>';
+    }
+    function previewLine(name, a) {
+      var curRoles = Member.accountRoleIds(ctx, a);
+      var addRoles = draft.roleIds.filter(function (rid) { return curRoles.indexOf(rid) < 0; });
+      var html = '<div style="padding:4px 0;border-bottom:1px solid var(--rule)"><b>' + esc(name) + '</b>：';
+      if (draft.orgIds.length) html += '加入后，已有角色 ' + (curRoles.length ? curRoles.map(roleName).join('、') : '无') + ' 将在新组织生效';
+      if (addRoles.length) html += (draft.orgIds.length ? '；' : '') + '新增角色 ' + addRoles.map(roleName).join('、') + ' 将在其全部所属组织生效';
+      if (!draft.orgIds.length && !addRoles.length) html += '（无变更）';
+      return html + '</div>';
+    }
+    function previewHtml() {
+      if (!draft.orgIds.length && !draft.roleIds.length) return '<span class="ro-note">请先选择组织或角色</span>';
+      if (!draft.accountIds.length) return '<span class="ro-note">请选择要管理的成员</span>';
+      return draft.accountIds.map(function (aid) {
+        var a = byAccountId(aid);
+        return a ? previewLine(a.name, a) : '';
+      }).join('');
+    }
+    function renderBody() {
+      bodyEl.innerHTML = '<div class="orgrow-pick"><span class="field-label">加入组织（选填，多选）</span>'
+        + '<div class="org-pick-layout">'
+        + '<div class="org-pick-col"><div class="org-pick-title">组织树</div><div class="part-tree">' + orgTreeHtml() + '</div></div>'
+        + '<div class="org-pick-col"><div class="org-pick-title">已选组织</div><div class="org-sel" id="bmOrgSel">' + orgSelHtml() + '</div></div>'
+        + '</div></div>'
+        + rolePickHtml()
+        + '<div class="sec-h">效果预览</div><div>' + previewHtml() + '</div>';
+    }
+    function searchListHtml() {
+      var q = searchQ.trim().toLowerCase();
+      var list = enabledAccounts().filter(function (a) {
+        if (q && a.name.toLowerCase().indexOf(q) < 0 && a.id.toLowerCase().indexOf(q) < 0) return false;
+        return true;
+      });
+      var rows = list.map(function (a) {
+        var inOrg = draft.orgIds.some(function (oid) { return Member.memberOrgIds(ctx, a).indexOf(oid) >= 0; });
+        var isMe = a.id === meId;
+        var dis = isMe || inOrg;
+        var checked = draft.accountIds.indexOf(a.id) >= 0;
+        return '<label class="bm-acct' + (dis ? ' dis' : '') + '">'
+          + '<input type="checkbox" data-bmacct="' + esc(a.id) + '"' + (checked ? ' checked' : '') + (dis ? ' disabled' : '') + '>'
+          + '<span class="bm-acct-main"><span class="bm-acct-name">' + esc(a.name) + '</span>'
+          + '<span class="bm-acct-sub">' + maskPhone(a.phone) + ' · ' + esc(orgName(Perm.accountMainOrgId(a))) + '</span></span>'
+          + (isMe ? '<span class="rtag ro">本人</span>' : '')
+          + '</label>';
+      }).join('');
+      return rows || '<span class="ro-note">无匹配账号</span>';
+    }
+    function renderSearch() {
+      searchEl.innerHTML = '<div class="orgrow-pick"><span class="field-label">选择成员（可搜索全校账号）</span>'
+        + '<input class="f-search" data-bmsearch placeholder="搜索姓名 / 账号">'
+        + '<div class="part-tree" id="bmSearchList">' + searchListHtml() + '</div></div>';
+    }
+
+    renderSearch();
+    renderBody();
+
+    dlg.addEventListener('change', function (e) {
+      var org = e.target.closest('[data-bmorg]');
+      if (org) {
+        var oid = org.getAttribute('data-bmorg');
+        var i = draft.orgIds.indexOf(oid);
+        if (org.checked) { if (i < 0) draft.orgIds.push(oid); }
+        else if (i >= 0) draft.orgIds.splice(i, 1);
+        renderBody();
+        var list = dlg.querySelector('#bmSearchList'); if (list) list.innerHTML = searchListHtml();
+        return;
+      }
+      var acct = e.target.closest('[data-bmacct]');
+      if (acct) {
+        var aid = acct.getAttribute('data-bmacct');
+        var j = draft.accountIds.indexOf(aid);
+        if (acct.checked) { if (j < 0) draft.accountIds.push(aid); }
+        else if (j >= 0) draft.accountIds.splice(j, 1);
+        var list2 = dlg.querySelector('#bmSearchList'); if (list2) list2.innerHTML = searchListHtml();
+        renderBody();
+        return;
+      }
+      var addRole = e.target.closest('[data-bmaddrole]');
+      if (addRole && addRole.value) {
+        if (draft.roleIds.indexOf(addRole.value) < 0) draft.roleIds.push(addRole.value);
+        addRole.value = '';
+        renderBody();
+      }
+    });
+    dlg.addEventListener('input', function (e) {
+      if (e.target && e.target.getAttribute('data-bmsearch') != null) {
+        searchQ = e.target.value;
+        var list = dlg.querySelector('#bmSearchList');
+        if (list) list.innerHTML = searchListHtml();
+      }
+    });
+    dlg.addEventListener('click', function (e) {
+      var delRole = e.target.closest('[data-bmdel-role]');
+      if (delRole) {
+        var rid = delRole.getAttribute('data-bmdel-role');
+        var i = draft.roleIds.indexOf(rid);
+        if (i >= 0) draft.roleIds.splice(i, 1);
+        renderBody();
+        return;
+      }
+      var delOrg = e.target.closest('[data-bmdel-org]');
+      if (delOrg) {
+        var oid = delOrg.getAttribute('data-bmdel-org');
+        var j = draft.orgIds.indexOf(oid);
+        if (j >= 0) draft.orgIds.splice(j, 1);
+        renderBody();
+        var list = dlg.querySelector('#bmSearchList'); if (list) list.innerHTML = searchListHtml();
+        return;
+      }
+      if (e.target.closest('[data-x]')) dlg.close();
+    });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!draft.accountIds.length) { errEl.textContent = '请选择要管理的成员'; return; }
+      if (!draft.orgIds.length && !draft.roleIds.length) { errEl.textContent = '请至少选择一个组织或角色'; return; }
+      var ok = [], skipped = [];
+      draft.accountIds.forEach(function (aid) {
+        var a = byAccountId(aid);
+        if (!a) { skipped.push({ name: aid, reason: '账号不存在' }); return; }
+        if (a.status !== '正常') { skipped.push({ name: a.name, reason: '账号已停用' }); return; }
+        var before = { 组织: Member.memberOrgIds(ctx, a).map(orgName), 角色: Member.accountRoleIds(ctx, a).map(roleName) };
+        if (draft.orgIds.length) Member.addOrgs(ctx, a, draft.orgIds);
+        if (draft.roleIds.length) Member.addRoles(ctx, a, draft.roleIds);
+        var after = { 组织: Member.memberOrgIds(ctx, a).map(orgName), 角色: Member.accountRoleIds(ctx, a).map(roleName) };
+        audit('批量管理账号', a.name, before, after, '成功', draft.orgIds[0] || null);
+        ok.push({ name: a.name });
+      });
+      DEMO.saveState(ctx);
+      dlg.close();
+      showBatchResult('批量管理账号', ok.length, skipped);
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
+  /* 添加 / 移除角色 */
+  function openBatchRole(mode) {
+    var isAdd = mode === 'add';
+    var targets = selectedAccounts();
+    if (!targets.length) { toast('请先勾选要操作的成员'); return; }
+    var meId = identity.account.id;
+    var draft = { roleIds: [] };
+    var rolePool = isAdd
+      ? ctx.roles.filter(function (r) { return r.status === '启用'; })
+      : ctx.roles.filter(function (r) {
+          return targets.some(function (a) { return Member.accountRoleIds(ctx, a).indexOf(r.id) >= 0; });
+        });
+
+    function rolePickHtml() {
+      var opts = '';
+      PORTAL_ORDER.forEach(function (p) {
+        var roles = rolePool.filter(function (r) { return r.portal === p; });
+        if (!roles.length) return;
+        opts += '<optgroup label="' + esc(portalCn(p)) + '">';
+        roles.forEach(function (r) { opts += '<option value="' + esc(r.id) + '">' + esc(r.name) + '</option>'; });
+        opts += '</optgroup>';
+      });
+      var tags = draft.roleIds.map(function (rid) {
+        return '<span class="rtag">' + esc(roleName(rid)) + '<button type="button" class="rtag-x" data-bdel-role="' + esc(rid) + '" aria-label="移除">×</button></span>';
+      }).join('');
+      return '<div class="orgrow-pick"><span class="field-label">' + (isAdd ? '添加角色' : '移除角色') + '</span>'
+        + '<div class="pick-body"><span class="role-tags">' + tags + '</span>'
+        + '<select class="addsel" data-baddrole="1"><option value="">＋ 添加</option>' + opts + '</select></div></div>';
+    }
+    function previewHtml() {
+      if (!draft.roleIds.length) return '<span class="ro-note">请选择角色</span>';
+      return targets.map(function (a) {
+        var skip = '';
+        if (a.id === meId) skip = '跳过：不能给自己操作';
+        else if (memberOutOfScope(a)) skip = '跳过：该成员还属于您范围外的组织';
+        else if (!isAdd) {
+          var remain = Member.accountRoleIds(ctx, a).filter(function (rid) { return draft.roleIds.indexOf(rid) < 0; });
+          if (!remain.length) skip = '跳过：至少保留一个角色';
+        }
+        if (skip) return '<div style="padding:4px 0">' + esc(a.name) + ' <span class="pill warn">' + esc(skip) + '</span></div>';
+        return '<div style="padding:4px 0">' + esc(a.name) + ' <span class="pill good">' + (isAdd ? '将新增 ' : '将移除 ') + draft.roleIds.map(roleName).join('、') + '</span></div>';
+      }).join('');
+    }
+
+    var dlg = openDialog('<form style="max-height:88vh;overflow-y:auto">'
+      + '<div class="aidlg-h"><h2>' + (isAdd ? '添加角色' : '移除角色') + '</h2><button type="button" class="x" data-x aria-label="关闭">×</button></div>'
+      + '<div class="note">角色属于整个账号，将在所选成员的全部所属组织' + (isAdd ? '生效' : '失效') + '。</div>'
+      + '<div id="roleSec">' + rolePickHtml() + '</div>'
+      + '<div class="sec-h">已选成员（' + targets.length + ' 人）</div>'
+      + '<div id="preview">' + previewHtml() + '</div>'
+      + '<div class="note" id="err" style="color:var(--crit)"></div>'
+      + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">确认' + (isAdd ? '添加' : '移除') + '</button></div>'
+      + '</form>');
+    dlg.style.width = 'min(560px, calc(100vw - 32px))';
+    var roleSec = dlg.querySelector('#roleSec');
+    var preview = dlg.querySelector('#preview');
+    var errEl = dlg.querySelector('#err');
+    function refresh() {
+      roleSec.innerHTML = rolePickHtml();
+      preview.innerHTML = previewHtml();
+    }
+    dlg.addEventListener('change', function (e) {
+      var addRole = e.target.closest('[data-baddrole]');
+      if (addRole && addRole.value) {
+        if (draft.roleIds.indexOf(addRole.value) < 0) draft.roleIds.push(addRole.value);
+        addRole.value = '';
+        refresh();
+      }
+    });
+    dlg.addEventListener('click', function (e) {
+      var delRole = e.target.closest('[data-bdel-role]');
+      if (delRole) {
+        var rid = delRole.getAttribute('data-bdel-role');
+        var i = draft.roleIds.indexOf(rid);
+        if (i >= 0) draft.roleIds.splice(i, 1);
+        refresh();
+        return;
+      }
+      if (e.target.closest('[data-x]')) dlg.close();
+    });
+    dlg.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!draft.roleIds.length) { errEl.textContent = '请选择角色'; return; }
+      var ok = [], skipped = [];
+      targets.forEach(function (a) {
+        if (a.id === meId) { skipped.push({ name: a.name, reason: '不能给自己操作' }); return; }
+        if (memberOutOfScope(a)) { skipped.push({ name: a.name, reason: '该成员还属于您范围外的组织' }); return; }
+        if (!isAdd) {
+          var remain = Member.accountRoleIds(ctx, a).filter(function (rid) { return draft.roleIds.indexOf(rid) < 0; });
+          if (!remain.length) { skipped.push({ name: a.name, reason: '至少保留一个角色' }); return; }
+        }
+        var before = Member.accountRoleIds(ctx, a).map(roleName);
+        var res = isAdd ? Member.addRoles(ctx, a, draft.roleIds) : Member.removeRoles(ctx, a, draft.roleIds);
+        var after = Member.accountRoleIds(ctx, a).map(roleName);
+        audit(isAdd ? '添加角色' : '移除角色', a.name, { 角色: before }, { 角色: after }, '成功', a.orgId);
+        ok.push({ name: a.name });
+      });
+      if (!ok.length) { errEl.textContent = '没有可操作的成员'; return; }
+      dlg.close();
+      selectedIds = {};
+      showBatchResult(isAdd ? '添加角色' : '移除角色', ok.length, skipped);
+      render();
+    });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+  }
+
   /* ── 「为什么能看到 / 看不到」 ── */
   function ensureTip() {
     if (!window.__tipEl) {
@@ -1058,8 +1805,34 @@
     $('#body').addEventListener('click', function (e) {
       var aadd = e.target.closest('[data-aadd]');
       if (aadd) {
-        if (can('org:account:edit')) openAccountForm(null);
-        else { audit('越权尝试·新增账号', '新账号', null, { reason: '无账号维护权限' }, '被拒绝', null); toast('越权尝试已记录：无账号维护权限'); }
+        if (can('account:account:create')) openAccountForm(null);
+        else { audit('越权尝试·新增账号', '新账号', null, { reason: '无账号新建权限' }, '被拒绝', null); toast('越权尝试已记录：无账号新建权限'); }
+        return;
+      }
+      var accall = e.target.closest('[data-accall]');
+      if (accall) {
+        var allSel = lastVisibleIds.length > 0 && lastVisibleIds.every(function (id) { return selectedIds[id]; });
+        if (allSel) lastVisibleIds.forEach(function (id) { delete selectedIds[id]; });
+        else lastVisibleIds.forEach(function (id) { selectedIds[id] = 1; });
+        render();
+        return;
+      }
+      var accchk = e.target.closest('[data-accchk]');
+      if (accchk) {
+        var cid = accchk.getAttribute('data-accchk');
+        if (accchk.checked) selectedIds[cid] = 1; else delete selectedIds[cid];
+        render();
+        return;
+      }
+      var batch = e.target.closest('[data-batch]');
+      if (batch) {
+        var kind = batch.getAttribute('data-batch');
+        if (kind === 'addorg') openBatchOrg('add', false);
+        else if (kind === 'removeorg') openBatchOrg('remove', false);
+        else if (kind === 'addrole') openBatchRole('add');
+        else if (kind === 'removerole') openBatchRole('remove');
+        else if (kind === 'addmember') openBatchOrg('add', true);
+        else if (kind === 'manage') openBatchManage();
         return;
       }
       var adetail = e.target.closest('[data-adetail]');
@@ -1096,7 +1869,7 @@
       if (e.target && e.target.id === 'acctRole') { acctFilter.roleId = e.target.value; render(); }
       else if (e.target && e.target.id === 'acctStatus') { acctFilter.status = e.target.value; render(); }
       else if (e.target && e.target.id === 'acctMajor') { acctFilter.major = e.target.value; render(); }
-      else if (e.target && e.target.id === 'acctOrg') { acctFilter.orgId = e.target.value; render(); }
+      else if (e.target && e.target.id === 'acctOrg') { acctFilter.orgId = e.target.value; viewOrgId = null; render(); }
     });
     $('#body').addEventListener('mouseover', function (e) {
       var aq = e.target.closest('[data-awhy]');
@@ -1108,7 +1881,23 @@
   }
 
   /* ── 启动 ── */
+  function initOrgParam() {
+    var m = null;
+    try { if (location.search) m = location.search.match(/[?&]org=([^&]+)/); } catch (e) {}
+    if (!m) return;
+    var orgId = decodeURIComponent(m[1]);
+    var visible = Perm.visibleOrgNodes(ctx, identity, { forAssign: true });
+    if (visible.some(function (o) { return o.id === orgId; })) {
+      viewOrgId = orgId;
+      acctFilter.orgId = orgId;
+    } else {
+      toast('无权查看该组织成员');
+    }
+  }
+
   UI.boot({ portal: 'admin', active: 'account' });
+  reload();
+  initOrgParam();
   UI.onChange(function () { render(); });
   bindEvents();
   render();

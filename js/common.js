@@ -75,7 +75,7 @@
         ] },
         { label: '教务', items: [
           { key: 'account', label: '账号管理', icon: '▤', href: 'account-v1.html',
-            perms: ['org:account:view'] }
+            perms: ['org:account:view', 'org:member:manage', 'account:account:create', 'org:account:edit'] }
         ] },
         { label: '系统', items: [
           { key: 'system', label: '组织管理', icon: '▤', href: 'system.html',

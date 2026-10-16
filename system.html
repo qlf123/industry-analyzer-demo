@@ -62,6 +62,7 @@
 </div>
 <script src="js/mock-data.js"></script>
 <script src="js/permission.js"></script>
+<script src="js/member.js"></script>
 <script src="js/common.js"></script>
 <script>
 (function () {
@@ -264,12 +265,19 @@
     var es = orgEditState(node);
     var typeName = typeById(node.typeId) ? typeById(node.typeId).name : '—';
     var statusPill = node.status === 'disabled' ? '<span class="pill warn">已停用</span>' : '<span class="pill good">启用中</span>';
+    var memberCount = ctx.accounts.filter(function (a) { return Member.memberOrgIds(ctx, a).indexOf(node.id) >= 0; }).length;
+    var canMemberManage = Perm.check(ctx, identity, 'org:account:view', null, null).allowed
+      || Perm.check(ctx, identity, 'org:member:manage', null, null).allowed;
+    var nodeInScope = Perm.visibleOrgNodes(ctx, identity, { forAssign: true }).some(function (o) { return o.id === node.id; });
+    var manageBtn = (canMemberManage && nodeInScope)
+      ? '<button class="btn-s oact" data-manage="1" data-id="' + esc(node.id) + '">管理成员</button>' : '';
     var html = '<div class="odh"><div class="odt">' + esc(node.name) + '</div>'
       + statusPill + '<span class="odsub">' + esc(node.code) + '</span></div>'
       + '<div class="kv">'
       +   kv('名称', node.name) + kv('编码', node.code)
       +   kv('组织类型', typeName) + kv('上级节点', parent ? parent.name : '—（根节点）')
       +   kv('排序', node.sort) + kv('状态', node.status === 'disabled' ? '已停用' : '启用中')
+      +   kv('成员', memberCount + ' 人')
       +   kv('说明', node.desc || '—', true)
       + '</div>'
       + '<div class="oacts">'
@@ -278,6 +286,7 @@
       +   actionBtn('move', '移动', es.editable, node)
       +   actionBtn('toggle', node.status === 'disabled' ? '启用' : '停用', es.editable, node)
       +   actionBtn('del', '删除', es.editable, node)
+      +   manageBtn
       + '</div>';
     return html;
   }
@@ -547,6 +556,8 @@
       if (tg) { var id = tg.getAttribute('data-tg'); expanded[id] = expanded[id] !== false ? false : true; renderOrg(); return; }
       var node = e.target.closest('[data-node]');
       if (node) { selectedOrgId = node.getAttribute('data-node'); renderOrg(); return; }
+      var mg = e.target.closest('[data-manage]');
+      if (mg) { location.href = 'account-v1.html?org=' + encodeURIComponent(mg.getAttribute('data-id')); return; }
       var act = e.target.closest('[data-act]');
       if (act) { onAction(act.getAttribute('data-act'), act.getAttribute('data-id')); return; }
       var dact = e.target.closest('[data-dact]');
@@ -555,7 +566,18 @@
   }
 
   /* ── 启动 ── */
+  function initNodeParam() {
+    var m = null;
+    try { if (location.search) m = location.search.match(/[?&]node=([^&]+)/); } catch (e) {}
+    if (!m) return;
+    var nodeId = decodeURIComponent(m[1]);
+    var visible = Perm.visibleOrgNodes(ctx, identity, { forAssign: true });
+    if (visible.some(function (o) { return o.id === nodeId; })) selectedOrgId = nodeId;
+  }
+
   UI.boot({ portal: 'admin', active: 'system' });
+  reload();
+  initNodeParam();
   UI.onChange(function () { render(); });
   bindEvents();
   render();
