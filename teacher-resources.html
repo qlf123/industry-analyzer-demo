@@ -342,7 +342,7 @@
   var c0 = DEMO.getState();
   var id0 = Perm.getIdentity(c0, UI.ui().accountId);
   var p0 = UI.portalOf(c0, id0);
-  if (p0 === 'student') { location.replace(UI.firstPage(c0, id0)); return; }
+  if (p0 === 'student') { location.replace(UI.link(UI.firstPage(c0, id0))); return; }
   UI.boot({ portal: p0, active: p0 === 'teacher' ? 'resources' : 'schoolpub' });
   UI.onChange(function () { render(); });
   bindEvents();

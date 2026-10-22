@@ -166,7 +166,7 @@
   var c0 = DEMO.getState();
   var id0 = Perm.getIdentity(c0, UI.ui().accountId);
   var p0 = UI.portalOf(c0, id0);
-  if (p0 !== 'teacher' && p0 !== 'admin') { location.replace(UI.firstPage(c0, id0)); return; }
+  if (p0 !== 'teacher' && p0 !== 'admin') { location.replace(UI.link(UI.firstPage(c0, id0))); return; }
   UI.boot({ portal: p0, active: 'myclasses' });
   UI.onChange(function () { render(); });
   render();

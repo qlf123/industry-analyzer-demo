@@ -1433,27 +1433,12 @@ body.histmode .ptop .field,body.histmode #tabs,body.histmode .v2bar,body.histmod
 </style>
 
 <div class="app">
-  <aside class="lnav">
-    <div class="lbrand"><div class="ldot" aria-hidden="true"></div>
-      <div class="lname">AIGC 智慧课堂<br>教学平台 · 管理端</div></div>
-    <div class="lgroup">
-      <div class="lgt">概览</div>
-      <button class="lmenu"><i>▤</i>数据概览</button>
-      <button class="lmenu on"><i>◎</i>行业分析</button>
-      <a class="lmenu" href="kmap.html"><i>◇</i>行业图谱</a>
-    </div>
-    <div class="lgroup">
-      <div class="lgt">教务</div>
-      <button class="lmenu"><i>▤</i>教务基础数据</button>
-      <button class="lmenu"><i>▤</i>课程计划管理</button>
-      <button class="lmenu"><i>▤</i>账号与角色</button>
-    </div>
-    <div class="lgroup">
-      <div class="lgt">系统</div>
-      <button class="lmenu"><i>▤</i>系统配置</button>
-    </div>
-    <div class="lfoot" id="lfoot"></div>
-  </aside>
+  <aside class="lnav" id="lnav"></aside>
+  <!-- 左侧菜单与其它页面共用 js/common.js，同一身份在各页面看到的菜单一致 -->
+  <script src="js/mock-data.js"></script>
+  <script src="js/permission.js"></script>
+  <script src="js/common.js"></script>
+  <script>UI.boot({ portal: 'auto', active: 'panorama' });</script>
 
   <div class="panel">
     <div class="ptop">

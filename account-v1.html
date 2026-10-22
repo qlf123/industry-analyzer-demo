@@ -33,6 +33,23 @@
 .act-filter select{font:inherit;font-size:12.5px;padding:7px 8px;border:1px solid var(--rule);
   border-radius:8px;background:var(--card-2);color:var(--ink);max-width:150px}
 .act-filter .f-count{margin-left:auto;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ba-filter{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.ba-filter .f-search{flex:1 1 170px;min-width:140px;font:inherit;font-size:12.5px;padding:7px 10px;
+  border:1px solid var(--rule);border-radius:8px;background:var(--card-2);color:var(--ink)}
+.ba-filter .f-search:focus{outline:none;border-color:var(--brand)}
+.ba-filter select{font:inherit;font-size:12.5px;padding:7px 8px;border:1px solid var(--rule);
+  border-radius:8px;background:var(--card-2);color:var(--ink);max-width:150px}
+.mem-list{max-height:300px;overflow-y:auto;border:1px solid var(--rule);border-radius:8px;margin-top:4px;background:var(--card)}
+.mem-table{width:100%;border-collapse:collapse}
+.mem-table thead th{position:sticky;top:0;background:#f7f7fb;z-index:1;text-align:left;font-size:11px;color:var(--muted);font-weight:600;padding:7px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+.mem-table td{padding:6px 10px;border-bottom:1px solid var(--rule-2);vertical-align:top;line-height:1.5;font-size:12.5px;color:var(--ink)}
+.mem-table tbody tr:last-child td{border-bottom:0}
+.mem-table .mchk{width:26px;text-align:center}
+.mem-table .mchk input{accent-color:var(--brand);width:14px;height:14px;margin:0;cursor:pointer}
+.mem-table tbody tr.dis td{opacity:.55}
+.mem-table .mname{font-weight:600;color:var(--ink);white-space:nowrap}
+.mem-table .mname .rtag{margin-left:4px}
+.mem-table .msub{color:var(--muted);white-space:nowrap}
 .act-table{overflow-x:auto}
 .act-table .dt-row{min-width:1190px}
 .cell-list{font-size:11px;color:var(--ink-2);line-height:1.55;word-break:break-all}
@@ -499,7 +516,7 @@
       var voname = orgById(viewOrgId) ? orgById(viewOrgId).name : viewOrgId;
       var vcount = ctx.accounts.filter(function (a) { return Member.memberOrgIds(ctx, a).indexOf(viewOrgId) >= 0; }).length;
       memberHint = '<div class="member-hint"><span>正在查看：' + esc(voname) + ' 的成员（共 ' + vcount + ' 人）</span>'
-        + '<a href="system.html?node=' + encodeURIComponent(viewOrgId) + '">返回组织管理</a></div>';
+        + '<a href="' + UI.link('system.html?node=' + encodeURIComponent(viewOrgId)) + '">返回组织管理</a></div>';
     }
 
     // 批量操作栏（勾选 + 成员管理权限）
@@ -1100,6 +1117,45 @@
   }
 
   /* ── 成员批量操作 ── */
+  /* 选人弹窗：角色 / 专业 / 组织 筛选选项 */
+  function memberFilterOpts(role, major, org) {
+    var roleOpts = ctx.roles.map(function (r) {
+      return '<option value="' + esc(r.id) + '"' + (role === r.id ? ' selected' : '') + '>' + esc(r.name) + '</option>';
+    }).join('');
+    var majorSet = {};
+    ctx.accounts.forEach(function (a) { accountIdentity(a).majors.forEach(function (m) { majorSet[m] = 1; }); });
+    var majorOpts = Object.keys(majorSet).map(function (m) {
+      return '<option value="' + esc(m) + '"' + (major === m ? ' selected' : '') + '>' + esc(m) + '</option>';
+    }).join('');
+    var orgOpts = flattenOrgTree(orgPickCtx()).map(function (n) {
+      var o = orgById(n.id);
+      return '<option value="' + esc(n.id) + '"' + (org === n.id ? ' selected' : '') + '>' + indent(n.depth) + esc(o ? o.name : n.id) + '</option>';
+    }).join('');
+    return {
+      role: '<option value="">全部角色</option>' + roleOpts,
+      major: '<option value="">全部专业</option>' + majorOpts,
+      org: '<option value="">全部组织</option>' + orgOpts
+    };
+  }
+  /* 选人弹窗：按角色 / 专业 / 组织过滤（搜索 q 由各弹窗单独处理） */
+  function memberMatchExtra(a, role, major, org) {
+    if (role && !ctx.assignments.some(function (x) { return x.accountId === a.id && x.roleId === role; })) return false;
+    if (major && accountIdentity(a).majors.indexOf(major) < 0) return false;
+    if (org) {
+      var tree = Perm.descendants(ctx, org);
+      if (!Perm.accountOrgIds(ctx, a).some(function (oid) { return tree.has(oid); })) return false;
+    }
+    return true;
+  }
+  /* 选人弹窗：成员关键信息（所属组织 / 角色 / 所属专业） */
+  function memberKeyInfo(a) {
+    return {
+      orgs: accountOrgNames(a),
+      roles: roleNamesList(accountRoleIds(a)).join('、') || '—',
+      majors: accountIdentity(a).majors.join('、') || '—'
+    };
+  }
+
   function selectedAccounts() {
     return ctx.accounts.filter(function (a) { return selectedIds[a.id]; });
   }
@@ -1205,6 +1261,7 @@
       newAccounts: []
     };
     var searchQ = '';
+    var filterRole = '', filterMajor = '', filterOrg = '';
     function byAccountId(id) { return ctx.accounts.find(function (a) { return a.id === id; }); }
     function enabledAccounts() { return ctx.accounts.filter(function (a) { return a.status === '正常'; }); }
 
@@ -1215,7 +1272,7 @@
       + '<div class="note" id="baErr" style="color:var(--crit)"></div>'
       + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">确认加入</button></div>'
       + '</form>');
-    dlg.style.width = 'min(600px, calc(100vw - 32px))';
+    dlg.style.width = 'min(900px, calc(100vw - 32px))';
     var errEl = dlg.querySelector('#baErr');
     var searchEl = dlg.querySelector('#baSearch');
     var bodyEl = dlg.querySelector('#baBody');
@@ -1274,6 +1331,7 @@
       var q = searchQ.trim().toLowerCase();
       var list = enabledAccounts().filter(function (a) {
         if (q && a.name.toLowerCase().indexOf(q) < 0 && a.id.toLowerCase().indexOf(q) < 0) return false;
+        if (!memberMatchExtra(a, filterRole, filterMajor, filterOrg)) return false;
         return true;
       });
       var rows = list.map(function (a) {
@@ -1281,14 +1339,22 @@
         var isMe = a.id === meId;
         var dis = inOrg || isMe;
         var checked = draft.accountIds.indexOf(a.id) >= 0;
-        return '<label class="otp-org' + (dis ? ' dis' : '') + '">'
-          + '<input type="checkbox" data-bacct="' + esc(a.id) + '"' + (checked ? ' checked' : '') + (dis ? ' disabled' : '') + '>'
-          + '<span class="otp-name">' + esc(a.name) + ' <span class="cell-s">' + maskPhone(a.phone) + ' · ' + esc(orgName(Perm.accountMainOrgId(a))) + '</span></span>'
-          + (inOrg ? '<span class="rtag ro">已在本组织</span>' : '')
-          + (isMe ? '<span class="rtag ro">本人</span>' : '')
-          + '</label>';
+        var info = memberKeyInfo(a);
+        return '<tr' + (dis ? ' class="dis"' : '') + '>'
+          + '<td class="mchk"><input type="checkbox" data-bacct="' + esc(a.id) + '"' + (checked ? ' checked' : '') + (dis ? ' disabled' : '') + '></td>'
+          + '<td class="mname">' + esc(a.name)
+          + (inOrg ? ' <span class="rtag ro">已在本组织</span>' : '')
+          + (isMe ? ' <span class="rtag ro">本人</span>' : '') + '</td>'
+          + '<td class="msub">' + esc(a.id) + '</td>'
+          + '<td>' + esc(info.orgs) + '</td>'
+          + '<td>' + esc(info.roles) + '</td>'
+          + '<td>' + esc(info.majors) + '</td>'
+          + '</tr>';
       }).join('');
-      return rows || '<span class="ro-note">无匹配账号</span>';
+      if (!rows) return '<span class="ro-note">无匹配账号</span>';
+      return '<table class="mem-table"><thead><tr>'
+        + '<th class="mchk"></th><th>姓名</th><th>账号</th><th>所属组织</th><th>角色</th><th>所属专业</th>'
+        + '</tr></thead><tbody>' + rows + '</tbody></table>';
     }
     function renderNewAccts() {
       var el = dlg.querySelector('#newAcctList');
@@ -1305,9 +1371,15 @@
           + '<div class="ro-note">来自列表勾选，关闭弹窗后可重新勾选调整</div>';
         return;
       }
+      var fopts = memberFilterOpts(filterRole, filterMajor, filterOrg);
       searchEl.innerHTML = '<div class="orgrow-pick"><span class="field-label">选择成员（可搜索全校账号）</span>'
+        + '<div class="ba-filter">'
         + '<input class="f-search" data-bsearch placeholder="搜索姓名 / 账号">'
-        + '<div class="part-tree" id="baSearchList">' + searchListHtml() + '</div>'
+        + '<select data-barole aria-label="角色筛选">' + fopts.role + '</select>'
+        + '<select data-bamajor aria-label="专业筛选">' + fopts.major + '</select>'
+        + '<select data-baorg aria-label="组织筛选">' + fopts.org + '</select>'
+        + '</div>'
+        + '<div class="mem-list" id="baSearchList">' + searchListHtml() + '</div>'
         + '<div style="margin-top:8px;display:flex;align-items:center;gap:8px">'
         + (canCreate ? '<button type="button" class="btn-s" data-bnew="1">+ 新建账号</button>' : '<span class="ro-note">找不到此人？请联系账号管理员创建账号</span>')
         + '</div><div id="newAcctList"></div></div>';
@@ -1344,6 +1416,16 @@
     }
 
     dlg.addEventListener('change', function (e) {
+      var fr = e.target.closest('[data-barole]');
+      var fm = e.target.closest('[data-bamajor]');
+      var fo = e.target.closest('[data-baorg]');
+      if (fr || fm || fo) {
+        filterRole = fr ? fr.value : filterRole;
+        filterMajor = fm ? fm.value : filterMajor;
+        filterOrg = fo ? fo.value : filterOrg;
+        var fl = dlg.querySelector('#baSearchList'); if (fl) fl.innerHTML = searchListHtml();
+        return;
+      }
       var org = e.target.closest('[data-borg]');
       if (org) {
         var oid = org.getAttribute('data-borg');
@@ -1462,18 +1544,18 @@
     var meId = identity.account.id;
     var draft = { orgIds: [], roleIds: [], accountIds: [] };
     var searchQ = '';
+    var filterRole = '', filterMajor = '', filterOrg = '';
     function byAccountId(id) { return ctx.accounts.find(function (a) { return a.id === id; }); }
     function enabledAccounts() { return ctx.accounts.filter(function (a) { return a.status === '正常'; }); }
 
     var dlg = openDialog('<form style="max-height:88vh;overflow-y:auto">'
       + '<div class="aidlg-h"><h2>批量管理账号</h2><button type="button" class="x" data-x aria-label="关闭">×</button></div>'
-      + '<div class="note">为所选成员批量添加组织、角色（组织和角色至少选择一项）。</div>'
       + '<div id="bmSearch"></div>'
       + '<div id="bmBody"></div>'
       + '<div class="note" id="bmErr" style="color:var(--crit)"></div>'
       + '<div class="acts"><button type="button" class="btn ghost" data-x>取消</button><button type="submit" class="btn">确认</button></div>'
       + '</form>');
-    dlg.style.width = 'min(600px, calc(100vw - 32px))';
+    dlg.style.width = 'min(900px, calc(100vw - 32px))';
     var errEl = dlg.querySelector('#bmErr');
     var searchEl = dlg.querySelector('#bmSearch');
     var bodyEl = dlg.querySelector('#bmBody');
@@ -1542,6 +1624,7 @@
       var q = searchQ.trim().toLowerCase();
       var list = enabledAccounts().filter(function (a) {
         if (q && a.name.toLowerCase().indexOf(q) < 0 && a.id.toLowerCase().indexOf(q) < 0) return false;
+        if (!memberMatchExtra(a, filterRole, filterMajor, filterOrg)) return false;
         return true;
       });
       var rows = list.map(function (a) {
@@ -1549,25 +1632,47 @@
         var isMe = a.id === meId;
         var dis = isMe || inOrg;
         var checked = draft.accountIds.indexOf(a.id) >= 0;
-        return '<label class="bm-acct' + (dis ? ' dis' : '') + '">'
-          + '<input type="checkbox" data-bmacct="' + esc(a.id) + '"' + (checked ? ' checked' : '') + (dis ? ' disabled' : '') + '>'
-          + '<span class="bm-acct-main"><span class="bm-acct-name">' + esc(a.name) + '</span>'
-          + '<span class="bm-acct-sub">' + maskPhone(a.phone) + ' · ' + esc(orgName(Perm.accountMainOrgId(a))) + '</span></span>'
-          + (isMe ? '<span class="rtag ro">本人</span>' : '')
-          + '</label>';
+        var info = memberKeyInfo(a);
+        return '<tr' + (dis ? ' class="dis"' : '') + '>'
+          + '<td class="mchk"><input type="checkbox" data-bmacct="' + esc(a.id) + '"' + (checked ? ' checked' : '') + (dis ? ' disabled' : '') + '></td>'
+          + '<td class="mname">' + esc(a.name) + (isMe ? ' <span class="rtag ro">本人</span>' : '') + '</td>'
+          + '<td class="msub">' + esc(a.id) + '</td>'
+          + '<td>' + esc(info.orgs) + '</td>'
+          + '<td>' + esc(info.roles) + '</td>'
+          + '<td>' + esc(info.majors) + '</td>'
+          + '</tr>';
       }).join('');
-      return rows || '<span class="ro-note">无匹配账号</span>';
+      if (!rows) return '<span class="ro-note">无匹配账号</span>';
+      return '<table class="mem-table"><thead><tr>'
+        + '<th class="mchk"></th><th>姓名</th><th>账号</th><th>所属组织</th><th>角色</th><th>所属专业</th>'
+        + '</tr></thead><tbody>' + rows + '</tbody></table>';
     }
     function renderSearch() {
+      var fopts = memberFilterOpts(filterRole, filterMajor, filterOrg);
       searchEl.innerHTML = '<div class="orgrow-pick"><span class="field-label">选择成员（可搜索全校账号）</span>'
+        + '<div class="ba-filter">'
         + '<input class="f-search" data-bmsearch placeholder="搜索姓名 / 账号">'
-        + '<div class="part-tree" id="bmSearchList">' + searchListHtml() + '</div></div>';
+        + '<select data-bmrole aria-label="角色筛选">' + fopts.role + '</select>'
+        + '<select data-bmmajor aria-label="专业筛选">' + fopts.major + '</select>'
+        + '<select data-bmorgf aria-label="组织筛选">' + fopts.org + '</select>'
+        + '</div>'
+        + '<div class="mem-list" id="bmSearchList">' + searchListHtml() + '</div></div>';
     }
 
     renderSearch();
     renderBody();
 
     dlg.addEventListener('change', function (e) {
+      var fr = e.target.closest('[data-bmrole]');
+      var fm = e.target.closest('[data-bmmajor]');
+      var fo = e.target.closest('[data-bmorgf]');
+      if (fr || fm || fo) {
+        filterRole = fr ? fr.value : filterRole;
+        filterMajor = fm ? fm.value : filterMajor;
+        filterOrg = fo ? fo.value : filterOrg;
+        var fl = dlg.querySelector('#bmSearchList'); if (fl) fl.innerHTML = searchListHtml();
+        return;
+      }
       var org = e.target.closest('[data-bmorg]');
       if (org) {
         var oid = org.getAttribute('data-bmorg');

@@ -624,3 +624,23 @@ test('member.js 移除角色：删除分配、可移除到零角色', function (
   assert.deepEqual(Member.accountRoleIds(c, qin), [], '移除后无角色');
   assert.ok(!c.assignments.some(function (a) { return a.accountId === 'ACC-QIN'; }), '分配已删除');
 });
+
+/* ── 能力测评（专业建设）：权限点与范围 ── */
+test('能力测评权限点：超管 / 组织管理员 / 教务可见，按组织范围看专业', function () {
+  const c = ctx();
+  const codes = c.permissions.map(function (p) { return p.code; });
+  assert.ok(codes.includes('major:assess:view') && codes.includes('major:assess:run'), '两个权限点已登记');
+  function perms(roleId) { return c.roles.find(function (r) { return r.id === roleId; }).permissionIds; }
+  ['R-SUPER', 'R-ORG-ADMIN', 'R-ACADEMIC'].forEach(function (rid) {
+    assert.ok(perms(rid).includes('major:assess:view') && perms(rid).includes('major:assess:run'), rid + ' 有能力测评权限');
+  });
+  ['R-MAJOR-LEAD', 'R-TEACHER', 'R-STUDENT-AFFAIRS', 'R-SUPERVISOR'].forEach(function (rid) {
+    assert.ok(!perms(rid).includes('major:assess:view'), rid + ' 无能力测评权限');
+  });
+  const guide = c.majors.find(function (m) { return m.id === 'MAJOR-GUIDE'; });
+  const hotel = c.majors.find(function (m) { return m.id === 'MAJOR-HOTEL'; });
+  assert.ok(Perm.check(c, id(c, 'ACC-ZHOU'), 'major:assess:view', guide, 'major').allowed, '教务（全校）可看导游专业');
+  assert.ok(Perm.check(c, id(c, 'ACC-LIU'), 'major:assess:view', guide, 'major').allowed, '旅游学院管理员可看导游专业');
+  assert.ok(!Perm.check(c, id(c, 'ACC-LIU'), 'major:assess:view', hotel, 'major').allowed, '旅游学院管理员不可看酒店学院专业');
+  assert.ok(!Perm.check(c, id(c, 'ACC-HE'), 'major:assess:view', null, null).allowed, '教师无能力测评权限');
+});

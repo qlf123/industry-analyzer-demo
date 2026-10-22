@@ -10,7 +10,7 @@
   'use strict';
 
   var STORAGE_KEY = 'permission-demo-state';
-  var DATA_VERSION = 1; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
+  var DATA_VERSION = 2; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
 
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
@@ -173,7 +173,9 @@
     { id: 'P-SCHOOLPUB-PUBLISH', code: 'resource:schoolpub:publish', name: '发布到校本资源库', module: '资源', resource: '校本资源库', action: '发布' },
     { id: 'P-SCHOOLPUB-VIEW',    code: 'resource:schoolpub:view',  name: '校本资源库查看复制', module: '资源', resource: '校本资源库', action: '查看复制' },
     { id: 'P-MEMBER-MANAGE',     code: 'org:member:manage',        name: '组织成员管理',   module: '组织', resource: '成员', action: '管理' },
-    { id: 'P-ACCOUNT-CREATE',    code: 'account:account:create',   name: '账号新建',       module: '组织', resource: '账号', action: '新建' }
+    { id: 'P-ACCOUNT-CREATE',    code: 'account:account:create',   name: '账号新建',       module: '组织', resource: '账号', action: '新建' },
+    { id: 'P-ASSESS-VIEW',       code: 'major:assess:view',        name: '能力测评查看',   module: '专业建设', resource: '能力测评', action: '查看' },
+    { id: 'P-ASSESS-RUN',        code: 'major:assess:run',         name: '发起能力测评',   module: '专业建设', resource: '能力测评', action: '发起' }
   ];
 
   /* ── 角色（type：内置 / 预设 / 部门模板 / 自定义；key 供权限模块判定用） ── */
@@ -182,12 +184,14 @@
       description: '系统内置的最高权限角色，覆盖全校全部功能与数据', createdBy: '系统', createdAt: '2024-09-01', permissionIds: [
       'org:node:view','org:node:edit','org:account:view','org:account:edit','org:account:assign','org:teachingScope:grant',
       'org:role:define','org:audit:view','student:info:view','student:score:view','student:idcard:plain','teaching:profile:view',
-      'teaching:content:view','teaching:content:audit','intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view','org:member:manage','account:account:create' ] },
+      'teaching:content:view','teaching:content:audit','intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view','org:member:manage','account:account:create',
+      'major:assess:view','major:assess:run' ] },
     { id: 'R-ORG-ADMIN', key: 'orgAdmin', portal: 'admin', name: '组织管理员', type: '预设', status: '启用', aiQuota: 100,
       description: '负责本单位组织、账号与基础数据的日常维护', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'org:node:view','org:node:edit','org:account:view','org:account:edit','org:account:assign','org:teachingScope:grant',
       'org:audit:view','student:info:view','student:score:view','teaching:profile:view','teaching:content:view','teaching:content:audit',
-      'intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view','org:member:manage','account:account:create' ] },
+      'intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view','org:member:manage','account:account:create',
+      'major:assess:view','major:assess:run' ] },
     { id: 'R-MAJOR-LEAD', key: 'majorLead', portal: 'teacher', name: '专业负责人', type: '预设', status: '启用', aiQuota: 50,
       description: '负责本专业教学与人才培养相关的查看与协作', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'teaching:profile:view','teaching:content:view','student:score:view','resource:share','resource:schoolpub:view' ] },
@@ -206,7 +210,8 @@
     { id: 'R-ACADEMIC', key: 'academic', portal: 'admin', name: '教务', type: '部门模板', status: '启用', aiQuota: 100,
       description: '教务管理，负责教学安排、成绩与课程内容', createdBy: '超管', createdAt: '2024-10-15', permissionIds: [
       'org:account:view','org:teachingScope:grant','org:audit:view','student:info:view','student:score:view','teaching:profile:view',
-      'teaching:content:view','teaching:content:audit','resource:share','resource:schoolpub:publish','resource:schoolpub:view' ] },
+      'teaching:content:view','teaching:content:audit','resource:share','resource:schoolpub:publish','resource:schoolpub:view',
+      'major:assess:view','major:assess:run' ] },
     { id: 'R-STUDENT-AFFAIRS', key: 'studentAffairs', portal: 'admin', name: '学工', type: '部门模板', status: '启用', aiQuota: 50,
       description: '学生工作管理，负责学生信息与实习任务', createdBy: '超管', createdAt: '2024-10-15', permissionIds: [
       'org:account:view','org:audit:view','student:info:view','student:score:view','intern:task:view' ] },

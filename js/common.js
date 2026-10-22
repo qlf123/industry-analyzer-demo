@@ -1,8 +1,7 @@
 /* 权限管理升级 V2.1 · 公共框架
- * 只用于新的权限演示页面（system / basedata / account / teacher-* / student）。
+ * 所有页面（含 panorama.html / kmap.html）的左侧菜单都由这里渲染，保证同一身份在各页面看到的菜单一致。
  * 依赖 js/mock-data.js（window.DEMO）与 js/permission.js（window.Perm）。
- * 职责：一套菜单配置渲染三套侧栏（管理端 / 教师端 / 学生端）。
- * 不修改 panorama.html / kmap.html。
+ * 职责：一套菜单配置渲染三套侧栏（管理端 / 教师端 / 学生端）；页面间跳转带上当前身份（?u=）与当前端（?p=）。
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -61,8 +60,9 @@
 
   /* ── 菜单配置：三套侧栏。item 约定 ──
    *   empty:true   → 空菜单（button，不可点，保持占位）
-   *   external:true→ 现有页面（行业分析/行业图谱，对所有管理端身份可见）
+   *   external:true→ 公共页面（行业分析/能力图谱），对该端所有身份可见；页面以 portal:'auto' 启动，按 ?p= 决定显示哪一端的菜单
    *   perms:[..]   → 新页面，按「功能权限」显示/隐藏（任一命中即显示）
+   *   landing:false → 不作为登录 / 切换身份后的落地页（firstPage 跳过）
    */
   var MENUS = {
     admin: {
@@ -71,7 +71,9 @@
         { label: '概览', items: [
           { key: 'dash', label: '数据概览', icon: '▤', empty: true },
           { key: 'panorama', label: '行业分析', icon: '◎', href: 'panorama.html', external: true },
-          { key: 'kmap', label: '行业图谱', icon: '◇', href: 'kmap.html', external: true }
+          { key: 'kmap', label: '能力图谱', icon: '◇', href: 'kmap.html', external: true },
+          { key: 'assess', label: '能力测评', icon: '◈', href: 'assess.html',
+            perms: ['major:assess:view'], landing: false }
         ] },
         { label: '教务', items: [
           { key: 'account', label: '账号管理', icon: '▤', href: 'account-v1.html',
@@ -87,15 +89,13 @@
       title: 'AIGC 智慧课堂<br>教学平台 · 教师端',
       groups: [
         { label: '', items: [
-          { key: 'workbench', label: '工作台', icon: '▤', empty: true },
-          { key: 'resources', label: '备课中心', icon: '▤', href: 'teacher-resources.html',
-            perms: ['resource:share', 'resource:schoolpub:view', 'resource:schoolpub:publish'] },
-          { key: 'myclasses', label: '我的班级', icon: '▤', href: 'my-classes.html',
-            perms: ['student:score:view', 'intern:task:view'] },
+          { key: 'workbench', label: '工作台', icon: '▤', href: 'workbench.html' },
+          { key: 'kmap', label: '能力图谱', icon: '◇', href: 'kmap.html', external: true },
+          // 备课中心、教师档案暂不开放（页面 teacher-resources.html / teacher-profile.html 保留）；我的班级（my-classes.html）不在菜单中显示
+          { key: 'resources', label: '备课中心', icon: '▤', empty: true },
           { key: 'tasks', label: '任务中心', icon: '▤', empty: true },
           { key: 'growth', label: '教师成长中心', icon: '▤', empty: true },
-          { key: 'profile', label: '教师档案', icon: '▤', href: 'teacher-profile.html',
-            perms: ['teaching:profile:view'] }
+          { key: 'profile', label: '教师档案', icon: '▤', empty: true }
         ] }
       ]
     },
@@ -119,14 +119,23 @@
 
   var memUi = null;
   /* 初始身份：地址栏 ?u=<账号> 传入（登录页跳转用），否则默认「超管」；仅内存，不持久化 */
-  function initialAccountId() {
+  function queryParam(k) {
     try {
       if (typeof location !== 'undefined' && location.search) {
-        var m = location.search.match(/[?&]u=([^&]+)/);
+        var m = location.search.match(new RegExp('[?&]' + k + '=([^&]+)'));
         if (m) return decodeURIComponent(m[1]);
       }
     } catch (e) {}
-    return 'ACC-SUPER';
+    return '';
+  }
+  function initialAccountId() { return queryParam('u') || 'ACC-SUPER'; }
+  /* 站内链接：带上当前身份（和端），跳到别的页面后身份与菜单不变 */
+  function link(href, portal) {
+    if (!href) return href;
+    var hash = '', i = href.indexOf('#');
+    if (i >= 0) { hash = href.slice(i); href = href.slice(0, i); }
+    var q = 'u=' + encodeURIComponent(loadUi().accountId) + (portal ? '&p=' + encodeURIComponent(portal) : '');
+    return href + (href.indexOf('?') >= 0 ? '&' : '?') + q + hash;
   }
   /* 演示状态只在当前页内存中保留（每次打开页面默认「超管」，不持久化到任何存储） */
   function loadUi() {
@@ -168,7 +177,7 @@
       var items = groups[g].items;
       for (var i = 0; i < items.length; i++) {
         var it = items[i];
-        if (it.href && !it.external && itemVisible(ctx, identity, it)) return it.href;
+        if (it.href && !it.external && it.landing !== false && itemVisible(ctx, identity, it)) return it.href;
       }
     }
     return p === 'student' ? 'student.html' : 'system.html';
@@ -181,6 +190,8 @@
     var menu = MENUS[portal];
     var html = '<div class="lbrand"><div class="ldot" aria-hidden="true"></div><div class="lname">' + menu.title + '</div></div>';
     menu.groups.forEach(function (group) {
+      // 分组里没有对当前身份可见的菜单项时，整组（含分组标题）不显示
+      if (!group.items.some(function (it) { return itemVisible(ctx, identity, it); })) return;
       html += '<div class="lgroup">';
       if (group.label) html += '<div class="lgt">' + esc(group.label) + '</div>';
       group.items.forEach(function (it) {
@@ -190,14 +201,14 @@
         var cls = 'lmenu' + (on ? ' on' : '');
         var inner = '<i>' + esc(it.icon) + '</i>' + esc(it.label);
         if (it.href) {
-          html += '<a class="' + cls + '" href="' + esc(it.href) + '"' + (on ? ' aria-current="page"' : '') + '>' + inner + '</a>';
+          html += '<a class="' + cls + '" href="' + esc(link(it.href, it.external ? portal : '')) + '"' + (on ? ' aria-current="page"' : '') + '>' + inner + '</a>';
         } else {
           html += '<button class="' + cls + '" type="button">' + inner + '</button>';
         }
       });
       html += '</div>';
     });
-    html += '<div class="lfoot">权限管理升级 · V2.1</div>';
+    html += '<div class="lfoot" id="lfoot">权限管理升级 · V2.1</div>';
     nav.innerHTML = html;
   }
 
@@ -269,15 +280,20 @@
   }
   function uiSnapshot() { var u = loadUi(); return { accountId: u.accountId, orgId: u.orgId || '', why: !!u.why }; }
 
-  /* 页面入口：cfg = { portal: 'admin'|'teacher'|'student', active: '菜单 key' } */
+  /* 页面入口：cfg = { portal: 'admin'|'teacher'|'student'|'auto', active: '菜单 key' }
+   * auto：多端共用的页面（行业分析/能力图谱），显示 ?p= 指定的端；未指定或不可进入时按身份默认端 */
   function boot(cfg) {
     _config = cfg || { portal: 'admin', active: 'system' };
     var ctx = DEMO.getState();
     var identity = currentIdentity(ctx);
     var enterable = Perm.rolePortals(ctx, identity);
+    if (_config.portal === 'auto') {
+      var qp = queryParam('p');
+      _config.portal = enterable.indexOf(qp) >= 0 ? qp : (portalOf(ctx, identity) || 'admin');
+    }
     // 当前页面的端不在身份可进入的端集合里才跳回；在集合里就把当前端设为该页面的端
     if (enterable.length && enterable.indexOf(_config.portal) < 0) {
-      location.replace(firstPage(ctx, identity));
+      location.replace(link(firstPage(ctx, identity)));
       return;
     }
     renderAll(ctx, _config);
@@ -287,6 +303,7 @@
     boot: boot,
     portalOf: portalOf,
     firstPage: firstPage,
+    link: link,
     promptPortal: promptPortal,
     hasPerm: hasPerm,
     hasAnyPerm: hasAnyPerm,

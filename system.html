@@ -557,7 +557,7 @@
       var node = e.target.closest('[data-node]');
       if (node) { selectedOrgId = node.getAttribute('data-node'); renderOrg(); return; }
       var mg = e.target.closest('[data-manage]');
-      if (mg) { location.href = 'account-v1.html?org=' + encodeURIComponent(mg.getAttribute('data-id')); return; }
+      if (mg) { location.href = UI.link('account-v1.html?org=' + encodeURIComponent(mg.getAttribute('data-id'))); return; }
       var act = e.target.closest('[data-act]');
       if (act) { onAction(act.getAttribute('data-act'), act.getAttribute('data-id')); return; }
       var dact = e.target.closest('[data-dact]');

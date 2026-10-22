@@ -115,17 +115,16 @@
     var ctx = DEMO.getState();
     var identity = Perm.getIdentity(ctx, accountId);
     var portals = Perm.rolePortals(ctx, identity);
-    var target = 'account-v1.html';
     if (portals.length > 1) {
-      UI.promptPortal(ctx, identity, portals, function () {
-        // 无论选择哪个端，都进入「账号管理」页
-        location.href = target + '?u=' + encodeURIComponent(accountId);
+      UI.promptPortal(ctx, identity, portals, function (portal) {
+        // 进入所选端的首页：教师端→工作台，管理端→账号管理，学生端→我的信息
+        location.href = UI.firstPage(ctx, identity, portal) + '?u=' + encodeURIComponent(accountId);
       }, function () {
         // 取消：停留在登录页，不跳转
       });
       return;
     }
-    location.href = target + '?u=' + encodeURIComponent(accountId);
+    location.href = UI.firstPage(ctx, identity) + '?u=' + encodeURIComponent(accountId);
   }
 
   accountInput.addEventListener('focus', openMenu);

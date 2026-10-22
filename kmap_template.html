@@ -158,7 +158,7 @@ a.lmenu{text-decoration:none}
 .gnode.lf.sel .abbg{fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5}
 .gnode.lf.off{opacity:.35}
 .gnode.ai .abbg{stroke:var(--rule);stroke-dasharray:3 2;stroke-width:1;fill:var(--card)}
-.gt-ai{font-family:var(--mono);font-size:8.5px;font-weight:600;fill:var(--brand)}
+.gnode.ai.man .abbg{stroke-dasharray:none}
 .btn-s:disabled{opacity:.45;cursor:not-allowed;border-color:var(--rule);color:var(--ink-2)}
 .scbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 6px 8px;padding:7px 12px;
   border:1px solid var(--rule);border-radius:9px;background:var(--card-2);font-size:12px;color:var(--ink-2)}
@@ -208,7 +208,6 @@ a.lmenu{text-decoration:none}
 .gnode.aiadd:hover .abbg{stroke:var(--brand);fill:var(--brand-soft)}
 .gnode.aiadd text{font-size:11.5px;fill:var(--muted)}
 .gnode.aiadd:hover text{fill:var(--brand-ink)}
-.gt-ai.man{fill:var(--ink-2)}
 /* AI 节点右键菜单 */
 .ctxmenu{position:fixed;z-index:85;min-width:128px;padding:4px;background:var(--card);border:1px solid var(--rule);
   border-radius:9px;box-shadow:0 12px 32px -12px rgba(25,21,36,.35)}
@@ -274,6 +273,9 @@ a.lmenu{text-decoration:none}
 .nd{padding:18px 22px 16px;display:flex;flex-direction:column;gap:4px;max-height:min(700px,74vh)}
 .nd-h{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px;flex-shrink:0}
 .nd-h h2{font-size:16px;margin:0}
+.nd-h h2 .nd-ai{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--brand);
+  border:1px dashed var(--brand);border-radius:4px;padding:0 5px;line-height:1.5;margin-right:8px;vertical-align:2px}
+.nd-h h2 .nd-ai.man{color:var(--ink-2);border-color:var(--rule);border-style:solid}
 .nd-sub{font-size:11.5px;color:var(--muted);margin-top:3px}
 .nd-h .btn-s{margin-left:auto}
 .nd-chips{flex:0 0 auto;display:flex;align-items:center;gap:6px}
@@ -284,7 +286,6 @@ a.lmenu{text-decoration:none}
   background:var(--card-2);border:1px solid var(--rule);border-radius:9px;padding:8px 12px;margin-bottom:6px}
 .nd-chain[hidden]{display:none}
 .nd-chain .nd-crumb{display:inline-flex;align-items:baseline;gap:5px}
-.nd-chain .nd-crumb i{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--muted)}
 .nd-chain .nd-crumb b{font-weight:600;color:var(--ink)}
 .nd-chain .nd-crumb em{font-style:normal;font-size:10.5px;color:var(--muted)}
 .nd-chain .nd-crumb.cur b{color:var(--brand)}
@@ -321,8 +322,9 @@ a.lmenu{text-decoration:none}
 .vlegend .lg{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--muted)}
 .vlegend .lg i{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
 .vlegend .lg.dash i{background:transparent;border:1px dashed var(--brand);border-radius:3px}
+.vlegend .lg.man i{background:transparent;border:1px solid var(--ink-2);border-radius:3px}
 .vtree{overflow:auto;flex:1;min-height:360px;max-height:min(760px,76vh);padding:6px 4px 10px}
-.vrow{display:flex;align-items:center;gap:6px;padding:3px 8px;border-radius:7px;cursor:pointer;font-size:13px;line-height:1.55}
+.vrow{display:flex;align-items:center;gap:6px;padding:3px 8px;border-radius:7px;cursor:pointer;font-size:13px;line-height:1.55;width:max-content;min-width:100%}
 .vrow:hover{background:var(--rule-2)}
 .vrow.sel{background:var(--brand-soft)}
 .vtog{width:13px;height:16px;flex:0 0 13px;display:inline-flex;align-items:center;justify-content:center;
@@ -333,12 +335,11 @@ a.lmenu{text-decoration:none}
 .vop{font-size:11px;line-height:1.7;padding:0 7px;border-radius:6px;border:1px solid var(--rule);background:var(--card);color:var(--ink-2);cursor:pointer;white-space:nowrap}
 .vop:hover{color:var(--brand);border-color:var(--brand);background:var(--brand-soft)}
 .vbar{width:3px;height:14px;border-radius:1.5px;flex:0 0 3px}
-.vname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vbar.dash{background:transparent;border:1px dashed;border-radius:1.5px}
+.vname{flex:1;min-width:max-content;white-space:nowrap}
 .vname .vt-emg{margin-right:5px}
 .vt-emg{color:var(--emg);font-size:10px;font-weight:600;border:1px solid var(--emg);border-radius:4px;padding:0 4px;line-height:1.4}
 .vt-core{color:var(--brand);font-size:10.5px}
-.vt-ai{font-family:var(--mono);font-size:9px;color:var(--brand);border:1px dashed var(--brand);border-radius:4px;padding:0 4px;line-height:1.5;flex:0 0 auto}
-.vt-ai.man{color:var(--ink-2);border-color:var(--rule);border-style:solid}
 .vt-status{font-size:11px;color:var(--muted);padding:2px 8px 2px 42px}
 .vt-status.err{color:var(--crit);cursor:pointer}
 .vkids{margin-left:12px;border-left:1px solid var(--rule-2);padding-left:6px}
@@ -353,27 +354,12 @@ body.fs-on{overflow:hidden}
 </head>
 <body>
 <div class="app">
-  <aside class="lnav">
-    <div class="lbrand"><div class="ldot" aria-hidden="true"></div>
-      <div class="lname">AIGC 智慧课堂教学平台</div></div>
-    <div class="lgroup">
-      <div class="lgt">概览</div>
-      <button class="lmenu"><i>▤</i>数据概览</button>
-      <a class="lmenu" href="panorama.html"><i>◎</i>行业分析</a>
-      <button class="lmenu on" aria-current="page"><i>◇</i>能力图谱</button>
-    </div>
-    <div class="lgroup">
-      <div class="lgt">教务</div>
-      <button class="lmenu"><i>▤</i>教务基础数据</button>
-      <button class="lmenu"><i>▤</i>课程计划管理</button>
-      <button class="lmenu"><i>▤</i>账号与角色</button>
-    </div>
-    <div class="lgroup">
-      <div class="lgt">系统</div>
-      <button class="lmenu"><i>▤</i>系统配置</button>
-    </div>
-    <div class="lfoot" id="lfoot"></div>
-  </aside>
+  <aside class="lnav" id="lnav"></aside>
+  <!-- 左侧菜单与其它页面共用 js/common.js，同一身份在各页面看到的菜单一致 -->
+  <script src="js/mock-data.js"></script>
+  <script src="js/permission.js"></script>
+  <script src="js/common.js"></script>
+  <script>UI.boot({ portal: 'auto', active: 'kmap' });</script>
 
   <div class="panel">
     <div class="ptop">
@@ -385,7 +371,8 @@ body.fs-on{overflow:hidden}
         <div class="kmap-left">
           <div class="card burst">
             <div class="burst-h"><span class="burst-t">能力图谱树</span><span style="flex:1"></span>
-              <button class="btn-s" id="marketBtn" type="button" title="让 AI 获取市场最新能力">获取市场最新能力</button>
+              <button class="btn-s" id="marketBtn" type="button" title="让 AI 获取市场最新能力" style="display:none">获取市场最新能力</button>
+              <button class="btn-s" id="vSaveBtn" type="button" disabled>保存</button>
               <button class="btn-s" id="fullBtn" type="button" title="切换到横向延展的全景图">全屏</button></div>
             <div class="vlegend" aria-hidden="true">
               <span class="lg"><i style="background:var(--vl-sub)"></i>子行业</span>
@@ -396,11 +383,12 @@ body.fs-on{overflow:hidden}
               <span class="lg"><i style="background:var(--kgt-step)"></i>步骤</span>
               <span class="lg"><i style="background:var(--kgt-std)"></i>标准</span>
               <span class="lg"><i style="background:var(--kgt-case)"></i>案例</span>
-              <span class="lg dash"><i></i>AI 细分</span>
+              <span class="lg dash"><i></i>AI 生成</span>
+              <span class="lg man"><i></i>人工</span>
             </div>
             <div class="vtree" id="vTree" aria-label="能力图谱树"></div>
           </div>
-          <div class="card trends" id="marketTrends">
+          <div class="card trends" id="marketTrends" style="display:none">
             <div class="trends-h"><span class="burst-t">市场趋势</span><span class="trends-note">由 AI 基于模型知识归纳</span><span style="flex:1"></span>
               <button class="btn-s" id="clearMarketBtn" type="button">清除</button></div>
             <div class="trends-body" id="marketBody"></div>
@@ -440,6 +428,8 @@ body.fs-on{overflow:hidden}
     <span class="bl"><i style="background:var(--lv1)"></i>L1</span>
     <span class="bl"><i style="background:var(--lv2)"></i>L2</span>
     <span class="bl"><i style="background:var(--lv3)"></i>L3</span>
+    <span class="bl"><i style="background:transparent;border:1px dashed var(--brand)"></i>AI 生成</span>
+    <span class="bl"><i style="background:transparent;border:1px solid var(--ink-2)"></i>人工</span>
     <span class="bl" style="color:var(--muted)">连线颜色 = 该岗位对该能力的要求等级</span>
     <span class="bl" style="color:var(--muted)">点岗位展开能力项　点能力项展开技能并反推要求它的岗位　点技能展开下级节点　点末级节点由 AI 继续细分　点子行业高亮所属岗位　★ 核心能力　×N 被几个岗位要求</span>
   </div>
@@ -757,12 +747,11 @@ function renderGraph(){
       const it = c.lv.items[r.id];
       const st = nx ? (it.key===nx.parent ? ' sel' : ' off') : '';
       const sc = it.check ? SC_MARK[it.check.verdict] : null;
-      nodes += `<g class="gnode lf open ai${st}${sc?' sc-'+sc.c:''}" data-n="ai|${i}|${r.id}">
+      nodes += `<g class="gnode lf open ai${it.manual?' man':''}${st}${sc?' sc-'+sc.c:''}" data-n="ai|${i}|${r.id}">
         <rect x="${x0-4}" y="${r.y-10}" width="${x1-x0+4}" height="20" rx="6" class="abbg"></rect>
-        <rect x="${x0}" y="${r.y-8}" width="3" height="16" rx="1.5" fill="var(--kgt-${k.c})"></rect>
-        <text x="${x0+10}" y="${r.y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(it.name + (it.genning?'…':''), x1-x0-(it.manual?62:50), 11))}</text>
-        ${sc?`<text x="${x1-20}" y="${r.y}" text-anchor="end" dominant-baseline="central" class="gt gt-sc ${sc.c}">${sc.icon}</text>`:''}
-        <text x="${x1-4}" y="${r.y}" text-anchor="end" dominant-baseline="central" class="gt gt-ai${it.manual?' man':''}">${it.manual?'人工':'AI'}</text></g>`;
+        <rect x="${x0}" y="${r.y-8}" width="3" height="16" rx="1.5" ${it.manual?`fill="var(--kgt-${k.c})"`:`fill="none" stroke="var(--kgt-${k.c})" stroke-dasharray="2 2"`}></rect>
+        <text x="${x0+10}" y="${r.y}" dominant-baseline="central" class="gt gt-ab">${esc(fit(it.name + (it.genning?'…':''), x1-x0-30, 11))}</text>
+        ${sc?`<text x="${x1-20}" y="${r.y}" text-anchor="end" dominant-baseline="central" class="gt gt-sc ${sc.c}">${sc.icon}</text>`:''}</g>`;
     });
     if(c.lv.status==='loading'){
       nodes += `<text x="${x0}" y="${c.py}" dominant-baseline="central" class="gt gt-status gt-loading">AI 生成中…</text>`;
@@ -995,13 +984,13 @@ function openLevel(level, parent){
 }
 const isDirty = () => aiSnapshot() !== savedSnapshot;
 function renderSaveBtn(){
-  const b = $('#saveBtn'), dirty = isDirty();
-  b.disabled = !dirty;
-  b.textContent = dirty ? '保存' : (savedSnapshot!=='[]' ? '已保存' : '保存');
-  b.title = dirty ? '保存后，下次打开页面展开这些节点时直接显示，不再调用 AI（只保存在本机浏览器）'
+  const dirty = isDirty();
+  const label = dirty ? '保存' : (savedSnapshot!=='[]' ? '已保存' : '保存');
+  const title = dirty ? '保存后，下次打开页面展开这些节点时直接显示，不再调用 AI（只保存在本机浏览器）'
                   : (savedSnapshot!=='[]' ? '当前内容已保存在本机浏览器' : '还没有可保存的 AI 节点');
+  [$('#saveBtn'), $('#vSaveBtn')].forEach(b=>{ b.disabled = !dirty; b.textContent = label; b.title = title; });
 }
-$('#saveBtn').addEventListener('click', ()=>{
+function saveAiNodes(){
   const snap = aiSnapshot();
   try { localStorage.setItem(AI_SAVE_KEY, snap); }
   catch(e){ showToast('保存失败：浏览器不允许本地存储'); return; }
@@ -1009,7 +998,9 @@ $('#saveBtn').addEventListener('click', ()=>{
   const n = JSON.parse(snap).reduce((s,l)=>s+l.items.length, 0);
   showToast(`已保存 ${n} 个节点，下次展开时直接显示`);
   renderSaveBtn();
-});
+}
+$('#saveBtn').addEventListener('click', saveAiNodes);
+$('#vSaveBtn').addEventListener('click', saveAiNodes);
 window.addEventListener('beforeunload', e=>{ if(isDirty()){ e.preventDefault(); e.returnValue = ''; } });
 
 // 重新生成一列：保留人工新增 / 人工编辑过的节点，其余由 AI 重新生成；下面已展开的列收起；可撤销
@@ -1157,7 +1148,7 @@ function aiChain(level){
   for(let i=0;i<level;i++){
     const lv = ai[i], nx = ai[i+1];
     const it = lv.items.find(x=>x.key===nx.parent);
-    c.push(`${lv.kind}（细分第 ${i+1} 层）：${it.name}`);
+    c.push(`${lv.kind}：${it.name}`);
   }
   return c;
 }
@@ -1463,6 +1454,8 @@ function setNdChips(typeLabel, emerging){
   el.innerHTML = html;
 }
 
+let ndCur = null;   // 当前详情节点：{type,key,name,chain,kind}，供「带入备课」读取
+
 // 从数据构造某节点的默认归属链路（横向树「查看详情」且竖树未展开该路径时回退用）
 function chainFor(type, id){
   if(type==='ind') return [`行业：${I.name}`];
@@ -1475,7 +1468,7 @@ function chainFor(type, id){
   }
   return [];
 }
-// 详情卡顶部归属链路：第1层：xx > 第2层：xx > ... 直到当前节点
+// 详情卡顶部归属链路：行业 > 子行业 > 岗位 > ... 直到当前节点（每段只显示类型与名称）
 function setNdChain(chain){
   const el = $('#ndChain');
   if(!chain || !chain.length){ el.hidden = true; el.innerHTML = ''; return; }
@@ -1484,7 +1477,7 @@ function setNdChain(chain){
     const type = p>=0 ? s.slice(0, p) : '';
     const name = p>=0 ? s.slice(p+1) : s;
     const cur = i===chain.length-1 ? ' cur' : '';
-    return `<span class="nd-crumb${cur}"><i>第${i+1}层</i><b>${esc(name)}</b>${type?`<em>${esc(type)}</em>`:''}</span>`;
+    return `<span class="nd-crumb${cur}"><b>${esc(name)}</b>${type?`<em>${esc(type)}</em>`:''}</span>`;
   }).join('<span class="nd-sep">›</span>');
   el.hidden = false;
 }
@@ -1553,13 +1546,16 @@ function openNodeDetail(type, id, level){
   $('#ndSub').textContent = label;
   $('#ndSub').hidden = !label;
   $('#ndBody').innerHTML = html || `<div class="nd-empty">暂无详情</div>`;
-  setNdChain((vMeta[id] && vMeta[id].chain) || chainFor(type, id));
+  const chain = (vMeta[id] && vMeta[id].chain) || chainFor(type, id);
+  setNdChain(chain);
   setNdChips(typeLabel, emerging);
+  ndCur = { type, key: id, name: title, chain, kind: null };
 }
 
 // 竖树里技能 / 末级 / AI 节点的右侧详情：名称、层级、类型与来源（无富详情数据）
 function showVDetail(m){
-  $('#ndTitle').textContent = m.name;
+  const ndAiTag = m.type==='ai' ? `<span class="nd-ai${m.manual?' man':''}">${m.manual?'人工':'AI'}</span>` : '';
+  $('#ndTitle').innerHTML = ndAiTag + esc(m.name);
   let html = '';
   let typeLabel='', emerging=false, sub='';
   if(m.type==='skl'){
@@ -1585,11 +1581,53 @@ function showVDetail(m){
   $('#ndBody').innerHTML = html || `<div class="nd-empty">暂无详情</div>`;
   setNdChain(m.chain || []);
   setNdChips(typeLabel, emerging);
+  ndCur = { type: m.type, key: m.key, name: m.name, chain: m.chain || [], kind: m.kind || null };
 }
 
-// 详情底部「带入备课 · 生成课件」：与 teacher-kmap-demo 一致，仅提示带入备课模块
+// 详情底部「带入备课 · 生成课件」：把当前节点的上级链路 + 下级全部节点（整棵子树）带入工作台
+const PREP_KEY = 'kmapToWorkbench';
+function prepTypeLabel(t){ return {ind:'行业', sub:'子行业', pos:'岗位', abl:'能力项', skl:'技能'}[t] || ''; }
+// 某节点的直接下级：[{type(内部), key, label(类型名), name, kind}]
+function prepKids(type, key, kind){
+  if(type === 'ind') return builtSubs.map(sid => ({type:'sub', key:sid, label:'子行业', name: sub[sid].name}));
+  if(type === 'sub') return sub[key].positionIds.map(pid => ({type:'pos', key:pid, label:'岗位', name: pos[pid].name}));
+  if(type === 'pos') return pos[key].abilities.map(r => ({type:'abl', key:r.ability, label:'能力项', name: abl[r.ability].name}));
+  if(type === 'abl') return abl[key].skills.map(sid => ({type:'skl', key:sid, label:'技能', name: skl[sid].name}));
+  if(type === 'skl') return skl[key].children.map(nid => ({type:'lf', key:nid, label: snode[nid].kind, name: snode[nid].name, kind: snode[nid].kind}));
+  const lv = aiStore[key];   // lf / ai：已生成的 AI 细分
+  return lv && lv.status === 'ok' ? lv.items.map(it => ({type:'ai', key: it.key, label: kind || '下级节点', name: it.name, kind})) : [];
+}
+// 递归展开整棵子树：{type(类型名), name, children:[...]}
+function prepTree(type, key, kind, seen){
+  return prepKids(type, key, kind).map(k => {
+    const id = k.type + ':' + k.key;
+    if(seen.has(id)) return {type: k.label, name: k.name, children: []};
+    seen.add(id);
+    return {type: k.label, name: k.name, children: prepTree(k.type, k.key, k.kind, seen)};
+  });
+}
+function prepPayload(){
+  if(!ndCur) return null;
+  const {type, key, name, chain, kind} = ndCur;
+  const chainArr = (chain || []).map(s => {
+    const p = s.indexOf('：');
+    return p >= 0 ? {type: s.slice(0, p), name: s.slice(p + 1)} : {type: '', name: s};
+  });
+  const tree = prepTree(type, key, kind, new Set([type + ':' + key]));
+  const counts = {}; let total = 0;
+  (function walk(list){ list.forEach(n => { counts[n.type] = (counts[n.type] || 0) + 1; total++; walk(n.children); }); })(tree);
+  const cur = chainArr.length ? chainArr[chainArr.length - 1] : {type: prepTypeLabel(type), name};
+  return { current: cur, chain: chainArr, tree, total, counts,
+    children: tree.map(n => ({type: n.type, name: n.name})) };   // children：直接下级（兼容）
+}
 $('#lessonBtn').addEventListener('click', ()=>{
-  showToast(`已将「${$('#ndTitle').textContent}」及其下级内容带入备课模块`);
+  const payload = prepPayload();
+  if(!payload){ showToast('请先在左侧选择一个节点'); return; }
+  try { localStorage.setItem(PREP_KEY, JSON.stringify(payload)); }
+  catch(e){ showToast('带入失败：浏览器不允许本地存储'); return; }
+  // 当前在教师端：用当前身份进入工作台；否则用演示教师身份
+  const curPortal = window.UI ? UI.currentIdentity(DEMO.getState()).currentPortal : '';
+  location.href = curPortal === 'teacher' ? UI.link('workbench.html') : 'workbench.html?u=ACC-WANG';
 });
 
 /* ---- 悬停提示 ---- */
@@ -1661,7 +1699,7 @@ const vExp = new Set([I.id]);      // 竖树里展开的节点 key
 let vSel = null;                    // 竖树里选中的节点（ind/sub/pos/abl，供右侧详情高亮）
 let vMeta = {};                     // key → {key,type,name,kind,chain,siblings,hasKids}
 
-function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, desc){
+function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, desc, parent){
   let emg = '', badges = '', kids = [], statusHtml = '', bar = '';
   if(type==='ind'){
     kids = builtSubs.map(sid=>({key:sid,type:'sub',name:sub[sid].name,kind:null,aiDepth:0,
@@ -1699,22 +1737,23 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
     if(lv && lv.status==='ok'){
       const d = aiDepth + 1;
       kids = lv.items.map(it=>({key:it.key,type:'ai',name:it.name,kind,aiDepth:d,manual:it.manual,desc:it.desc,
-        chain:chain.concat([`${kind}（细分第 ${d} 层）：${it.name}`]),
+        chain:chain.concat([`${kind}：${it.name}`]),
         siblings:lv.items.filter(x=>x.key!==it.key).map(x=>x.name)}));
     } else if(lv && lv.status==='loading'){
       statusHtml = `<div class="vt-status">AI 生成中…</div>`;
     } else if(lv && lv.status==='error'){
       statusHtml = `<div class="vt-status err" data-v-retry="${esc(key)}">生成失败：${esc(lv.err)} · 点击重试</div>`;
     }
-    if(type==='ai') bar = `<span class="vbar" style="background:var(--kgt-${KIND[kind].c})"></span>`;
+    if(type==='ai') bar = manual
+      ? `<span class="vbar" style="background:var(--kgt-${KIND[kind].c})"></span>`
+      : `<span class="vbar dash" style="border-color:var(--kgt-${KIND[kind].c})"></span>`;
   }
   const hasKids = (type==='lf' || type==='ai') ? true : kids.length>0;
   const level = type==='ai' ? `AI 细分第${aiDepth}层` : `L${depth+1}`;
-  vMeta[key] = {key, type, name, kind, chain, siblings, hasKids, level, desc, manual};
+  vMeta[key] = {key, type, name, kind, chain, siblings, hasKids, level, desc, manual, parent, depth};
   const open = vExp.has(key);
   const sel = vSel && vSel.type===type && vSel.id===key;
   const tog = hasKids ? `<span class="vtog">${open?'▾':'▸'}</span>` : `<span class="vtog"></span>`;
-  const aiTag = type==='ai' ? `<span class="vt-ai${manual?' man':''}">${manual?'人工':'AI'}</span>` : '';
   const kindTag = type==='lf' ? `<span class="vkind" style="color:var(--kgt-${KIND[kind].c})">${KIND[kind].tag}</span>` : '';
   let typeTag = '';
   if(type==='sub') typeTag = '<span class="vl-tag" style="color:var(--vl-sub)">子行业</span>';
@@ -1725,19 +1764,52 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
   if(type==='ai'){
     ops = `<span class="vops"><button type="button" class="vop" data-vop="regen" title="重新生成该节点">重新生成</button><button type="button" class="vop" data-vop="edit" title="编辑该节点">编辑</button></span>`;
   }
-  const row = `<div class="vrow${open?' open':''}${sel?' sel':''}" data-v="${esc(key)}">${tog}${aiTag}${bar}${kindTag}${typeTag}<span class="vname">${emg}${esc(name)}${badges}</span>${ops}</div>`;
+  const row = `<div class="vrow${open?' open':''}${sel?' sel':''}" data-v="${esc(key)}">${tog}${bar}${kindTag}${typeTag}<span class="vname">${emg}${esc(name)}${badges}</span>${ops}</div>`;
   let kidsHtml = '';
   if(open){
     kidsHtml = kids.length
-      ? `<div class="vkids">${kids.map(k=>vNode(k.key,k.type,k.name,k.kind,k.chain,k.siblings,depth+1,k.aiDepth,k.manual,k.desc)).join('')}</div>`
+      ? `<div class="vkids">${kids.map(k=>vNode(k.key,k.type,k.name,k.kind,k.chain,k.siblings,depth+1,k.aiDepth,k.manual,k.desc,key)).join('')}</div>`
       : '';
     kidsHtml += statusHtml;
   }
   return row + kidsHtml;
 }
-function renderVTree(){ vMeta = {}; $('#vTree').innerHTML = vNode(I.id, 'ind', I.name, null, [`行业：${I.name}`], [], 0, 0); }
+function renderVTree(){ vMeta = {}; $('#vTree').innerHTML = vNode(I.id, 'ind', I.name, null, [`行业：${I.name}`], [], 0, 0, null, null); }
 
 function toggleV(key){ if(vExp.has(key)) vExp.delete(key); else vExp.add(key); renderVTree(); }
+
+// 切全屏时，把竖树当前的展开路径同步到横向树（exp / sel / skx / ai），保证两视图一致。
+// 取竖树里「整条祖先链都展开」的最深节点，沿 parent 链回溯出横向树的一列链；AI 层复用 aiStore 缓存，无缓存则不展开（避免切全屏触发 AI 调用）。
+function syncFsFromVTree(){
+  exp = null; sel = null; skx = null; ai = [];
+  let best = null, bestPath = null;
+  vExp.forEach(key => {
+    const m = vMeta[key];
+    if(!m) return;
+    const path = [];
+    let node = m, ok = true;
+    while(node){
+      path.unshift(node);
+      const p = node.parent;
+      if(p == null) break;
+      const pm = vMeta[p];
+      if(!pm || !vExp.has(p)){ ok = false; break; }
+      node = pm;
+    }
+    if(!ok) return;
+    if(!best || m.depth > best.depth){ best = m; bestPath = path; }
+  });
+  if(!best || !bestPath) return;
+  for(const m of bestPath){
+    if(m.type === 'pos') exp = m.key;
+    else if(m.type === 'abl') sel = {type:'abl', id:m.key};
+    else if(m.type === 'skl') skx = m.key;
+    else if(m.type === 'lf' || m.type === 'ai'){
+      const lv = aiStore[m.key];
+      if(lv && lv.status === 'ok'){ lv.parentName = m.name; ai.push(lv); }
+    }
+  }
+}
 
 // 竖树里的 AI 细分：与横向树同一套提示词 / 输出结构 / 缓存（aiStore），只是不维护横向列路径状态
 async function vExpand(m){
@@ -1816,6 +1888,7 @@ $('#vTree').addEventListener('click', e=>{
 $('#fullBtn').addEventListener('click', ()=>{
   $('#kmapFs').hidden = false;
   document.body.classList.add('fs-on');
+  syncFsFromVTree();   // 全屏内容与竖树展开路径保持一致
   renderGraph();
   requestAnimationFrame(()=>revealRight());
 });

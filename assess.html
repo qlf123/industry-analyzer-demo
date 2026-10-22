@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>能力测评</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<style>
+/* 能力测评（专业建设评估）页面布局 */
+.sec-h{display:flex;align-items:center;gap:10px;margin:26px 0 12px;flex-wrap:wrap}
+.sec-h h2{font-size:15px}
+.sec-h .sub{font-size:12px;color:var(--muted)}
+.sec-h .sp{flex:1}
+.empty{padding:28px;text-align:center;color:var(--muted);font-size:13px}
+.note{font-size:12px;color:var(--muted);line-height:1.6}
+.hint{font-size:12px;color:var(--ink-2);background:var(--card-2);border:1px solid var(--rule);border-radius:9px;padding:9px 12px;line-height:1.6}
+.hint.warn{background:var(--warn-bg);border-color:transparent;color:var(--warn-ink)}
+
+/* 专业卡片 */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.mcard{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.mcard-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.mcard-t{font-size:15px;font-weight:700}
+.mcard-code{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.mcard-meta{font-size:12px;color:var(--ink-2);line-height:1.7}
+.mcard-last{border-top:1px solid var(--rule-2);padding-top:10px;font-size:12px;color:var(--ink-2);display:flex;gap:14px;flex-wrap:wrap}
+.mcard-last b{font-family:var(--mono);font-size:15px;color:var(--ink)}
+.mcard-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+
+/* 表格 */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;font-weight:500;color:var(--muted);font-size:11.5px;padding:8px 10px;border-bottom:1px solid var(--rule);background:var(--card-2);white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--rule-2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td.num,.tbl th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.tbl tr.off td{color:var(--muted)}
+.tbl tfoot td{font-weight:600;background:var(--card-2);border-top:1px solid var(--rule)}
+.tbl input[type=number]{width:62px;padding:3px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);font:inherit;font-size:12px;text-align:right}
+.tbl input[type=text]{width:70px;padding:3px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);font:inherit;font-size:12px}
+.tbl select{padding:3px 4px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);font:inherit;font-size:12px}
+.tbl-wrap{overflow-x:auto}
+
+/* 步骤 */
+.steps{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:20px;border:1px solid var(--rule);font-size:12.5px;color:var(--muted);background:var(--card)}
+.step b{font-family:var(--mono);font-size:11px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:var(--rule-2)}
+.step.on{border-color:var(--brand);color:var(--brand-ink);background:var(--brand-soft)}
+.step.on b{background:var(--brand);color:#fff}
+.step.done{color:var(--ink-2)}
+.step.done b{background:var(--good);color:#fff}
+.stepacts{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.sub-h{font-size:13px;font-weight:700;margin:18px 0 8px}
+.sub-h:first-child{margin-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chipgrp{margin-bottom:10px}
+.chipgrp-t{font-size:11.5px;color:var(--muted);margin-bottom:5px}
+.radio-list{display:flex;flex-direction:column;gap:8px}
+.ropt{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;cursor:pointer;background:var(--card)}
+.ropt:hover{border-color:var(--brand)}
+.ropt.on{border-color:var(--brand);background:var(--brand-soft)}
+.ropt.dis{opacity:.55;cursor:not-allowed}
+.ropt .rt{font-weight:600;font-size:13.5px}
+.ropt .rd{font-size:12px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{padding:14px 16px}
+.kpi b{display:block;font-family:var(--mono);font-size:24px;font-weight:600;line-height:1.2}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi.good b{color:var(--good)} .kpi.warn b{color:var(--warn-ink)} .kpi.crit b{color:var(--crit)}
+
+/* 报告 */
+.rhead{padding:18px 20px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.rhead .rt{font-size:18px;font-weight:700}
+.rhead .rm{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.7}
+.rhead .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.concl{margin-top:12px;font-size:13.5px;line-height:1.75;padding:12px 16px;border-left:3px solid var(--brand);background:var(--brand-soft);border-radius:0 9px 9px 0}
+.bar{display:inline-block;width:90px;height:6px;border-radius:3px;background:var(--rule-2);vertical-align:middle;overflow:hidden;margin-right:6px}
+.bar i{display:block;height:100%;background:var(--brand)}
+.bar.good i{background:var(--good)} .bar.warn i{background:var(--warn)} .bar.crit i{background:var(--crit)}
+.pos-blk{margin-bottom:12px}
+.pos-blk>summary{list-style:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pos-blk>summary::-webkit-details-marker{display:none}
+.pos-blk>summary .pt{font-weight:700;font-size:14px}
+.pos-blk>summary .ps{font-size:12px;color:var(--muted)}
+.pos-blk>summary .sp{flex:1}
+.pos-blk>summary::before{content:'›';color:var(--muted);transition:transform .15s;display:inline-block}
+.pos-blk[open]>summary::before{transform:rotate(90deg)}
+.pos-blk .inner{padding:0 16px 14px}
+.radar-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:4px 0 10px;border-bottom:1px solid var(--rule-2);margin-bottom:10px}
+.radar-wrap svg{width:100%;max-width:520px;height:auto;flex:0 1 520px}
+.radar-leg{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--ink-2);min-width:180px}
+.radar-leg i{display:inline-block;width:18px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.abl-row{cursor:pointer}
+.abl-row:hover td{background:var(--rule-2)}
+.abl-det td{background:var(--card-2);font-size:12px;line-height:1.65}
+.abl-det .lv{margin-bottom:8px}
+.abl-det .lv b{font-family:var(--mono);margin-right:6px}
+.maplist{display:flex;flex-direction:column;gap:6px}
+.mapi{border:1px solid var(--rule);border-radius:8px;padding:7px 10px;background:var(--card)}
+.mapi .mh{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.mapi .mb{color:var(--ink-2);margin-top:3px}
+.star{color:var(--brand)}
+.sug{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--rule-2)}
+.sug:last-child{border-bottom:none}
+.sug .pri{flex:0 0 auto}
+.sug .st{font-weight:600;font-size:13.5px}
+.sug .sd{font-size:12.5px;color:var(--ink-2);margin-top:3px;line-height:1.65}
+.sug .sb{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.6}
+.lst{margin:0;padding-left:18px;font-size:12.5px;line-height:1.85}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media(max-width:1000px){.cols3{grid-template-columns:1fr}}
+.cols3 .card h3{font-size:13px;margin-bottom:8px}
+.filters{display:flex;gap:6px}
+/* 实训资源 */
+.labconds{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.labedit>summary{cursor:pointer;font-size:11.5px;color:var(--brand-ink);list-style:none;display:inline}
+.labedit>summary::-webkit-details-marker{display:none}
+.labedit .grp{margin-top:6px}
+.labedit .grp-t{font-size:11px;color:var(--muted);margin-bottom:3px}
+.labedit label{display:inline-flex;gap:4px;align-items:center;font-size:12px;margin:0 10px 4px 0}
+.tbl input.lname{width:180px}
+.chips.provide{gap:4px}
+.chips.provide .chip{font-size:11.5px;padding:2px 9px;min-height:0}
+.tr-row{cursor:pointer}
+.tr-row:hover td{background:var(--rule-2)}
+.tr-det td{background:var(--card-2);font-size:12px;line-height:1.65}
+/* 报告总览 */
+.hero{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
+@media(min-width:1360px){.hero{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)}}
+.hero-l{display:flex;align-items:center;gap:18px;padding:18px 20px}
+.gauge{width:132px;height:132px;flex:0 0 132px}
+.hero-t{font-size:15px;font-weight:700;line-height:1.5}
+.hero-d{font-size:13px;color:var(--ink-2);margin-top:6px;line-height:1.7}
+.hero-n{display:inline-block;margin-top:8px;font-size:12px;color:var(--muted);text-decoration:none}
+.hero-n:hover{color:var(--brand-ink)}
+.gtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:640px){.gtiles{grid-template-columns:1fr}}
+.gtile{display:flex;flex-direction:column;padding:16px 18px;text-decoration:none;color:var(--ink);border-top:3px solid var(--rule);transition:border-color .15s}
+.gtile:hover{border-color:var(--brand)}
+.gtile b{font-family:var(--mono);font-size:30px;font-weight:600;line-height:1.1}
+.gtile.crit{border-top-color:var(--crit)} .gtile.crit b{color:var(--crit)}
+.gtile.warn{border-top-color:var(--warn)} .gtile.warn b{color:var(--warn-ink)}
+.gtile.good{border-top-color:var(--good)} .gtile.good b{color:var(--good)}
+.gtile .gl{font-size:12.5px;font-weight:500;margin-top:2px}
+.gtile .gs{font-size:12px;color:var(--muted);margin-top:6px}
+.gtile .gn{font-size:12px;color:var(--ink-2);margin-top:4px;line-height:1.5}
+/* 岗位卡片 */
+.posgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:12px}
+.pcard{display:flex;flex-direction:column;text-align:left;padding:14px 16px;cursor:pointer;font:inherit;color:var(--ink);border:1px solid var(--rule);transition:border-color .15s}
+.pcard:hover,.pcard.on{border-color:var(--brand)}
+.pcard.on{box-shadow:0 0 0 2px var(--brand-soft)}
+.pc-h{display:flex;align-items:baseline;gap:8px}
+.pc-t{font-size:14.5px;font-weight:700;flex:1}
+.pc-r{font-family:var(--mono);font-size:20px;font-weight:600}
+.pc-r.good{color:var(--good)} .pc-r.warn{color:var(--warn-ink)} .pc-r.crit{color:var(--crit)}
+.pc-s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.pc-radar{display:flex;justify-content:center;margin:6px 0}
+.pc-radar svg{width:132px;height:132px}
+.pc-g{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto}
+.pdet{margin-top:12px;padding:14px 16px}
+.pdet-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.pdet-h b{font-size:14px}
+.pdet-h .sp{flex:1}
+/* 建设与提升 */
+.act-h{font-size:13px;font-weight:700;margin:6px 0 8px}
+.actgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-bottom:16px}
+.acard{padding:14px 16px}
+.ac-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.ac-h b{font-size:13.5px}
+.ac-fx{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;padding:6px 0;border-top:1px dashed var(--rule-2)}
+.lvstep{font-family:var(--mono);font-size:12px;display:inline-flex;gap:4px;align-items:center}
+.lv-a{color:var(--crit)} .lv-b{color:var(--warn-ink);font-weight:600} .lv-b.ok{color:var(--good)}
+.condgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.ctile{display:flex;flex-direction:column;gap:4px;text-align:left;padding:11px 13px;border-radius:10px;border:1px solid var(--rule);background:var(--card);cursor:pointer;font:inherit;color:var(--ink);border-left-width:4px}
+.ctile:hover,.ctile.on{border-color:var(--brand)}
+.ctile.miss{border-left-color:var(--crit);background:var(--crit-bg)}
+.ctile.low{border-left-color:var(--warn);background:var(--warn-bg)}
+.ctile.ok{border-left-color:var(--good)}
+.ct-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ct-h b{font-size:13px}
+.ct-s{font-size:11.5px;color:var(--ink-2)}
+.ct-st{font-weight:600;margin-right:6px}
+.ctile.miss .ct-st{color:var(--crit)} .ctile.ok .ct-st{color:var(--good)} .ctile.low .ct-st{color:var(--warn-ink)}
+.ct-r{font-size:11.5px;color:var(--muted)}
+.cd-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:12.5px;line-height:1.6}
+.cd-t{font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.more{margin-top:12px}
+.more>summary{cursor:pointer;padding:12px 16px;font-size:13px;font-weight:600;list-style:none}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary::before{content:'›';display:inline-block;margin-right:8px;color:var(--muted);transition:transform .15s}
+.more[open]>summary::before{transform:rotate(90deg)}
+.card.pad.chips{padding:14px 16px}
+/* 导出报告预览层 */
+#docov{position:fixed;inset:0;z-index:95;background:rgba(20,16,32,.55);display:flex;flex-direction:column}
+#docov[hidden]{display:none}
+#docov .doc-bar{display:flex;align-items:center;gap:10px;padding:10px 18px;background:var(--card);border-bottom:1px solid var(--rule);color:var(--ink);font-size:13px}
+#docov .doc-scroll{flex:1;overflow-y:auto;padding:24px 16px 48px}
+#docov .doc{box-shadow:0 12px 40px -12px rgba(0,0,0,.35);border-radius:4px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">能力测评</h1>
+          <div class="pt-d">对照行业岗位能力要求，评估本校专业的课程支撑与实训资源</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script>
+(function () {
+  'use strict';
+  var D = window.ASSESS_DATA;
+  var G = D.graph;
+  var ABL = {}, POS = {}, SUB = {};
+  G.abilities.forEach(function (a) { ABL[a.id] = a; });
+  G.positions.forEach(function (p) { POS[p.id] = p; });
+  G.subs.forEach(function (s) { SUB[s.id] = s; });
+  var REQ = {};   // 岗位 → [{abl, level}]
+  G.require.forEach(function (r) { (REQ[r.pos] = REQ[r.pos] || []).push({ abl: r.abl, level: r.level }); });
+  var LV = { L1: 1, L2: 2, L3: 3 };
+  var PERM_VIEW = 'major:assess:view', PERM_RUN = 'major:assess:run';
+
+  function $(s, r) { return (r || document).querySelector(s); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function pct(n, d) { return d ? Math.round(n * 1000 / d) / 10 : 0; }
+  function rateTxt(r) { return r == null ? '—' : r + '%'; }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function toast(msg) {
+    var t = $('#toast'); t.innerHTML = '<span>' + esc(msg) + '</span>'; t.hidden = false;
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.hidden = true; }, 3200);
+  }
+
+  /* ── 本页存储：本校方案的修改 + 测评记录（本机浏览器） ── */
+  var STORE_KEY = 'assessStore';
+  function loadStore() {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) {}
+    if (!s || s.v !== 3) s = { v: 3, plans: {}, reports: [] };
+    return s;
+  }
+  function saveStore() { try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {} }
+  var store = loadStore();
+  function planOf(mid) {
+    var base = clone(D.plans[mid]);
+    if (!store.plans[mid]) return base;
+    var p = clone(store.plans[mid]);
+    if (!p.labs) p.labs = base.labs;
+    return p;
+  }
+  /* 实训条件字典与数量标准（标准为空时，不显示任何数量） */
+  var TD = D.training || { dict: [], reqs: {}, standards: [] };
+  var COND = {}; TD.dict.forEach(function (d) { COND[d.id] = d; });
+  var STD = {}; TD.standards.forEach(function (x) { STD[x.cond] = x; });
+  var COND_CATS = ['场地', '场景', '设备耗材', '软件', '校外基地'];
+  function needPart(basis) { var i = String(basis || '').indexOf('需要：'); return i >= 0 ? basis.slice(i + 3) : basis; }
+
+  /* ── 身份与权限 ── */
+  var ctx, identity;
+  function reload() { ctx = DEMO.getState(); identity = UI.currentIdentity(ctx); }
+  function can(code) { return UI.hasPerm(ctx, identity, code); }
+  function majorVisible(m) { return Perm.check(ctx, identity, PERM_VIEW, m, 'major').allowed; }
+  function majorRunnable(m) { return Perm.check(ctx, identity, PERM_RUN, m, 'major').allowed; }
+  function visibleMajors() { return ctx.majors.filter(majorVisible); }
+  function orgName(id) { var o = ctx.orgs.find(function (x) { return x.id === id; }); return o ? o.name : ''; }
+  function majorById(id) { return ctx.majors.find(function (m) { return m.id === id; }); }
+  function hasKnowledge(mid) { return !!(D.knowledge[mid] && D.plans[mid]); }
+
+  /* ═══ 计算：本校情况 对比 标准（只用人工确认过的数据），差距就是建设或提升项 ═══
+     标准 = 目标岗位的能力要求 + 专业知识体系全部课程 + 已确认映射 + 已确认实训需求
+     本校 = 职业面向 + 开设的课程 + 登记的实训资源 */
+  var CONFIRMED = D.confirmedStatuses || ['已审核', '已调整'];
+  function isConfirmed(x) { return CONFIRMED.indexOf(x.status) >= 0; }
+  function confirmCount(list) {
+    var n = (list || []).filter(isConfirmed).length;
+    return { ok: n, pending: (list || []).filter(function (x) { return x.status === '待审核'; }).length };
+  }
+  function compute(mid, plan) {
+    var K = D.knowledge[mid], maps = D.mappings[mid] || [];
+    var courseById = {}; K.courses.forEach(function (c) { courseById[c.id] = c; });
+    var skillCourse = {};
+    K.courses.forEach(function (c) { c.tasks.forEach(function (t) { t.skills.forEach(function (s) { skillCourse[s.id] = { course: c, skill: s, task: t }; }); }); });
+    var opened = {};
+    plan.courses.forEach(function (c) { if (c.opened && c.kc) opened[c.kc] = true; });
+    function counted(m) { return D.countedTypes.indexOf(m.type) >= 0 && m.level && isConfirmed(m); }
+    // 能力 → 标准可达等级（知识体系全部课程）与本校达到等级（只算已开设课程）
+    var best = {}, bestAll = {};
+    var used = { total: 0 };
+    maps.forEach(function (m) {
+      if (!counted(m)) return;
+      var sc = skillCourse[m.skill]; if (!sc) return;
+      var lv = LV[m.level];
+      var b2 = bestAll[m.abl] = bestAll[m.abl] || { level: 0, courses: {} };
+      b2.level = Math.max(b2.level, lv); b2.courses[sc.course.id] = Math.max(b2.courses[sc.course.id] || 0, lv);
+      if (!opened[sc.course.id]) return;
+      used.total++;
+      var b = best[m.abl] = best[m.abl] || { level: 0, direct: false, maps: [], courses: {} };
+      b.level = Math.max(b.level, lv);
+      if (m.type === '直接支撑') b.direct = true;
+      b.maps.push(m);
+      b.courses[sc.course.id] = Math.max(b.courses[sc.course.id] || 0, lv);
+    });
+    // 结论：nostd = 标准本身达不到要求（不计入本校差距）；ok = 达到；low = 低于要求；none = 本校未覆盖
+    function judge(ablId, need) {
+      var std = (bestAll[ablId] && bestAll[ablId].level) || 0, b = best[ablId], got = b ? b.level : 0;
+      if (std < LV[need]) return { std: std, got: got, status: 'nostd' };
+      return { std: std, got: got, status: got >= LV[need] ? 'ok' : got ? 'low' : 'none', partialOnly: b ? !b.direct : false };
+    }
+    function posEval(pid) {
+      var rows = (REQ[pid] || []).map(function (r) {
+        var j = judge(r.abl, r.level);
+        return { abl: r.abl, need: r.level, std: j.std, got: j.got, status: j.status, partialOnly: j.partialOnly };
+      });
+      var cmp = rows.filter(function (r) { return r.status !== 'nostd'; }).length;
+      var ok = rows.filter(function (r) { return r.status === 'ok'; }).length;
+      return { pos: pid, rows: rows, total: rows.length, comparable: cmp, ok: ok, gap: cmp - ok, nostd: rows.length - cmp, rate: cmp ? pct(ok, cmp) : null };
+    }
+    var targets = plan.positions.map(posEval);
+
+    // 目标岗位要求的能力（取各岗位要求的最高等级）
+    var needAbl = {}, needPos = {};
+    targets.forEach(function (t) { t.rows.forEach(function (r) {
+      needAbl[r.abl] = Math.max(needAbl[r.abl] || 0, LV[r.need]); (needPos[r.abl] = needPos[r.abl] || []).push(t.pos);
+    }); });
+    var gapAbl = [], nostdAbl = [];
+    Object.keys(needAbl).forEach(function (aid) {
+      var std = (bestAll[aid] && bestAll[aid].level) || 0, got = (best[aid] && best[aid].level) || 0;
+      if (std < needAbl[aid]) nostdAbl.push({ abl: aid, need: needAbl[aid], std: std, pos: needPos[aid] });
+      else if (got < needAbl[aid]) gapAbl.push(aid);
+    });
+    // 课程差距：标准中有、本校未开设的课程，及开设后能补上的目标岗位能力
+    var notOpened = plan.courses.filter(function (c) { return !c.opened && c.kc; }).map(function (c) {
+      var fills = gapAbl.filter(function (aid) { var lv = bestAll[aid].courses[c.kc]; return lv && lv > ((best[aid] && best[aid].level) || 0); })
+        .map(function (aid) { return { abl: aid, lv: bestAll[aid].courses[c.kc], need: needAbl[aid] }; });
+      return { name: c.name, category: c.category, kc: c.kc, fills: fills };
+    });
+
+    // 建设与提升项：每条写「标准要求 / 本校现状 / 怎么补」
+    var sugs = [];
+    function posNames(aid) { return needPos[aid].map(function (p) { return POS[p].name; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join('、'); }
+    gapAbl.forEach(function (aid) {
+      var a = ABL[aid], need = 'L' + needAbl[aid], got = (best[aid] && best[aid].level) || 0;
+      var close = notOpened.filter(function (c) { return c.fills.some(function (f) { return f.abl === aid && f.lv >= needAbl[aid]; }); });
+      var raise = notOpened.filter(function (c) { return close.indexOf(c) < 0 && c.fills.some(function (f) { return f.abl === aid; }); });
+      var how = close.length ? '开设标准课程 ' + close.map(function (c) { return '《' + c.name + '》'; }).join('、') + ' 可达到 ' + need + '。'
+        : '开设 ' + raise.map(function (c) { return '《' + c.name + '》'; }).join('、') + ' 可提升该能力。';
+      sugs.push({ pri: (!got || a.core) ? '高' : '中', kind: '能力',
+        title: (got ? '提升能力：' : '补齐能力：') + a.name,
+        desc: '标准要求 ' + need + '（' + posNames(aid) + '），本校' + (got ? '当前 L' + got : '已开设课程未覆盖') + '。' + how,
+        basis: '能力 ' + need + ' 要求：' + a.levels[need] });
+    });
+    // 实训条件差距：已开设课程的已确认实训需求 × 本校登记的实训资源
+    var training = null;
+    if (TD.reqs[mid]) {
+      var skillAbl = {};
+      maps.forEach(function (m) { if (counted(m)) (skillAbl[m.skill] = skillAbl[m.skill] || []).push(m); });
+      var reqUsed = { total: 0, manual: 0 };
+      var conds = {};
+      TD.reqs[mid].forEach(function (r) {
+        if (!isConfirmed(r)) return;
+        var sc = skillCourse[r.skill]; if (!sc || !opened[sc.course.id]) return;
+        reqUsed.total++; if (r.source === 'manual') reqUsed.manual++;
+        // 课程与能力按级别分开记：「必需」行只列该条件为必需的课程和能力，不混入只是建议的
+        var c = conds[r.cond] = conds[r.cond] || { cond: r.cond, level: '建议', items: [], courses: { '必需': {}, '建议': {} }, abl: { '必需': {}, '建议': {} } };
+        if (r.level === '必需') c.level = '必需';
+        c.courses[r.level][sc.course.id] = sc.course.name;
+        c.items.push({ skill: sc.skill.name, course: sc.course.name, level: r.level, why: needPart(r.basis), status: r.status, source: r.source });
+        (skillAbl[r.skill] || []).forEach(function (m) { if (needAbl[m.abl]) c.abl[r.level][m.abl] = Math.max(c.abl[r.level][m.abl] || 0, LV[m.level]); });
+      });
+      var labs = (plan.labs || []).filter(function (l) { return l.status !== '停用'; });
+      var list = Object.keys(conds).map(function (cid) {
+        var c = conds[cid], d = COND[cid];
+        var prov = labs.filter(function (l) { return (l.conds || []).indexOf(cid) >= 0; });
+        var cs = c.courses[c.level], ab = c.abl[c.level];
+        var items = c.items.slice().sort(function (a, b) { return (a.level === '必需' ? 0 : 1) - (b.level === '必需' ? 0 : 1); });
+        var row = { cond: cid, name: d.name, category: d.category, level: c.level, have: prov.map(function (l) { return l.name; }),
+          courses: Object.keys(cs).map(function (k) { return cs[k]; }),
+          abl: Object.keys(ab).map(function (aid) { return { abl: aid, lv: ab[aid] }; }), items: items };
+        row.status = prov.length ? '具备' : '缺';
+        // 数量：只有标准原文规定了数量才计算；学校未填工位数或同时上课人数时不计算
+        var sd = STD[cid];
+        if (sd && prov.length) {
+          var sugg = sd.how === 'min_count' ? sd.value : (+plan.classSize > 0 ? Math.ceil(plan.classSize / sd.value) : null);
+          var allSeats = prov.every(function (l) { return +l.seats > 0; });
+          if (sugg != null && allSeats) {
+            row.seats = prov.reduce(function (n, l) { return n + (+l.seats); }, 0); row.suggest = sugg; row.std = sd;
+            if (row.seats < sugg) row.status = '工位不足';
+          }
+        }
+        return row;
+      });
+      var rank = { '缺': 0, '工位不足': 1, '具备': 2 };
+      list.sort(function (a, b) { return rank[a.status] - rank[b.status] || b.courses.length - a.courses.length; });
+      var required = list.filter(function (x) { return x.level === '必需'; });
+      var suggested = list.filter(function (x) { return x.level === '建议'; });
+      training = { required: required, suggested: suggested, ok: required.filter(function (x) { return x.status === '具备'; }).length, used: reqUsed };
+      required.forEach(function (x) {
+        if (x.status === '具备') return;
+        var coreHit = x.abl.some(function (a) { return ABL[a.abl].core; });
+        var ablTxt = x.abl.map(function (a) { return ABL[a.abl].name + '（L' + a.lv + '）'; });
+        var nNeed = x.items.filter(function (i) { return i.level === '必需'; }).length;
+        var ex = x.items[0];
+        var basis = '按课程内容推导：' + nNeed + ' 个技能必需该条件，如「' + ex.skill + '」—' + ex.why;
+        if (x.status === '缺') {
+          sugs.push({ pri: (coreHit || x.courses.length >= 2) ? '高' : '中', kind: '实训', title: '建设实训条件：' + x.name,
+            desc: '标准要求：' + x.courses.map(function (n) { return '《' + n + '》'; }).join('') + ' 必需该条件' +
+              (ablTxt.length ? '（涉及目标岗位能力：' + ablTxt.join('、') + '）' : '') + '；本校登记的实训资源中没有。' +
+              (x.category === '校外基地' ? '建议拓展相应的校外合作基地。' : '建议新建、改造现有实训室或与校内外共享。'),
+            basis: basis });
+        } else {
+          sugs.push({ pri: '中', kind: '实训', title: '扩充工位：' + x.name,
+            desc: '标准建议 ' + x.suggest + ' 个，本校 ' + x.seats + ' 个。', basis: '数量依据：' + x.std.source + '；' + basis });
+        }
+      });
+    }
+
+    var order = { '高': 0, '中': 1, '低': 2 };
+    sugs.sort(function (a, b) { return order[a.pri] - order[b.pri]; });
+
+    return {
+      targets: targets, best: best, bestAll: bestAll, used: used,
+      gap: gapAbl, nostd: nostdAbl, notOpened: notOpened,
+      training: training,
+      sugs: sugs
+    };
+  }
+
+  /* ═══ 视图：列表 ═══ */
+  function viewList() {
+    var majors = visibleMajors();
+    var h = '';
+    if (!majors.length) return '<div class="card empty">当前身份可见范围内没有专业。</div>';
+    h += '<div class="mgrid">' + majors.map(function (m) {
+      var cat = D.catalog[m.id] || {};
+      var hasK = hasKnowledge(m.id);
+      var K = D.knowledge[m.id], maps = D.mappings[m.id] || [];
+      var nSkill = hasK ? K.courses.reduce(function (s, c) { return s + c.tasks.reduce(function (t, x) { return t + x.skills.length; }, 0); }, 0) : 0;
+      var cc = confirmCount(maps);
+      var reps = store.reports.filter(function (r) { return r.majorId === m.id; });
+      var last = reps[reps.length - 1];
+      var runOk = can(PERM_RUN) && majorRunnable(m) && hasK;
+      return '<div class="card mcard">' +
+        '<div class="mcard-h"><span class="mcard-t">' + esc(m.name) + '</span>' +
+          (cat.code ? '<span class="mcard-code">' + esc(cat.code) + '</span>' : '') +
+          (cat.stage ? '<span class="pill k">' + esc(cat.stage) + '</span>' : '') + '</div>' +
+        '<div class="mcard-meta">' + esc(orgName(m.orgId)) + '<br>' +
+          (hasK ? '知识体系：' + K.courses.length + ' 门专业课 · ' + nSkill + ' 个技能 · 已确认映射 ' + cc.ok + ' 条' +
+              (cc.pending ? '（另有待确认 ' + cc.pending + ' 条，不计入测评）' : '')
+            : '<span style="color:var(--muted)">平台尚未收录该专业知识体系，暂不能测评</span>') + '</div>' +
+        (last ? '<div class="mcard-last"><span>最近测评 ' + esc(last.createdAt.slice(0, 10)) + '</span>' +
+            '<span>面向岗位平均达标率 <b>' + rateTxt(last.summary.rate) + '</b></span>' +
+            '<span>高优先级建设项 <b>' + last.summary.high + '</b></span></div>' : '') +
+        '<div class="mcard-acts">' +
+          (runOk ? '<a class="btn" href="#new/' + m.id + '" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">新建测评</a>' : '') +
+          (last ? '<a class="btn ghost" href="#report/' + last.id + '" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">查看报告</a>' : '') +
+        '</div></div>';
+    }).join('') + '</div>';
+
+    var reps = store.reports.filter(function (r) { var m = majorById(r.majorId); return m && majorVisible(m); }).slice().reverse();
+    h += '<div class="sec-h"><h2>测评记录</h2><span class="sub">' + reps.length + ' 次</span></div>';
+    h += reps.length ? '<div class="card tbl-wrap"><table class="tbl"><thead><tr><th>专业</th><th>测评时间</th><th>发起人</th>' +
+      '<th class="num">面向岗位平均达标率</th><th class="num">高优先级建设项</th><th></th></tr></thead><tbody>' +
+      reps.map(function (r) {
+        return '<tr><td>' + esc(majorById(r.majorId).name) + '</td><td>' + esc(r.createdAt) + '</td>' +
+          '<td>' + esc(r.by) + '</td><td class="num">' + rateTxt(r.summary.rate) + '</td><td class="num">' + r.summary.high + '</td>' +
+          '<td><a class="btn-s" href="#report/' + r.id + '" style="text-decoration:none">查看</a></td></tr>';
+      }).join('') + '</tbody></table></div>' : '<div class="card empty">还没有测评记录。选择一个专业，点「新建测评」开始。</div>';
+    return h;
+  }
+
+  /* ═══ 视图：新建测评（三步） ═══ */
+  var draft = null;   // {mid, step, plan}
+  function startDraft(mid) {
+    draft = { mid: mid, step: mid ? 2 : 1, plan: mid ? planOf(mid) : null };
+  }
+  function stepper() {
+    var names = ['选择专业', '核对本校数据', '确认对标标准并生成'];
+    return '<div class="steps">' + names.map(function (n, i) {
+      var k = i + 1, cls = k === draft.step ? 'on' : (k < draft.step ? 'done' : '');
+      return '<span class="step ' + cls + '"><b>' + (k < draft.step ? '✓' : k) + '</b>' + n + '</span>';
+    }).join('') + '</div>';
+  }
+  function viewNew() {
+    if (!can(PERM_RUN)) return '<div class="card empty">当前身份没有「发起能力测评」权限。</div>';
+    var h = stepper();
+    if (draft.step === 1) {
+      h += '<div class="card pad"><div class="sub-h">选择要测评的专业</div><div class="radio-list">' +
+        visibleMajors().map(function (m) {
+          var ok = hasKnowledge(m.id) && majorRunnable(m);
+          var cat = D.catalog[m.id] || {};
+          return '<div class="ropt' + (draft.mid === m.id ? ' on' : '') + (ok ? '' : ' dis') + '" data-major="' + (ok ? m.id : '') + '">' +
+            '<div><div class="rt">' + esc(m.name) + ' <span class="mcard-code">' + esc(cat.code || '') + '</span></div>' +
+            '<div class="rd">' + esc(orgName(m.orgId)) + (ok ? '' : ' · 平台尚未收录该专业知识体系') + '</div></div></div>';
+        }).join('') + '</div>' +
+        '<div class="stepacts"><a class="btn ghost" href="#" style="height:36px;display:inline-flex;align-items:center;text-decoration:none">取消</a>' +
+        '<button class="btn" data-act="to2"' + (draft.mid ? '' : ' disabled') + '>下一步</button></div></div>';
+      return h;
+    }
+    var m = majorById(draft.mid), plan = draft.plan;
+    if (draft.step === 2) {
+      var nOpen = plan.courses.filter(function (c) { return c.opened; }).length;
+      h += '<div class="card pad">' +
+        '<div class="hint" style="margin-bottom:14px">核对 <b>' + esc(m.name) + '</b> 专业的职业面向、开设的专业课程与实训资源。如与实际不符，请直接修改；修改会保存在本机，下次测评沿用。</div>' +
+        '<div class="sub-h">职业面向（' + plan.positions.length + ' 个岗位）</div>' + positionChips(plan.positions) +
+        '<div class="sub-h">开设的专业课程 <span class="note" style="font-weight:400">· 知识体系中的 ' + plan.courses.length + ' 门专业课，本校开设 ' + nOpen + ' 门</span></div>' +
+        '<div class="tbl-wrap"><table class="tbl" style="max-width:640px"><thead><tr><th>开设</th><th>课程</th><th>类别</th></tr></thead><tbody>' +
+        plan.courses.map(function (c, i) {
+          return '<tr class="' + (c.opened ? '' : 'off') + '"><td><input type="checkbox" data-c="' + i + '" data-f="opened"' + (c.opened ? ' checked' : '') + '></td>' +
+            '<td>' + esc(c.name) + '</td><td class="note">' + esc(c.category) + '</td></tr>';
+        }).join('') + '</tbody></table></div>' +
+        labSection(plan) +
+        '<div class="stepacts"><button class="btn-s" data-act="resetPlan">恢复为原始数据</button><span style="flex:1"></span>' +
+        '<button class="btn ghost" data-act="to1">上一步</button><button class="btn" data-act="to3">下一步</button></div></div>';
+      return h;
+    }
+    // 第 3 步：对标标准（只计入人工确认过的数据）
+    var maps = D.mappings[draft.mid] || [], mc = confirmCount(maps);
+    var tr = TD.reqs[draft.mid], tc = tr ? confirmCount(tr) : null;
+    function cnt(c, unit) { return '已确认 ' + c.ok + ' ' + unit + (c.pending ? '；待确认 ' + c.pending + ' ' + unit + '不计入' : ''); }
+    h += '<div class="card pad">' +
+      '<div class="hint" style="margin-bottom:14px">测评用本校情况对比下列标准，差距即需要建设或提升的内容。标准只计入人工确认过的数据。</div>' +
+      '<div class="sub-h">对标标准</div>' +
+      '<table class="tbl" style="max-width:760px"><tbody>' +
+      '<tr><td style="width:150px;color:var(--muted)">岗位能力要求</td><td>' + esc(G.industry.name + ' ' + G.industry.version) + '：' + plan.positions.map(function (p) { return esc(POS[p].name); }).join('、') + '（即职业面向）的能力及 L1–L3 等级要求</td></tr>' +
+      '<tr><td style="color:var(--muted)">专业知识体系</td><td>' + esc(D.knowledge[draft.mid].name) + '：' + D.knowledge[draft.mid].courses.length + ' 门专业课</td></tr>' +
+      '<tr><td style="color:var(--muted)">课程—能力映射</td><td>' + cnt(mc, '条') + '</td></tr>' +
+      (tc ? '<tr><td style="color:var(--muted)">实训需求</td><td>按课程内容推导，' + cnt(tc, '条') + '</td></tr>' : '') +
+      '</tbody></table>' +
+      (mc.pending || (tc && tc.pending) ? '<div class="hint warn" style="margin-top:10px">待确认的数据不计入本次测评，完成人工确认后重新测评即可纳入。</div>' : '') +
+      '<div class="stepacts"><button class="btn ghost" data-act="to2">上一步</button><button class="btn" data-act="run">生成报告</button></div></div>';
+    return h;
+  }
+  var openLab = -1;   // 正在编辑「具备条件」的那一行（重绘后保持展开）
+  /* 标准要求的实训条件：本校已开设课程的已确认实训需求，按条件汇总（任一技能必需即必需） */
+  function stdConds(mid, plan) {
+    var K = D.knowledge[mid], sc = {}, opened = {}, out = {};
+    K.courses.forEach(function (c) { c.tasks.forEach(function (t) { t.skills.forEach(function (s) { sc[s.id] = c; }); }); });
+    plan.courses.forEach(function (c) { if (c.opened && c.kc) opened[c.kc] = true; });
+    (TD.reqs[mid] || []).forEach(function (r) {
+      if (!isConfirmed(r)) return;
+      var c = sc[r.skill]; if (!c || !opened[c.id]) return;
+      var x = out[r.cond] = out[r.cond] || { cond: r.cond, level: '建议', by: { '必需': {}, '建议': {} } };
+      if (r.level === '必需') x.level = '必需';
+      x.by[r.level][c.name] = 1;
+    });
+    // 与报告一致：必需行只列必需该条件的课程
+    return Object.keys(out).map(function (k) { var x = out[k]; x.courses = Object.keys(x.by[x.level]); return x; })
+      .sort(function (a, b) { return (a.level === '必需' ? 0 : 1) - (b.level === '必需' ? 0 : 1) || COND_CATS.indexOf(COND[a.cond].category) - COND_CATS.indexOf(COND[b.cond].category); });
+  }
+  function labSection(plan) {
+    if (!TD.dict.length) return '';
+    var labs = plan.labs || [];
+    var h = '';
+    // ① 标准清单：学校逐项标出由哪个实训资源提供
+    if (TD.reqs[draft.mid]) {
+      var sc = stdConds(draft.mid, plan), nReq = sc.filter(function (x) { return x.level === '必需'; }).length;
+      var live = labs.map(function (l, i) { return { l: l, i: i }; }).filter(function (o) { return o.l.status !== '停用' && o.l.name; });
+      var okReq = sc.filter(function (x) { return x.level === '必需' && live.some(function (o) { return (o.l.conds || []).indexOf(x.cond) >= 0; }); }).length;
+      h += '<div class="sub-h">标准要求的实训条件 <span class="note" style="font-weight:400">· 按本校开设课程的已确认实训需求得出：必需 ' + nReq + ' 项（本校已具备 ' + okReq + ' 项）、建议 ' + (sc.length - nReq) + ' 项；逐项选择由哪个实训资源提供，没有就不选</span></div>';
+      h += sc.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>实训条件</th><th>类别</th><th>级别</th><th>需要它的课程</th><th>本校由谁提供</th><th>结果</th></tr></thead><tbody>' +
+        sc.map(function (x) {
+          var d = COND[x.cond], has = live.filter(function (o) { return (o.l.conds || []).indexOf(x.cond) >= 0; });
+          return '<tr><td><b>' + esc(d.name) + '</b><div class="note">' + esc(d.spec) + '</div></td><td class="note">' + esc(d.category) + '</td>' +
+            '<td><span class="pill ' + (x.level === '必需' ? 'core' : 'k') + '">' + x.level + '</span></td>' +
+            '<td class="note" title="' + esc(x.courses.map(function (n) { return '《' + n + '》'; }).join('')) + '">' + x.courses.length + ' 门：' + esc(x.courses.slice(0, 2).map(function (n) { return '《' + n + '》'; }).join('')) + (x.courses.length > 2 ? ' 等' : '') + '</td>' +
+            '<td><div class="chips provide">' + (live.length ? live.filter(function (o) {
+              // 校外基地类条件只列校外资源，其余只列校内资源；已选中的照常显示
+              return (o.l.conds || []).indexOf(x.cond) >= 0 || (d.category === '校外基地') === (o.l.kind === '校外');
+            }).map(function (o) {
+              return '<button class="chip" data-provide="' + o.i + '|' + x.cond + '" aria-pressed="' + ((o.l.conds || []).indexOf(x.cond) >= 0) + '">' + esc(o.l.name) + '</button>';
+            }).join('') : '<span class="note">先在下方登记实训资源</span>') + '</div></td>' +
+            '<td>' + (has.length ? '<span class="pill good">具备</span>' : x.level === '必需' ? '<span class="pill crit">缺</span>' : '<span class="pill k">无</span>') + '</td></tr>';
+        }).join('') + '</tbody></table></div>' : '<div class="card empty" style="padding:14px">本校开设课程暂无已确认的实训需求。</div>';
+    }
+    // ② 本校实训资源登记
+    h += '<div class="sub-h">本校实训资源 <span class="note" style="font-weight:400">· 登记实训室与校外基地；具备的条件在上方清单中选择，工位数选填</span></div>';
+    if (TD.standards.length) {
+      h += '<div style="font-size:12.5px;margin-bottom:8px">同时上课人数 <input type="number" min="0" class="pin" data-plan="classSize" value="' + esc(plan.classSize || '') +
+        '" style="width:70px;padding:3px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink)"> <span class="note">用于按标准计算建议工位数</span></div>';
+    }
+    h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>名称</th><th>类型</th><th>具备的实训条件</th><th class="num">工位数</th><th>状态</th><th></th></tr></thead><tbody>' +
+      labs.map(function (l, i) {
+        var pills = (l.conds || []).map(function (c) { return '<span class="pill k">' + esc(COND[c] ? COND[c].name : c) + '</span>'; }).join('');
+        var groups = COND_CATS.map(function (cat) {
+          var ds = TD.dict.filter(function (d) { return d.category === cat; }); if (!ds.length) return '';
+          return '<div class="grp"><div class="grp-t">' + cat + '</div>' + ds.map(function (d) {
+            return '<label title="' + esc(d.spec) + '"><input type="checkbox" data-l="' + i + '" data-cond="' + d.id + '"' + ((l.conds || []).indexOf(d.id) >= 0 ? ' checked' : '') + '>' + esc(d.name) + '</label>';
+          }).join('') + '</div>';
+        }).join('');
+        return '<tr class="' + (l.status === '停用' ? 'off' : '') + '"><td><input type="text" class="lname" data-l="' + i + '" data-f="name" value="' + esc(l.name) + '"></td>' +
+          '<td><select data-l="' + i + '" data-f="kind"><option' + (l.kind === '校内' ? ' selected' : '') + '>校内</option><option' + (l.kind === '校外' ? ' selected' : '') + '>校外</option></select></td>' +
+          '<td><div class="labconds">' + (pills || '<span class="note">未选择</span>') + '</div>' +
+            '<details class="labedit"' + (openLab === i ? ' open' : '') + ' data-li="' + i + '"><summary>其它条件</summary>' + groups + '</details></td>' +
+          '<td class="num"><input type="number" min="0" data-l="' + i + '" data-f="seats" value="' + (l.seats == null ? '' : l.seats) + '" placeholder="选填"></td>' +
+          '<td><select data-l="' + i + '" data-f="status"><option' + (l.status !== '停用' ? ' selected' : '') + '>在用</option><option' + (l.status === '停用' ? ' selected' : '') + '>停用</option></select></td>' +
+          '<td><button class="btn-s" data-act="delLab" data-i="' + i + '">删除</button></td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<div style="margin-top:8px"><button class="btn-s" data-act="addLab">＋ 添加实训资源</button></div>';
+    return h;
+  }
+  function positionChips(sel) {
+    return G.subs.map(function (s) {
+      var ps = G.positions.filter(function (p) { return p.sub === s.id; });
+      return '<div class="chipgrp"><div class="chipgrp-t">' + esc(s.name) + '</div><div class="chips">' + ps.map(function (p) {
+        return '<button class="chip" data-pos="' + p.id + '" aria-pressed="' + (sel.indexOf(p.id) >= 0) + '">' + esc(p.name) + '</button>';
+      }).join('') + '</div></div>';
+    }).join('');
+  }
+
+  /* ═══ 视图：报告 ═══ */
+  var gapOnly = false;
+  function statusPill(r) {
+    if (r.status === 'nostd') return '<span class="pill k">标准未覆盖</span>';
+    if (r.status === 'none') return '<span class="pill crit">本校未覆盖</span>';
+    if (r.status === 'low') return '<span class="pill warn">低于要求</span>' + (r.partialOnly ? ' <span class="pill k">仅部分支撑</span>' : '');
+    return '<span class="pill good">达到要求</span>' + (r.partialOnly ? ' <span class="pill k">仅部分支撑</span>' : '');
+  }
+  function knIndex(mid) {
+    var courseById = {}, skillById = {};
+    D.knowledge[mid].courses.forEach(function (c) { courseById[c.id] = c; c.tasks.forEach(function (t) { t.skills.forEach(function (s) { skillById[s.id] = { s: s, c: c }; }); }); });
+    return { courseById: courseById, skillById: skillById };
+  }
+  /* 报告的汇总数字与一句话结论（页面报告、导出报告共用） */
+  function repStats(rep) {
+    var R = rep.result;
+    var cmp = 0, ok = 0, uniq = {};
+    R.targets.forEach(function (t) { t.rows.forEach(function (r) {
+      if (uniq[r.abl] || r.status === 'nostd') return; uniq[r.abl] = 1; cmp++; if (r.status === 'ok') ok++;
+    }); });
+    var high = R.sugs.filter(function (s) { return s.pri === '高'; }).length;
+    var nCourse = R.notOpened.filter(function (c) { return c.fills.length; }).length;
+    var avg = rep.summary.rate;
+    var concl = '对照标准，面向的 ' + R.targets.length + ' 个岗位平均达标率 <b>' + rateTxt(avg) + '</b>；目标岗位要求、标准可达到的 ' + cmp + ' 条能力中，本校达到 ' + ok + ' 条' +
+      (R.gap.length ? '，差距 ' + R.gap.length + ' 条' + (nCourse ? '（开设 ' + nCourse + ' 门标准课程可补）' : '') : '') +
+      (R.training && R.training.required.length ? '；必需实训条件本校具备 ' + R.training.ok + '/' + R.training.required.length + ' 项' : '') +
+      '；共 ' + R.sugs.length + ' 项建设与提升' + (high ? '，其中 ' + high + ' 项优先' : '') + '。' +
+      (R.nostd.length ? '另有 ' + R.nostd.length + ' 条能力在当前标准中达不到岗位要求，不计入本校差距。' : '');
+    return { avg: avg, cmp: cmp, ok: ok, high: high, concl: concl,
+      trOk: R.training ? R.training.ok : null, trN: R.training ? R.training.required.length : 0 };
+  }
+  function repName(rep) { return majorById(rep.majorId).name + '专业 · 能力测评报告'; }
+  function dataScope(rep) {
+    var R = rep.result;
+    return '对标：' + G.industry.name + ' ' + G.industry.version + ' · ' + D.knowledge[rep.majorId].name + ' · 计入已确认映射 ' + R.used.total + ' 条' +
+      (R.training ? '、已确认实训需求 ' + R.training.used.total + ' 条' : '');
+  }
+  /* 岗位能力雷达图：轴 = 该岗位要求的能力，刻度 L0–L3；三层 = 岗位要求 / 标准可达 / 本校达到 */
+  var RADAR_PAGE = { ink: 'var(--ink)', ink2: 'var(--ink-2)', muted: 'var(--muted)', rule: 'var(--rule)', brand: 'var(--brand)', crit: 'var(--crit)', font: 'inherit' };
+  var RADAR_DOC = { ink: '#191524', ink2: '#5c5670', muted: '#8e88a1', rule: '#d9d4e6', brand: '#5b3fd6', crit: '#c0392b', font: '"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif' };
+  function radar(t, C, mini) {   // mini：岗位卡片里的缩略图，不画文字
+    var rows = t.rows, n = rows.length;
+    if (n < 3) return '';
+    var W = mini ? 200 : 520, H = mini ? 200 : 420, cx = W / 2, cy = mini ? H / 2 : H / 2 + 4, Rr = mini ? 86 : 130;
+    function pt(i, v) { var a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(a) * Rr * v / 3, cy + Math.sin(a) * Rr * v / 3]; }
+    function poly(vals) { return vals.map(function (v, i) { var p = pt(i, v); return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '); }
+    var h = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + esc(POS[t.pos].name) + '能力雷达图" style="font-family:' + C.font + '">';
+    [1, 2, 3].forEach(function (lv) {
+      h += '<polygon points="' + poly(rows.map(function () { return lv; })) + '" fill="none" stroke="' + C.rule + '" stroke-width="1"/>';
+      if (mini) return;
+      var p = pt(0, lv); h += '<text x="' + (p[0] + 4) + '" y="' + (p[1] + 10) + '" font-size="9" fill="' + C.muted + '">L' + lv + '</text>';
+    });
+    rows.forEach(function (r, i) { var p = pt(i, 3); h += '<line x1="' + cx + '" y1="' + cy + '" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '" stroke="' + C.rule + '" stroke-width="1"/>'; });
+    h += '<polygon points="' + poly(rows.map(function (r) { return r.std; })) + '" fill="' + C.muted + '" fill-opacity=".14" stroke="' + C.muted + '" stroke-width="1"/>';
+    h += '<polygon points="' + poly(rows.map(function (r) { return r.got; })) + '" fill="' + C.brand + '" fill-opacity=".22" stroke="' + C.brand + '" stroke-width="2"/>';
+    h += '<polygon points="' + poly(rows.map(function (r) { return LV[r.need]; })) + '" fill="none" stroke="' + C.ink + '" stroke-width="1.4" stroke-dasharray="4 3"/>';
+    rows.forEach(function (r, i) {
+      var gap = r.status === 'low' || r.status === 'none', p = pt(i, r.got);
+      h += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (gap ? 4 : mini ? 2 : 2.6) + '" fill="' + (gap ? C.crit : C.brand) + '"/>';
+      if (mini) return;
+      // 标签：最多两行、每行 7 字；差距标红，标准未覆盖置灰
+      var a = ABL[r.abl], name = (a.core ? '★' : '') + a.name, lines = [name.slice(0, 7)];
+      if (name.length > 7) lines.push(name.length > 14 ? name.slice(7, 13) + '…' : name.slice(7));
+      var ang = -Math.PI / 2 + i * 2 * Math.PI / n, cos = Math.cos(ang), sin = Math.sin(ang), lp = pt(i, 3.3);
+      var anchor = cos > 0.08 ? 'start' : cos < -0.08 ? 'end' : 'middle';
+      var col = gap ? C.crit : r.status === 'nostd' ? C.muted : C.ink2;
+      var y0 = sin > 0.6 ? lp[1] + 9 : sin < -0.6 ? lp[1] - (lines.length - 1) * 12 - 3 : lp[1] - (lines.length - 1) * 6 + 4;
+      h += '<text x="' + lp[0].toFixed(1) + '" y="' + y0.toFixed(1) + '" font-size="11" text-anchor="' + anchor + '" fill="' + col + '"' + (gap ? ' font-weight="600"' : '') + '><title>' +
+        esc(a.name + '：要求 ' + r.need + '，标准可达 ' + (r.std ? 'L' + r.std : '—') + '，本校 ' + (r.got ? 'L' + r.got : '—')) + '</title>' +
+        lines.map(function (l, k) { return '<tspan x="' + lp[0].toFixed(1) + '" dy="' + (k ? 12 : 0) + '">' + esc(l) + '</tspan>'; }).join('') + '</text>';
+    });
+    return h + '</svg>';
+  }
+  function radarLegend(t, C) {
+    return '<div class="radar-leg">' +
+      '<span><i style="border:1.4px dashed ' + C.ink + '"></i>岗位要求</span>' +
+      '<span><i style="background:' + C.muted + ';opacity:.35"></i>标准可达</span>' +
+      '<span><i style="background:' + C.brand + ';opacity:.5;border:2px solid ' + C.brand + '"></i>本校达到</span>' +
+      '<span><i style="width:8px;height:8px;border-radius:50%;background:' + C.crit + '"></i>本校差距（红字）</span>' +
+      (t.nostd ? '<span style="color:' + C.muted + '">灰字：标准未覆盖，不计入差距</span>' : '') + '</div>';
+  }
+  function courseList(ix, courses) { return Object.keys(courses).map(function (cid) { return ix.courseById[cid].name; }); }
+  /* 报告页：先结论、再图、明细按需展开 */
+  var openPos = null, openCond = null;
+  function uniqNames(pids) { return pids.map(function (p) { return POS[p].name; }).filter(function (v, i, a) { return a.indexOf(v) === i; }); }
+  function rateCls(r) { return r == null ? '' : r >= 80 ? 'good' : r >= 60 ? 'warn' : 'crit'; }
+  function gauge(rate) {
+    var r = 52, c = 2 * Math.PI * r, v = rate == null ? 0 : Math.min(100, rate);
+    var col = rate == null ? 'var(--rule)' : 'var(--' + rateCls(rate) + ')';
+    return '<svg viewBox="0 0 132 132" class="gauge" role="img" aria-label="平均达标率 ' + rateTxt(rate) + '">' +
+      '<circle cx="66" cy="66" r="' + r + '" fill="none" stroke="var(--rule-2)" stroke-width="12"/>' +
+      '<circle cx="66" cy="66" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + (c * v / 100).toFixed(1) + ' ' + c.toFixed(1) + '" transform="rotate(-90 66 66)"/>' +
+      '<text x="66" y="70" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)" font-family="var(--mono)">' + rateTxt(rate) + '</text>' +
+      '<text x="66" y="90" text-anchor="middle" font-size="10" fill="var(--muted)">平均达标率</text></svg>';
+  }
+  /* 由差距整理出「要做的事」：按课程归并能力差距；实训条件按状态排 */
+  function actions(R) {
+    var courses = R.notOpened.filter(function (c) { return c.fills.length; }).map(function (c) {
+      var fx = c.fills.map(function (f) {
+        var a = ABL[f.abl], got = (R.best[f.abl] && R.best[f.abl].level) || 0;
+        var pos = []; R.targets.forEach(function (t) { if (t.rows.some(function (r) { return r.abl === f.abl; })) pos.push(t.pos); });
+        return { abl: f.abl, from: got, to: f.lv, need: f.need, core: a.core, pos: uniqNames(pos) };
+      });
+      var pri = fx.some(function (f) { return !f.from || f.core; }) ? '高' : '中';
+      return { name: c.name, category: c.category, fx: fx, pri: pri };
+    });
+    var T = R.training, conds = [];
+    if (T && T.used.total) {
+      conds = T.required.map(function (x) {
+        var coreHit = x.abl.some(function (a) { return ABL[a.abl].core; });
+        return { x: x, coreHit: coreHit, pri: x.status === '具备' ? '' : x.status === '缺' ? ((coreHit || x.courses.length >= 2) ? '高' : '中') : '中' };
+      });
+    }
+    return { courses: courses, conds: conds };
+  }
+  function viewReport(rep) {
+    var R = rep.result, m = majorById(rep.majorId), cat = D.catalog[rep.majorId] || {};
+    var ix = knIndex(rep.majorId), st = repStats(rep), A = actions(R), T = R.training;
+    var miss = A.conds.filter(function (c) { return c.x.status !== '具备'; }), have = A.conds.filter(function (c) { return c.x.status === '具备'; });
+    var coreGap = R.gap.filter(function (aid) { return ABL[aid].core; }).length;
+    var h = '';
+    // 头部
+    h += '<div class="card rhead"><div><div class="rt">' + esc(m.name) + ' 专业 · 能力测评报告</div>' +
+      '<div class="rm">' + esc(cat.code ? cat.code + ' · ' : '') + '测评时间 ' + esc(rep.createdAt) + ' · 发起人 ' + esc(rep.by) + ' · ' + esc(dataScope(rep)) + '</div></div>' +
+      '<div class="acts"><a class="btn ghost" href="#" style="height:34px;display:inline-flex;align-items:center;text-decoration:none">返回</a>' +
+      '<button class="btn ghost" data-act="export" data-rep="' + rep.id + '" style="height:34px">导出报告</button>' +
+      (can(PERM_RUN) && majorRunnable(m) ? '<a class="btn" href="#new/' + rep.majorId + '" style="height:34px;display:inline-flex;align-items:center;text-decoration:none">重新测评</a>' : '') + '</div></div>';
+
+    // 总览：达标率 + 三类差距
+    h += '<div class="hero">' +
+      '<div class="card hero-l">' + gauge(st.avg) + '<div><div class="hero-t">对照标准，面向的 ' + R.targets.length + ' 个岗位平均达标率 ' + rateTxt(st.avg) + '</div>' +
+        '<div class="hero-d">本校与标准的差距：能力 ' + R.gap.length + ' 条' + (A.courses.length ? '、待开设课程 ' + A.courses.length + ' 门' : '') + (T && T.used.total ? '、必需实训条件缺 ' + miss.length + ' 项' : '') + '。</div>' +
+        (R.nostd.length ? '<a class="hero-n" href="#sec-nostd">另有 ' + R.nostd.length + ' 条能力标准未覆盖，不计入差距 ›</a>' : '') + '</div></div>' +
+      '<div class="gtiles">' +
+        gtile('sec-pos', R.gap.length, '条能力未达要求', coreGap ? '其中核心能力 ' + coreGap + ' 条' : (R.gap.length ? '' : '标准可达的能力全部达到'), R.gap.length ? 'crit' : 'good',
+          R.gap.slice(0, 2).map(function (a) { return ABL[a].name; }).join('、')) +
+        gtile('sec-act', A.courses.length, '门标准课程待开设', A.courses.length ? '开设后可补齐能力差距' : '无需新开课程', A.courses.length ? 'warn' : 'good',
+          A.courses.slice(0, 2).map(function (c) { return '《' + c.name + '》'; }).join('')) +
+        (T && T.used.total ? gtile('sec-train', have.length + '/' + A.conds.length, '必需实训条件已具备', miss.length ? '缺 ' + miss.length + ' 项' : '全部具备', miss.length ? 'crit' : 'good', '', A.conds.length ? have.length / A.conds.length : 1) : '') +
+      '</div></div>';
+
+    // 岗位一览：卡片 + 缩略雷达图，点开看详情
+    h += '<div class="sec-h" id="sec-pos"><h2>岗位能力</h2><span class="sub">每个面向岗位：虚线为岗位要求，灰色为标准可达，紫色为本校达到，红点为差距；点卡片看详情</span></div>';
+    h += '<div class="posgrid">' + R.targets.map(function (t) {
+      var gaps = t.rows.filter(function (r) { return r.status === 'low' || r.status === 'none'; });
+      return '<button class="card pcard' + (openPos === t.pos ? ' on' : '') + '" data-pcard="' + t.pos + '" aria-expanded="' + (openPos === t.pos) + '">' +
+        '<div class="pc-h"><span class="pc-t">' + esc(POS[t.pos].name) + '</span><span class="pc-r ' + rateCls(t.rate) + '">' + rateTxt(t.rate) + '</span></div>' +
+        '<div class="pc-s">' + esc(SUB[POS[t.pos].sub].name) + '</div><div class="pc-s">达到 ' + t.ok + '/' + t.comparable + ' 条' + (t.nostd ? ' · 标准未覆盖 ' + t.nostd : '') + '</div>' +
+        '<div class="pc-radar">' + radar(t, RADAR_PAGE, true) + '</div>' +
+        '<div class="pc-g">' + (gaps.length ? gaps.map(function (r) { return '<span class="pill crit">' + esc(ABL[r.abl].name) + ' ' + (r.got ? 'L' + r.got : '无') + '→' + r.need + '</span>'; }).join('')
+          : '<span class="pill good">无差距</span>') + '</div></button>';
+    }).join('') + '</div>';
+    var tp = openPos && R.targets.find(function (t) { return t.pos === openPos; });
+    if (tp) h += posDetail(tp, R, ix);
+
+    // 要做的事
+    h += '<div class="sec-h" id="sec-act"><h2>建设与提升</h2><span class="sub">由上面的差距推导；点卡片查看依据</span><span class="sp"></span>' +
+      '<span class="note">共 ' + R.sugs.length + ' 项 · 优先 ' + st.high + ' 项</span></div>';
+    if (A.courses.length) {
+      h += '<div class="act-h">开设课程</div><div class="actgrid">' + A.courses.map(function (c) {
+        return '<div class="card acard"><div class="ac-h">' + priPill(c.pri) + '<b>开设《' + esc(c.name) + '》</b><span class="note">' + esc(c.category) + '</span></div>' +
+          c.fx.map(function (f) {
+            return '<div class="ac-fx"><span>' + (f.core ? '★' : '') + esc(ABL[f.abl].name) + '</span>' + lvStep(f.from, f.to, f.need) +
+              '<span class="note">' + esc(f.pos.join('、')) + '</span></div>';
+          }).join('') + '</div>';
+      }).join('') + '</div>';
+    }
+    if (T) {
+      h += '<div class="act-h" id="sec-train">实训条件 <span class="note" style="font-weight:400">· 按已开设课程的已确认实训需求，对照本校登记的实训资源</span></div>';
+      if (!T.used.total) h += '<div class="card empty" style="padding:14px">本专业暂无已确认的实训需求，本次不作实训条件对比。</div>';
+      else {
+        h += '<div class="condgrid">' + miss.concat(have).map(function (c) {
+          var x = c.x, cls = x.status === '具备' ? 'ok' : x.status === '缺' ? 'miss' : 'low';
+          return '<button class="ctile ' + cls + (openCond === x.cond ? ' on' : '') + '" data-ctile="' + x.cond + '">' +
+            '<div class="ct-h">' + (c.pri ? priPill(c.pri) : '') + '<b>' + esc(x.name) + '</b></div>' +
+            '<div class="ct-s"><span class="ct-st">' + (x.status === '具备' ? '✓ 已具备' : x.status === '缺' ? '缺' : '工位不足') + '</span>' +
+              esc(x.category) + ' · ' + x.courses.length + ' 门课需要' + (c.coreHit ? ' · 涉及核心能力' : '') + '</div>' +
+            (x.have.length ? '<div class="ct-r">' + esc(x.have.join('、')) + '</div>' : '') + '</button>';
+        }).join('') + '</div>';
+        var oc = openCond && A.conds.find(function (c) { return c.x.cond === openCond; });
+        if (oc) h += condDetail(oc.x);
+        if (T.suggested.length) {
+          h += '<details class="card more"><summary>建议配置的实训条件 ' + T.suggested.length + ' 项 <span class="note">· 有则教学效果更好，不计入具备情况</span></summary><div class="chips" style="padding:0 16px 14px">' +
+            T.suggested.map(function (x) { return '<span class="pill ' + (x.have.length ? 'good' : 'k') + '" title="' + esc(x.courses.map(function (n) { return '《' + n + '》'; }).join('')) + '">' + esc(x.name) + (x.have.length ? ' ✓' : '') + '</span>'; }).join('') + '</div></details>';
+        }
+      }
+    }
+    // 逐条清单（含依据）
+    h += '<details class="card more"><summary>逐条清单（含依据）· ' + R.sugs.length + ' 项</summary>' + (R.sugs.length ? R.sugs.map(function (s) {
+      return '<div class="sug"><span class="pri">' + priPill(s.pri) + '</span><div><div class="st">' + esc(s.title) + '</div>' +
+        '<div class="sd">' + esc(s.desc) + '</div><div class="sb">依据：' + esc(s.basis) + '</div></div></div>';
+    }).join('') : '<div class="empty">对照标准没有差距。</div>') + '</details>';
+
+    // 标准未覆盖
+    if (R.nostd.length) {
+      h += '<div class="sec-h" id="sec-nostd"><h2>标准未覆盖</h2><span class="sub">知识体系 + 已确认映射本身达不到岗位要求，不计入本校差距；需完善标准数据</span></div>' +
+        '<div class="card pad chips">' + R.nostd.map(function (x) {
+          return '<span class="pill k" title="涉及：' + esc(uniqNames(x.pos).join('、')) + '">' + esc(ABL[x.abl].name) + ' · 要求 L' + x.need + '，标准' + (x.std ? '可达 L' + x.std : '无') + '</span>';
+        }).join('') + '</div>';
+    }
+    return h;
+  }
+  function gtile(anchor, num, label, sub, cls, names, ratio) {
+    return '<a class="card gtile ' + cls + '" href="#' + anchor + '"><b>' + esc(num) + '</b><span class="gl">' + esc(label) + '</span>' +
+      (ratio != null ? '<span class="bar ' + cls + '" style="width:100%;margin:6px 0 0"><i style="width:' + Math.round(ratio * 100) + '%"></i></span>' : '') +
+      (sub ? '<span class="gs">' + esc(sub) + '</span>' : '') + (names ? '<span class="gn">' + esc(names) + '</span>' : '') + '</a>';
+  }
+  function priPill(p) { return '<span class="pill ' + (p === '高' ? 'crit' : p === '中' ? 'warn' : 'k') + '">' + (p === '高' ? '优先' : p === '中' ? '其次' : p) + '</span>'; }
+  function lvStep(from, to, need) {
+    return '<span class="lvstep"><span class="lv-a">' + (from ? 'L' + from : '无') + '</span>→<span class="lv-b' + (to >= need ? ' ok' : '') + '">L' + to + '</span>' +
+      (to >= need ? '' : '<span class="note">（要求 L' + need + '）</span>') + '</span>';
+  }
+  function posDetail(t, R, ix) {
+    var rows = t.rows.filter(function (r) { return !gapOnly || r.status === 'low' || r.status === 'none'; });
+    return '<div class="card pdet"><div class="pdet-h"><b>' + esc(POS[t.pos].name) + '</b><span class="note">要求 ' + t.total + ' 条 · 达到 ' + t.ok + ' · 差距 ' + t.gap + (t.nostd ? ' · 标准未覆盖 ' + t.nostd : '') + '</span><span class="sp"></span>' +
+      '<div class="filters"><button class="chip" data-gap="0" aria-pressed="' + !gapOnly + '">全部</button><button class="chip" data-gap="1" aria-pressed="' + gapOnly + '">只看差距</button></div>' +
+      '<button class="btn-s" data-pcard="' + t.pos + '">收起</button></div>' +
+      (radar(t, RADAR_PAGE) ? '<div class="radar-wrap">' + radar(t, RADAR_PAGE) + radarLegend(t, RADAR_PAGE) + '</div>' : '') +
+      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>能力</th><th>岗位要求</th><th>标准可达</th><th>本校达到</th><th>结论</th><th>本校支撑课程</th></tr></thead><tbody>' +
+      (rows.length ? rows.map(function (r) {
+        var a = ABL[r.abl], b = R.best[r.abl], cs = b ? courseList(ix, b.courses) : [];
+        return '<tr class="abl-row" data-abl="' + t.pos + '|' + r.abl + '"><td>' + esc(a.name) + (a.core ? ' <span class="star" title="核心能力">★</span>' : '') + '</td>' +
+          '<td class="mono">' + r.need + '</td><td class="mono">' + (r.std ? 'L' + r.std : '—') + '</td><td class="mono">' + (r.got ? 'L' + r.got : '—') + '</td>' +
+          '<td>' + statusPill(r) + '</td><td class="note">' + (cs.length ? esc(cs.slice(0, 3).join('、')) + (cs.length > 3 ? ' 等 ' + cs.length + ' 门' : '') : '—') + '</td></tr>' +
+          '<tr class="abl-det" data-det="' + t.pos + '|' + r.abl + '" hidden><td colspan="6">' + ablDetail(a, r, R, ix) + '</td></tr>';
+      }).join('') : '<tr><td colspan="6" class="note">没有差距。</td></tr>') + '</tbody></table></div></div>';
+  }
+  function condDetail(x) {
+    var num = x.suggest != null ? '<div class="note">本校 ' + x.seats + ' / 建议 ' + x.suggest + '（依据：' + esc(x.std.source) + '）</div>' : '';
+    return '<div class="card pdet"><div class="pdet-h"><b>' + esc(x.name) + '</b><span class="note">' + esc(COND[x.cond].spec) + '</span><span class="sp"></span><button class="btn-s" data-ctile="' + x.cond + '">收起</button></div>' + num +
+      '<div class="cd-g"><div><div class="cd-t">需要它的课程</div>' + esc(x.courses.map(function (n) { return '《' + n + '》'; }).join('')) + '</div>' +
+      '<div><div class="cd-t">涉及目标岗位能力</div>' + (x.abl.length ? esc(x.abl.map(function (a) { return ABL[a.abl].name + ' L' + a.lv; }).join('、')) : '—') + '</div>' +
+      '<div><div class="cd-t">本校资源</div>' + (x.have.length ? esc(x.have.join('、')) : '无') + '</div></div>' +
+      '<div class="cd-t" style="margin-top:10px">依据（按课程内容推导）</div><div class="maplist">' + x.items.map(function (i) {
+        return '<div class="mapi"><div class="mh"><b>' + esc(i.skill) + '</b><span class="note">《' + esc(i.course) + '》</span><span class="pill ' + (i.level === '必需' ? 'core' : 'k') + '">' + i.level + '</span>' +
+          (i.source === 'manual' ? '<span class="pill k">人工</span>' : '') + '</div><div class="mb">需要：' + esc(i.why) + '</div></div>';
+      }).join('') + '</div></div>';
+  }
+  /* ═══ 导出报告（正式文档：不看页面也能读懂） ═══ */
+  var DOC_CSS = [
+    '.doc{font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;color:#191524;font-size:13px;line-height:1.7;background:#fff;max-width:860px;margin:0 auto;padding:36px 44px 48px}',
+    '.doc h1{font-size:24px;margin:0 0 6px;letter-spacing:-.01em}',
+    '.doc h2{font-size:16px;margin:28px 0 10px;padding-bottom:6px;border-bottom:2px solid #5b3fd6}',
+    '.doc h3{font-size:13.5px;margin:16px 0 6px}',
+    '.doc p{margin:6px 0}',
+    '.doc .cover{border-bottom:1px solid #e7e3f0;padding-bottom:18px;margin-bottom:8px}',
+    '.doc .cover .meta{font-size:12px;color:#5c5670;line-height:1.9}',
+    '.doc .lead{font-size:14px;padding:12px 16px;background:#f5f3fb;border-left:3px solid #5b3fd6;margin:14px 0}',
+    '.doc .kstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0}',
+    '.doc .k{border:1px solid #e7e3f0;border-radius:8px;padding:10px 12px}',
+    '.doc .k b{display:block;font-size:20px;font-family:"IBM Plex Mono",monospace}',
+    '.doc .k span{font-size:11.5px;color:#8e88a1}',
+    '.doc table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:12px}',
+    '.doc th{text-align:left;background:#faf9fd;color:#5c5670;font-weight:500;padding:6px 8px;border:1px solid #e7e3f0}',
+    '.doc td{padding:6px 8px;border:1px solid #e7e3f0;vertical-align:top}',
+    '.doc td.n,.doc th.n{text-align:right;font-family:"IBM Plex Mono",monospace;white-space:nowrap}',
+    '.doc .ok{color:#0a7d0a;font-weight:600} .doc .low{color:#8a6408;font-weight:600} .doc .none{color:#c0392b;font-weight:600}',
+    '.doc .muted{color:#8e88a1;font-size:11.5px}',
+    '.doc .pri{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-right:6px}',
+    '.doc .pri.h{background:#fbeaea;color:#c0392b} .doc .pri.m{background:#fdf3de;color:#7a5a08} .doc .pri.l{background:#f0edf7;color:#5c5670}',
+    '.doc ul{margin:4px 0;padding-left:20px}',
+    '.doc .radar{display:flex;align-items:center;gap:16px;margin:6px 0 4px;break-inside:avoid}',
+    '.doc .radar svg{width:62%;height:auto}',
+    '.doc .radar-leg{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:#5c5670}',
+    '.doc .radar-leg i{display:inline-block;width:18px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}',
+    '.doc .foot{margin-top:28px;font-size:11px;color:#8e88a1;border-top:1px solid #e7e3f0;padding-top:10px}'
+  ].join('\n');
+  var PRINT_CSS = [
+    '@media print{',
+    '  body.print-doc > :not(#docov){display:none!important}',
+    '  body.print-doc #docov{position:static!important;background:#fff;display:block}',
+    '  body.print-doc .doc-bar{display:none!important}',
+    '  body.print-doc .doc-scroll{overflow:visible!important;padding:0!important;height:auto!important}',
+    '  .doc{padding:0;max-width:none}',
+    '  .doc h2,.doc h3{break-after:avoid}',
+    '  .doc tr,.doc .k,.doc .kstrip,.doc li,.doc .lead{break-inside:avoid}',
+    '}',
+    '@page{size:A4;margin:16mm 14mm 18mm;',
+    '  @top-left{content:""} @top-center{content:""} @top-right{content:""}',
+    '  @bottom-left{content:""} @bottom-center{content:""}',
+    '  @bottom-right{content:counter(page) " / " counter(pages);font-size:9pt;color:#8e88a1}',
+    '}'
+  ].join('\n');
+  function stCls(r) { return r.status === 'ok' ? 'ok' : r.status === 'low' ? 'low' : r.status === 'none' ? 'none' : 'muted'; }
+  function stTxt(r) {
+    return { ok: '达到要求', low: '低于要求', none: '本校未覆盖', nostd: '标准未覆盖' }[r.status] + (r.partialOnly && (r.status === 'ok' || r.status === 'low') ? '（仅部分支撑）' : '');
+  }
+  function docHTML(rep) {
+    var R = rep.result, m = majorById(rep.majorId), cat = D.catalog[rep.majorId] || {};
+    var ix = knIndex(rep.majorId), st = repStats(rep);
+    var h = '<div class="doc">';
+    // 封面
+    h += '<div class="cover"><h1>' + esc(repName(rep)) + '</h1><div class="meta">' +
+      '专业：' + esc(m.name) + (cat.code ? '（' + esc(cat.code) + '）' : '') + (cat.stage ? ' · ' + esc(cat.stage) : '') + ' · ' + esc(orgName(m.orgId)) + '<br>' +
+      '测评时间：' + esc(rep.createdAt) + ' · 发起人：' + esc(rep.by) + '<br>' +
+      esc(dataScope(rep)) + '</div></div>';
+    // 一、结论摘要
+    h += '<h2>一、结论摘要</h2><p class="muted">本报告用本校情况对比标准，差距即需要建设或提升的内容；标准只计入人工确认过的数据。</p><div class="lead">' + st.concl + '</div>' +
+      '<div class="kstrip">' +
+        '<div class="k"><b>' + rateTxt(st.avg) + '</b><span>面向岗位平均达标率</span></div>' +
+        '<div class="k"><b>' + st.ok + '/' + st.cmp + '</b><span>标准可达能力本校达到</span></div>' +
+        (st.trN ? '<div class="k"><b>' + st.trOk + '/' + st.trN + '</b><span>必需实训条件本校具备</span></div>' : '') +
+        '<div class="k"><b>' + st.high + '</b><span>优先建设项</span></div></div>';
+    var top = R.sugs.filter(function (s) { return s.pri === '高'; }).slice(0, 5);
+    if (top.length) h += '<h3>优先建设</h3><ul>' + top.map(function (s) { return '<li>' + esc(s.title) + '</li>'; }).join('') + '</ul>';
+    // 二、产业对接
+    h += '<h2>二、产业对接</h2><p>本校职业面向岗位对照标准的达标情况。达标率 = 本校达到要求的能力 ÷ 标准可达到要求的能力；标准本身达不到的能力不计入。</p>' +
+      '<table><thead><tr><th>面向岗位</th><th>子行业</th><th class="n">要求能力</th><th class="n">标准可达</th><th class="n">本校达到</th><th class="n">差距</th><th class="n">达标率</th></tr></thead><tbody>' +
+      R.targets.map(function (t) { return '<tr><td>' + esc(POS[t.pos].name) + '</td><td>' + esc(SUB[POS[t.pos].sub].name) + '</td><td class="n">' + t.total + '</td><td class="n">' + t.comparable + '</td><td class="n">' + t.ok + '</td><td class="n">' + t.gap + '</td><td class="n">' + rateTxt(t.rate) + '</td></tr>'; }).join('') +
+      '</tbody></table>';
+    // 三、岗位能力差距
+    h += '<h2>三、岗位能力差距</h2><p>逐个面向岗位列出要求的能力、要求等级、标准可达等级与本校达到等级。★ 为核心能力。</p>';
+    R.targets.forEach(function (t) {
+      h += '<h3>' + esc(POS[t.pos].name) + '（达标率 ' + rateTxt(t.rate) + '）</h3>' +
+        (radar(t, RADAR_DOC) ? '<div class="radar">' + radar(t, RADAR_DOC) + radarLegend(t, RADAR_DOC) + '</div>' : '') + '<table><thead><tr><th>能力</th><th class="n">要求</th><th class="n">标准可达</th><th class="n">本校达到</th><th>结论</th><th>本校支撑课程</th></tr></thead><tbody>' +
+        t.rows.map(function (r) {
+          var a = ABL[r.abl], b = R.best[r.abl];
+          var cs = b ? courseList(ix, b.courses).map(function (n) { return '《' + n + '》'; }).join('') : '—';
+          return '<tr><td>' + esc(a.name) + (a.core ? ' ★' : '') + '</td><td class="n">' + r.need + '</td><td class="n">' + (r.std ? 'L' + r.std : '—') + '</td><td class="n">' + (r.got ? 'L' + r.got : '—') + '</td>' +
+            '<td class="' + stCls(r) + '">' + stTxt(r) + '</td><td>' + esc(cs) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    });
+    // 四、课程差距
+    var cgap = R.notOpened.filter(function (c) { return c.fills.length; }), cother = R.notOpened.filter(function (c) { return !c.fills.length; });
+    h += '<h2>四、课程差距</h2><p>标准（专业知识体系）中有、本校未开设的专业课程。</p>' +
+      (cgap.length ? '<table><thead><tr><th>未开设课程</th><th>类别</th><th>开设后可补的目标岗位能力</th></tr></thead><tbody>' + cgap.map(function (c) {
+        return '<tr><td>《' + esc(c.name) + '》</td><td>' + esc(c.category) + '</td><td>' + c.fills.map(function (f) {
+          return esc(ABL[f.abl].name) + '（L' + f.lv + (f.lv >= f.need ? '，达到要求' : '，要求 L' + f.need) + '）';
+        }).join('；') + '</td></tr>';
+      }).join('') + '</tbody></table>' : '<p class="muted">没有影响目标岗位能力达标的未开设课程。</p>') +
+      (cother.length ? '<p class="muted">另有 ' + cother.length + ' 门未开设课程不影响目标岗位能力达标：' + esc(cother.map(function (c) { return '《' + c.name + '》'; }).join('')) + '</p>' : '');
+    // 五、实训条件差距
+    var T = R.training, no = ['五', '六'], ni = 0;
+    if (T) {
+      h += '<h2>' + no[ni++] + '、实训条件差距</h2><p>标准：本校已开设课程的已确认实训需求（按课程内容推导，计入 ' + T.used.total + ' 条）；本校：测评时登记的实训资源。「必需」指离开该条件，相关技能无法完成或无法考核。</p>' +
+        (!T.used.total ? '<p class="muted">本专业暂无已确认的实训需求，本次不作实训条件对比。</p>' :
+        '<table><thead><tr><th>必需实训条件</th><th>类别</th><th>本校</th><th>本校资源</th><th>需要它的课程</th><th>涉及目标岗位能力</th></tr></thead><tbody>' +
+        (T.required.length ? T.required.map(function (x) {
+          return '<tr><td>' + esc(x.name) + '</td><td>' + esc(x.category) + '</td><td class="' + (x.status === '具备' ? 'ok' : x.status === '缺' ? 'none' : 'low') + '">' + x.status +
+            (x.suggest != null ? '<br><span class="muted">本校 ' + x.seats + ' / 建议 ' + x.suggest + '（依据：' + esc(x.std.source) + '）</span>' : '') + '</td>' +
+            '<td>' + (x.have.length ? esc(x.have.join('、')) : '—') + '</td><td>' + esc(x.courses.map(function (n) { return '《' + n + '》'; }).join('')) + '</td>' +
+            '<td>' + (x.abl.length ? esc(x.abl.map(function (a) { return ABL[a.abl].name + ' L' + a.lv; }).join('、')) : '—') + '</td></tr>';
+        }).join('') : '<tr><td colspan="6">已开设课程没有必需的实训条件。</td></tr>') + '</tbody></table>' +
+        (T.suggested.length ? '<h3>建议配置的实训条件</h3><ul>' + T.suggested.map(function (x) {
+          return '<li>' + esc(x.name) + '（' + (x.have.length ? '本校有' : '本校无') + '）：' + esc(x.courses.map(function (n) { return '《' + n + '》'; }).join('')) + '</li>';
+        }).join('') + '</ul>' : ''));
+    }
+    // 建设与提升清单：按类型分表，一项一行；实训依据移到附录
+    var AC = actions(R), PO = { '高': 0, '中': 1 };
+    var cmiss = AC.conds.filter(function (c) { return c.x.status !== '具备'; }).sort(function (a, b) { return PO[a.pri] - PO[b.pri]; });
+    var acs = AC.courses.slice().sort(function (a, b) { return PO[a.pri] - PO[b.pri]; });
+    var nHigh = acs.concat(cmiss).filter(function (x) { return x.pri === '高'; }).length;
+    function pri(p) { return '<span class="pri ' + (p === '高' ? 'h' : 'm') + '">' + (p === '高' ? '优先' : '其次') + '</span>'; }
+    h += '<h2>' + no[ni] + '、建设与提升清单</h2>';
+    if (!acs.length && !cmiss.length) h += '<p class="muted">对照标准没有差距。</p>';
+    else {
+      h += '<p>共 ' + (acs.length + cmiss.length) + ' 项：开设课程 ' + acs.length + ' 门、建设实训条件 ' + cmiss.length + ' 项；其中优先 ' + nHigh + ' 项。' +
+        '「优先」指涉及目标岗位核心能力、本校尚未覆盖的能力，或 2 门及以上已开设课程必需的实训条件。</p>';
+      if (acs.length) {
+        h += '<h3>（一）开设课程</h3><table><thead><tr><th style="width:9%">优先级</th><th style="width:24%">开设课程</th><th>可补齐的能力</th><th class="n" style="width:15%">本校 → 开设后</th><th style="width:18%">涉及岗位</th></tr></thead><tbody>' +
+          acs.map(function (c) {
+            return c.fx.map(function (f, k) {
+              return '<tr>' + (k ? '' : '<td rowspan="' + c.fx.length + '">' + pri(c.pri) + '</td><td rowspan="' + c.fx.length + '">《' + esc(c.name) + '》<br><span class="muted">' + esc(c.category) + '</span></td>') +
+                '<td>' + esc(ABL[f.abl].name) + (f.core ? ' ★' : '') + '</td><td class="n">' + (f.from ? 'L' + f.from : '无') + ' → L' + f.to + (f.to >= f.need ? '' : '<br><span class="muted">要求 L' + f.need + '</span>') + '</td>' +
+                '<td>' + esc(f.pos.join('、')) + '</td></tr>';
+            }).join('');
+          }).join('') + '</tbody></table><p class="muted">★ 为核心能力；各能力的等级要求见附录。</p>';
+      }
+      if (cmiss.length) {
+        h += '<h3>（' + (acs.length ? '二' : '一') + '）建设实训条件</h3><table><thead><tr><th style="width:9%">优先级</th><th style="width:20%">实训条件</th><th style="width:9%">类别</th><th style="width:9%">本校</th><th>需要它的课程</th><th style="width:26%">涉及目标岗位能力</th></tr></thead><tbody>' +
+          cmiss.map(function (c) {
+            var x = c.x;
+            return '<tr><td>' + pri(c.pri) + '</td><td>' + esc(x.name) + '</td><td>' + esc(x.category) + '</td>' +
+              '<td class="' + (x.status === '缺' ? 'none' : 'low') + '">' + x.status + (x.suggest != null ? '<br><span class="muted">' + x.seats + ' / 建议 ' + x.suggest + '</span>' : '') + '</td>' +
+              '<td>' + x.courses.length + ' 门：' + esc(x.courses.map(function (n) { return '《' + n + '》'; }).join('')) + '</td>' +
+              '<td>' + (x.abl.length ? esc(x.abl.map(function (a) { return ABL[a.abl].name + (ABL[a.abl].core ? '★' : '') + ' L' + a.lv; }).join('、')) : '—') + '</td></tr>';
+          }).join('') + '</tbody></table><p class="muted">' + (cmiss.some(function (c) { return c.x.category === '校外基地'; }) ? '校外基地类建议拓展合作基地；其余' : '') +
+          '建议新建、改造现有实训室或与校内外共享。推导依据见附录。</p>';
+      }
+    }
+    // 附录
+    var ax = ['一', '二', '三', '四'], ai = 0;
+    var gaps = [], seen = {};
+    R.targets.forEach(function (t) { t.rows.forEach(function (r) { if ((r.status === 'low' || r.status === 'none') && !seen[r.abl]) { seen[r.abl] = 1; gaps.push(r); } }); });
+    if (gaps.length) {
+      h += '<h2>附录' + ax[ai++] + '　差距能力的等级要求</h2><table><thead><tr><th style="width:24%">能力</th><th class="n">要求</th><th>该等级的行为要求</th><th>本校当前支撑</th></tr></thead><tbody>' +
+        gaps.map(function (r) {
+          var a = ABL[r.abl], b = R.best[r.abl];
+          var cur = b ? b.maps.slice().sort(function (x, y) { return LV[y.level] - LV[x.level]; }).slice(0, 3).map(function (mp) { var sk = ix.skillById[mp.skill]; return sk.s.name + '（《' + sk.c.name + '》，' + mp.type + ' ' + mp.level + '）'; }).join('；') : '无';
+          return '<tr><td>' + esc(a.name) + '</td><td class="n">' + r.need + '</td><td>' + esc(a.levels[r.need]) + '</td><td>' + esc(cur) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    }
+    if (cmiss.length) {
+      h += '<h2>附录' + ax[ai++] + '　实训条件建设依据</h2><p>按课程内容推导：以下技能离开该条件无法完成或无法考核（每项列出最多 3 个技能）。</p>' +
+        '<table><thead><tr><th style="width:20%">实训条件</th><th style="width:28%">必需它的技能</th><th>需要什么</th></tr></thead><tbody>' +
+        cmiss.map(function (c) {
+          var its = c.x.items.filter(function (i) { return i.level === '必需'; }), top = its.slice(0, 3);
+          return top.map(function (i, k) {
+            return '<tr>' + (k ? '' : '<td rowspan="' + top.length + '">' + esc(c.x.name) + (its.length > 3 ? '<br><span class="muted">共 ' + its.length + ' 个技能</span>' : '') + '</td>') +
+              '<td>' + esc(i.skill) + '<br><span class="muted">《' + esc(i.course) + '》</span></td><td>' + esc(i.why) + '</td></tr>';
+          }).join('');
+        }).join('') + '</tbody></table>';
+    }
+    if (R.nostd.length) {
+      h += '<h2>附录' + ax[ai++] + '　标准未覆盖项</h2><p>以下能力在当前标准（专业知识体系 + 已确认映射）中达不到岗位要求，不计入本校差距与达标率，需完善专业知识体系或映射。</p>' +
+        '<table><thead><tr><th>能力</th><th class="n">要求</th><th class="n">标准可达</th><th>涉及岗位</th></tr></thead><tbody>' +
+        R.nostd.map(function (x) {
+          return '<tr><td>' + esc(ABL[x.abl].name) + '</td><td class="n">L' + x.need + '</td><td class="n">' + (x.std ? 'L' + x.std : '—') + '</td><td>' +
+            esc(x.pos.map(function (p) { return POS[p].name; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join('、')) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    }
+    h += '<h2>附录' + ax[ai] + '　数据来源与计算口径</h2><ul>' +
+      '<li>测评方法：本校情况对比标准，差距即需要建设或提升的内容。标准只计入人工确认（已审核、已调整）的数据，待确认的数据不计入。</li>' +
+      '<li>岗位能力要求：' + esc(G.industry.name + ' ' + G.industry.version) + '，' + G.positions.length + ' 个岗位、' + G.abilities.length + ' 条能力，每条能力含 L1–L3 三级行为要求。</li>' +
+      '<li>专业知识体系：' + esc(D.knowledge[rep.majorId].name) + '，专业 → 课程 → 任务 → 技能。</li>' +
+      '<li>课程—能力映射：只计已确认的「直接支撑」「部分支撑」映射，本报告计入 ' + R.used.total + ' 条（本校已开设课程）。标准可达等级取知识体系全部课程的最高映射等级，本校达到等级取已开设课程的最高映射等级，均与岗位要求等级比较。只有部分支撑的标注「仅部分支撑」。</li>' +
+      '<li>本校数据：职业面向 ' + rep.plan.positions.length + ' 个岗位；开设知识体系中的专业课程 ' + rep.plan.courses.filter(function (c) { return c.opened; }).length + ' 门（共 ' + rep.plan.courses.length + ' 门）' +
+        (rep.plan.labs ? '；登记实训资源 ' + rep.plan.labs.length + ' 项' : '') + '。</li>' +
+      (T ? '<li>实训需求：按专业知识体系中技能的达成结果与操作步骤推导「需要哪类实训条件」，经人工确认后计入，不是国家标准规定的实训条件；' +
+        (TD.standards.length ? '数量建议来自所注明的标准。' : '不含工位数等数量信息。') + '本校实训资源以测评时登记的为准。</li>' : '') + '</ul>' +
+      '<div class="foot">' + esc(repName(rep)) + ' · ' + esc(rep.createdAt) + ' · AIGC 智慧课堂教学平台</div>';
+    return h + '</div>';
+  }
+  function docPage(rep) {
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
+      '<title>' + esc(repName(rep)) + '</title><style>body{margin:0;background:#fff}' + DOC_CSS + '\n' +
+      PRINT_CSS.replace(/body\.print-doc[^\n]*\n/g, '') + '</style></head><body>' + docHTML(rep) + '</body></html>';
+  }
+  function docFileName(rep) { return repName(rep) + '（' + rep.createdAt.slice(0, 10) + '）'; }
+  function openExport(rep) {
+    var ov = $('#docov');
+    if (!ov) {
+      var st = document.createElement('style'); st.textContent = DOC_CSS + '\n' + PRINT_CSS; document.head.appendChild(st);
+      ov = document.createElement('div'); ov.id = 'docov';
+      ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', '导出报告预览');
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-doc]'); if (!b) return;
+        var cur = store.reports.find(function (x) { return x.id === ov.getAttribute('data-rep'); });
+        var act = b.getAttribute('data-doc');
+        if (act === 'close') closeExport();
+        if (act === 'print') {
+          var t0 = document.title; document.title = docFileName(cur);   // 另存为 PDF 时的默认文件名
+          document.body.classList.add('print-doc'); window.print();
+          setTimeout(function () { document.body.classList.remove('print-doc'); document.title = t0; }, 300);
+        }
+        if (act === 'html') {
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([docPage(cur)], { type: 'text/html' }));
+          a.download = docFileName(cur) + '.html';
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+        }
+      });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !ov.hidden) closeExport(); });
+    }
+    ov.setAttribute('data-rep', rep.id);
+    ov.innerHTML = '<div class="doc-bar"><b>导出报告预览</b><span class="note" style="color:inherit;opacity:.7">供学校负责人阅读的正式版本</span><span style="flex:1"></span>' +
+      '<button class="btn" data-doc="print" style="height:32px">打印 / 另存为 PDF</button>' +
+      '<button class="btn ghost" data-doc="html" style="height:32px">下载 HTML</button>' +
+      '<button class="btn ghost" data-doc="close" style="height:32px" aria-label="关闭">关闭</button></div>' +
+      '<div class="doc-scroll">' + docHTML(rep) + '</div>';
+    ov.hidden = false; document.body.style.overflow = 'hidden';
+    ov.querySelector('.doc-scroll').scrollTop = 0;
+  }
+  function closeExport() { var ov = $('#docov'); if (ov) { ov.hidden = true; document.body.style.overflow = ''; } }
+
+  function ablDetail(a, r, R, ix) {
+    var b = R.best[r.abl], b2 = R.bestAll[r.abl];
+    var h = '<div class="lv"><b>L1</b>' + esc(a.levels.L1) + '</div><div class="lv"><b>L2</b>' + esc(a.levels.L2) + '</div><div class="lv"><b>L3</b>' + esc(a.levels.L3) + '</div>';
+    if (r.status === 'nostd') h += '<div class="note" style="margin-top:6px">当前标准（知识体系 + 已确认映射）中最高只到 ' + (r.std ? 'L' + r.std : '无支撑') + '，达不到要求的 ' + r.need + '，不计入本校差距。</div>';
+    if (b) {
+      h += '<div class="sub-h" style="margin:10px 0 6px;font-size:12px">本校支撑的技能 · ' + b.maps.length + '</div><div class="maplist">' +
+        b.maps.slice().sort(function (x, y) { return (LV[y.level] || 0) - (LV[x.level] || 0); }).map(function (m) {
+          var sk = ix.skillById[m.skill];
+          return '<div class="mapi"><div class="mh"><b>' + esc(sk.s.name) + '</b><span class="note">《' + esc(sk.c.name) + '》</span>' +
+            '<span class="pill ' + (m.type === '直接支撑' ? 'core' : 'k') + '">' + esc(m.type) + ' ' + esc(m.level) + '</span>' +
+            '<span class="pill good">' + esc(m.status) + '</span></div>' +
+            '<div class="mb">' + esc(m.basis) + '</div></div>';
+        }).join('') + '</div>';
+    } else if (r.status !== 'nostd') {
+      h += '<div class="note" style="margin-top:6px">本校已开设课程中没有支撑该能力的技能。</div>';
+    }
+    // 标准中有、本校未开设的支撑课程
+    var extra = b2 ? Object.keys(b2.courses).filter(function (cid) { return !(b && b.courses[cid]); }) : [];
+    if (extra.length && (r.status === 'low' || r.status === 'none')) {
+      h += '<div class="note" style="margin-top:8px">标准中能支撑它、本校未开设的课程：' + esc(extra.map(function (cid) { return '《' + ix.courseById[cid].name + '》L' + b2.courses[cid]; }).join('、')) + '</div>';
+    }
+    return h;
+  }
+
+  /* ═══ 路由与渲染 ═══ */
+  function route() {
+    var hsh = location.hash.replace(/^#/, '');
+    var p = hsh.split('/');
+    return { name: p[0] || 'list', arg: p[1] || null };
+  }
+  function render() {
+    reload();
+    var body = $('#body');
+    if (!can(PERM_VIEW)) { body.innerHTML = '<div class="card empty">当前身份没有「能力测评查看」权限。</div>'; return; }
+    var r = route();
+    if (r.name === 'new') {
+      if (!draft || (r.arg && draft.mid !== r.arg && draft.step !== 1)) startDraft(r.arg && hasKnowledge(r.arg) ? r.arg : null);
+      body.innerHTML = viewNew();
+    } else if (r.name === 'report') {
+      var rep = store.reports.find(function (x) { return x.id === r.arg; });
+      var m = rep && majorById(rep.majorId);
+      body.innerHTML = rep && m && majorVisible(m) ? viewReport(rep) : '<div class="card empty">报告不存在或不在当前身份可见范围内。<a href="#">返回</a></div>';
+    } else {
+      draft = null;
+      body.innerHTML = '<div class="sec-h" style="margin-top:0"><h2>专业</h2><span class="sub">当前身份可见范围内的专业</span><span class="sp"></span>' +
+        (can(PERM_RUN) ? '<a class="btn" href="#new" style="height:34px;display:inline-flex;align-items:center;text-decoration:none">新建测评</a>' : '') + '</div>' + viewList();
+    }
+  }
+
+  function savePlanDraft() { store.plans[draft.mid] = clone(draft.plan); saveStore(); }
+
+  function bind() {
+    var body = $('#body');
+    body.addEventListener('click', function (e) {
+      var t;
+      if ((t = e.target.closest('[data-major]')) && t.getAttribute('data-major')) {
+        draft.mid = t.getAttribute('data-major'); draft.plan = planOf(draft.mid); render(); return;
+      }
+      if ((t = e.target.closest('[data-pos]'))) {
+        var pid = t.getAttribute('data-pos'), ps = draft.plan.positions, i = ps.indexOf(pid);
+        if (i >= 0) ps.splice(i, 1); else ps.push(pid);
+        savePlanDraft(); render(); return;
+      }
+      if ((t = e.target.closest('[data-gap]'))) { gapOnly = t.getAttribute('data-gap') === '1'; render(); return; }
+      if ((t = e.target.closest('[data-provide]'))) {
+        var pv = t.getAttribute('data-provide').split('|'), lab = draft.plan.labs[+pv[0]];
+        lab.conds = (lab.conds || []).filter(function (x) { return x !== pv[1]; });
+        if (t.getAttribute('aria-pressed') !== 'true') lab.conds.push(pv[1]);
+        savePlanDraft(); render(); return;
+      }
+      if ((t = e.target.closest('[data-pcard]'))) { var pp = t.getAttribute('data-pcard'); openPos = openPos === pp ? null : pp; render(); return; }
+      if ((t = e.target.closest('[data-ctile]'))) { var cc = t.getAttribute('data-ctile'); openCond = openCond === cc ? null : cc; render(); return; }
+      if ((t = e.target.closest('.labedit > summary'))) { var li = +t.parentNode.getAttribute('data-li'); openLab = t.parentNode.open ? -1 : li; return; }
+      if ((t = e.target.closest('.abl-row'))) {
+        var det = body.querySelector('[data-det="' + t.getAttribute('data-abl') + '"]'); if (det) det.hidden = !det.hidden; return;
+      }
+      if (!(t = e.target.closest('[data-act]'))) return;
+      var act = t.getAttribute('data-act');
+      if (act === 'export') { var er = store.reports.find(function (x) { return x.id === t.getAttribute('data-rep'); }); if (er) openExport(er); return; }
+      if (act === 'to1') { draft.step = 1; render(); }
+      else if (act === 'to2') { if (draft.mid) { draft.step = 2; render(); } }
+      else if (act === 'to3') {
+        if (!draft.plan.positions.length) { toast('请至少选择一个职业面向岗位'); return; }
+        if (!draft.plan.courses.some(function (c) { return c.opened; })) { toast('请至少开设一门专业课程'); return; }
+        draft.step = 3; render();
+      }
+      else if (act === 'addLab') { draft.plan.labs = draft.plan.labs || []; draft.plan.labs.push({ name: '', kind: '校内', conds: [], seats: null, status: '在用' }); openLab = draft.plan.labs.length - 1; savePlanDraft(); render(); }
+      else if (act === 'delLab') { draft.plan.labs.splice(+t.getAttribute('data-i'), 1); openLab = -1; savePlanDraft(); render(); }
+      else if (act === 'resetPlan') { delete store.plans[draft.mid]; saveStore(); draft.plan = planOf(draft.mid); openLab = -1; toast('已恢复为原始数据'); render(); }
+      else if (act === 'run') {
+        var result = compute(draft.mid, draft.plan);
+        var rated = result.targets.filter(function (x) { return x.rate != null; });
+        var rate = rated.length ? Math.round(rated.reduce(function (s, x) { return s + x.rate; }, 0) / rated.length * 10) / 10 : null;
+        var now = new Date(), pad = function (n) { return n < 10 ? '0' + n : n; };
+        var rep = {
+          id: 'R' + now.getTime().toString(36), majorId: draft.mid,
+          createdAt: now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()),
+          by: identity.account.name, plan: clone(draft.plan), result: result,
+          summary: { rate: rate, high: result.sugs.filter(function (s) { return s.pri === '高'; }).length }
+        };
+        store.reports.push(rep); saveStore(); draft = null;
+        location.hash = '#report/' + rep.id;
+      }
+    });
+    body.addEventListener('change', function (e) {
+      var t = e.target;
+      if (t.hasAttribute('data-plan')) { draft.plan[t.getAttribute('data-plan')] = t.value; savePlanDraft(); return; }
+      if (t.hasAttribute('data-cond')) {
+        var lb = draft.plan.labs[+t.getAttribute('data-l')], cid = t.getAttribute('data-cond');
+        lb.conds = (lb.conds || []).filter(function (x) { return x !== cid; }); if (t.checked) lb.conds.push(cid);
+        openLab = +t.getAttribute('data-l'); savePlanDraft(); render(); return;
+      }
+      var f = t.getAttribute('data-f'); if (!f) return;
+      if (t.hasAttribute('data-c')) {
+        draft.plan.courses[+t.getAttribute('data-c')].opened = t.checked;
+      } else if (t.hasAttribute('data-l')) {
+        var lab = draft.plan.labs[+t.getAttribute('data-l')];
+        if (f === 'seats') lab.seats = t.value === '' ? null : Math.max(0, +t.value || 0);
+        else lab[f] = t.value;
+      }
+      savePlanDraft(); render();
+    });
+  }
+
+  UI.boot({ portal: 'admin', active: 'assess' });
+  UI.onChange(function () { draft = null; closeExport(); render(); });
+  window.addEventListener('hashchange', closeExport);
+  window.addEventListener('hashchange', function () { openPos = openCond = null; render(); });
+  bind();
+  render();
+})();
+</script>
+</body>
+</html>

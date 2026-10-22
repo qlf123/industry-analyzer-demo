@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>工作台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<style>
+[hidden]{display:none!important}
+/* ── 工作台：与现有平台（AI 备课工作台）交互一致：首页发起 → 任务过程时间线 → 资源包 ── */
+.wb{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;overflow:hidden;font-family:var(--sans);
+  background:radial-gradient(120% 60% at 50% 100%,#efe9ff 0%,#f7f5ff 35%,#fff 70%)}
+/* 顶栏（发起后出现） */
+.wb-top{height:48px;padding:0 20px;display:flex;align-items:center;gap:10px;flex:0 0 48px;background:#f8fafc;border-bottom:1px solid #f1f2f6}
+.wb-top .t{font-size:13px;color:#99a1af;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wb-top .newc{height:28px;padding:0 12px;border-radius:999px;border:1px solid #e0dffc;background:#fff;color:#6366f1;font-size:12px;cursor:pointer}
+.wb-top .newc:hover{background:#f5f3ff}
+.wb-top .ic{width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:6px;background:none;border:none}
+.wb-top .ic:hover{background:#eef0ff}
+.wb-top .ic svg{width:16px;height:16px}
+.wb-main{flex:1;min-height:0;display:flex}
+.wb-center{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;overflow-y:auto}
+/* 欢迎区 */
+.wb-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px 8px;text-align:center}
+.wb-hero img{width:290px;height:auto;max-width:70%}
+.wb-hero h1{font-size:36px;font-weight:600;line-height:1.4;margin:14px 0 0;letter-spacing:-.5px;
+  background:linear-gradient(223deg,#6366F1 9%,#8B5CF6 88%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.wb-hero .sub{font-size:13px;line-height:22px;color:#88859E;max-width:520px;margin-top:12px}
+/* 底部输入区 */
+.wb-input{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding:0 24px 32px}
+.wb-chips{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;justify-content:center}
+.wb-chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:12px;cursor:pointer;user-select:none;
+  background:#f6f6fa;color:#62748e;border:1px solid transparent;transition:all .15s}
+.wb-chip .dot{width:5px;height:5px;border-radius:50%;background:#6366f1;margin-right:5px;display:none}
+.wb-chip.on{background:#ece9fe;color:#5b4fe0;border-color:#ddd8fd}
+.wb-chip.on .dot{display:block}
+.wb-chip:hover{color:#6366f1}
+.wb-prep{width:100%;max-width:780px;background:#fafaff;border:1px solid #e6e4fb;border-radius:14px;padding:12px 16px;margin-bottom:12px}
+.wb-prep .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.wb-prep .ph .t{font-size:12px;font-weight:600;color:#6366f1}
+.wb-prep .ph .x{color:#b0b5bd;cursor:pointer;font-size:15px;background:none;border:none}
+.wb-prep .chain{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;font-size:12px;color:#62748e}
+.wb-prep .chain b{font-weight:600;color:#364153}.wb-prep .chain em{font-style:normal;color:#99a1af;margin-right:3px}
+.wb-prep .chain .cur b{color:#6366f1}.wb-prep .chain .sep{color:#c6c9d1}
+.wb-prep .kids{display:flex;flex-wrap:wrap;gap:6px;max-height:92px;overflow-y:auto}
+.wb-prep .sum{font-size:12px;color:#62748e;margin-bottom:6px}
+.wb-prep .sum b{color:#6366f1;font-weight:600}
+.ptree{max-height:180px;overflow-y:auto;background:#fff;border:1px solid #eeecfb;border-radius:8px;padding:6px 8px}
+.ptree details{margin:0}
+.ptree summary,.ptree .lf{list-style:none;display:flex;align-items:center;gap:6px;font-size:12px;color:#364153;line-height:24px;cursor:pointer}
+.ptree .lf{cursor:default;padding-left:14px}
+.ptree summary::-webkit-details-marker{display:none}
+.ptree summary::before{content:'▸';width:8px;color:#99a1af;font-size:10px}
+.ptree details[open]>summary::before{content:'▾'}
+.ptree em{font-style:normal;font-size:10.5px;color:#8b87d9;background:#f3f2fe;border-radius:4px;padding:0 5px;line-height:17px;flex:0 0 auto}
+.ptree .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptree .c{font-size:11px;color:#b0b5bd}
+.ptree .kids-in{padding-left:16px;border-left:1px dashed #e6e4fb;margin-left:4px}
+.wb-prep .kids .k{height:22px;padding:0 9px;border-radius:6px;font-size:11px;background:#fff;border:1px solid #e6e4fb;color:#45556c;display:inline-flex;align-items:center}
+.wb-prep .kids .k em{font-style:normal;color:#b0b5bd;margin-right:3px}
+.wb-box{position:relative;width:100%;max-width:780px;border:1px solid #c9c4f7;background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(99,102,241,.08)}
+.wb-files{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px 0}
+.wb-file{display:flex;align-items:center;gap:6px;background:#f5f3ff;border:1px solid #e0dffc;border-radius:8px;padding:5px 9px}
+.ext{width:20px;height:20px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:#fff;flex:0 0 20px}
+.wb-file .nm{font-size:12px;color:#45556c;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wb-file .x{color:#b0b5bd;cursor:pointer;font-size:14px;background:none;border:none;padding:0}
+.wb-ta{width:100%;border:none;outline:none;resize:none;font:inherit;font-size:14px;color:#0A0A0A;padding:14px 18px 6px;background:transparent;line-height:1.6;min-height:48px;max-height:160px;box-sizing:border-box;display:block}
+.wb-ta::placeholder{color:#b0b5bd}
+.wb-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 14px 12px}
+.wb-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.wb-plus{width:22px;height:22px;border-radius:50%;background:#6366f1;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;line-height:1}
+.wb-plus:hover{background:#5458e8}
+.wb-tool{height:26px;padding:0 10px;border-radius:999px;font-size:11px;display:inline-flex;align-items:center;gap:2px;cursor:pointer;background:#fff;border:1px solid #e5e7eb;color:#62748e}
+.wb-tool b{font-weight:500;color:#6366f1}
+.wb-tool:hover{border-color:#6366f1}
+.wb-send-btn{width:32px;height:32px;border-radius:50%;background:#6366f1;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.wb-send-btn:disabled{background:#c7c9f0;cursor:not-allowed}
+.wb-send-btn svg{width:15px;height:15px}
+.wb-pop{position:absolute;bottom:calc(100% + 8px);left:40px;z-index:50;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:var(--pop-shadow);width:400px;padding:16px;display:none}
+.wb-pop.open{display:block}
+.wb-pop .pt{font-size:12px;font-weight:500;color:#314158;margin-bottom:8px}
+.wb-pop .presets{display:flex;gap:4px;margin-bottom:8px}
+.wb-pop .pre{height:24px;padding:0 8px;border-radius:999px;font-size:11px;line-height:22px;cursor:pointer;background:#f1f5f9;color:#62748e;border:1px solid transparent}
+.wb-pop .pre.on{background:#f5f3ff;border-color:#6366f1;color:#6366f1}
+.wb-pop .grid{background:#f8fafc;border-radius:12px;padding:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px 16px}
+.wb-pop .chk{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:#45556c}
+.wb-pop .chk .box{width:15px;height:15px;border-radius:4px;border:1px solid #cad5e2;background:#fff;display:flex;align-items:center;justify-content:center}
+.wb-pop .chk.on .box{background:#6366f1;border-color:#6366f1}
+.wb-pop .chk .box svg{width:10px;height:10px;color:#fff;display:none}.wb-pop .chk.on .box svg{display:block}
+.wb-pop .field{margin-bottom:12px}.wb-pop .field:last-child{margin-bottom:0}
+.wb-pop select{width:100%;height:32px;border:1px solid #e5e7eb;border-radius:8px;padding:0 10px;font-size:13px;color:#314158;background:#fff}
+/* 上传弹窗（本地文件 / 参考文件） */
+.up-mask{position:fixed;inset:0;background:rgba(15,15,30,.45);z-index:100;display:flex;align-items:center;justify-content:center}
+.up-mask[hidden]{display:none}
+.up{width:min(728px,calc(100vw - 32px));background:#fff;border-radius:10px;box-shadow:var(--pop-shadow);display:flex;flex-direction:column;max-height:calc(100vh - 40px)}
+.up-h{display:flex;align-items:center;gap:28px;padding:20px 24px 0}
+.up-tab{font-size:12.5px;color:#62748e;background:none;border:none;cursor:pointer;padding:0 0 8px;border-bottom:2px solid transparent;display:flex;gap:5px;align-items:center}
+.up-tab.on{color:#4f6ef7;border-bottom-color:#4f6ef7}
+.up-h .x{margin-left:auto;background:none;border:none;font-size:20px;color:#62748e;cursor:pointer}
+.up-b{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;padding:20px 24px;min-height:330px}
+@media(max-width:640px){.up-b{grid-template-columns:1fr}}
+.up-drop{border:1px dashed #9ec1f7;background:#f7faff;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px;text-align:center;cursor:pointer;align-self:center;min-height:156px}
+.up-drop:hover{border-color:#4f6ef7}
+.up-drop .i{width:40px;height:40px;border-radius:8px;background:#dbe8fd;display:flex;align-items:center;justify-content:center;color:#4f6ef7;margin-bottom:12px}
+.up-drop .t1{font-size:13px;color:#314158}.up-drop .t2{font-size:11px;color:#99a1af;margin-top:6px;line-height:1.5}
+.up-ref{display:flex;flex-direction:column;gap:10px;min-height:0}
+.up-ref .q{display:flex;gap:8px}
+.up-ref input,.up-ref select{height:30px;border:1px solid #dcdfe6;border-radius:4px;padding:0 10px;font-size:12px;color:#314158;background:#fff;min-width:0}
+.up-ref input{flex:1.3}.up-ref select{flex:1}
+.up-ref .list{flex:1;overflow-y:auto;max-height:250px;display:flex;flex-direction:column;gap:6px}
+.up-ref .it{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #eef0f4;border-radius:6px;cursor:pointer;font-size:12px;color:#364153}
+.up-ref .it:hover{border-color:#c9c4f7}.up-ref .it.on{border-color:#6366f1;background:#f5f3ff}
+.up-ref .it .tg{margin-left:auto;font-size:11px;color:#99a1af}
+.up-ref .cnt{font-size:12px;color:#62748e}
+.up-sel .tt{font-size:13px;color:#314158;margin-bottom:10px}
+.up-sel .row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:#364153}
+.up-sel .row .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.up-sel .row .x{background:none;border:none;color:#b0b5bd;cursor:pointer;font-size:14px}
+.up-f{display:flex;justify-content:flex-end;gap:10px;padding:0 24px 20px}
+.up-f button{height:34px;padding:0 18px;border-radius:6px;font-size:13px;cursor:pointer}
+.up-f .c{background:#fff;border:1px solid #dcdfe6;color:#364153}.up-f .ok{background:#6366f1;border:1px solid #6366f1;color:#fff}
+/* 任务过程时间线 */
+.flow{width:100%;max-width:640px;margin:0 auto;padding:20px 24px 60px}
+.fs{display:flex;gap:12px;margin-bottom:14px}
+.fs .av{width:22px;height:22px;border-radius:50%;background:#6366f1;color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 22px;margin-top:1px}
+.fs .av svg{width:12px;height:12px}
+.fs .bd{flex:1;min-width:0}
+.fs .hd{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#364153;margin-bottom:6px}
+.fs .hd .nm{color:#6366f1}
+.tag{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:4px;font-size:10.5px}
+.tag.done{background:#f0fdf4;color:#2ba954}.tag.run{background:#f4f0ff;color:#615fff}
+.tag.wait{background:#fffbeb;color:#d99a06;border:1px solid #fee685}.tag.idle{background:#f3f4f6;color:#99a1af}
+.fbox{background:#fff;border:1px solid #eef0f4;border-radius:10px;box-shadow:0 1px 4px rgba(15,15,40,.03)}
+.fmsg{padding:8px 12px}
+.fmsg .tog{font-size:12px;color:#6A7282;cursor:pointer;background:none;border:none;padding:0;display:flex;align-items:center;gap:4px}
+.fmsg ul{list-style:none;margin:0;padding:0}
+.fmsg li{position:relative;font-size:12px;color:#6A7282;line-height:22px;padding-left:12px}
+.fmsg li::before{content:'';position:absolute;left:1px;top:9px;width:4px;height:4px;border-radius:50%;background:#d1d5db}
+.fmsg li.live::after{content:'';display:inline-block;width:10px;height:10px;margin-left:6px;vertical-align:-1px;border:2px solid #c7c9f0;border-top-color:#6366f1;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fcard-h{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #f3f4f6;background:#fafafa;border-radius:10px 10px 0 0}
+.fcard-h b{font-size:13.5px;color:#0A0A0A}.fcard-h .s{font-size:11.5px;color:#99a1af}
+.fcard-f{display:flex;justify-content:flex-end;gap:10px;padding:12px 14px;border-top:1px solid #f3f4f6}
+.btn-p{height:30px;padding:0 16px;border-radius:6px;background:#6366f1;border:1px solid #6366f1;color:#fff;font-size:12.5px;cursor:pointer}
+.btn-p:hover{background:#5458e8}
+.btn-g{height:30px;padding:0 16px;border-radius:6px;background:#fff;border:1px solid #dcdfe6;color:#364153;font-size:12.5px;cursor:pointer}
+.btn-g:hover{border-color:#6366f1;color:#6366f1}
+/* 知识点确认 */
+.kp{padding:14px}
+.kp svg{width:100%;height:auto;display:block}
+.kp .hint{font-size:11.5px;color:#99a1af;margin-top:6px}
+.kp-node{cursor:pointer}
+/* 大纲确认 */
+.ol{padding:8px 14px 4px;max-height:420px;overflow-y:auto}
+.ol-row{display:flex;align-items:center;gap:6px;height:34px;border-radius:6px;padding-right:4px}
+.ol-row:hover{background:#f8f8fc}
+.ol-row .mv{color:#99a1af;font-size:12px;width:14px;text-align:center;cursor:grab}
+.ol-row .ar{width:14px;color:#364153;font-size:9px;cursor:pointer;background:none;border:none;padding:0}
+.ol-row .no{width:18px;height:18px;border-radius:50%;background:#ece9fe;color:#6366f1;font-size:10.5px;display:inline-flex;align-items:center;justify-content:center}
+.ol-row .tx{flex:1;min-width:0;font-size:12.5px;color:#364153;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ol-row.l3 .tx{color:#6A7282;font-size:12px}
+.ol-row input{flex:1;min-width:0;height:26px;border:1px solid #6366f1;border-radius:4px;padding:0 8px;font-size:12.5px}
+.ol-row .op{background:none;border:none;cursor:pointer;width:24px;height:24px;border-radius:4px;color:#6366f1;font-size:14px}
+.ol-row .op.del{color:#ef4444}
+.ol-row .op:hover{background:#eef0ff}
+.ol-add{margin:8px 0 6px;width:100%;height:32px;border:1px dashed #c9c4f7;border-radius:6px;background:#fff;color:#6366f1;font-size:12px;cursor:pointer}
+/* 资源包 */
+.pk{padding:12px 14px}
+.pk-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #f5f5f7}
+.pk-row:last-child{border-bottom:none}
+.pk-row .nm{flex:1;min-width:0;font-size:12.5px;color:#364153;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-row .sz{font-size:11.5px;color:#99a1af;width:64px;text-align:right}
+.pk-row .a{font-size:12px;color:#6366f1;background:none;border:none;cursor:pointer;padding:0 4px}
+.pk-sum{display:flex;align-items:center;gap:12px;padding:12px 14px;background:linear-gradient(90deg,#f5f3ff,#fff);border-radius:10px 10px 0 0;border-bottom:1px solid #f3f4f6}
+.pk-sum .ic{width:36px;height:36px;border-radius:8px;background:#6366f1;color:#fff;display:flex;align-items:center;justify-content:center}
+.pk-sum b{font-size:14px;color:#0A0A0A}.pk-sum .s{font-size:12px;color:#6A7282;margin-top:2px}
+/* 右侧任务进度 */
+.wb-side{width:280px;flex:0 0 280px;padding:16px 20px 16px 0;overflow-y:auto}
+.wb-side[hidden]{display:none}
+@media(max-width:900px){.wb-side{display:none}}
+.pc{background:#fff;border-radius:8px;border:1px solid #f0eefb;padding:16px;box-shadow:0 2px 12px -4px rgba(99,102,241,.12)}
+.pc .h{font-size:13.5px;color:#364153;margin-bottom:12px}
+.pc .tk{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.pc .tk b{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:#364153;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc .res{font-size:11.5px;color:#6A7282;margin-bottom:12px}
+.ps{display:flex;gap:10px}
+.ps .rl{display:flex;flex-direction:column;align-items:center;width:14px;flex:0 0 14px}
+.ps .dt{width:8px;height:8px;border-radius:50%;background:#d1d5db;margin-top:8px;box-shadow:0 0 0 4px #f3f4f6}
+.ps .dt.done{background:#2ba954;box-shadow:0 0 0 4px #f0fdf4}.ps .dt.run{background:#615fff;box-shadow:0 0 0 4px #f4f0ff}
+.ps .dt.wait{background:#f5b40b;box-shadow:0 0 0 4px #fffbeb}
+.ps .ln{width:1px;flex:1;background:#e5e7eb;margin-top:6px}
+.ps .bd{flex:1;min-width:0;padding-bottom:12px}
+.ps .rw{display:flex;align-items:center;justify-content:space-between;min-height:24px;font-size:12.5px;color:#0A0A0A}
+.ps .sub{font-size:11.5px;color:#6A7282;line-height:19px}
+.ps .sub.f{padding-left:4px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="wb">
+    <div class="wb-top" id="wbTop" hidden>
+      <div class="t" id="wbTopTitle"></div>
+      <button class="newc" id="wbNew" type="button">＋ 新建对话</button>
+      <button class="ic" id="wbSideTog" type="button" title="任务进度" aria-label="显示或隐藏任务进度">
+        <svg viewBox="0 0 16 16" fill="none" stroke="#6366F1" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="4.7" rx=".7"/><rect x="2" y="9.3" width="6" height="4.7" rx=".7"/><rect x="10.7" y="9.3" width="3.3" height="4.7" rx=".7"/></svg>
+      </button>
+    </div>
+    <div class="wb-main">
+      <div class="wb-center" id="wbCenter">
+        <!-- 首页：欢迎区 + 输入区 -->
+        <div class="wb-hero" id="wbHero">
+          <img src="assets/prep-hero.png" alt="">
+          <h1>让 AI 助您<br>更快完成一节课的教学准备</h1>
+          <p class="sub">围绕课堂备课场景，快速完成课件生成、教案生成、情景互动游戏、讲解视频、图片素材等教学内容创作。从发起生成到查看结果，帮助您更高效地完成教学准备。</p>
+        </div>
+        <div class="wb-input" id="wbInput">
+          <div class="wb-chips" id="wbChips"></div>
+          <div class="wb-prep" id="wbPrep" hidden>
+            <div class="ph"><span class="t">带入备课</span><button class="x" id="wbPrepClose" type="button" title="移除带入内容">×</button></div>
+            <div class="chain" id="wbPrepChain"></div>
+            <div class="sum" id="wbPrepSum"></div>
+            <div class="ptree" id="wbPrepTree"></div>
+          </div>
+          <div class="wb-box">
+            <div class="wb-files" id="wbFiles" hidden></div>
+            <textarea class="wb-ta" id="wbTa" rows="2"></textarea>
+            <div class="wb-bar">
+              <div class="wb-tools">
+                <button class="wb-plus" id="wbUpload" type="button" title="添加参考文件" aria-label="添加参考文件">+</button>
+                <button class="wb-tool" id="wbLesson" type="button" hidden>教案：<b id="wbLessonVal"></b> ▾</button>
+                <button class="wb-tool" id="wbImgCfg" type="button" hidden>图片：<b id="wbImgVal"></b> ▾</button>
+              </div>
+              <button class="wb-send-btn" id="wbSend" type="button" disabled title="发送" aria-label="发送">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L7 9M14 2l-4.5 12L7 9l-5-2.5L14 2z"/></svg>
+              </button>
+            </div>
+            <div class="wb-pop" id="wbLessonPop">
+              <div class="pt">教案结构（已选 <span id="wbLessonCount">0</span> 项）</div>
+              <div class="presets" id="wbPresets"></div>
+              <div class="grid" id="wbLessonGrid"></div>
+            </div>
+            <div class="wb-pop" id="wbImgPop">
+              <div class="field"><div class="pt">生成数量</div><select id="wbImgCount"></select></div>
+              <div class="field"><div class="pt">图片风格</div><select id="wbImgStyle"></select></div>
+              <div class="field"><div class="pt">图片比例</div><select id="wbImgRatio"></select></div>
+            </div>
+          </div>
+        </div>
+        <!-- 任务过程 -->
+        <div class="flow" id="wbFlow" hidden></div>
+      </div>
+      <aside class="wb-side" id="wbSide" hidden><div class="pc" id="wbProg"></div></aside>
+    </div>
+  </div>
+</div>
+
+<!-- 添加参考文件：本地文件 / 参考文件，最多 3 个 -->
+<div class="up-mask" id="upMask" hidden>
+  <div class="up" role="dialog" aria-modal="true" aria-label="添加参考文件">
+    <div class="up-h">
+      <button class="up-tab on" data-tab="local" type="button">📁 本地文件</button>
+      <button class="up-tab" data-tab="ref" type="button">🖥 参考文件</button>
+      <button class="x" id="upClose" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="up-b">
+      <div id="upLeft"></div>
+      <div class="up-sel"><div class="tt">已选文件（<span id="upCnt">0</span>/3）</div><div id="upSel"></div></div>
+    </div>
+    <div class="up-f"><button class="c" id="upCancel" type="button">取消</button><button class="ok" id="upOk" type="button">确认</button></div>
+  </div>
+</div>
+<input type="file" id="wbFileInput" multiple accept=".pdf,.ppt,.pptx,.doc,.docx" hidden>
+
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function toast(m) { var t = document.createElement('div'); t.className = 'toast'; t.innerHTML = '<span>' + esc(m) + '</span>'; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 2200); }
+
+  /* ── 配置与 mock 数据 ── */
+  var TYPES = ['课件生成', '教案生成', '情景互动游戏生成', '图片素材生成', '视频素材生成'];
+  var PLACEHOLDER = {
+    '课件生成': '输入您的课件需求，如：帮我做个太和殿的课件...',
+    '教案生成': '输入您的教案需求，如：帮我写一份太和殿的教案...',
+    '情景互动游戏生成': '输入您的情景互动游戏需求，如：做一个太和殿导览的情景游戏...',
+    '图片素材生成': '输入您的图片素材需求，如：生成太和殿的建筑插图...',
+    '视频素材生成': '输入您的视频素材需求，如：生成一段太和殿的讲解视频...'
+  };
+  var RES_NAME = { '课件生成': '课件', '教案生成': '教案', '情景互动游戏生成': '情景互动游戏', '图片素材生成': '图片素材', '视频素材生成': '讲解视频' };
+  var LESSON_ALL = ['教学目标', '学情分析', '教学重难点', '教学方法', '教学准备', '教学过程', '板书设计', '作业设计', '教学反思'];
+  var LESSON_PRESETS = { lite: ['教学目标', '教学重难点', '教学过程'], standard: LESSON_ALL.slice(), full: LESSON_ALL.slice() };
+  LESSON_PRESETS.standard = ['教学目标', '学情分析', '教学重难点', '教学方法', '教学准备', '教学过程', '板书设计', '作业设计', '教学反思'];
+  LESSON_PRESETS.lite = ['教学目标', '教学重难点', '教学过程', '作业设计'];
+  LESSON_PRESETS.full = LESSON_ALL.concat(['课程思政', '拓展资源']);
+  var LESSON_FULL_ITEMS = LESSON_PRESETS.full;
+  var IMG_STYLES = ['默认风格', '写实', '卡通', '国风', '扁平', '水彩'];
+  var IMG_RATIOS = { '16:9': '16:9（横屏）', '4:3': '4:3（标准）', '1:1': '1:1（方形）', '9:16': '9:16（竖屏）' };
+  // 平台参考文件（mock）
+  var REF_FILES = [
+    { name: '导游业务-第三章 导游服务程序.pptx', cat: '课件' }, { name: '模拟导游-景区讲解实训指导书.docx', cat: '文档' },
+    { name: '旅游职业礼仪-教案（标准版）.docx', cat: '教案' }, { name: '中国旅游地理-华东地区.pptx', cat: '课件' },
+    { name: '旅游政策与法规-案例汇编.pdf', cat: '文档' }, { name: '导游词创作与讲解-教案.docx', cat: '教案' }
+  ];
+
+  var state = {
+    selected: ['课件生成'], text: '', files: [],
+    lessonMode: 'standard', lesson: LESSON_PRESETS.standard.slice(),
+    imgCount: 1, imgStyle: '默认风格', imgRatio: '16:9'
+  };
+
+  function extStyle(n) {
+    var e = (n.split('.').pop() || '').toLowerCase();
+    return e.indexOf('ppt') === 0 ? '#D24726' : e.indexOf('doc') === 0 ? '#2B579A' : e === 'pdf' ? '#E74C3C' : e === 'zip' ? '#6366f1' : e === 'mp4' ? '#0ea5e9' : e === 'png' ? '#10b981' : e === 'html' ? '#f59e0b' : '#8A909C';
+  }
+  function extTag(n) { return '<span class="ext" style="background:' + extStyle(n) + '">' + esc((n.split('.').pop() || '').slice(0, 3).toUpperCase()) + '</span>'; }
+
+  /* ═══ 首页：输入区 ═══ */
+  function renderChips() {
+    $('#wbChips').innerHTML = TYPES.map(function (t) {
+      return '<span class="wb-chip' + (state.selected.indexOf(t) >= 0 ? ' on' : '') + '" data-t="' + esc(t) + '"><span class="dot"></span>' + esc(t) + '</span>';
+    }).join('');
+    $('#wbTa').placeholder = PLACEHOLDER[state.selected[0]] || PLACEHOLDER['课件生成'];
+  }
+  function renderTools() {
+    $('#wbLesson').hidden = state.selected.indexOf('教案生成') < 0;
+    $('#wbImgCfg').hidden = state.selected.indexOf('图片素材生成') < 0;
+    $('#wbLessonVal').textContent = ({ lite: '精简', standard: '标准', full: '完整', custom: '自定义' }[state.lessonMode]) + '（' + state.lesson.length + '项）';
+    $('#wbImgVal').textContent = state.imgRatio + '，' + state.imgStyle + '，' + state.imgCount + '张';
+  }
+  function renderSend() { $('#wbSend').disabled = !state.text.trim(); }
+  function renderFiles() {
+    var box = $('#wbFiles');
+    box.hidden = !state.files.length;
+    box.innerHTML = state.files.map(function (f, i) {
+      return '<span class="wb-file">' + extTag(f.name) + '<span class="nm" title="' + esc(f.name) + '">' + esc(f.name) + '</span><button class="x" data-rm="' + i + '" type="button" aria-label="移除">×</button></span>';
+    }).join('');
+  }
+  function renderLessonPop() {
+    $('#wbLessonCount').textContent = state.lesson.length;
+    $('#wbPresets').innerHTML = ['lite', 'standard', 'full'].map(function (k) {
+      return '<span class="pre' + (state.lessonMode === k ? ' on' : '') + '" data-pre="' + k + '">' + { lite: '精简', standard: '标准', full: '完整' }[k] + '（' + LESSON_PRESETS[k].length + '项）</span>';
+    }).join('');
+    $('#wbLessonGrid').innerHTML = LESSON_FULL_ITEMS.map(function (it) {
+      return '<span class="chk' + (state.lesson.indexOf(it) >= 0 ? ' on' : '') + '" data-item="' + esc(it) + '"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 8.5l3 3 7-7"/></svg></span>' + esc(it) + '</span>';
+    }).join('');
+  }
+  function renderImgPop() {
+    $('#wbImgCount').innerHTML = [1, 2, 3, 4].map(function (n) { return '<option value="' + n + '"' + (state.imgCount === n ? ' selected' : '') + '>' + n + ' 张</option>'; }).join('');
+    $('#wbImgStyle').innerHTML = IMG_STYLES.map(function (s) { return '<option' + (state.imgStyle === s ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+    $('#wbImgRatio').innerHTML = Object.keys(IMG_RATIOS).map(function (r) { return '<option value="' + r + '"' + (state.imgRatio === r ? ' selected' : '') + '>' + IMG_RATIOS[r] + '</option>'; }).join('');
+  }
+
+  /* ── 添加参考文件弹窗 ── */
+  var up = { tab: 'local', sel: [], q: '', cat: '' };
+  function openUp() { up.tab = 'local'; up.sel = state.files.slice(); up.q = ''; up.cat = ''; $('#upMask').hidden = false; renderUp(); }
+  function closeUp() { $('#upMask').hidden = true; }
+  function renderUp() {
+    document.querySelectorAll('.up-tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === up.tab); });
+    if (up.tab === 'local') {
+      $('#upLeft').innerHTML = '<div class="up-drop" id="upDrop" style="height:100%"><span class="i">☁</span><div class="t1">点击或拖拽文件到此区域上传</div>' +
+        '<div class="t2">支持上传 pdf / ppt/docx/doc文件，单个文件不超过20MB，最多上传3个，总大小不超过50MB</div></div>';
+    } else {
+      var list = REF_FILES.filter(function (f) { return (!up.q || f.name.indexOf(up.q) >= 0) && (!up.cat || f.cat === up.cat); });
+      $('#upLeft').innerHTML = '<div class="up-ref"><div class="q"><input id="upQ" placeholder="搜索文件名 / 教学主题" value="' + esc(up.q) + '">' +
+        '<select id="upCat"><option value="">全部</option>' + ['课件', '教案', '文档'].map(function (c) { return '<option' + (up.cat === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select></div>' +
+        '<div class="list">' + list.map(function (f) {
+          var on = up.sel.some(function (s) { return s.name === f.name; });
+          return '<div class="it' + (on ? ' on' : '') + '" data-ref="' + esc(f.name) + '">' + extTag(f.name) + '<span>' + esc(f.name) + '</span><span class="tg">' + esc(f.cat) + '</span></div>';
+        }).join('') + '</div><div class="cnt">共计 ' + list.length + ' 个文件</div></div>';
+    }
+    $('#upCnt').textContent = up.sel.length;
+    $('#upSel').innerHTML = up.sel.map(function (f, i) {
+      return '<div class="row">' + extTag(f.name) + '<span class="nm">' + esc(f.name) + '</span><span class="note">' + (f.src === 'ref' ? '参考文件' : '本地') + '</span><button class="x" data-unsel="' + i + '" type="button" aria-label="移除">×</button></div>';
+    }).join('');
+  }
+  function addSel(f) {
+    if (up.sel.some(function (s) { return s.name === f.name; })) return;
+    if (up.sel.length >= 3) { toast('最多选择 3 个文件'); return; }
+    up.sel.push(f);
+  }
+
+  /* ═══ 任务过程（mock 推进）═══ */
+  var run = null;   // {topic, title, steps:[], skipConfirm, kp:[], outline:[], files:[]}
+  var timer = null;
+  function topicOf(text) {
+    if (prep && prep.current) return prep.current.name;
+    var t = text.trim().replace(/^(请|麻烦)?(帮我|给我|为我)?(做|生成|写|制作|设计)?(一份|一个|一节|个|份|节)?/, '')
+      .replace(/(的)?(课件|教案|情景互动游戏|游戏|图片素材|图片|视频素材|讲解视频|视频)$/, '').replace(/[。.！!]$/, '');
+    return (t || text.trim()).slice(0, 24);
+  }
+  function mockKP(topic) {
+    var kids = prep && prep.children && prep.children.length ? prep.children.map(function (c) { return c.name; }) : null;
+    return (kids || ['基本概念与术语', '构成要素', '工作流程', '规范与标准', '常见问题处理', '典型案例分析']).slice(0, 8)
+      .map(function (n) { return { name: n, on: true }; });
+  }
+  function mockOutline(topic) {
+    function n(t, kids) { return { t: t, open: false, kids: kids || [] }; }
+    return [n(topic, [
+      n('1. 课程概述与目标', [n('1.1 课程背景', [n('**行业需求**：' + topic + '在岗位工作中的作用与要求'), n('**发展趋势**：' + topic + '的新技术与新规范')]), n('1.2 学习目标', [n('**知识目标**：理解' + topic + '的核心概念'), n('**能力目标**：能够独立完成' + topic + '相关任务')])]),
+      n('2. ' + topic + '基础理论', [n('2.1 基本概念与术语'), n('2.2 构成要素与相互关系')]),
+      n('3. ' + topic + '实施流程', [n('3.1 前期准备'), n('3.2 关键步骤与操作要点')]),
+      n('4. 规范标准与质量要求', [n('4.1 行业规范'), n('4.2 质量检查要点')]),
+      n('5. 实训任务与演练', [n('5.1 情景设定'), n('5.2 分组演练与点评')]),
+      n('6. 常见问题与案例分析', [n('6.1 典型问题'), n('6.2 案例复盘')]),
+      n('7. 总结与展望')
+    ])];
+  }
+  function step(key, name, msgs, opt) { return Object.assign({ key: key, name: name, msgs: msgs || [], shown: 0, status: 'idle', open: true }, opt || {}); }
+  function buildSteps(topic) {
+    var resTxt = state.selected.map(function (t) { return t; }).join('、');
+    var hasRef = state.files.length;
+    var s = [
+      step('start', '启动', ['备课工作台已启动']),
+      step('need', '需求分析', ['正在智能分析您的教学内容...', '正在为您细化各任务的配置要求...', '已识别到教学主题「' + topic + '」，准备为您生成 ' + resTxt + ' 等备课资源', '正在为您创建备课任务...', '备课任务创建完成', '需求分析任务完成']),
+      step('kp', '知识体系', [], { confirm: 'kp', doneTag: '已确认' }),
+      step('search', '知识检索', ['正在为您检索相关知识点...', '已为您检索到 ' + run.kp.length * 3 + ' 条相关知识点，共 ' + (run.kp.length * 1260).toLocaleString() + ' 个字符', '知识检索完成']),
+      step('ref', '参考文件解析', hasRef ? ['开始执行'].concat(state.files.map(function (f) { return '正在解析《' + f.name + '》...'; }), ['已解析 ' + state.files.length + ' 个参考文件', '参考文件解析完成']) : ['开始执行', '无参考文件，跳过', '参考文件解析完成（无文件）'])
+    ];
+    state.selected.forEach(function (t) {
+      var r = RES_NAME[t];
+      if (t === '课件生成') {
+        s.push(step('outline', '课件大纲生成', ['正在为您生成课件大纲...', '正在调用AI生成课件大纲', '课件大纲已生成', '课件大纲生成完成'], { res: t }));
+        s.push(step('olc', '等待人工确认课件大纲', [], { res: t, confirm: 'outline', doneTag: '已确认' }));
+        s.push(step('ppt', '课件生成', ['正在根据大纲生成课件页面...', '正在匹配版式与配图...', '正在生成课件讲稿...', '课件生成完成'], { res: t, out: ['《' + topic + '》课件.pptx', '《' + topic + '》课件讲稿.docx'] }));
+      } else if (t === '教案生成') {
+        s.push(step('lesson', '教案生成', ['正在按「' + ({ lite: '精简', standard: '标准', full: '完整', custom: '自定义' }[state.lessonMode]) + '」结构生成教案（' + state.lesson.length + ' 项）...', '正在编写' + state.lesson.slice(0, 3).join('、') + '等内容...', '教案生成完成'], { res: t, out: ['《' + topic + '》教案.docx'] }));
+      } else if (t === '情景互动游戏生成') {
+        s.push(step('game', '情景互动游戏生成', ['正在设计游戏情景与角色...', '正在生成互动关卡...', '情景互动游戏生成完成'], { res: t, out: ['《' + topic + '》情景互动游戏.html'] }));
+      } else if (t === '图片素材生成') {
+        var imgs = []; for (var i = 1; i <= state.imgCount; i++) imgs.push(topic + '-素材图' + i + '.png');
+        s.push(step('img', '图片素材生成', ['正在按 ' + state.imgRatio + '、' + state.imgStyle + ' 生成 ' + state.imgCount + ' 张图片...', '图片素材生成完成'], { res: t, out: imgs }));
+      } else if (t === '视频素材生成') {
+        s.push(step('vscript', '视频脚本生成', ['正在为您生成讲解视频脚本...', '视频脚本生成完成'], { res: t }));
+        s.push(step('vsc', '等待人工确认视频脚本', [], { res: t, confirm: 'script', doneTag: '已确认' }));
+        s.push(step('video', '讲解视频生成', ['正在合成配音与画面...', '正在渲染视频...', '讲解视频生成完成'], { res: t, out: ['《' + topic + '》讲解视频.mp4', '《' + topic + '》视频脚本.docx'] }));
+      }
+      void r;
+    });
+    s.push(step('pack', '资源打包', ['正在为您整理备课资源...', '资源包已生成'], { pack: true }));
+    return s;
+  }
+  function send() {
+    var text = state.text.trim(); if (!text) return;
+    var topic = topicOf(text);
+    var res = state.selected.length === 1 ? RES_NAME[state.selected[0]] : '备课资源';
+    run = { topic: topic, title: '《' + topic + '》' + res, text: text, skipConfirm: false, kp: mockKP(topic), outline: mockOutline(topic), steps: [], edit: null };
+    run.steps = buildSteps(topic);
+    $('#wbHero').hidden = true; $('#wbInput').hidden = true;
+    $('#wbFlow').hidden = false; $('#wbTop').hidden = false; $('#wbSide').hidden = false;
+    $('#wbTopTitle').textContent = run.title;
+    advance();
+  }
+  // 推进：当前步骤逐条出消息；需确认的步骤停下等待
+  function cur() { return run.steps.find(function (s) { return s.status === 'run' || s.status === 'wait'; }); }
+  function advance() {
+    clearTimeout(timer);
+    var s = cur();
+    if (!s) {
+      s = run.steps.find(function (x) { return x.status === 'idle'; });
+      if (!s) { render(); return; }
+      s.status = 'run';
+    }
+    if (s.status === 'wait') { render(); return; }
+    if (s.confirm) {
+      if (run.skipConfirm && s.confirm !== 'kp') { s.status = 'done'; s.doneTag = '已跳过确认'; s.open = false; }
+      else s.status = 'wait';
+      render(); if (s.status === 'done') timer = setTimeout(advance, 500); return;
+    }
+    if (s.shown < s.msgs.length) { s.shown++; render(); timer = setTimeout(advance, 650); return; }
+    s.status = 'done'; s.open = !!(s.pack); render();
+    timer = setTimeout(advance, 400);
+  }
+  function confirmStep(skipAll) {
+    var s = cur(); if (!s || s.status !== 'wait') return;
+    if (skipAll) run.skipConfirm = true;
+    s.status = 'done'; run.edit = null;
+    render(); timer = setTimeout(advance, 400);
+  }
+
+  /* ── 渲染：时间线 ── */
+  var AV = '<span class="av"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5l1.6 3.9 3.9 1.6-3.9 1.6L8 12.5 6.4 8.6 2.5 7l3.9-1.6z"/></svg></span>';
+  function tagOf(s) {
+    if (s.status === 'done') return '<span class="tag done">' + (s.doneTag || '已完成') + '</span>';
+    if (s.status === 'wait') return '<span class="tag wait">等待确认</span>';
+    if (s.status === 'run') return '<span class="tag run">进行中</span>';
+    return '<span class="tag idle">等待中</span>';
+  }
+  function render() {
+    var h = '';
+    run.steps.forEach(function (s, i) {
+      if (s.status === 'idle') return;
+      h += '<div class="fs">' + AV + '<div class="bd"><div class="hd">AIGC 智课 <span class="nm">' + esc(s.name) + '</span>' + tagOf(s) + '</div>';
+      if (s.confirm === 'kp') h += kpCard(s);
+      else if (s.confirm === 'outline') h += s.status === 'wait' ? outlineCard() : msgBox(s, ['大纲已确认，共 ' + run.outline[0].kids.length + ' 个一级章节'], i);
+      else if (s.confirm === 'script') h += s.status === 'wait' ? scriptCard() : msgBox(s, ['视频脚本已确认'], i);
+      else if (s.pack && s.status === 'done') h += msgBox(s, s.msgs, i) + '<div style="height:10px"></div>' + packCard();
+      else h += msgBox(s, s.msgs.slice(0, s.shown), i);
+      h += '</div></div>';
+    });
+    $('#wbFlow').innerHTML = h;
+    renderProg();
+    var c = $('#wbCenter'); if (!run.edit) c.scrollTop = c.scrollHeight;
+  }
+  function msgBox(s, msgs, i) {
+    var live = s.status === 'run';
+    if (!s.open && !live) return '<div class="fbox fmsg"><button class="tog" data-tog="' + i + '" type="button">查看详情 - ' + msgs.length + ' 条消息 ⌄</button></div>';
+    return '<div class="fbox fmsg"><ul>' + msgs.map(function (m, k) {
+      return '<li' + (live && k === msgs.length - 1 ? ' class="live"' : '') + '>' + esc(m) + (k === 0 && !live ? ' <button class="tog" data-tog="' + i + '" type="button" style="display:inline">⌃</button>' : '') + '</li>';
+    }).join('') + '</ul></div>';
+  }
+  function kpCard(s) {
+    var kp = run.kp, n = kp.length, W = 560, H = 280, cx = W / 2, cy = H / 2;
+    var g = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="知识点图谱">';
+    kp.forEach(function (k, i) {
+      var a = -Math.PI / 2 + i * 2 * Math.PI / n, x = cx + Math.cos(a) * 190, y = cy + Math.sin(a) * 100;
+      g += '<line x1="' + cx + '" y1="' + cy + '" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="' + (k.on ? '#c9c4f7' : '#e5e7eb') + '" stroke-dasharray="' + (k.on ? '' : '4 3') + '"/>';
+    });
+    g += '<rect x="' + (cx - 58) + '" y="' + (cy - 17) + '" width="116" height="34" rx="8" fill="#6366f1"/><text x="' + cx + '" y="' + (cy + 5) + '" text-anchor="middle" font-size="13" fill="#fff">' + esc(run.topic.slice(0, 8)) + '</text>';
+    kp.forEach(function (k, i) {
+      var a = -Math.PI / 2 + i * 2 * Math.PI / n, x = cx + Math.cos(a) * 190, y = cy + Math.sin(a) * 100, w = Math.min(150, 14 + k.name.length * 12);
+      g += '<g class="kp-node" data-kp="' + i + '"' + (s.status === 'wait' ? '' : ' style="cursor:default"') + '><rect x="' + (x - w / 2).toFixed(1) + '" y="' + (y - 14).toFixed(1) + '" width="' + w + '" height="28" rx="6" fill="' + (k.on ? '#f5f3ff' : '#f8f8f8') + '" stroke="' + (k.on ? '#a5a1f5' : '#d1d5db') + '"/>' +
+        '<text x="' + x.toFixed(1) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="middle" font-size="11.5" fill="' + (k.on ? '#3f3ad0' : '#99a1af') + '"' + (k.on ? '' : ' text-decoration="line-through"') + '>' + esc(k.name.length > 11 ? k.name.slice(0, 11) + '…' : k.name) + '<title>' + esc(k.name) + '</title></text></g>';
+    });
+    g += '</svg>';
+    var on = kp.filter(function (k) { return k.on; }).length;
+    return '<div class="fbox"><div class="fcard-h"><b>知识点确认</b><span class="s">已选 ' + on + '/' + n + ' 个知识点</span></div><div class="kp">' + g +
+      (s.status === 'wait' ? '<div class="hint">点击知识点可取消或恢复选择；确认后将按选中的知识点检索资料并生成。</div>' : '') + '</div>' +
+      (s.status === 'wait' ? '<div class="fcard-f"><button class="btn-p" data-act="confirm" type="button"' + (on ? '' : ' disabled') + '>确认知识点，继续生成</button></div>' : '') + '</div>';
+  }
+  function outlineCard() {
+    var h = '<div class="fbox"><div class="fcard-h"><b>大纲确认</b><span class="s">- ' + esc(run.topic) + '</span></div><div class="ol">';
+    function rows(list, lv, path) {
+      list.forEach(function (n, i) {
+        var p = path.concat(i), id = p.join('-'), editing = run.edit === id;
+        var hasKids = n.kids.length;
+        h += '<div class="ol-row l' + lv + '" style="padding-left:' + ((lv - 1) * 22) + 'px"><span class="mv" title="拖动排序">✥</span>' +
+          (lv === 1 ? '<span class="no">' + (i + 1) + '</span>' : '') +
+          '<button class="ar" data-ol-open="' + id + '" type="button" ' + (hasKids ? '' : 'style="visibility:hidden"') + '>' + (n.open || lv === 1 ? '▼' : '▶') + '</button>' +
+          (editing ? '<input data-ol-input="' + id + '" value="' + esc(n.t) + '">' : '<span class="tx" title="' + esc(n.t.replace(/\*\*/g, '')) + '">' + esc(n.t.replace(/\*\*/g, '')) + '</span>') +
+          (lv < 3 ? '<button class="op" data-ol-add="' + id + '" type="button" title="添加下级">＋</button>' : '<span style="width:24px"></span>') +
+          '<button class="op" data-ol-edit="' + id + '" type="button" title="编辑">✎</button><button class="op del" data-ol-del="' + id + '" type="button" title="删除">🗑</button></div>';
+        if (hasKids && (n.open || lv === 1)) rows(n.kids, lv + 1, p);
+      });
+    }
+    rows(run.outline, 1, []);
+    return h + '<button class="ol-add" data-ol-add1 type="button">＋ 添加一级</button></div>' +
+      '<div class="fcard-f"><button class="btn-g" data-act="skipall" type="button">跳过全部资源确认</button><button class="btn-p" data-act="confirm" type="button">确认大纲，继续生成</button></div></div>';
+  }
+  function scriptCard() {
+    var lines = ['【开场】以' + run.topic + '的真实工作场景导入，提出本节要解决的问题', '【讲解一】' + run.topic + '的核心概念与要点', '【讲解二】操作流程演示与注意事项', '【小结】回顾要点，布置课后练习'];
+    return '<div class="fbox"><div class="fcard-h"><b>视频脚本确认</b><span class="s">- ' + esc(run.topic) + '</span></div><div class="fmsg"><ul>' +
+      lines.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul></div>' +
+      '<div class="fcard-f"><button class="btn-g" data-act="skipall" type="button">跳过全部资源确认</button><button class="btn-p" data-act="confirm" type="button">确认脚本，继续生成</button></div></div>';
+  }
+  function outFiles() {
+    var out = []; run.steps.forEach(function (s) { (s.out || []).forEach(function (f) { out.push({ name: f, res: s.res }); }); });
+    return out;
+  }
+  function sizeOf(n) { var e = n.split('.').pop(); return { pptx: '8.6 MB', docx: '236 KB', html: '1.2 MB', png: '1.8 MB', mp4: '46.3 MB' }[e] || '120 KB'; }
+  function packCard() {
+    var fs = outFiles();
+    return '<div class="fbox"><div class="pk-sum"><span class="ic">📦</span><div><b>' + esc(run.title) + ' · 资源包</b><div class="s">共 ' + fs.length + ' 个文件</div></div>' +
+      '<span style="flex:1"></span><button class="btn-p" data-act="dlall" type="button">全部下载</button></div><div class="pk">' +
+      fs.map(function (f) {
+        return '<div class="pk-row">' + extTag(f.name) + '<span class="nm" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="sz">' + sizeOf(f.name) + '</span>' +
+          '<button class="a" data-act="preview" data-f="' + esc(f.name) + '" type="button">预览</button><button class="a" data-act="dl" data-f="' + esc(f.name) + '" type="button">下载</button></div>';
+      }).join('') + '</div></div>';
+  }
+
+  /* ── 渲染：右侧任务进度 ── */
+  function renderProg() {
+    var st = function (k) { var s = run.steps.find(function (x) { return x.key === k; }); return s ? s.status : 'idle'; };
+    var all = run.steps.every(function (s) { return s.status === 'done'; });
+    var waiting = run.steps.some(function (s) { return s.status === 'wait'; });
+    var nodes = [
+      { name: '需求分析', s: st('need'), sub: st('need') === 'done' ? ['已完成 ' + state.selected.length + ' 个'].concat(state.selected.map(function (t) { return '《' + run.topic + '》' + RES_NAME[t]; })) : [] },
+      { name: '知识点确认', s: st('kp'), sub: [] }
+    ];
+    state.selected.forEach(function (t) {
+      var ss = run.steps.filter(function (x) { return x.res === t; });
+      var s = ss.every(function (x) { return x.status === 'done'; }) ? 'done' : ss.some(function (x) { return x.status === 'wait'; }) ? 'wait' : ss.some(function (x) { return x.status !== 'idle'; }) ? 'run' : 'idle';
+      var files = []; ss.forEach(function (x) { if (x.status === 'done') files = files.concat(x.out || []); });
+      nodes.push({ name: t, s: s, sub: files.length ? ['已完成 ' + files.length + ' 个'].concat(files) : [] });
+    });
+    nodes.push({ name: '资源打包', s: st('pack'), sub: [] });
+    var tag = function (s) { return s === 'done' ? '<span class="tag done">已完成</span>' : s === 'wait' ? '<span class="tag wait">等待确认</span>' : s === 'run' ? '<span class="tag run">生成中</span>' : '<span class="tag idle">等待中</span>'; };
+    $('#wbProg').innerHTML = '<div class="h">任务进度</div><div class="tk"><b title="' + esc(run.title) + '">' + esc(run.title) + '</b>' +
+      (all ? '<span class="tag done">已完成</span>' : waiting ? '<span class="tag wait">等待确认</span>' : '<span class="tag run">生成中</span>') + '</div>' +
+      '<div class="res">生成资源：' + esc(state.selected.join('、')) + '</div>' +
+      nodes.map(function (n, i) {
+        return '<div class="ps"><div class="rl"><span class="dt ' + n.s + '"></span>' + (i < nodes.length - 1 ? '<span class="ln"></span>' : '') + '</div><div class="bd"><div class="rw">' + esc(n.name) + tag(n.s) + '</div>' +
+          n.sub.map(function (x, k) { return '<div class="sub' + (k ? ' f' : '') + '">' + esc(x) + '</div>'; }).join('') + '</div></div>';
+      }).join('');
+  }
+
+  /* ── 大纲编辑 ── */
+  function nodeAt(id) { var p = id.split('-').map(Number), list = run.outline, n = null; p.forEach(function (i, k) { n = list[i]; list = n.kids; }); return n; }
+  function parentList(id) { var p = id.split('-').map(Number); if (p.length === 1) return run.outline; return nodeAt(p.slice(0, -1).join('-')).kids; }
+  function commitEdit() {
+    if (!run || !run.edit) return;
+    var inp = document.querySelector('[data-ol-input]');
+    if (inp) { var v = inp.value.trim(); var n = nodeAt(run.edit); if (v) n.t = v; else parentList(run.edit).splice(+run.edit.split('-').pop(), 1); }
+    run.edit = null;
+  }
+
+  /* ═══ 事件 ═══ */
+  $('#wbChips').addEventListener('click', function (e) {
+    var c = e.target.closest('.wb-chip'); if (!c) return;
+    var t = c.getAttribute('data-t'), i = state.selected.indexOf(t);
+    if (i >= 0) { if (state.selected.length > 1) state.selected.splice(i, 1); } else state.selected.push(t);
+    renderChips(); renderTools();
+  });
+  $('#wbTa').addEventListener('input', function () { state.text = this.value; renderSend(); });
+  $('#wbTa').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
+  $('#wbSend').addEventListener('click', send);
+  $('#wbFiles').addEventListener('click', function (e) { var x = e.target.closest('[data-rm]'); if (!x) return; state.files.splice(+x.getAttribute('data-rm'), 1); renderFiles(); });
+  $('#wbUpload').addEventListener('click', openUp);
+  $('#upClose').addEventListener('click', closeUp); $('#upCancel').addEventListener('click', closeUp);
+  $('#upOk').addEventListener('click', function () { state.files = up.sel.slice(); renderFiles(); closeUp(); });
+  $('#upMask').addEventListener('click', function (e) {
+    var t;
+    if (e.target === this) { closeUp(); return; }
+    if ((t = e.target.closest('.up-tab'))) { up.tab = t.getAttribute('data-tab'); renderUp(); return; }
+    if (e.target.closest('#upDrop')) { $('#wbFileInput').click(); return; }
+    if ((t = e.target.closest('[data-ref]'))) {
+      var nm = t.getAttribute('data-ref'), k = up.sel.findIndex(function (s) { return s.name === nm; });
+      if (k >= 0) up.sel.splice(k, 1); else addSel({ name: nm, src: 'ref' });
+      renderUp(); return;
+    }
+    if ((t = e.target.closest('[data-unsel]'))) { up.sel.splice(+t.getAttribute('data-unsel'), 1); renderUp(); }
+  });
+  $('#upMask').addEventListener('input', function (e) { if (e.target.id === 'upQ') { up.q = e.target.value.trim(); var pos = e.target.selectionStart; renderUp(); var q = $('#upQ'); q.focus(); q.setSelectionRange(pos, pos); } });
+  $('#upMask').addEventListener('change', function (e) { if (e.target.id === 'upCat') { up.cat = e.target.value; renderUp(); } });
+  $('#upMask').addEventListener('dragover', function (e) { if (e.target.closest('#upDrop')) e.preventDefault(); });
+  $('#upMask').addEventListener('drop', function (e) { if (!e.target.closest('#upDrop')) return; e.preventDefault(); takeFiles(e.dataTransfer.files); });
+  $('#wbFileInput').addEventListener('change', function (e) { takeFiles(e.target.files); e.target.value = ''; });
+  function takeFiles(fs) {
+    for (var i = 0; i < fs.length; i++) {
+      var f = fs[i], ext = (f.name.split('.').pop() || '').toLowerCase();
+      if (['pdf', 'ppt', 'pptx', 'doc', 'docx'].indexOf(ext) < 0) { toast('文件 ' + f.name + ' 类型不支持'); continue; }
+      if (f.size > 20 * 1024 * 1024) { toast('文件 ' + f.name + ' 超过 20MB'); continue; }
+      addSel({ name: f.name, src: 'local' });
+    }
+    renderUp();
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('#upMask').hidden) closeUp(); });
+  // 教案结构 / 图片参数
+  $('#wbLesson').addEventListener('click', function (e) { e.stopPropagation(); $('#wbImgPop').classList.remove('open'); var p = $('#wbLessonPop'); p.classList.toggle('open'); if (p.classList.contains('open')) renderLessonPop(); });
+  $('#wbPresets').addEventListener('click', function (e) { var p = e.target.closest('.pre'); if (!p) return; state.lessonMode = p.getAttribute('data-pre'); state.lesson = LESSON_PRESETS[state.lessonMode].slice(); renderLessonPop(); renderTools(); });
+  $('#wbLessonGrid').addEventListener('click', function (e) {
+    var c = e.target.closest('.chk'); if (!c) return;
+    var it = c.getAttribute('data-item'), i = state.lesson.indexOf(it);
+    if (i >= 0) state.lesson.splice(i, 1); else state.lesson.push(it);
+    state.lessonMode = 'custom';
+    ['lite', 'standard', 'full'].forEach(function (k) { var pre = LESSON_PRESETS[k]; if (pre.length === state.lesson.length && pre.every(function (x) { return state.lesson.indexOf(x) >= 0; })) state.lessonMode = k; });
+    renderLessonPop(); renderTools();
+  });
+  $('#wbImgCfg').addEventListener('click', function (e) { e.stopPropagation(); $('#wbLessonPop').classList.remove('open'); var p = $('#wbImgPop'); p.classList.toggle('open'); if (p.classList.contains('open')) renderImgPop(); });
+  $('#wbImgCount').addEventListener('change', function () { state.imgCount = +this.value; renderTools(); });
+  $('#wbImgStyle').addEventListener('change', function () { state.imgStyle = this.value; renderTools(); });
+  $('#wbImgRatio').addEventListener('change', function () { state.imgRatio = this.value; renderTools(); });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('#wbLesson') && !e.target.closest('#wbLessonPop')) $('#wbLessonPop').classList.remove('open');
+    if (!e.target.closest('#wbImgCfg') && !e.target.closest('#wbImgPop')) $('#wbImgPop').classList.remove('open');
+  });
+  // 顶栏
+  $('#wbSideTog').addEventListener('click', function () { var s = $('#wbSide'); s.hidden = !s.hidden; });
+  $('#wbNew').addEventListener('click', function () {
+    clearTimeout(timer); run = null;
+    state.text = ''; state.files = []; $('#wbTa').value = '';
+    $('#wbFlow').hidden = true; $('#wbFlow').innerHTML = ''; $('#wbTop').hidden = true; $('#wbSide').hidden = true;
+    $('#wbHero').hidden = false; $('#wbInput').hidden = false;
+    renderFiles(); renderSend();
+  });
+  // 时间线交互
+  $('#wbFlow').addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-tog]'))) { var s = run.steps[+t.getAttribute('data-tog')]; s.open = !s.open; run.edit = 'x'; render(); run.edit = null; return; }
+    if ((t = e.target.closest('[data-kp]'))) { var st = cur(); if (!st || st.confirm !== 'kp') return; var k = run.kp[+t.getAttribute('data-kp')]; k.on = !k.on; run.edit = 'x'; render(); run.edit = null; return; }
+    if ((t = e.target.closest('[data-ol-open]'))) { var n = nodeAt(t.getAttribute('data-ol-open')); n.open = !n.open; keep(); return; }
+    if ((t = e.target.closest('[data-ol-edit]'))) { commitEdit(); run.edit = t.getAttribute('data-ol-edit'); keep(); var inp = document.querySelector('[data-ol-input]'); if (inp) { inp.focus(); inp.select(); } return; }
+    if ((t = e.target.closest('[data-ol-del]'))) { commitEdit(); var id = t.getAttribute('data-ol-del'); parentList(id).splice(+id.split('-').pop(), 1); keep(); return; }
+    if ((t = e.target.closest('[data-ol-add]'))) {
+      commitEdit(); var pid = t.getAttribute('data-ol-add'), pn = nodeAt(pid);
+      pn.kids.push({ t: '新的小节', open: false, kids: [] }); pn.open = true;
+      run.edit = pid + '-' + (pn.kids.length - 1); keep(); var i2 = document.querySelector('[data-ol-input]'); if (i2) { i2.focus(); i2.select(); } return;
+    }
+    if (e.target.closest('[data-ol-add1]')) {
+      commitEdit(); var root = run.outline[0]; root.kids.push({ t: (root.kids.length + 1) + '. 新的章节', open: false, kids: [] });
+      run.edit = '0-' + (root.kids.length - 1); keep(); var i3 = document.querySelector('[data-ol-input]'); if (i3) { i3.focus(); i3.select(); } return;
+    }
+    if ((t = e.target.closest('[data-act]'))) {
+      var a = t.getAttribute('data-act');
+      if (a === 'confirm') { commitEdit(); confirmStep(false); }
+      else if (a === 'skipall') { commitEdit(); confirmStep(true); }
+      else if (a === 'dlall') toast('演示环境：资源包下载为示意');
+      else if (a === 'dl') toast('演示环境：' + t.getAttribute('data-f') + ' 下载为示意');
+      else if (a === 'preview') toast('演示环境：' + t.getAttribute('data-f') + ' 预览为示意');
+    }
+  });
+  $('#wbFlow').addEventListener('keydown', function (e) {
+    if (!e.target.hasAttribute('data-ol-input')) return;
+    if (e.key === 'Enter') { e.preventDefault(); commitEdit(); keep(); }
+    if (e.key === 'Escape') { run.edit = null; keep(); }
+  });
+  $('#wbFlow').addEventListener('focusout', function (e) { if (e.target.hasAttribute && e.target.hasAttribute('data-ol-input')) setTimeout(function () { if (run && run.edit && !document.activeElement.hasAttribute('data-ol-input')) { commitEdit(); keep(); } }, 120); });
+  function keep() { var c = $('#wbCenter'), top = c.scrollTop, ed = run.edit; run.edit = ed || 'x'; render(); run.edit = ed; c.scrollTop = top; }
+
+  /* ── 带入备课：读取能力图谱传来的「完整链路 + 直接子节点」 ── */
+  var PREP_KEY = 'kmapToWorkbench';
+  var prep = null;
+  function loadPrep() { var raw = null; try { raw = localStorage.getItem(PREP_KEY); } catch (e) {} if (!raw) return null; try { return JSON.parse(raw); } catch (e) { return null; } }
+  // 兼容旧格式（只有直接下级 children）
+  function prepTreeOf(p) { return p.tree || (p.children || []).map(function (c) { return { type: c.type, name: c.name, children: [] }; }); }
+  function prepCounts(p) {
+    if (p.counts) return { counts: p.counts, total: p.total };
+    var counts = {}, total = 0;
+    (function walk(l) { l.forEach(function (n) { counts[n.type] = (counts[n.type] || 0) + 1; total++; walk(n.children || []); }); })(prepTreeOf(p));
+    return { counts: counts, total: total };
+  }
+  function countText(c) { return Object.keys(c.counts).map(function (k) { return k + ' ' + c.counts[k]; }).join('、'); }
+  function prepText(p) {
+    var cur = p.current || {}, c = prepCounts(p), type = cur.type || '节点';
+    return c.total ? '帮我基于「' + cur.name + '」' + type + '及其下级 ' + c.total + ' 个节点（' + countText(c) + '）生成课件'
+      : '帮我基于「' + cur.name + '」' + type + '生成课件';
+  }
+  function renderPrep(p) {
+    var box = $('#wbPrep'); box.hidden = !p; if (!p) return;
+    var chain = p.chain || [];
+    $('#wbPrepChain').innerHTML = chain.map(function (n, i) { return '<span class="' + (i === chain.length - 1 ? 'cur' : '') + '"><em>' + esc(n.type || '') + '</em><b>' + esc(n.name) + '</b></span>' + (i < chain.length - 1 ? '<span class="sep">›</span>' : ''); }).join('');
+    var c = prepCounts(p), tree = prepTreeOf(p);
+    $('#wbPrepSum').innerHTML = c.total ? '下级共 <b>' + c.total + '</b> 个节点：' + esc(countText(c)) : '暂无下级节点';
+    function node(n, depth) {
+      var kids = n.children || [];
+      var head = '<em>' + esc(n.type || '') + '</em><span class="n" title="' + esc(n.name) + '">' + esc(n.name) + '</span>';
+      if (!kids.length) return '<div class="lf">' + head + '</div>';
+      return '<details' + (depth === 0 && tree.length <= 3 ? ' open' : '') + '><summary>' + head + '<span class="c">' + kids.length + '</span></summary><div class="kids-in">' +
+        kids.map(function (k) { return node(k, depth + 1); }).join('') + '</div></details>';
+    }
+    var tb = $('#wbPrepTree'); tb.hidden = !tree.length;
+    tb.innerHTML = tree.map(function (n) { return node(n, 0); }).join('');
+  }
+  $('#wbPrepClose').addEventListener('click', function () { prep = null; try { localStorage.removeItem(PREP_KEY); } catch (e) {} renderPrep(null); });
+
+  /* ── 启动 ── */
+  UI.boot({ portal: 'teacher', active: 'workbench' });
+  prep = loadPrep();
+  if (prep) { renderPrep(prep); var pt = prepText(prep); $('#wbTa').value = pt; state.text = pt; try { localStorage.removeItem(PREP_KEY); } catch (e) {} }
+  renderChips(); renderTools(); renderFiles(); renderSend();
+})();
+</script>
+</body>
+</html>
