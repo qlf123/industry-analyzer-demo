@@ -273,9 +273,6 @@ a.lmenu{text-decoration:none}
 .nd{padding:18px 22px 16px;display:flex;flex-direction:column;gap:4px;max-height:min(700px,74vh)}
 .nd-h{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px;flex-shrink:0}
 .nd-h h2{font-size:16px;margin:0}
-.nd-h h2 .nd-ai{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--brand);
-  border:1px dashed var(--brand);border-radius:4px;padding:0 5px;line-height:1.5;margin-right:8px;vertical-align:2px}
-.nd-h h2 .nd-ai.man{color:var(--ink-2);border-color:var(--rule);border-style:solid}
 .nd-sub{font-size:11.5px;color:var(--muted);margin-top:3px}
 .nd-h .btn-s{margin-left:auto}
 .nd-chips{flex:0 0 auto;display:flex;align-items:center;gap:6px}
@@ -413,7 +410,6 @@ body.fs-on{overflow:hidden}
             <div class="nd-body" id="ndBody"></div>
             <div class="nd-acts">
               <button class="btn-p" id="lessonBtn" type="button">带入备课 · 生成课件</button>
-              <span class="nd-acts-hint">备课和测评在其他模块完成</span>
             </div>
           </div>
         </aside>
@@ -1563,8 +1559,7 @@ function openNodeDetail(type, id, level){
 
 // 竖树里技能 / 末级 / AI 节点的右侧详情：名称、层级、类型与来源（无富详情数据）
 function showVDetail(m){
-  const ndAiTag = m.type==='ai' ? `<span class="nd-ai${m.manual?' man':''}">${m.manual?'人工':'AI'}</span>` : '';
-  $('#ndTitle').innerHTML = ndAiTag + esc(m.name);
+  $('#ndTitle').textContent = m.name;
   let html = '';
   let typeLabel='', emerging=false, sub='';
   if(m.type==='skl'){
