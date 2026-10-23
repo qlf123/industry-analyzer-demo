@@ -327,13 +327,21 @@ a.lmenu{text-decoration:none}
 .vrow{display:flex;align-items:center;gap:6px;padding:3px 8px;border-radius:7px;cursor:pointer;font-size:13px;line-height:1.55;width:max-content;min-width:100%}
 .vrow:hover{background:var(--rule-2)}
 .vrow.sel{background:var(--brand-soft)}
-.vtog{width:13px;height:16px;flex:0 0 13px;display:inline-flex;align-items:center;justify-content:center;
-  font-size:9px;color:var(--muted);font-family:var(--mono)}
+.vtog{width:18px;height:18px;flex:0 0 18px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:9px;color:var(--muted);font-family:var(--mono);border-radius:4px}
+.vtog.on{cursor:pointer}
+.vtog.on:hover{background:var(--brand-soft);color:var(--brand)}
+.nd-gen{margin-top:4px}
 .vkind{flex:0 0 auto;font-size:10px;font-weight:600;border:1px solid currentColor;border-radius:4px;padding:0 4px;line-height:1.4}
 .vl-tag{flex:0 0 auto;font-size:9.5px;font-weight:600;border:1px solid currentColor;border-radius:4px;padding:0 3px;line-height:1.5;opacity:.9}
 .vops{flex:0 0 auto;display:inline-flex;gap:4px;margin-left:6px}
-.vop{font-size:11px;line-height:1.7;padding:0 7px;border-radius:6px;border:1px solid var(--rule);background:var(--card);color:var(--ink-2);cursor:pointer;white-space:nowrap}
-.vop:hover{color:var(--brand);border-color:var(--brand);background:var(--brand-soft)}
+.vop{position:relative;width:22px;height:22px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid transparent;background:none;color:var(--muted);cursor:pointer}
+.vop svg{width:13px;height:13px}
+.vop:hover,.vop:focus-visible{color:var(--brand);border-color:var(--rule);background:var(--brand-soft)}
+/* 悬停即显示文字提示 */
+.vop::after{content:attr(aria-label);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);padding:3px 7px;border-radius:5px;
+  background:var(--ink);color:var(--card);font-size:11px;line-height:1.4;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;z-index:5}
+.vop:hover::after,.vop:focus-visible::after{opacity:1}
 .vbar{width:3px;height:14px;border-radius:1.5px;flex:0 0 3px}
 .vbar.dash{background:transparent;border:1px dashed;border-radius:1.5px}
 .vname{flex:1;min-width:max-content;white-space:nowrap}
@@ -939,7 +947,7 @@ window.addEventListener('blur', hideCtx);
 /* ═══ AI 节点的暂存与保存 ═══
    aiStore：上级节点 key → 该上级下已生成的一列（含人工新增 / 编辑、自检结论）。
    本次打开页面期间生成过的都在这里，收起再展开直接复用；点「保存」写入本机浏览器，下次打开页面还在。 */
-const AI_SAVE_KEY = 'kmapAiSaved';
+const AI_SAVE_KEY = 'kmapAiSaved.v2';   // v2：2026-10-22 换 19 岗位版图谱 + 知识体系技能，旧版节点 ID 不再适用
 const aiStore = {};
 const newKeyPart = p => p + Math.random().toString(36).slice(2, 8);
 
@@ -1540,7 +1548,8 @@ function openNodeDetail(type, id, level){
       }).join('');
       html += ndSec('证据引用', evs);
     }
-    html += ndSec('下级节点', `<div class="nd-kv">${a.skills.length} 个技能</div>`);
+    html += ndSec('下级节点', `<div class="nd-kv">${a.skills.length} 个技能</div>` +
+      (!a.skills.length && joinedNodes.some(r=>r.id===id) ? `<button type="button" class="btn-s nd-gen" data-ndgen="${esc(id)}">AI 生成技能</button>` : ''));
   } else return;
   $('#ndTitle').textContent = title;
   $('#ndSub').textContent = label;
@@ -1567,14 +1576,20 @@ function showVDetail(m){
       if(EMERGING_REASONS[m.key]) html += ndSec('新兴原因', `<p class="nd-p">${esc(EMERGING_REASONS[m.key])}</p>`);
     }
     if(k && k.abilityIds && k.abilityIds.length) html += ndSec('归属能力项', ndTags(k.abilityIds.map(x=>abl[x].name)));
+    if(k && k.ks && k.ks.length) html += ndSec('知识体系位置', `<div class="nd-kv">${k.ks.map(n=>esc(n.name)).join(' › ')}</div>`);
     html += ndSec('下级节点', `<div class="nd-kv">${k ? k.children.length : 0} 个</div>`);
   } else if(m.type==='lf'){
     typeLabel = m.kind || '';
-    html += `<div class="nd-empty">点击由 AI 继续细分</div>`;
+    const lv0 = aiStore[m.key];
+    html += lv0 && lv0.status==='ok' ? ndSec('下级节点', `<div class="nd-kv">${lv0.items.length} 个</div>`)
+      : `<div class="nd-empty">尚未细分下级节点</div><button type="button" class="btn-s nd-gen" data-ndgen="${esc(m.key)}">AI 生成下级节点</button>`;
   } else { // ai
     typeLabel = m.kind || '';
     if(m.desc) html += ndSec('说明', `<p class="nd-p">${esc(m.desc)}</p>`);
     html += ndSec('来源', ndTags([m.manual?'人工新增':'AI 生成'], true));
+    const lv1 = aiStore[m.key];
+    html += lv1 && lv1.status==='ok' ? ndSec('下级节点', `<div class="nd-kv">${lv1.items.length} 个</div>`)
+      : `<button type="button" class="btn-s nd-gen" data-ndgen="${esc(m.key)}">AI 生成下级节点</button>`;
   }
   $('#ndSub').textContent = sub;
   $('#ndSub').hidden = !sub;
@@ -1601,10 +1616,55 @@ function prepKids(type, key, kind){
 function prepTree(type, key, kind, seen){
   return prepKids(type, key, kind).map(k => {
     const id = k.type + ':' + k.key;
-    if(seen.has(id)) return {type: k.label, name: k.name, children: []};
+    if(seen.has(id)) return {id: k.key, type: k.label, name: k.name, children: []};
     seen.add(id);
-    return {type: k.label, name: k.name, children: prepTree(k.type, k.key, k.kind, seen)};
+    return {id: k.key, type: k.label, name: k.name, children: prepTree(k.type, k.key, k.kind, seen)};
   });
+}
+// 当前节点所属的专业知识体系：往下收集它对应的知识体系技能，再沿「技能 → 任务 → 课程 → 课程分类 → 专业」往上组装，根为专业
+function skillsUnder(type, key){
+  const out = new Set();
+  const addAbl = aid => (abl[aid] && abl[aid].skills || []).forEach(k => out.add(k));
+  const addPos = pid => (pos[pid] && pos[pid].abilities || []).forEach(r => addAbl(r.ability));
+  if(type === 'ind') builtSubs.forEach(sid => sub[sid].positionIds.forEach(addPos));
+  else if(type === 'sub') sub[key].positionIds.forEach(addPos);
+  else if(type === 'pos') addPos(key);
+  else if(type === 'abl') addAbl(key);
+  else if(type === 'skl') out.add(key);
+  return [...out].filter(k => skl[k] && skl[k].ks && skl[k].ks.length);
+}
+function prepKS(){
+  const {type, key, kind} = ndCur;
+  let sids, focus = null;   // focus：当前是技能下的节点时，只带「技能 → … → 当前节点」这一支及其下级
+  if(type === 'lf' || type === 'ai'){
+    const path = []; let m = vMeta[key];
+    while(m && m.type !== 'skl'){ path.unshift({id: m.key, type: m.type==='lf' ? m.kind : (m.kind || '下级节点'), name: m.name}); m = vMeta[m.parent]; }
+    if(!m) return null;   // 竖树未展开到该节点（如从全屏横向树查看）时找不到所属技能
+    sids = skillsUnder('skl', m.key); focus = path;
+  } else sids = skillsUnder(type, key);
+  if(!sids.length) return null;
+  // 按专业分组，取技能最多的专业
+  const byMajor = {};
+  sids.forEach(k => { const mj = skl[k].ks[0]; (byMajor[mj.id] = byMajor[mj.id] || {major: mj, sids: []}).sids.push(k); });
+  const groups = Object.values(byMajor).sort((a, b) => b.sids.length - a.sids.length), g = groups[0];
+  const root = {id: g.major.id, type: g.major.type || '专业', name: g.major.name, children: []};
+  const idx = {[root.id]: root};
+  g.sids.forEach(k => {
+    let parent = root;
+    skl[k].ks.slice(1).forEach(n => {
+      if(!idx[n.id]){ idx[n.id] = {id: n.id, type: n.type, name: n.name, children: []}; parent.children.push(idx[n.id]); }
+      parent = idx[n.id];
+    });
+    let kids;
+    if(focus){
+      const last = focus[focus.length - 1];
+      let node = {id: last.id, type: last.type, name: last.name, children: prepTree(type, key, kind, new Set([type + ':' + key]))};
+      for(let i = focus.length - 2; i >= 0; i--) node = {id: focus[i].id, type: focus[i].type, name: focus[i].name, children: [node]};
+      kids = [node];
+    } else kids = prepTree('skl', k, null, new Set(['skl:' + k]));
+    parent.children.push({id: k, type: '技能', name: skl[k].name, children: kids});
+  });
+  return {tree: root, skillCount: g.sids.length, otherMajors: groups.slice(1).map(x => x.major.name)};
 }
 function prepPayload(){
   if(!ndCur) return null;
@@ -1618,7 +1678,8 @@ function prepPayload(){
   (function walk(list){ list.forEach(n => { counts[n.type] = (counts[n.type] || 0) + 1; total++; walk(n.children); }); })(tree);
   const cur = chainArr.length ? chainArr[chainArr.length - 1] : {type: prepTypeLabel(type), name};
   return { current: cur, chain: chainArr, tree, total, counts,
-    children: tree.map(n => ({type: n.type, name: n.name})) };   // children：直接下级（兼容）
+    children: tree.map(n => ({type: n.type, name: n.name})),   // children：直接下级（兼容）
+    ks: prepKS() };   // 所属专业知识体系（根为专业）；找不到时为 null
 }
 $('#lessonBtn').addEventListener('click', ()=>{
   const payload = prepPayload();
@@ -1748,12 +1809,13 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
       ? `<span class="vbar" style="background:var(--kgt-${KIND[kind].c})"></span>`
       : `<span class="vbar dash" style="border-color:var(--kgt-${KIND[kind].c})"></span>`;
   }
-  const hasKids = (type==='lf' || type==='ai') ? true : kids.length>0;
+  const ablPending = type==='abl' && abl[key] && (abl[key]._genning || abl[key]._generr || (!abl[key].skills.length && joinedNodes.some(r=>r.id===key)));
+  const hasKids = (type==='lf' || type==='ai') ? true : (kids.length>0 || !!ablPending);
   const level = type==='ai' ? `AI 细分第${aiDepth}层` : `L${depth+1}`;
   vMeta[key] = {key, type, name, kind, chain, siblings, hasKids, level, desc, manual, parent, depth};
   const open = vExp.has(key);
   const sel = vSel && vSel.type===type && vSel.id===key;
-  const tog = hasKids ? `<span class="vtog">${open?'▾':'▸'}</span>` : `<span class="vtog"></span>`;
+  const tog = hasKids ? `<span class="vtog on" data-vtog title="${open?'收起':'展开下级（未生成时由 AI 生成）'}">${open?'▾':'▸'}</span>` : `<span class="vtog"></span>`;
   const kindTag = type==='lf' ? `<span class="vkind" style="color:var(--kgt-${KIND[kind].c})">${KIND[kind].tag}</span>` : '';
   let typeTag = '';
   if(type==='sub') typeTag = '<span class="vl-tag" style="color:var(--vl-sub)">子行业</span>';
@@ -1762,7 +1824,8 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
   else if(type==='skl') typeTag = '<span class="vl-tag" style="color:var(--vl-skl)">技能</span>';
   let ops = '';
   if(type==='ai'){
-    ops = `<span class="vops"><button type="button" class="vop" data-vop="regen" title="重新生成该节点">重新生成</button><button type="button" class="vop" data-vop="edit" title="编辑该节点">编辑</button></span>`;
+    ops = `<span class="vops"><button type="button" class="vop" data-vop="regen" aria-label="重新生成"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1"/><path d="M13.5 2.5v3h-3"/></svg></button>` +
+      `<button type="button" class="vop" data-vop="edit" aria-label="编辑"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3L6 13H3v-3z"/><path d="M9 4l3 3"/></svg></button></span>`;
   }
   const row = `<div class="vrow${open?' open':''}${sel?' sel':''}" data-v="${esc(key)}">${tog}${bar}${kindTag}${typeTag}<span class="vname">${emg}${esc(name)}${badges}</span>${ops}</div>`;
   let kidsHtml = '';
@@ -1858,30 +1921,32 @@ $('#vTree').addEventListener('click', e=>{
   if(!row) return;
   const m = vMeta[row.dataset.v];
   if(!m) return;
-  if(m.type==='ind' || m.type==='sub' || m.type==='pos'){
-    vSel = {type:m.type, id:m.key};
-    openNodeDetail(m.type, m.key, m.level);
-    if(m.hasKids) toggleV(m.key);
-  } else if(m.type==='abl'){
-    vSel = {type:m.type, id:m.key};
-    openNodeDetail(m.type, m.key, m.level);
+  // 点箭头：展开 / 收起下级；下级尚未生成时由 AI 生成。点节点其它位置：只选中并查看详情，不触发生成
+  if(e.target.closest('[data-vtog]')) vToggleOrGen(m);
+  else vShowDetail(m);
+});
+function vShowDetail(m){
+  vSel = {type:m.type, id:m.key};
+  if(m.type==='ind' || m.type==='sub' || m.type==='pos' || m.type==='abl') openNodeDetail(m.type, m.key, m.level);
+  else showVDetail(m);
+  renderVTree();
+}
+function vToggleOrGen(m){
+  if(m.type==='abl'){
     const a = abl[m.key];
-    if(a && a._generr) genSkillsForAbility(m.key);                 // 生成失败：点击重试
-    else if(a && a._genning) toggleV(m.key);                       // 生成中：收起/展开
-    else if(a && a.skills && a.skills.length){ if(m.hasKids) toggleV(m.key); }
-    else if(joinedNodes.some(r=>r.id===m.key)) genSkillsForAbility(m.key);   // 已加入且无技能 → 生成
-    else if(m.hasKids) toggleV(m.key);
-  } else if(m.type==='skl'){
-    showVDetail(m);
-    if(m.hasKids) toggleV(m.key);
-  } else { // lf / ai
-    showVDetail(m);
+    if(a && a._generr) genSkillsForAbility(m.key);
+    else if(a && !a._genning && !a.skills.length && joinedNodes.some(r=>r.id===m.key)) genSkillsForAbility(m.key);
+    else toggleV(m.key);
+  } else if(m.type==='lf' || m.type==='ai'){
     const lv = aiStore[m.key];
-    if(lv && lv.status==='ok') toggleV(m.key);
-    else if(lv && lv.status==='error') vExpand(m);
-    else if(lv && lv.status==='loading') toggleV(m.key);
+    if(lv && (lv.status==='ok' || lv.status==='loading')) toggleV(m.key);
     else vExpand(m);
-  }
+  } else toggleV(m.key);
+}
+// 详情区「AI 生成下级」按钮（与点箭头效果相同）
+$('#ndBody').addEventListener('click', e=>{
+  const b = e.target.closest('[data-ndgen]'); if(!b) return;
+  const m = vMeta[b.dataset.ndgen]; if(m) vToggleOrGen(m);
 });
 
 // 全屏切换
@@ -1899,7 +1964,7 @@ $('#exitFsBtn').addEventListener('click', ()=>{
 });
 
 /* ═══ 市场趋势条目「加入主树」：动态插入子行业/岗位/能力项/技能，持久化到 localStorage ═══ */
-const JOINED_KEY = 'kmapJoined';
+const JOINED_KEY = 'kmapJoined.v2';
 let joinedNodes = [];   // 已加入记录：一条 = 一个新能力项（+ 可选生成的技能）
 
 function loadJoined(){
@@ -2046,7 +2111,7 @@ renderVTree();
 openNodeDetail('ind', I.id);   // 右侧详情默认显示行业
 
 /* ═══ 市场趋势：AI 获取市场最新能力，独立区块展示（不进主树） ═══ */
-const MARKET_KEY = 'kmapMarketTrends';
+const MARKET_KEY = 'kmapMarketTrends.v2';
 let marketTrends = null;   // {abilities:[…], branches:[…], checkedAt}
 
 function renderMarket(){

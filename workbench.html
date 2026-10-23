@@ -48,17 +48,30 @@
 .wb-prep .kids{display:flex;flex-wrap:wrap;gap:6px;max-height:92px;overflow-y:auto}
 .wb-prep .sum{font-size:12px;color:#62748e;margin-bottom:6px}
 .wb-prep .sum b{color:#6366f1;font-weight:600}
-.ptree{max-height:180px;overflow-y:auto;background:#fff;border:1px solid #eeecfb;border-radius:8px;padding:6px 8px}
-.ptree details{margin:0}
-.ptree summary,.ptree .lf{list-style:none;display:flex;align-items:center;gap:6px;font-size:12px;color:#364153;line-height:24px;cursor:pointer}
-.ptree .lf{cursor:default;padding-left:14px}
-.ptree summary::-webkit-details-marker{display:none}
-.ptree summary::before{content:'▸';width:8px;color:#99a1af;font-size:10px}
-.ptree details[open]>summary::before{content:'▾'}
-.ptree em{font-style:normal;font-size:10.5px;color:#8b87d9;background:#f3f2fe;border-radius:4px;padding:0 5px;line-height:17px;flex:0 0 auto}
-.ptree .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ptree .c{font-size:11px;color:#b0b5bd}
-.ptree .kids-in{padding-left:16px;border-left:1px dashed #e6e4fb;margin-left:4px}
+.sum-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sum-row .sum{flex:1;margin:0}
+.sum-row .tb{font-size:11.5px;color:#6366f1;background:none;border:none;cursor:pointer;padding:0 2px}
+/* 横版树状图：上级链路 → 当前节点 → 下级各层，自左向右展开 */
+.htree{overflow:auto;max-height:340px;background:#fff;border:1px solid #eeecfb;border-radius:8px;padding:12px 14px}
+.ht-node{display:flex;align-items:center}
+.ht-box{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 8px;border-radius:6px;border:1px solid #e6e4fb;background:#fafaff;
+  font-size:12px;color:#364153;white-space:nowrap;flex:0 0 auto;max-width:220px}
+.ht-box.has{cursor:pointer}
+.ht-box.has:hover{border-color:#a5a1f5}
+.ht-box .n{overflow:hidden;text-overflow:ellipsis}
+.ht-box em{font-style:normal;font-size:10px;border-radius:3px;padding:0 4px;line-height:16px;color:#fff;flex:0 0 auto}
+.ht-box .tg{font-size:10.5px;color:#8b87d9;background:#f0eefe;border-radius:8px;padding:0 5px;line-height:16px;flex:0 0 auto}
+.ht-box.anc{background:#fff;border-style:dashed;color:#6A7282}
+.ht-box.cur{background:#6366f1;border-color:#6366f1;color:#fff;font-weight:600}
+.ht-box.cur .tg{background:rgba(255,255,255,.25);color:#fff}
+.ht-kids{position:relative;display:flex;flex-direction:column;margin-left:18px}
+.ht-kids::before{content:'';position:absolute;left:-18px;top:50%;width:18px;border-top:1px solid #d6d2f8}
+.ht-kids>.ht-node{position:relative;padding:3px 0 3px 18px}
+.ht-kids>.ht-node::before{content:'';position:absolute;left:0;top:50%;width:18px;border-top:1px solid #d6d2f8}
+.ht-kids>.ht-node::after{content:'';position:absolute;left:0;top:0;bottom:0;border-left:1px solid #d6d2f8}
+.ht-kids>.ht-node:first-child::after{top:50%}
+.ht-kids>.ht-node:last-child::after{bottom:50%}
+.ht-kids>.ht-node:only-child::after{display:none}
 .wb-prep .kids .k{height:22px;padding:0 9px;border-radius:6px;font-size:11px;background:#fff;border:1px solid #e6e4fb;color:#45556c;display:inline-flex;align-items:center}
 .wb-prep .kids .k em{font-style:normal;color:#b0b5bd;margin-right:3px}
 .wb-box{position:relative;width:100%;max-width:780px;border:1px solid #c9c4f7;background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(99,102,241,.08)}
@@ -132,7 +145,9 @@
 .fs .hd .nm{color:#6366f1}
 .tag{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:4px;font-size:10.5px}
 .tag.done{background:#f0fdf4;color:#2ba954}.tag.run{background:#f4f0ff;color:#615fff}
-.tag.wait{background:#fffbeb;color:#d99a06;border:1px solid #fee685}.tag.idle{background:#f3f4f6;color:#99a1af}
+.tag.wait{background:#fffbeb;color:#d99a06;border:1px solid #fee685}.tag.fail{background:#fee2e2;color:#ef4444}
+.fmsg li.err{color:#ef4444}.fmsg li.err::before{background:#ef4444}
+.pk-tip{font-size:11.5px;color:#99a1af;padding:0 14px 12px}.tag.idle{background:#f3f4f6;color:#99a1af}
 .fbox{background:#fff;border:1px solid #eef0f4;border-radius:10px;box-shadow:0 1px 4px rgba(15,15,40,.03)}
 .fmsg{padding:8px 12px}
 .fmsg .tog{font-size:12px;color:#6A7282;cursor:pointer;background:none;border:none;padding:0;display:flex;align-items:center;gap:4px}
@@ -221,9 +236,10 @@
           <div class="wb-chips" id="wbChips"></div>
           <div class="wb-prep" id="wbPrep" hidden>
             <div class="ph"><span class="t">带入备课</span><button class="x" id="wbPrepClose" type="button" title="移除带入内容">×</button></div>
-            <div class="chain" id="wbPrepChain"></div>
-            <div class="sum" id="wbPrepSum"></div>
-            <div class="ptree" id="wbPrepTree"></div>
+            <div class="sum-row"><div class="sum" id="wbPrepSum"></div>
+              <button class="tb" data-ht="all" type="button">全部展开</button><button class="tb" data-ht="one" type="button">收起到一级</button></div>
+            <div class="htree" id="wbPrepTree"></div>
+            <div class="sum" id="wbPrepKs" style="margin:8px 0 0"></div>
           </div>
           <div class="wb-box">
             <div class="wb-files" id="wbFiles" hidden></div>
@@ -309,6 +325,45 @@
     { name: '旅游职业礼仪-教案（标准版）.docx', cat: '教案' }, { name: '中国旅游地理-华东地区.pptx', cat: '课件' },
     { name: '旅游政策与法规-案例汇编.pdf', cat: '文档' }, { name: '导游词创作与讲解-教案.docx', cat: '教案' }
   ];
+
+  /* 课件生成接口：从能力图谱带入知识体系时，「课件生成」调用此接口，返回生成的课件链接 */
+  var GEN_PPT_API = 'http://192.168.1.212:8080/api/third/generate_ppt';
+  function uuid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
+  }
+  // 能力图谱带来的「所属专业知识体系」（根为专业，节点为知识体系真实 ID）转成接口要求的 {id, name, children}
+  function knowledgeSystem(p) {
+    if (!p || !p.ks || !p.ks.tree) return null;
+    function conv(n) { return { id: String(n.id || uuid()), name: n.name, children: (n.children || []).map(conv) }; }
+    return conv(p.ks.tree);
+  }
+  function ksSize(n) { return 1 + (n.children || []).reduce(function (a, k) { return a + ksSize(k); }, 0); }
+  function ksCount(n, type) { return (n.type === type ? 1 : 0) + (n.children || []).reduce(function (a, k) { return a + ksCount(k, type); }, 0); }
+  function fileNameOf(url, fallback) {
+    try { var seg = new URL(url).pathname.split('/').pop(); return decodeURIComponent(seg) || fallback; } catch (e) { return fallback; }
+  }
+  function expiresMin(url) { var m = /[?&]X-Amz-Expires=(\d+)/.exec(url || ''); return m ? Math.round(+m[1] / 60) : null; }
+  var apiCtl = null;
+  function callGenPpt() {
+    if (apiCtl) apiCtl.abort();
+    apiCtl = window.AbortController ? new AbortController() : null;
+    var api = run.api = { status: 'pending', url: '', err: '' }, myRun = run;
+    fetch(GEN_PPT_API, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: apiCtl ? apiCtl.signal : undefined,
+      body: JSON.stringify({ knowledge_system: run.ks, theme: run.theme, desc: run.text })
+    }).then(function (r) {
+      return r.json().catch(function () { throw new Error('接口返回格式错误（HTTP ' + r.status + '）'); });
+    }).then(function (j) {
+      if (j && j.code === 200 && j.data) { api.status = 'ok'; api.url = j.data; }
+      else throw new Error((j && j.message) || '接口未返回课件链接');
+    }).catch(function (e) {
+      if (e && e.name === 'AbortError') return;
+      api.status = 'error'; api.err = e && e.message === 'Failed to fetch' ? '无法连接课件生成服务' : (e && e.message) || '生成失败';
+    }).then(function () {
+      if (run === myRun && run.api === api) { var s = cur(); if (s && s.api) advance(); else render(); }
+    });
+  }
 
   var state = {
     selected: ['课件生成'], text: '', files: [],
@@ -427,9 +482,13 @@
     state.selected.forEach(function (t) {
       var r = RES_NAME[t];
       if (t === '课件生成') {
-        s.push(step('outline', '课件大纲生成', ['正在为您生成课件大纲...', '正在调用AI生成课件大纲', '课件大纲已生成', '课件大纲生成完成'], { res: t }));
-        s.push(step('olc', '等待人工确认课件大纲', [], { res: t, confirm: 'outline', doneTag: '已确认' }));
-        s.push(step('ppt', '课件生成', ['正在根据大纲生成课件页面...', '正在匹配版式与配图...', '正在生成课件讲稿...', '课件生成完成'], { res: t, out: ['《' + topic + '》课件.pptx', '《' + topic + '》课件讲稿.docx'] }));
+        // 调用课件生成接口时，接口直接按知识体系生成课件，不经过大纲生成与人工确认
+        if (!run.ks) {
+          s.push(step('outline', '课件大纲生成', ['正在为您生成课件大纲...', '正在调用AI生成课件大纲', '课件大纲已生成', '课件大纲生成完成'], { res: t }));
+          s.push(step('olc', '等待人工确认课件大纲', [], { res: t, confirm: 'outline', doneTag: '已确认' }));
+        }
+        if (run.ks) s.push(step('ppt', '课件生成', ['已提交课件生成任务：主题「' + run.theme + '」，知识体系「' + run.ks.name + '」' + run.ksCount + ' 个节点', '正在生成课件，请稍候...', '课件生成完成'], { res: t, api: true, out: [] }));
+        else s.push(step('ppt', '课件生成', ['正在根据大纲生成课件页面...', '正在匹配版式与配图...', '正在生成课件讲稿...', '课件生成完成'], { res: t, out: ['《' + topic + '》课件.pptx', '《' + topic + '》课件讲稿.docx'] }));
       } else if (t === '教案生成') {
         s.push(step('lesson', '教案生成', ['正在按「' + ({ lite: '精简', standard: '标准', full: '完整', custom: '自定义' }[state.lessonMode]) + '」结构生成教案（' + state.lesson.length + ' 项）...', '正在编写' + state.lesson.slice(0, 3).join('、') + '等内容...', '教案生成完成'], { res: t, out: ['《' + topic + '》教案.docx'] }));
       } else if (t === '情景互动游戏生成') {
@@ -452,14 +511,20 @@
     var topic = topicOf(text);
     var res = state.selected.length === 1 ? RES_NAME[state.selected[0]] : '备课资源';
     run = { topic: topic, title: '《' + topic + '》' + res, text: text, skipConfirm: false, kp: mockKP(topic), outline: mockOutline(topic), steps: [], edit: null };
+    // 从能力图谱带入了知识体系且要生成课件：调用课件生成接口（发起即调用，流程推进到「课件生成」时等待结果）
+    if (prep && prep.ks && state.selected.indexOf('课件生成') >= 0) {
+      run.ks = knowledgeSystem(prep); run.theme = (prep.current && prep.current.name) || topic;
+      run.ksCount = ksSize(run.ks);
+    }
     run.steps = buildSteps(topic);
+    if (run.ks) callGenPpt();
     $('#wbHero').hidden = true; $('#wbInput').hidden = true;
     $('#wbFlow').hidden = false; $('#wbTop').hidden = false; $('#wbSide').hidden = false;
     $('#wbTopTitle').textContent = run.title;
     advance();
   }
   // 推进：当前步骤逐条出消息；需确认的步骤停下等待
-  function cur() { return run.steps.find(function (s) { return s.status === 'run' || s.status === 'wait'; }); }
+  function cur() { return run.steps.find(function (s) { return s.status === 'run' || s.status === 'wait' || s.status === 'fail'; }); }
   function advance() {
     clearTimeout(timer);
     var s = cur();
@@ -468,11 +533,16 @@
       if (!s) { render(); return; }
       s.status = 'run';
     }
-    if (s.status === 'wait') { render(); return; }
+    if (s.status === 'wait' || s.status === 'fail') { render(); return; }
     if (s.confirm) {
       if (run.skipConfirm && s.confirm !== 'kp') { s.status = 'done'; s.doneTag = '已跳过确认'; s.open = false; }
       else s.status = 'wait';
       render(); if (s.status === 'done') timer = setTimeout(advance, 500); return;
+    }
+    if (s.api && s.shown >= s.msgs.length - 1) {
+      if (run.api.status === 'pending') { s.shown = s.msgs.length - 1; render(); return; }   // 等接口返回
+      if (run.api.status === 'error') { s.status = 'fail'; render(); return; }
+      if (!s.out.length) s.out = [{ name: fileNameOf(run.api.url, run.theme + '.pptx'), url: run.api.url }];
     }
     if (s.shown < s.msgs.length) { s.shown++; render(); timer = setTimeout(advance, 650); return; }
     s.status = 'done'; s.open = !!(s.pack); render();
@@ -491,6 +561,7 @@
     if (s.status === 'done') return '<span class="tag done">' + (s.doneTag || '已完成') + '</span>';
     if (s.status === 'wait') return '<span class="tag wait">等待确认</span>';
     if (s.status === 'run') return '<span class="tag run">进行中</span>';
+    if (s.status === 'fail') return '<span class="tag fail">失败</span>';
     return '<span class="tag idle">等待中</span>';
   }
   function render() {
@@ -510,6 +581,8 @@
     var c = $('#wbCenter'); if (!run.edit) c.scrollTop = c.scrollHeight;
   }
   function msgBox(s, msgs, i) {
+    if (s.status === 'fail') return '<div class="fbox fmsg"><ul>' + msgs.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join('') +
+      '<li class="err">课件生成失败：' + esc(run.api.err) + '</li></ul><div style="margin-top:8px"><button class="btn-p" data-act="retry" type="button">重新生成</button></div></div>';
     var live = s.status === 'run';
     if (!s.open && !live) return '<div class="fbox fmsg"><button class="tog" data-tog="' + i + '" type="button">查看详情 - ' + msgs.length + ' 条消息 ⌄</button></div>';
     return '<div class="fbox fmsg"><ul>' + msgs.map(function (m, k) {
@@ -561,7 +634,7 @@
       '<div class="fcard-f"><button class="btn-g" data-act="skipall" type="button">跳过全部资源确认</button><button class="btn-p" data-act="confirm" type="button">确认脚本，继续生成</button></div></div>';
   }
   function outFiles() {
-    var out = []; run.steps.forEach(function (s) { (s.out || []).forEach(function (f) { out.push({ name: f, res: s.res }); }); });
+    var out = []; run.steps.forEach(function (s) { (s.out || []).forEach(function (f) { out.push(typeof f === 'string' ? { name: f, res: s.res } : { name: f.name, url: f.url, res: s.res }); }); });
     return out;
   }
   function sizeOf(n) { var e = n.split('.').pop(); return { pptx: '8.6 MB', docx: '236 KB', html: '1.2 MB', png: '1.8 MB', mp4: '46.3 MB' }[e] || '120 KB'; }
@@ -570,9 +643,12 @@
     return '<div class="fbox"><div class="pk-sum"><span class="ic">📦</span><div><b>' + esc(run.title) + ' · 资源包</b><div class="s">共 ' + fs.length + ' 个文件</div></div>' +
       '<span style="flex:1"></span><button class="btn-p" data-act="dlall" type="button">全部下载</button></div><div class="pk">' +
       fs.map(function (f) {
+        if (f.url) return '<div class="pk-row">' + extTag(f.name) + '<span class="nm" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="sz"></span>' +
+          '<a class="a" href="' + esc(f.url) + '" target="_blank" rel="noopener" style="text-decoration:none">下载</a></div>';
         return '<div class="pk-row">' + extTag(f.name) + '<span class="nm" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="sz">' + sizeOf(f.name) + '</span>' +
           '<button class="a" data-act="preview" data-f="' + esc(f.name) + '" type="button">预览</button><button class="a" data-act="dl" data-f="' + esc(f.name) + '" type="button">下载</button></div>';
-      }).join('') + '</div></div>';
+      }).join('') + '</div>' +
+      (fs.some(function (f) { return f.url && expiresMin(f.url); }) ? '<div class="pk-tip">课件下载链接 ' + expiresMin(fs.find(function (f) { return f.url; }).url) + ' 分钟内有效</div>' : '') + '</div>';
   }
 
   /* ── 渲染：右侧任务进度 ── */
@@ -587,7 +663,7 @@
     state.selected.forEach(function (t) {
       var ss = run.steps.filter(function (x) { return x.res === t; });
       var s = ss.every(function (x) { return x.status === 'done'; }) ? 'done' : ss.some(function (x) { return x.status === 'wait'; }) ? 'wait' : ss.some(function (x) { return x.status !== 'idle'; }) ? 'run' : 'idle';
-      var files = []; ss.forEach(function (x) { if (x.status === 'done') files = files.concat(x.out || []); });
+      var files = []; ss.forEach(function (x) { if (x.status === 'done') files = files.concat((x.out || []).map(function (f) { return typeof f === 'string' ? f : f.name; })); });
       nodes.push({ name: t, s: s, sub: files.length ? ['已完成 ' + files.length + ' 个'].concat(files) : [] });
     });
     nodes.push({ name: '资源打包', s: st('pack'), sub: [] });
@@ -674,7 +750,7 @@
   // 顶栏
   $('#wbSideTog').addEventListener('click', function () { var s = $('#wbSide'); s.hidden = !s.hidden; });
   $('#wbNew').addEventListener('click', function () {
-    clearTimeout(timer); run = null;
+    clearTimeout(timer); run = null; if (apiCtl) { apiCtl.abort(); apiCtl = null; }
     state.text = ''; state.files = []; $('#wbTa').value = '';
     $('#wbFlow').hidden = true; $('#wbFlow').innerHTML = ''; $('#wbTop').hidden = true; $('#wbSide').hidden = true;
     $('#wbHero').hidden = false; $('#wbInput').hidden = false;
@@ -701,7 +777,12 @@
       var a = t.getAttribute('data-act');
       if (a === 'confirm') { commitEdit(); confirmStep(false); }
       else if (a === 'skipall') { commitEdit(); confirmStep(true); }
-      else if (a === 'dlall') toast('演示环境：资源包下载为示意');
+      else if (a === 'retry') { var fs0 = cur(); if (fs0 && fs0.api) { fs0.status = 'run'; fs0.shown = fs0.msgs.length - 1; callGenPpt(); render(); } }
+      else if (a === 'dlall') {
+        var real = outFiles().filter(function (f) { return f.url; });
+        real.forEach(function (f) { window.open(f.url, '_blank', 'noopener'); });
+        toast(real.length ? '已打开课件下载链接；其余文件为演示示意' : '演示环境：资源包下载为示意');
+      }
       else if (a === 'dl') toast('演示环境：' + t.getAttribute('data-f') + ' 下载为示意');
       else if (a === 'preview') toast('演示环境：' + t.getAttribute('data-f') + ' 预览为示意');
     }
@@ -732,22 +813,54 @@
     return c.total ? '帮我基于「' + cur.name + '」' + type + '及其下级 ' + c.total + ' 个节点（' + countText(c) + '）生成课件'
       : '帮我基于「' + cur.name + '」' + type + '生成课件';
   }
+  var TYPE_COLOR = { '行业': '#6366f1', '子行业': '#8b5cf6', '岗位': '#0ea5e9', '能力项': '#10b981', '技能': '#f59e0b' };
+  var htOpen = {};   // 展开的节点路径
+  // 上级链路（每层只有一个子节点）+ 当前节点 + 下级整棵树，合成一棵树
+  function htRoot(p) {
+    var chain = (p.chain || []).slice(), tree = prepTreeOf(p);
+    var cur = chain.length ? chain.pop() : (p.current || { type: '', name: '' });
+    var node = { type: cur.type, name: cur.name, children: tree, cur: true };
+    for (var i = chain.length - 1; i >= 0; i--) node = { type: chain[i].type, name: chain[i].name, children: [node], anc: true };
+    return node;
+  }
+  function htWalk(n, id, fn) { fn(n, id); (n.children || []).forEach(function (k, i) { htWalk(k, id + '.' + i, fn); }); }
+  function htDefault(root) { htOpen = {}; htWalk(root, '0', function (n, id) { if (n.anc || n.cur) htOpen[id] = true; }); }
+  function htHTML(n, id) {
+    var kids = n.children || [], open = htOpen[id] && kids.length;
+    var col = TYPE_COLOR[n.type] || '#94a3b8';
+    var box = '<span class="ht-box' + (n.cur ? ' cur' : n.anc ? ' anc' : '') + (kids.length && !n.anc ? ' has' : '') + '"' + (kids.length && !n.anc ? ' data-ht-id="' + id + '"' : '') + ' title="' + esc(n.type + '：' + n.name) + '">' +
+      (n.type ? '<em style="background:' + (n.cur ? 'rgba(255,255,255,.28)' : col) + '">' + esc(n.type) + '</em>' : '') + '<span class="n">' + esc(n.name) + '</span>' +
+      (kids.length && !n.anc ? '<span class="tg">' + (open ? '−' : '+' + kids.length) + '</span>' : '') + '</span>';
+    return '<div class="ht-node">' + box + (open ? '<div class="ht-kids">' + kids.map(function (k, i) { return htHTML(k, id + '.' + i); }).join('') + '</div>' : '') + '</div>';
+  }
+  var htRootNode = null;
+  function renderHT() { $('#wbPrepTree').innerHTML = htHTML(htRootNode, '0'); }
+  // 让当前节点出现在可视区（树较高时上级链路在垂直中部）
+  function htFocus() {
+    var tb = $('#wbPrepTree'), cur = tb.querySelector('.ht-box.cur'); if (!cur) return;
+    var a = tb.getBoundingClientRect(), b = cur.getBoundingClientRect();
+    tb.scrollTop += (b.top - a.top) - tb.clientHeight / 2 + b.height / 2;
+    tb.scrollLeft = 0;
+  }
   function renderPrep(p) {
     var box = $('#wbPrep'); box.hidden = !p; if (!p) return;
-    var chain = p.chain || [];
-    $('#wbPrepChain').innerHTML = chain.map(function (n, i) { return '<span class="' + (i === chain.length - 1 ? 'cur' : '') + '"><em>' + esc(n.type || '') + '</em><b>' + esc(n.name) + '</b></span>' + (i < chain.length - 1 ? '<span class="sep">›</span>' : ''); }).join('');
-    var c = prepCounts(p), tree = prepTreeOf(p);
+    var c = prepCounts(p);
     $('#wbPrepSum').innerHTML = c.total ? '下级共 <b>' + c.total + '</b> 个节点：' + esc(countText(c)) : '暂无下级节点';
-    function node(n, depth) {
-      var kids = n.children || [];
-      var head = '<em>' + esc(n.type || '') + '</em><span class="n" title="' + esc(n.name) + '">' + esc(n.name) + '</span>';
-      if (!kids.length) return '<div class="lf">' + head + '</div>';
-      return '<details' + (depth === 0 && tree.length <= 3 ? ' open' : '') + '><summary>' + head + '<span class="c">' + kids.length + '</span></summary><div class="kids-in">' +
-        kids.map(function (k) { return node(k, depth + 1); }).join('') + '</div></details>';
-    }
-    var tb = $('#wbPrepTree'); tb.hidden = !tree.length;
-    tb.innerHTML = tree.map(function (n) { return node(n, 0); }).join('');
+    htRootNode = htRoot(p); htDefault(htRootNode); renderHT(); htFocus();
+    var ks = p.ks;
+    $('#wbPrepKs').innerHTML = ks && ks.tree
+      ? '所属知识体系：<b>' + esc(ks.tree.name) + '</b> · 课程 ' + ksCount(ks.tree, '课程') + ' 门 · 技能 ' + ks.skillCount + ' 个' +
+        (ks.otherMajors && ks.otherMajors.length ? '<span class="note">（另涉及 ' + esc(ks.otherMajors.join('、')) + '）</span>' : '') + '；生成课件时按此知识体系生成'
+      : '未找到所属专业的知识体系（该节点在知识体系中没有对应技能），生成的课件为演示内容';
   }
+  $('#wbPrep').addEventListener('click', function (e) {
+    var t = e.target.closest('[data-ht-id]');
+    if (t) { var id = t.getAttribute('data-ht-id'); htOpen[id] = !htOpen[id]; renderHT(); return; }
+    var b = e.target.closest('[data-ht]'); if (!b || !htRootNode) return;
+    if (b.getAttribute('data-ht') === 'all') htWalk(htRootNode, '0', function (n, id) { if ((n.children || []).length) htOpen[id] = true; });
+    else htDefault(htRootNode);
+    renderHT(); htFocus();
+  });
   $('#wbPrepClose').addEventListener('click', function () { prep = null; try { localStorage.removeItem(PREP_KEY); } catch (e) {} renderPrep(null); });
 
   /* ── 启动 ── */
