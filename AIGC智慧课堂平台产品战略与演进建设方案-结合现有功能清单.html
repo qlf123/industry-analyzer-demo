@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIGC智慧课堂平台产品战略与演进建设方案</title>
+<style>
+:root{--ink:#1f2328;--sub:#536071;--muted:#7c8795;--line:#dfe5ec;--blue:#155eef;--bluebg:#eef4ff;--green:#087f5b;--greenbg:#eaf8f1;--amber:#9a6700;--amberbg:#fff7e6;--red:#b42318;--redbg:#fff0ee;--purple:#6941c6;--purplebg:#f4f0ff}
+*{box-sizing:border-box}body{margin:0;padding:0 18px 70px;background:#f4f6f8;color:var(--ink);font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:15px;line-height:1.8}.page{max-width:1060px;margin:0 auto;background:#fff;padding:54px 64px 72px;box-shadow:0 1px 4px #172b4d12}.cover{border-bottom:3px solid var(--blue);padding-bottom:26px}.eyebrow{font-size:13px;color:var(--blue);font-weight:700;letter-spacing:.12em}.cover h1{font-size:31px;line-height:1.4;margin:14px 0 10px}.sub{font-size:16px;color:var(--sub)}.meta{font-size:13px;color:var(--muted);display:flex;gap:22px;flex-wrap:wrap;margin-top:17px}h2{font-size:22px;margin:52px 0 8px;padding-top:24px;border-top:1px solid #edf0f3}h2 .num{display:inline-block;min-width:45px;color:var(--blue)}h3{font-size:17px;margin:30px 0 9px;padding-left:10px;border-left:3px solid var(--blue)}h4{font-size:15px;margin:22px 0 7px}p{margin:9px 0}ul,ol{padding-left:23px}li{margin:5px 0}table{width:100%;border-collapse:collapse;margin:15px 0 9px;font-size:13.5px;line-height:1.65}th{background:var(--bluebg);color:#123b78;text-align:left;border:1px solid var(--line);padding:9px 11px}td{border:1px solid var(--line);padding:9px 11px;vertical-align:top;color:#4d5967}td strong{color:var(--ink)}.callout{margin:15px 0;padding:12px 16px;border-left:3px solid var(--blue);background:var(--bluebg);border-radius:0 6px 6px 0}.ok{border-color:var(--green);background:var(--greenbg)}.warn{border-color:var(--amber);background:var(--amberbg)}.danger{border-color:var(--red);background:var(--redbg)}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin:15px 0}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:15px 0}.card{border:1px solid var(--line);border-radius:8px;padding:14px 15px}.card b{display:block;margin-bottom:5px}.blue{background:var(--bluebg);border-color:#cfe0ff}.green{background:var(--greenbg);border-color:#ccebdd}.purple{background:var(--purplebg);border-color:#e0d6fb}.amber{background:var(--amberbg);border-color:#f0dfb4}.tag{display:inline-block;border-radius:12px;padding:1px 8px;font-size:12px;font-weight:700;white-space:nowrap}.retain{color:var(--green);background:var(--greenbg)}.refactor{color:var(--blue);background:var(--bluebg)}.defer{color:var(--amber);background:var(--amberbg)}.new{color:var(--purple);background:var(--purplebg)}.flow{list-style:none;padding:0;counter-reset:step}.flow li{counter-increment:step;position:relative;padding:7px 0 7px 40px;border-bottom:1px dashed #e5e9ef}.flow li:before{content:counter(step);position:absolute;left:0;top:8px;width:25px;height:25px;line-height:25px;text-align:center;border-radius:50%;background:var(--bluebg);color:var(--blue);font-weight:700;font-size:12px}.kpi{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}.k{flex:1;min-width:145px;border:1px solid var(--line);border-radius:8px;padding:13px 15px}.k .v{font-size:23px;font-weight:700;line-height:1.2;color:var(--blue)}.k .l{font-size:12px;color:var(--muted);margin-top:3px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f7f8fa;border:1px solid var(--line);padding:14px 16px;border-radius:7px;font-size:13px;line-height:1.9;white-space:pre-wrap}.source{font-size:12.5px;color:var(--muted)}footer{margin-top:52px;padding-top:17px;border-top:1px solid #edf0f3;color:var(--muted);font-size:12.5px}@media(max-width:760px){body{padding:0 8px 40px}.page{padding:28px 20px}.grid,.grid2{grid-template-columns:1fr}.cover h1{font-size:25px}}
+.diagram{margin:18px 0;border:1px solid var(--line);border-radius:8px;padding:15px 12px;background:#fcfdff}.diagram svg{display:block;width:100%;height:auto}.caption{text-align:center;color:var(--muted);font-size:12.5px;margin-top:8px}
+</style>
+</head>
+<body>
+<main class="page">
+<section class="cover">
+  <div class="eyebrow">职业教育数字化平台 · 产品战略与演进方案</div>
+  <h1>AIGC智慧课堂平台产品战略与演进建设方案</h1>
+  <div class="sub">基于现有功能清单，从内容生成平台升级为专业能力标准与教学证据闭环平台</div>
+  <div class="meta"><span>版本：V1.0</span><span>依据：AIGC智慧课堂功能清单更新版</span><span>适用：产品重整、架构升级、后续版本规划与项目立项</span></div>
+</section>
+
+<div class="callout ok"><strong>核心结论：</strong>当前平台已经形成“平台基础数据 + 知识库/图谱 + AIGC 备课 + 课程任务 + 师生成长”的产品雏形。下一阶段不应继续无序增加功能，而应以“能力标准”为主线，统一核心对象、状态、版本和主流程，把已有功能重新组织成可扩展的平台架构。</div>
+
+<div class="kpi"><div class="k"><div class="v">5</div><div class="l">现有能力层</div></div><div class="k"><div class="v">1</div><div class="l">统一产品主线</div></div><div class="k"><div class="v">12</div><div class="l">核心领域对象</div></div><div class="k"><div class="v">90 天</div><div class="l">首轮重整验证周期</div></div><div class="k"><div class="v">4</div><div class="l">演进阶段</div></div></div>
+
+<h2 id="s1"><span class="num">01</span>现状判断与建设目标</h2>
+<h3>1.1 当前平台的真实产品形态</h3>
+<p>现有功能已经超过单纯的 AI 备课工具，实际包含五类能力：</p>
+<table><tr><th style="width:150px">能力层</th><th>现有功能</th><th style="width:190px">当前价值</th></tr><tr><td>平台基础层</td><td>账号、角色、菜单、院校、组织、专业、年级、班级、课程、学期、课程计划</td><td>支撑院校化部署和教学组织</td></tr><tr><td>知识与图谱层</td><td>能力图谱、知识体系、知识库、文档解析、分段、向量化、混合检索、图谱查看</td><td>支撑校本知识和 AI 检索</td></tr><tr><td>AI 生产层</td><td>整课生成、课件、教案、图片、视频、情景互动游戏、多方案对比与融合</td><td>提高教师内容生产效率</td></tr><tr><td>教学运行层</td><td>课程、学习资源、情景任务、任务提交、AI 初评、教师复核、课程反馈</td><td>形成课堂教学和作业评价闭环</td></tr><tr><td>发展分析层</td><td>教师成长、教师画像、教学档案、学生成长、成长计划、管理看板</td><td>支撑师生发展和管理分析</td></tr></table>
+<h3>1.2 当前最主要的问题</h3>
+<div class="grid"><div class="card danger"><b>主线不够清晰</b>功能较多，但用户可能从“主题”进入，也可能从“知识库、备课中心、课程或任务”进入，核心业务路径不唯一。</div><div class="card warn"><b>概念边界不统一</b>能力图谱、知识体系、知识图谱和知识库之间的职责关系不够明确，容易造成数据重复和产品理解成本。</div><div class="card purple"><b>扩展成本偏高</b>课程、资源、任务、成长、评价各自发展，若没有统一领域对象和事件机制，后续新增赛训、证书和能力画像会反复改造。</div></div>
+<h3>1.3 建设目标</h3>
+<ol><li>把能力标准从“生成辅助条件”提升为平台核心索引。</li><li>把工作台、备课中心和任务中心收敛为一条可追溯的教学生产链。</li><li>把知识库、资源、任务、评价和成长数据建立统一关系。</li><li>把 AI 能力抽象成模型无关、可配置、可审计的公共服务。</li><li>让新增专业、证书、赛项和教学场景可以通过配置和扩展实现，而不是重复开发。</li></ol>
+
+<h2 id="s2"><span class="num">02</span>产品定位与目标用户</h2>
+<h3>2.1 产品定位</h3>
+<div class="callout"><strong>定位：</strong>面向职业院校的专业能力标准、AI 教学生产与学习证据闭环平台。</div>
+<p>平台不是通用资源商城，也不是单纯的 AI 内容生成器。它要帮助学校把“市场/岗位要求”转化为“学校教学内容”，再通过课程任务和评价记录验证学生学习结果。</p>
+<div class="mono">岗位与专业标准
+    ↓
+能力点与知识点
+    ↓
+课程与教学任务
+    ↓
+AI 生成课件、教案、视频和互动资源
+    ↓
+学习、提交、评价与反馈
+    ↓
+能力证据、教师改进和专业建设数据</div>
+<h3>2.2 目标用户分层</h3>
+<table><tr><th>用户层</th><th>代表角色</th><th>核心任务</th><th>平台价值</th></tr><tr><td>决策层</td><td>校领导、教务处、项目负责人</td><td>看建设成效、教学质量和专业成果</td><td>专业建设、教学运行和成果数据看板</td></tr><tr><td>专业层</td><td>专业带头人、教研组长</td><td>维护专业标准、课程体系和任务资源</td><td>能力图谱、版本、映射和资源治理</td></tr><tr><td>教学层</td><td>任课教师、企业导师</td><td>备课、发布任务、评价和审核</td><td>AI 生产、课程任务和协同审核</td></tr><tr><td>学习层</td><td>学生</td><td>学习资源、提交任务、查看反馈</td><td>学习记录、成长计划和能力证据</td></tr><tr><td>运营层</td><td>信息中心、平台管理员</td><td>账号、权限、配置、接口和安全</td><td>租户治理、审计、数据导出和运维</td></tr></table>
+
+<h3>2.3 产品优势与竞争边界</h3>
+<p>平台的优势需要分层表达：政策适配是采购入口，管理效率是直接收益，专业能力标准与教学证据闭环才是长期壁垒。</p>
+<table><tr><th style="width:140px">价值层</th><th>客户获得的价值</th><th style="width:180px">竞争性质</th></tr><tr><td>政策适配</td><td>支撑岗课赛证、产教融合、数字化教学和专业建设项目</td><td>采购入场券，不是独有优势</td></tr><tr><td>管理效率</td><td>减少备课、资源整理、任务发布、评价和统计的重复工作</td><td>可销售价值，但容易被模仿</td></tr><tr><td>专业教学闭环</td><td>把岗位标准转化为能力点、课程任务和可追溯学习证据</td><td>核心差异化和长期壁垒</td></tr></table>
+<h4>与替代方案的差异</h4>
+<table><tr><th>替代方案</th><th>它擅长什么</th><th>我们的差异</th><th>产品策略</th></tr><tr><td>通用 AI 产品</td><td>快速生成文本、课件和图片，使用灵活、成本低</td><td>基于岗位标准、能力点和校本知识生成；结果可引用、可审核、可发布、可评价</td><td>不与通用 AI 比模型能力，重点比专业约束和教学闭环</td></tr><tr><td>教务系统 / LMS</td><td>管理人、课、班级、排课、成绩和任务</td><td>管理标准、能力、任务、资源和证据</td><td>与现有系统对接，不替换其基础管理能力</td></tr><tr><td>公共资源平台</td><td>提供大量课程、教材和公共教学资源</td><td>沉淀学校自己的岗位标准、企业案例、任务和评价资产</td><td>做校本专业能力层，不竞争资源数量</td></tr><tr><td>同类智慧教学平台</td><td>课程资源、互动教学、作业、评价和多端管理</td><td>强化职业教育的能力标准、岗课赛证映射和能力证据回流</td><td>用专业场景和数据闭环形成差异</td></tr><tr><td>知识库 / RAG 工具</td><td>文档上传、检索、问答和内容生成</td><td>检索结果进入课程、任务、审核和学生评价流程</td><td>把知识检索嵌入教学工作流，而不是单独卖知识库</td></tr></table>
+<div class="callout warn"><strong>必须诚实面对的边界：</strong>如果平台只能完成“输入主题、生成教案/课件”，通用 AI 已经可以满足大部分需求。平台只有在能力标准、来源引用、审核发布、任务评价和证据沉淀真正打通后，才具备独立产品价值。</div>
+<h4>核心产品公式</h4>
+<div class="mono">产品价值 = 专业标准结构化 × AI 教学生产效率 × 教学证据可追溯
+
+没有专业标准：平台容易退化为通用 AI。
+没有 AI 生产：标准维护成本过高，教师难以持续使用。
+没有教学证据：平台容易退化为知识库或 LMS。</div>
+<h4>客户演示必须证明的三个场景</h4>
+<ol><li><strong>标准驱动生成：</strong>同一教学主题下，平台能展示能力点、知识来源、评价指标和生成结果之间的关系。</li><li><strong>标准变更影响：</strong>岗位或证书标准发生变化后，平台能列出受影响的课程、任务和资源。</li><li><strong>评价反哺改进：</strong>学生任务评价结果能回到能力点，形成补训建议和课程改进依据。</li></ol>
+<h3>2.4 建议正式定位</h3>
+<div class="callout ok"><strong>对外产品定位：</strong>职业教育专业教学智能工作台。</div>
+<p><strong>产品副标题：</strong>以专业标准和校本知识驱动 AI 教学内容生产与课堂应用。</p>
+<p><strong>一句话介绍：</strong>面向职业院校专业教师和教研团队，基于专业知识库、能力图谱和课程任务模型，快速生成、审核、发布和复用教学资源，帮助学校沉淀专业教学资产，并逐步形成可追溯的学习与能力证据。</p>
+<p>“AIGC 智慧课堂”可以作为技术和场景描述，但不建议作为唯一产品定位。当前平台最成熟的价值是专业教学内容生产与课堂应用；“专业能力标准与教学证据平台”是中长期战略方向。</p>
+<h3>2.5 四个可售卖的产品价值</h3>
+<table><tr><th style="width:145px">价值包</th><th>客户得到什么</th><th style="width:210px">对应现有功能</th></tr><tr><td>教师生产效率</td><td>快速生成教案、课件、任务说明、评价量规和配套资源，减少重复备课和资源整理。</td><td>工作台、备课中心、资源生成、知识库检索</td></tr><tr><td>专业教学标准化</td><td>统一课程目标、能力点、知识点、岗位要求和校本教学内容，形成专业数字资产。</td><td>能力图谱、知识体系、知识库、全景图谱</td></tr><tr><td>课堂教学闭环</td><td>资源审核、课程发布、任务提交、AI 初评、教师复核和课程反馈形成连续流程。</td><td>课程管理、任务中心、学生端、AI 评价</td></tr><tr><td>学校资产沉淀</td><td>沉淀学校自己的专业知识、企业案例、教学任务、评价标准和教师建设成果。</td><td>资源管理、版本记录、教师档案、管理看板</td></tr></table>
+<div class="callout warn"><strong>销售边界：</strong>不要把产品卖成“另一个通用 AI”，也不要承诺替换学校教务系统或公共资源平台。应强调“通用 AI 负责生成内容，本平台负责让内容符合专业标准、进入教学流程并沉淀为学校资产”。</div>
+<h3>2.6 不同角色的用户流程与用户获得</h3>
+<p>平台不能只按“管理端、教师端、学生端”设计，而应围绕不同角色的真实目标设计任务流。每个角色都应有明确的进入场景、关键动作、产出和可感知收益。</p>
+<table><tr><th style="width:120px">角色</th><th>典型进入场景</th><th>用户流程</th><th>直接获得</th></tr><tr><td><strong>校级管理者</strong><br>校领导 / 教务处</td><td>查看专业建设和教学运行情况</td><td>登录看板 → 选择学期/专业 → 查看课程、资源、任务、评价和教师使用情况 → 导出项目成果</td><td>看到建设成果和使用成效；减少人工汇总；支撑项目验收和质量分析</td></tr><tr><td><strong>专业负责人</strong><br>专业带头人 / 教研组长</td><td>更新专业标准或建设课程体系</td><td>导入标准 → 维护能力点和知识体系 → 映射课程与任务 → 审核资源 → 查看专业薄弱点 → 发布新版本</td><td>专业标准可维护；课程建设有依据；资源和任务可复用；标准变更影响可追踪</td></tr><tr><td><strong>任课教师</strong></td><td>准备一堂课或布置一次任务</td><td>选择课程和能力点 → 选择知识库资料 → 确认教学目标 → AI 生成资源和任务 → 修改审核 → 发布到教学班 → 查看提交和评价</td><td>减少重复备课；快速形成完整资源包；任务和评价标准更规范；历史成果可复用</td></tr><tr><td><strong>企业导师</strong></td><td>审核岗位标准、安全要求或实训内容</td><td>接收审核提醒 → 查看能力点/任务/资源 → 对关键步骤和参数提出意见 → 审核通过或退回 → 留下企业标准依据</td><td>参与成本低；企业要求能进入课堂；审核意见留痕；减少反复线下沟通</td></tr><tr><td><strong>学生</strong></td><td>完成课程学习和实训任务</td><td>进入课程 → 学习资源 → 接收任务 → 上传文字/图片/视频/文件 → 查看教师评价 → 按反馈重新提交或完成补训</td><td>知道要学什么、怎么完成；获得具体反馈；看到学习记录和能力证据；减少无目标刷题</td></tr><tr><td><strong>平台管理员</strong><br>信息中心</td><td>维护学校平台和数据安全</td><td>配置组织和权限 → 同步基础教务数据 → 管理模型、知识库和文件存储 → 查看日志 → 备份与导出数据</td><td>权限清晰；系统可审计；数据可迁移；降低后续运维和厂商锁定风险</td></tr></table>
+<h4>角色之间的协同关系</h4>
+<div class="mono">校级管理者：看结果、看成效、做决策
+        ↑
+专业负责人：定标准、管版本、审质量
+        ↑
+任课教师：做教学、发任务、看评价
+        ↕                         ↕
+企业导师：审岗位与安全标准       学生：学资源、做任务、留证据
+        ↑
+平台管理员：提供权限、数据、模型与运行保障</div>
+<h4>不同角色的核心用户获得</h4>
+<div class="grid"><div class="card blue"><b>管理者获得确定性</b>不再只看到功能上线，而是能看到专业、课程、资源、任务和评价的真实运行结果。</div><div class="card green"><b>教师获得生产力</b>不只是生成一篇教案，而是获得一套可审核、可发布、可复用的课堂资源和任务。</div><div class="card purple"><b>专业负责人获得资产</b>岗位标准、知识体系、课程关系、任务资源和版本记录成为可持续维护的专业资产。</div><div class="card amber"><b>企业导师获得参与效率</b>通过轻量审核入口影响课程内容，不需要承担完整的系统操作和日常教学管理。</div><div class="card blue"><b>学生获得反馈</b>从“完成作业并得到分数”升级为“知道问题在哪里、如何改进、留下什么证据”。</div><div class="card green"><b>管理员获得可控性</b>权限、模型、知识库、操作日志、数据导出和备份都有统一管理入口。</div></div>
+<div class="callout ok"><strong>用户流程设计原则：</strong>不同角色看到的不是同一套功能菜单，而是围绕各自目标的任务入口。教师从“我要准备一堂课”进入，专业负责人从“我要维护一个专业标准”进入，学生从“我要完成一个学习任务”进入，管理者从“我要判断建设是否有效”进入。</div>
+<h3>2.7 完整业务流程</h3>
+<p>平台的完整业务不是从“生成课件”开始，也不是在“学生提交作业”结束，而是一个以专业标准为源头、以教学任务为载体、以评价证据为反馈的持续循环。</p>
+<div class="diagram">
+<svg viewBox="0 0 980 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AIGC智慧课堂平台完整业务流程图">
+  <defs><marker id="bizArrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#7b8794"/></marker></defs>
+  <rect x="18" y="18" width="944" height="484" rx="12" fill="#fff" stroke="#dfe5ec"/>
+  <text x="40" y="48" font-size="17" font-weight="700" fill="#1f2328">平台端到端业务流程</text>
+  <text x="40" y="72" font-size="12.5" fill="#7c8795">从学校和专业建设启动，到教学运行、评价反馈和下一轮标准迭代。</text>
+  <g font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="12.5">
+    <g transform="translate(45,105)"><rect width="150" height="82" rx="8" fill="#eef4ff" stroke="#b9d1ff"/><text x="75" y="27" text-anchor="middle" font-weight="700" fill="#155eef">一 项目启动</text><text x="75" y="49" text-anchor="middle" fill="#536071">确定专业、课程、班级</text><text x="75" y="67" text-anchor="middle" fill="#536071">角色、目标和标准源</text></g>
+    <g transform="translate(220,105)"><rect width="150" height="82" rx="8" fill="#f4f0ff" stroke="#d6c8fa"/><text x="75" y="27" text-anchor="middle" font-weight="700" fill="#6941c6">二 专业建模</text><text x="75" y="49" text-anchor="middle" fill="#536071">标准拆分与能力建模</text><text x="75" y="67" text-anchor="middle" fill="#536071">课程和能力映射</text></g>
+    <g transform="translate(395,105)"><rect width="150" height="82" rx="8" fill="#eaf8f1" stroke="#bfe8d4"/><text x="75" y="27" text-anchor="middle" font-weight="700" fill="#087f5b">三 课程建设</text><text x="75" y="49" text-anchor="middle" fill="#536071">知识库与资源整理</text><text x="75" y="67" text-anchor="middle" fill="#536071">任务和评价量规配置</text></g>
+    <g transform="translate(570,105)"><rect width="150" height="82" rx="8" fill="#fff7e6" stroke="#f0dba8"/><text x="75" y="27" text-anchor="middle" font-weight="700" fill="#9a6700">四 教学生产</text><text x="75" y="49" text-anchor="middle" fill="#536071">教师选择能力点</text><text x="75" y="67" text-anchor="middle" fill="#536071">AI 生成并人工审核</text></g>
+    <g transform="translate(745,105)"><rect width="150" height="82" rx="8" fill="#fff0ee" stroke="#f3c0ba"/><text x="75" y="27" text-anchor="middle" font-weight="700" fill="#b42318">五 课堂运行</text><text x="75" y="49" text-anchor="middle" fill="#536071">发布课程与任务</text><text x="75" y="67" text-anchor="middle" fill="#536071">学生学习与提交</text></g>
+    <g transform="translate(132,280)"><rect width="165" height="82" rx="8" fill="#fff0ee" stroke="#f3c0ba"/><text x="82" y="27" text-anchor="middle" font-weight="700" fill="#b42318">六 评价反馈</text><text x="82" y="49" text-anchor="middle" fill="#536071">AI 初评与教师复核</text><text x="82" y="67" text-anchor="middle" fill="#536071">学生查看结果并改进</text></g>
+    <g transform="translate(338,280)"><rect width="165" height="82" rx="8" fill="#f4f0ff" stroke="#d6c8fa"/><text x="82" y="27" text-anchor="middle" font-weight="700" fill="#6941c6">七 证据沉淀</text><text x="82" y="49" text-anchor="middle" fill="#536071">结果关联能力点</text><text x="82" y="67" text-anchor="middle" fill="#536071">记录来源、时间和评价人</text></g>
+    <g transform="translate(544,280)"><rect width="165" height="82" rx="8" fill="#eaf8f1" stroke="#bfe8d4"/><text x="82" y="27" text-anchor="middle" font-weight="700" fill="#087f5b">八 教学分析</text><text x="82" y="49" text-anchor="middle" fill="#536071">识别班级和课程短板</text><text x="82" y="67" text-anchor="middle" fill="#536071">生成改进与补训建议</text></g>
+    <g transform="translate(750,280)"><rect width="165" height="82" rx="8" fill="#eef4ff" stroke="#b9d1ff"/><text x="82" y="27" text-anchor="middle" font-weight="700" fill="#155eef">九 版本迭代</text><text x="82" y="49" text-anchor="middle" fill="#536071">更新课程、任务和资源</text><text x="82" y="67" text-anchor="middle" fill="#536071">专业负责人审核发布</text></g>
+    <path d="M195 146 H216" stroke="#7b8794" stroke-width="2" marker-end="url(#bizArrow)"/><path d="M370 146 H391" stroke="#7b8794" stroke-width="2" marker-end="url(#bizArrow)"/><path d="M545 146 H566" stroke="#7b8794" stroke-width="2" marker-end="url(#bizArrow)"/><path d="M720 146 H741" stroke="#7b8794" stroke-width="2" marker-end="url(#bizArrow)"/>
+    <path d="M820 188 C820 235 740 258 710 274" fill="none" stroke="#7b8794" stroke-width="2" marker-end="url(#bizArrow)"/><path d="M544 321 H507" stroke="#7b8794" stroke-width="2" marker-end="url(#bizArrow)"/><path d="M338 321 H302" stroke="#7b8794" stroke-width="2" marker-end="url(#bizArrow)"/><path d="M709 321 H746" stroke="#7b8794" stroke-width="2" marker-end="url(#bizArrow)"/>
+    <path d="M832 365 C832 430 100 430 100 190" fill="none" stroke="#155eef" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#bizArrow)"/><text x="455" y="452" text-anchor="middle" font-size="12" fill="#155eef">标准或教学数据变化后，触发下一轮专业、课程和资源迭代</text>
+  </g>
+</svg>
+<div class="caption">图 3：完整业务流程。平台既支持一次性的课程建设，也支持基于教学证据持续迭代。</div>
+</div>
+<table><tr><th style="width:110px">阶段</th><th>输入</th><th>关键业务动作</th><th>输出</th><th style="width:145px">主要责任角色</th></tr><tr><td>项目启动</td><td>学校建设目标、专业范围、标准源</td><td>确定专业、课程、班级、教师、企业导师和验收指标</td><td>项目章程、角色责任书、标准源清单</td><td>校级管理者、平台管理员</td></tr><tr><td>专业建模</td><td>岗位、证书、赛项、行业规范</td><td>拆分能力点和知识点，配置评价指标，建立课程映射</td><td>能力图谱、知识体系、映射关系</td><td>专业负责人、企业导师</td></tr><tr><td>课程建设</td><td>课程目标、知识库、历史资源</td><td>整理资料，配置任务、资源标签和评价量规</td><td>课程资源包、任务模板、评价标准</td><td>专业负责人、任课教师</td></tr><tr><td>教学生产</td><td>课程、能力点、知识库、教师要求</td><td>AI 生成资源，教师修改、审核和发布</td><td>已审核课件、教案、视频、互动资源和任务</td><td>任课教师、企业导师</td></tr><tr><td>课堂运行</td><td>教学班、学生、已发布资源和任务</td><td>学生学习、提交成果，教师查看过程</td><td>学习记录、提交物、过程数据</td><td>教师、学生</td></tr><tr><td>评价反馈</td><td>学生提交、评价量规、AI 初评</td><td>教师复核、退回、指导改进和确认结果</td><td>最终评价、评语和补交记录</td><td>任课教师</td></tr><tr><td>证据沉淀</td><td>学习和评价结果</td><td>关联能力点，记录来源、时间、评分人和版本</td><td>能力证据、课程证据、专业数据</td><td>平台自动沉淀</td></tr><tr><td>分析迭代</td><td>能力证据、课程反馈、标准变化</td><td>识别薄弱点，更新课程、任务和资源，发新版本</td><td>改进建议、新版本专业资产</td><td>专业负责人、教研组</td></tr></table>
+
+<h2 id="s3"><span class="num">03</span>目标平台架构</h2>
+<h3>3.1 五层架构</h3>
+<table><tr><th style="width:160px">层级</th><th>核心职责</th><th>现有功能归属</th><th>后续扩展</th></tr><tr><td>治理与权限层</td><td>租户、组织、用户、角色、数据范围、审计、配置版本</td><td>账号、角色、菜单、组织、院校信息</td><td>多租户、细粒度数据权限、统一身份认证</td></tr><tr><td>教育基础数据层</td><td>专业、课程、学期、教学班、教师、学生、课程计划</td><td>专业、年级、班级、课程和课表</td><td>课程模板与开课实例分离、教务接口</td></tr><tr><td>能力与内容资产层</td><td>岗位、能力点、知识点、标准、知识库、资源、任务和评价量规</td><td>能力图谱、知识体系、知识库、资源管理</td><td>版本、来源、审批、复用和影响分析</td></tr><tr><td>AI 与教学工作流层</td><td>检索、生成、编辑、审核、发布、任务提交和评价</td><td>工作台、备课中心、任务中心、AI 初评</td><td>模型网关、异步任务、插件式资源生成</td></tr><tr><td>证据与分析层</td><td>学习记录、评价证据、能力画像、教师发展和看板</td><td>成长中心、教师画像、管理员概览</td><td>能力证据、专业质量分析、赛训和证书</td></tr></table>
+<h4>整体平台架构图</h4>
+<div class="diagram">
+<svg viewBox="0 0 980 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AIGC智慧课堂平台五层架构图">
+  <defs><marker id="archArrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#7b8794"/></marker></defs>
+  <rect x="18" y="18" width="944" height="584" rx="12" fill="#ffffff" stroke="#dfe5ec"/>
+  <text x="42" y="48" font-size="17" font-weight="700" fill="#1f2328">AIGC 智慧课堂平台目标架构</text>
+  <text x="42" y="72" font-size="12.5" fill="#7c8795">上层应用共享统一领域对象；底层能力通过服务化和接口化支撑后续专业、赛训、证书与多院校扩展。</text>
+  <g font-family="PingFang SC, Microsoft YaHei, sans-serif">
+    <rect x="55" y="98" width="870" height="62" rx="8" fill="#f4f0ff" stroke="#d6c8fa"/><text x="76" y="124" font-size="14" font-weight="700" fill="#6941c6">证据与分析层</text><text x="76" y="146" font-size="12.5" fill="#536071">学生能力证据 · 教师发展证据 · 专业质量分析 · 教学管理员看板 · 补训与改进</text>
+    <rect x="55" y="174" width="870" height="72" rx="8" fill="#fff7e6" stroke="#f0dba8"/><text x="76" y="201" font-size="14" font-weight="700" fill="#9a6700">AI 与教学工作流层</text><text x="76" y="223" font-size="12.5" fill="#536071">教学设计 · 检索增强生成 · 课件/教案/视频/互动资源 · 审核发布 · 课程任务 · AI 初评 · 教师复核</text>
+    <rect x="55" y="260" width="870" height="84" rx="8" fill="#eaf8f1" stroke="#bfe8d4"/><text x="76" y="288" font-size="14" font-weight="700" fill="#087f5b">能力与内容资产层</text><text x="76" y="311" font-size="12.5" fill="#536071">岗位标准 · 能力点 · 知识点 · 知识体系 · 知识库 · 课程资源 · 教学任务 · 评价量规 · 版本与来源</text><text x="76" y="331" font-size="12" fill="#087f5b">平台核心主数据：所有应用通过统一 ID、关系、状态和版本访问</text>
+    <rect x="55" y="358" width="870" height="72" rx="8" fill="#eef4ff" stroke="#b9d1ff"/><text x="76" y="385" font-size="14" font-weight="700" fill="#155eef">教育基础数据层</text><text x="76" y="407" font-size="12.5" fill="#536071">院校 · 组织 · 专业 · 课程模板 · 教学班 · 学期 · 教师 · 学生 · 课程计划</text>
+    <rect x="55" y="444" width="870" height="70" rx="8" fill="#f7f8fa" stroke="#dfe5ec"/><text x="76" y="471" font-size="14" font-weight="700" fill="#1f2328">治理与权限层</text><text x="76" y="493" font-size="12.5" fill="#536071">租户 · 账号 · 角色 · 数据范围 · 配置中心 · 操作审计 · 数据导入导出 · 安全与备份</text>
+    <path d="M490 160 V170" stroke="#7b8794" stroke-width="2" marker-end="url(#archArrow)"/><path d="M490 246 V256" stroke="#7b8794" stroke-width="2" marker-end="url(#archArrow)"/><path d="M490 344 V354" stroke="#7b8794" stroke-width="2" marker-end="url(#archArrow)"/><path d="M490 430 V440" stroke="#7b8794" stroke-width="2" marker-end="url(#archArrow)"/>
+    <rect x="55" y="540" width="250" height="38" rx="7" fill="#ffffff" stroke="#b9d1ff"/><text x="180" y="564" text-anchor="middle" font-size="12" fill="#155eef">教务系统 / 统一身份认证</text>
+    <rect x="365" y="540" width="250" height="38" rx="7" fill="#ffffff" stroke="#bfe8d4"/><text x="490" y="564" text-anchor="middle" font-size="12" fill="#087f5b">模型服务 / 向量库 / 文件存储</text>
+    <rect x="675" y="540" width="250" height="38" rx="7" fill="#ffffff" stroke="#d6c8fa"/><text x="800" y="564" text-anchor="middle" font-size="12" fill="#6941c6">赛训 / 证书 / 实训设备接口</text>
+    <path d="M180 514 V535" stroke="#7b8794" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#archArrow)"/><path d="M490 514 V535" stroke="#7b8794" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#archArrow)"/><path d="M800 514 V535" stroke="#7b8794" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#archArrow)"/>
+  </g>
+</svg>
+<div class="caption">图 2：平台整体架构。能力与内容资产层是核心主数据层，AI 和教学工作流层是生产与运行层，证据与分析层负责反馈和扩展。</div>
+</div>
+<div class="callout warn"><strong>架构约束：</strong>新增功能优先接入统一领域对象和公共服务，不直接在某个页面新增独立数据表、独立知识库或独立模型调用链。</div>
+<h3>3.2 核心领域对象</h3>
+<p>后续研发必须围绕统一对象，而不是围绕页面开发。建议优先统一以下对象：</p>
+<table><tr><th>对象</th><th>定义</th><th>必须具备的属性</th></tr><tr><td>专业</td><td>学校的专业组织单元</td><td>专业代码、层级、适用学制、状态、版本</td></tr><tr><td>课程</td><td>可复用的课程模板</td><td>课程目标、能力点、知识点、适用专业、版本</td></tr><tr><td>教学班</td><td>某学期某班级的实际开课</td><td>班级、教师、学期、课程、状态</td></tr><tr><td>标准</td><td>岗位、证书、赛项或行业规范来源</td><td>来源、版本、发布日期、适用范围、有效期</td></tr><tr><td>能力点</td><td>学生需要掌握的可观察能力</td><td>描述、评价指标、安全要求、来源、版本</td></tr><tr><td>知识点</td><td>支撑能力形成的知识单元</td><td>定义、前置关系、来源、关联资料</td></tr><tr><td>任务</td><td>教师布置给学生的学习或实训活动</td><td>目标、步骤、提交物、截止时间、评价量规</td></tr><tr><td>资源</td><td>课件、教案、视频、图片、互动脚本等内容</td><td>类型、来源、状态、版本、标签、审核记录</td></tr><tr><td>证据</td><td>学生能力或学习结果的可追溯记录</td><td>对象、得分、评价人、时间、来源、复核状态</td></tr></table>
+
+<h2 id="s4"><span class="num">04</span>现有功能调整清单</h2>
+<table><tr><th style="width:150px">现有模块</th><th style="width:100px">处理</th><th>调整方向</th></tr><tr><td>账号与权限、院校组织、基础教务数据</td><td><span class="tag retain">保留</span></td><td>作为平台治理底座；补充租户、数据范围和统一身份认证，不再继续扩展大量展示配置。</td></tr><tr><td>能力图谱</td><td><span class="tag refactor">重构</span></td><td>增加岗位、证书、赛项、标准来源、版本、审核和影响分析，使其成为平台主索引。</td></tr><tr><td>知识体系</td><td><span class="tag refactor">重构</span></td><td>明确为学校课程知识结构，和能力图谱通过“支撑/覆盖/关联”关系连接。</td></tr><tr><td>知识库</td><td><span class="tag retain">保留</span></td><td>抽象为统一检索服务，保留解析、分段、向量、混合检索和分段关联；增加引用溯源和权限继承。</td></tr><tr><td>知识图谱、全景图谱</td><td><span class="tag refactor">重构</span></td><td>统一为关系视图，不再建设多套重复数据；图谱展示来源于统一领域对象。</td></tr><tr><td>工作台、备课中心</td><td><span class="tag refactor">合并流程</span></td><td>统一为教学设计与内容生产中心，使用相同的课程、能力点、知识库和资源对象。</td></tr><tr><td>任务中心、课程管理</td><td><span class="tag refactor">重构</span></td><td>拆分课程模板、教学班、资源包、任务实例和评价记录，形成清晰生命周期。</td></tr><tr><td>AI 初评和教师复核</td><td><span class="tag retain">保留</span></td><td>统一为评价服务；保存模型版本、评价标准、AI 结果、教师修改和最终结果。</td></tr><tr><td>教师成长、教师画像</td><td><span class="tag refactor">降级解耦</span></td><td>从核心评价改为教师发展证据和自我改进工具，取消默认排名和单一 AI 评分。</td></tr><tr><td>学生成长星</td><td><span class="tag refactor">解耦</span></td><td>作为激励层保留；新增学习行为、评价结果和能力证据三类数据，不能混为一体。</td></tr><tr><td>AI 视频、互动游戏</td><td><span class="tag defer">控制扩张</span></td><td>保留生成入口，但以异步任务和插件方式接入，不把具体媒体能力写死在核心架构。</td></tr><tr><td>赛训、证书、硬件接入</td><td><span class="tag new">后续扩展</span></td><td>先通过标准、能力点、任务和证据模型预留扩展，不在当前阶段做深度定制。</td></tr></table>
+
+<h2 id="s5"><span class="num">05</span>统一产品主流程</h2>
+<h3>5.1 核心业务闭环</h3>
+<ol class="flow"><li><strong>标准进入：</strong>导入岗位、证书、赛项、行业规范或学校专业标准，记录来源和版本。</li><li><strong>能力建模：</strong>拆分能力点，配置评价指标、安全要求和支撑知识。</li><li><strong>课程映射：</strong>建立课程、能力点、知识点和任务之间的覆盖关系。</li><li><strong>教学设计：</strong>教师选择课程、能力点和知识库，确认教学目标和任务场景。</li><li><strong>AI 生产：</strong>生成课件、教案、视频脚本或互动资源，所有结果保留生成记录。</li><li><strong>人工审核：</strong>教师修改并提交；安全、法规和实训内容可追加企业导师审核。</li><li><strong>课程发布：</strong>把资源和任务发布到具体教学班，形成任务实例。</li><li><strong>学习评价：</strong>学生学习、提交，教师复核 AI 初评并给出最终评价。</li><li><strong>证据沉淀：</strong>将评价、测验和实训结果关联到能力点，反哺课程和专业建设。</li></ol>
+<h4>第一阶段核心业务闭环图</h4>
+<div class="diagram">
+<svg viewBox="0 0 980 430" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="第一阶段核心业务闭环图">
+  <defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#7b8794"/></marker></defs>
+  <rect x="20" y="22" width="940" height="370" rx="12" fill="#ffffff" stroke="#dfe5ec"/>
+  <text x="38" y="52" font-size="16" font-weight="700" fill="#1f2328">从专业标准到能力证据的可追溯闭环</text>
+  <text x="38" y="76" font-size="12.5" fill="#7c8795">第一阶段只验证一个专业、三门课程和一个试点班级；每一步都有明确输入、输出和责任人。</text>
+  <g font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="13">
+    <g transform="translate(42,112)"><rect width="160" height="78" rx="8" fill="#eef4ff" stroke="#b9d1ff"/><text x="80" y="27" text-anchor="middle" font-weight="700" fill="#155eef">1 标准进入</text><text x="80" y="49" text-anchor="middle" fill="#536071">岗位 / 证书 / 赛项</text><text x="80" y="66" text-anchor="middle" fill="#536071">来源与版本</text></g>
+    <g transform="translate(230,112)"><rect width="160" height="78" rx="8" fill="#f4f0ff" stroke="#d6c8fa"/><text x="80" y="27" text-anchor="middle" font-weight="700" fill="#6941c6">2 能力建模</text><text x="80" y="49" text-anchor="middle" fill="#536071">能力点 / 知识点</text><text x="80" y="66" text-anchor="middle" fill="#536071">评价指标与安全要求</text></g>
+    <g transform="translate(418,112)"><rect width="160" height="78" rx="8" fill="#eaf8f1" stroke="#bfe8d4"/><text x="80" y="27" text-anchor="middle" font-weight="700" fill="#087f5b">3 教学设计</text><text x="80" y="49" text-anchor="middle" fill="#536071">课程 / 能力点</text><text x="80" y="66" text-anchor="middle" fill="#536071">任务场景与知识库</text></g>
+    <g transform="translate(606,112)"><rect width="160" height="78" rx="8" fill="#fff7e6" stroke="#f0dba8"/><text x="80" y="27" text-anchor="middle" font-weight="700" fill="#9a6700">4 AI 生产与审核</text><text x="80" y="49" text-anchor="middle" fill="#536071">课件 / 教案 / 任务</text><text x="80" y="66" text-anchor="middle" fill="#536071">教师确认后发布</text></g>
+    <g transform="translate(794,112)"><rect width="140" height="78" rx="8" fill="#fff0ee" stroke="#f3c0ba"/><text x="70" y="27" text-anchor="middle" font-weight="700" fill="#b42318">5 课堂运行</text><text x="70" y="49" text-anchor="middle" fill="#536071">发布到教学班</text><text x="70" y="66" text-anchor="middle" fill="#536071">学习与提交</text></g>
+    <g transform="translate(230,270)"><rect width="160" height="78" rx="8" fill="#fff0ee" stroke="#f3c0ba"/><text x="80" y="27" text-anchor="middle" font-weight="700" fill="#b42318">6 评价复核</text><text x="80" y="49" text-anchor="middle" fill="#536071">AI 初评 / 教师复核</text><text x="80" y="66" text-anchor="middle" fill="#536071">形成最终结果</text></g>
+    <g transform="translate(418,270)"><rect width="160" height="78" rx="8" fill="#f4f0ff" stroke="#d6c8fa"/><text x="80" y="27" text-anchor="middle" font-weight="700" fill="#6941c6">7 证据沉淀</text><text x="80" y="49" text-anchor="middle" fill="#536071">结果关联能力点</text><text x="80" y="66" text-anchor="middle" fill="#536071">记录来源与时间</text></g>
+    <g transform="translate(606,270)"><rect width="160" height="78" rx="8" fill="#eaf8f1" stroke="#bfe8d4"/><text x="80" y="27" text-anchor="middle" font-weight="700" fill="#087f5b">8 教学改进</text><text x="80" y="49" text-anchor="middle" fill="#536071">识别共性薄弱点</text><text x="80" y="66" text-anchor="middle" fill="#536071">调整课程与任务</text></g>
+    <path d="M202 151 H226" stroke="#7b8794" stroke-width="2" marker-end="url(#arrow)"/><path d="M390 151 H414" stroke="#7b8794" stroke-width="2" marker-end="url(#arrow)"/><path d="M578 151 H602" stroke="#7b8794" stroke-width="2" marker-end="url(#arrow)"/><path d="M766 151 H790" stroke="#7b8794" stroke-width="2" marker-end="url(#arrow)"/><path d="M864 194 C864 244 790 260 770 270" fill="none" stroke="#7b8794" stroke-width="2" marker-end="url(#arrow)"/><path d="M606 309 H582" stroke="#7b8794" stroke-width="2" marker-end="url(#arrow)"/><path d="M418 309 H394" stroke="#7b8794" stroke-width="2" marker-end="url(#arrow)"/><path d="M310 270 C270 250 190 235 160 192" fill="none" stroke="#155eef" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <text x="88" y="239" font-size="12" fill="#155eef">改进结果回到能力标准与课程任务</text>
+  </g>
+</svg>
+<div class="caption">图 1：第一阶段核心业务闭环。图谱不是展示终点，必须驱动教学生产；评价不是流程终点，必须沉淀为可追溯证据。</div>
+</div>
+<table><tr><th style="width:110px">节点</th><th>关键输入</th><th>关键输出</th><th style="width:150px">责任角色</th></tr><tr><td>标准进入</td><td>岗位、证书、赛项、行业规范</td><td>标准源及版本</td><td>专业负责人</td></tr><tr><td>能力建模</td><td>标准源、知识资料</td><td>能力点、知识点、评价指标</td><td>专业负责人、企业导师</td></tr><tr><td>教学设计</td><td>课程、能力点、知识库</td><td>教学目标和任务框架</td><td>教师</td></tr><tr><td>AI 生产与审核</td><td>任务框架、模板、检索资料</td><td>已审核教学资源</td><td>教师、企业导师</td></tr><tr><td>课堂运行与评价</td><td>教学班、任务、学生提交</td><td>最终评价和能力证据</td><td>学生、教师</td></tr><tr><td>教学改进</td><td>证据和共性薄弱点</td><td>课程、任务和资源新版本</td><td>教师、专业负责人</td></tr></table>
+<h3>5.2 三条产品主线</h3>
+<div class="grid"><div class="card blue"><b>主线一：专业标准</b>标准 → 能力点 → 知识点 → 课程 → 任务。</div><div class="card green"><b>主线二：教学生产</b>教学设计 → AI 生成 → 教师审核 → 课程发布。</div><div class="card purple"><b>主线三：学习证据</b>学习 → 提交 → 评价 → 证据 → 补训和改进。</div></div>
+
+<h2 id="s6"><span class="num">06</span>技术与架构扩展原则</h2>
+<h3>6.1 AI 能力平台化</h3>
+<table><tr><th>能力</th><th>不建议的做法</th><th>建议做法</th></tr><tr><td>模型</td><td>每个页面直接调用指定模型</td><td>统一模型网关，支持模型路由、降级、限流、费用和日志</td></tr><tr><td>提示词</td><td>提示词写死在前端或业务代码</td><td>提示词模板、版本、适用场景和评测结果可配置</td></tr><tr><td>知识检索</td><td>每个功能单独实现知识库检索</td><td>统一检索服务，返回文档、章节、分段和引用来源</td></tr><tr><td>生成任务</td><td>同步等待生成结果</td><td>统一异步任务中心，支持进度、暂停、失败重试和结果追溯</td></tr><tr><td>评价</td><td>AI 结果直接作为最终结果</td><td>AI 结果、教师复核、最终结果和申诉记录分层保存</td></tr></table>
+<h3>6.2 数据和接口原则</h3>
+<ul><li>所有核心对象采用统一 ID、版本号、状态和变更记录。</li><li>资源、任务、课程和证据之间通过关系关联，不通过页面字段硬编码。</li><li>生成资源必须记录输入参数、知识来源、模型版本、提示词版本和审核状态。</li><li>对外提供标准导出：专业、课程、能力点、知识点、任务、资源、证据和版本历史。</li><li>新增功能优先采用事件和插件接入，减少对核心表结构的直接侵入。</li><li>权限不仅控制菜单，还要控制对象范围、字段范围、审核权和导出权。</li></ul>
+<h3>6.3 数据生命周期</h3>
+<div class="mono">草稿 → 待审核 → 已审核 → 已发布 → 已归档
+                          ↘ 驳回 → 修订
+标准/图谱变更 → 影响分析 → 相关资源复核 → 新版本发布</div>
+
+<h2 id="s7"><span class="num">07</span>分阶段演进路线</h2>
+<h3>7.1 第一阶段：平台重整与主链路打通（0–3 个月）</h3>
+<table><tr><th>重点</th><th>工作内容</th><th>验收结果</th></tr><tr><td>产品梳理</td><td>功能地图、页面关系、角色权限、重复功能和数据流盘点</td><td>现状产品地图和问题清单</td></tr><tr><td>领域模型</td><td>统一专业、课程、教学班、能力点、知识点、资源、任务、证据等对象</td><td>领域模型和接口字典</td></tr><tr><td>主流程</td><td>打通能力点—知识库—备课—资源—任务—评价链路</td><td>一个专业、三门课程可运行</td></tr><tr><td>AI 基础服务</td><td>统一模型网关、检索服务、生成任务、版本和日志</td><td>至少两类生成能力复用同一服务</td></tr></table>
+<h3>7.2 第二阶段：专业能力标准化（4–6 个月）</h3>
+<p>完善岗位标准、能力图谱、证书/赛项映射、图谱审核、变更影响分析和专业资源资产管理。重点不是增加图谱展示，而是让能力点能进入课程、任务和评价。</p>
+<h3>7.3 第三阶段：学习证据与教学改进（7–9 个月）</h3>
+<p>完善任务评价、能力证据、学生补训、班级学情和专业质量分析。将成长星、行为数据和正式评价结果分层呈现。</p>
+<h3>7.4 第四阶段：商业化扩展（10–12 个月）</h3>
+<p>在核心链路稳定后，再扩展多专业、多院校、多租户、赛训、证书考核、教务系统对接、移动端和硬件接口。</p>
+
+<h2 id="s8"><span class="num">08</span>首轮 90 天实施计划</h2>
+<table><tr><th>周期</th><th>重点动作</th><th>输出物</th></tr><tr><td>第 1–2 周</td><td>梳理现有页面、功能、接口、数据对象和角色权限</td><td>现状功能地图、重复功能清单、权限矩阵</td></tr><tr><td>第 3–4 周</td><td>统一能力图谱、知识体系、知识库、资源、课程和任务的定义</td><td>术语表、领域模型、对象关系图</td></tr><tr><td>第 5–6 周</td><td>确定主链路和统一状态，合并工作台与备课中心的重复流程</td><td>核心流程原型、状态机、产品验收口径</td></tr><tr><td>第 7–8 周</td><td>改造生成任务、检索、资源版本和审核记录</td><td>统一 AI 服务和资源生命周期</td></tr><tr><td>第 9–11 周</td><td>选一个专业、三门课程、一个班级真实使用</td><td>试运行数据、教师反馈、学生任务证据</td></tr><tr><td>第 12 周</td><td>复盘产品价值、技术债务和下一阶段优先级</td><td>阶段评估报告、版本 2 路线图</td></tr></table>
+<h3>8.1 首轮关键指标</h3>
+<table><tr><th>指标类别</th><th>指标</th><th>建议目标</th></tr><tr><td>主链路</td><td>从能力点选择到任务发布全流程跑通</td><td>至少 20 个任务</td></tr><tr><td>教师效率</td><td>教案或课件从初稿到定稿的有效时间</td><td>较现状下降 ≥30%</td></tr><tr><td>资源复用</td><td>已生成资源被课程或任务再次引用</td><td>≥30%</td></tr><tr><td>审核质量</td><td>已发布资源有明确审核人和版本</td><td>≥95%</td></tr><tr><td>数据可追溯</td><td>资源能追溯到课程、能力点、知识来源和生成记录</td><td>≥90%</td></tr><tr><td>架构复用</td><td>课件、教案、互动资源复用同一生成和任务服务</td><td>至少 2 类资源</td></tr></table>
+
+<h2 id="s9"><span class="num">09</span>商业化与产品边界</h2>
+<h3>9.1 产品组合</h3>
+<table><tr><th>产品包</th><th>主要内容</th><th>计价建议</th></tr><tr><td>平台基础包</td><td>院校、组织、用户、课程、任务、资源和权限</td><td>按院校或部署环境</td></tr><tr><td>AI 教学生产包</td><td>知识库、检索、课件、教案、图片、视频脚本和互动资源</td><td>按学校、教师规模或用量</td></tr><tr><td>专业能力建设包</td><td>岗位标准、能力图谱、课程映射、任务库和专家评审</td><td>按专业和能力点数量</td></tr><tr><td>学习证据包</td><td>任务评价、能力证据、学生成长和专业分析</td><td>按学生数或专业数</td></tr><tr><td>年度服务包</td><td>标准更新、图谱迭代、模型升级、接口和运维</td><td>年度服务费</td></tr></table>
+<h3>9.2 产品边界</h3>
+<div class="callout danger"><strong>不建议短期内把平台定义为“全能智慧教育平台”。</strong>平台应与国家资源平台、学校教务系统和通用 LMS 协同，重点占据“专业能力标准—AI 教学生产—教学证据”的中间层。</div>
+
+<h2 id="s10"><span class="num">10</span>风险与治理要求</h2>
+<table><tr><th>风险</th><th>表现</th><th>治理要求</th></tr><tr><td>功能继续堆叠</td><td>页面越来越多，但主流程没有变短</td><td>每个需求必须说明关联的领域对象和主流程节点</td></tr><tr><td>图谱成为展示功能</td><td>图谱可查看但不进入课程、任务和评价</td><td>能力点必须能关联知识、课程、任务和证据</td></tr><tr><td>数据重复</td><td>知识体系、知识图谱和知识库各自维护同一内容</td><td>统一主数据和关系来源，图谱只做视图</td></tr><tr><td>AI 结果不可追溯</td><td>无法说明资源依据、模型和审核过程</td><td>生成输入、引用、模型、版本和人工修改必须留痕</td></tr><tr><td>教师评分被误用</td><td>系统行为数据被直接用于正式考核</td><td>行为、评价、能力证据分层；设置授权、申诉和修正机制</td></tr><tr><td>平台被厂商锁定</td><td>数据无法迁移，后续扩展成本高</td><td>合同写入数据所有权、全量导出和开放接口要求</td></tr></table>
+
+<h2 id="s11"><span class="num">11</span>最终建设原则</h2>
+<ol><li><strong>先统一对象，再增加页面。</strong>任何新增功能都必须落到统一领域模型。</li><li><strong>先打通主链路，再扩展场景。</strong>能力点到任务到评价的链路比新增视频类型更重要。</li><li><strong>先做平台服务，再做业务模块。</strong>检索、生成、审核、版本和异步任务应成为公共能力。</li><li><strong>先验证真实使用，再承诺效果。</strong>教师实际使用和资源复用比功能数量更重要。</li><li><strong>先保证可迁移，再扩大商业化。</strong>数据导出、接口文档和对象版本是平台长期可信度的基础。</li></ol>
+<div class="callout ok"><strong>最终判断：</strong>现有平台不需要推倒重做，应该从“功能集合”升级为“领域平台”。第一优先级是统一能力标准、知识资产、资源、任务和证据之间的关系；第二优先级是打通 AI 生产和教学运行；第三优先级才是扩展赛训、证书、学生画像、硬件和多院校商业化。</div>
+
+<footer>本方案结合《AIGC智慧课堂功能清单更新版.docx》整理形成，主要用于现有平台产品重整、架构升级、需求优先级排序和后续版本规划。具体技术选型、数据迁移范围、接口改造量和预算应在完成现状系统盘点后确定。</footer>
+</main>
+</body>
+</html>

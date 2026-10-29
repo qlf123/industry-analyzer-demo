@@ -248,6 +248,7 @@
     { id: 'ACC-QIAN',  name: '钱信息',   orgId: 'ORG-ROOT',       kind: '信息中心', status: '正常', studentId: null, phone: '13800000015', lastLoginAt: '2026-10-08 14:00', createdAt: '2024-09-18', createdBy: '系统',     updatedAt: '2026-09-28 09:30', updatedBy: '张校管' },
     { id: 'ACC-FENG',  name: '冯导师',   orgId: 'ORG-HOTEL', baseId: 'BASE-HOTEL', kind: '企业导师', status: '正常', studentId: null, phone: '13800000016', lastLoginAt: '2026-10-05 10:30', createdAt: '2024-09-19', createdBy: '系统', updatedAt: '2026-09-27 14:15', updatedBy: '张校管' },
     { id: 'ACC-GRAD',  name: '已毕业学生', orgId: 'ORG-TOUR-DEPT', kind: '学生',   status: '正常', studentId: 'STU-T23-1-01', phone: '13800000017', lastLoginAt: '2025-06-30 12:00', createdAt: '2024-09-20', createdBy: '系统', updatedAt: '2025-07-01 09:00', updatedBy: '系统' },
+    { id: 'ACC-STU',   name: '林同学',     orgId: 'ORG-TOUR-DEPT', kind: '学生',   status: '正常', studentId: 'STU-T24-1-01', phone: '13800000020', lastLoginAt: '2026-10-20 09:30', createdAt: '2024-09-20', createdBy: '系统', updatedAt: '2026-10-20 09:30', updatedBy: '系统' },
     { id: 'ACC-STOP',  name: '停用老师', orgId: 'ORG-HOTEL',      kind: '教师',     status: '停用', studentId: null, phone: '13800000018', lastLoginAt: '2026-01-15 09:00', createdAt: '2024-09-21', createdBy: '系统',     updatedAt: '2026-02-10 10:00', updatedBy: '刘院管' },
     { id: 'ACC-QIN',   name: '秦秘书',   orgId: 'ORG-TOURISM',    kind: '管理员',   status: '正常', studentId: null, phone: '13800000019', lastLoginAt: null, createdAt: '2026-10-16', createdBy: '系统', updatedAt: '2026-10-16', updatedBy: '系统' }
   ];
@@ -275,7 +276,8 @@
     { id: 'A-18', accountId: 'ACC-FENG', roleId: 'R-ENTERPRISE', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-19', accountId: 'ACC-GRAD', roleId: 'R-STUDENT', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-20', accountId: 'ACC-STOP', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-H26-1'], courseIds: ['CRS-H1'] }, extraPermIds: [] },
-    { id: 'A-21', accountId: 'ACC-QIN', roleId: 'R-SECRETARY', scopeOrgIds: ['ORG-TOURISM'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] }
+    { id: 'A-21', accountId: 'ACC-QIN', roleId: 'R-SECRETARY', scopeOrgIds: ['ORG-TOURISM'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
+    { id: 'A-23', accountId: 'ACC-STU', roleId: 'R-STUDENT', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] }
   ];
 
   /* ── 演示身份（下拉用；停用老师不进下拉） ── */
@@ -298,7 +300,8 @@
     { id: 'D-16', label: '冯导师',   accountId: 'ACC-FENG' },
     { id: 'D-17', label: '已毕业学生', accountId: 'ACC-GRAD' },
     { id: 'D-18', label: '停用老师', accountId: 'ACC-STOP' },
-    { id: 'D-19', label: '秦秘书', accountId: 'ACC-QIN' }
+    { id: 'D-19', label: '秦秘书', accountId: 'ACC-QIN' },
+    { id: 'D-20', label: '林同学', accountId: 'ACC-STU' }
   ];
 
   /* ── 教师档案（简单档案，组织随账号） ── */

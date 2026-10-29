@@ -103,7 +103,8 @@
       title: 'AIGC 智慧课堂<br>教学平台 · 学生端',
       groups: [
         { label: '', items: [
-          { key: 'mine', label: '我的信息', icon: '▤', href: 'student.html' }
+          { key: 'mine', label: '我的信息', icon: '▤', href: 'student.html' },
+          { key: 'assess', label: '能力测评', icon: '◈', href: 'student-assess.html' }
         ] }
       ]
     }

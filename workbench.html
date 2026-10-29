@@ -327,16 +327,25 @@
   ];
 
   /* 课件生成接口：从能力图谱带入知识体系时，「课件生成」调用此接口，返回生成的课件链接 */
-  var GEN_PPT_API = 'http://192.168.1.212:8080/api/third/generate_ppt';
+  var GEN_PPT_API = 'http://192.168.1.223:8081/api/third/generate_ppt';
   function uuid() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
   }
-  // 能力图谱带来的「所属专业知识体系」（根为专业，节点为知识体系真实 ID）转成接口要求的 {id, name, children}
+  // 接口的 knowledge_system：根为当前节点，下级为当前节点的整棵子树（节点用能力图谱 / 知识体系的真实编号）
   function knowledgeSystem(p) {
-    if (!p || !p.ks || !p.ks.tree) return null;
+    if (!p || !p.ks) return null;
     function conv(n) { return { id: String(n.id || uuid()), name: n.name, children: (n.children || []).map(conv) }; }
-    return conv(p.ks.tree);
+    var cur = p.current || {};
+    return { id: String(cur.id || uuid()), name: cur.name, children: prepTreeOf(p).map(conv) };
+  }
+  // 接口的 desc：输入框文字 +（多选时）本次选中的节点 + 当前节点往上在知识体系中直到专业的父级节点
+  function genDesc(text, p) {
+    var ps = (p && p.ks && p.ks.parents) || [], out = text;
+    if (p && p.multi && p.selected && p.selected.length)
+      out += '\n\n本次备课选中的节点（共 ' + p.selected.length + ' 个）：\n' + p.selected.map(function (x) { return '- ' + x.type + '：' + x.path; }).join('\n');
+    if (ps.length) out += '\n\n所属知识体系（' + (p.multi ? '选中节点' : '当前节点') + '往上至专业）：\n' + ps.map(function (x) { return '- ' + x; }).join('\n');
+    return out;
   }
   function ksSize(n) { return 1 + (n.children || []).reduce(function (a, k) { return a + ksSize(k); }, 0); }
   function ksCount(n, type) { return (n.type === type ? 1 : 0) + (n.children || []).reduce(function (a, k) { return a + ksCount(k, type); }, 0); }
@@ -344,6 +353,10 @@
     try { var seg = new URL(url).pathname.split('/').pop(); return decodeURIComponent(seg) || fallback; } catch (e) { return fallback; }
   }
   function expiresMin(url) { var m = /[?&]X-Amz-Expires=(\d+)/.exec(url || ''); return m ? Math.round(+m[1] / 60) : null; }
+  // 当前登录用户的名称（作为课件作者）
+  function currentUserName() {
+    try { var id = UI.currentIdentity(DEMO.getState()); return (id && id.account && id.account.name) || ''; } catch (e) { return ''; }
+  }
   var apiCtl = null;
   function callGenPpt() {
     if (apiCtl) apiCtl.abort();
@@ -351,7 +364,7 @@
     var api = run.api = { status: 'pending', url: '', err: '' }, myRun = run;
     fetch(GEN_PPT_API, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: apiCtl ? apiCtl.signal : undefined,
-      body: JSON.stringify({ knowledge_system: run.ks, theme: run.theme, desc: run.text })
+      body: JSON.stringify({ author: currentUserName(), knowledge_system: run.ks, theme: run.theme, desc: run.desc })
     }).then(function (r) {
       return r.json().catch(function () { throw new Error('接口返回格式错误（HTTP ' + r.status + '）'); });
     }).then(function (j) {
@@ -446,7 +459,7 @@
   var run = null;   // {topic, title, steps:[], skipConfirm, kp:[], outline:[], files:[]}
   var timer = null;
   function topicOf(text) {
-    if (prep && prep.current) return prep.current.name;
+    if (prep && (prep.theme || prep.current)) return prep.theme || prep.current.name;
     var t = text.trim().replace(/^(请|麻烦)?(帮我|给我|为我)?(做|生成|写|制作|设计)?(一份|一个|一节|个|份|节)?/, '')
       .replace(/(的)?(课件|教案|情景互动游戏|游戏|图片素材|图片|视频素材|讲解视频|视频)$/, '').replace(/[。.！!]$/, '');
     return (t || text.trim()).slice(0, 24);
@@ -487,7 +500,7 @@
           s.push(step('outline', '课件大纲生成', ['正在为您生成课件大纲...', '正在调用AI生成课件大纲', '课件大纲已生成', '课件大纲生成完成'], { res: t }));
           s.push(step('olc', '等待人工确认课件大纲', [], { res: t, confirm: 'outline', doneTag: '已确认' }));
         }
-        if (run.ks) s.push(step('ppt', '课件生成', ['已提交课件生成任务：主题「' + run.theme + '」，知识体系「' + run.ks.name + '」' + run.ksCount + ' 个节点', '正在生成课件，请稍候...', '课件生成完成'], { res: t, api: true, out: [] }));
+        if (run.ks) s.push(step('ppt', '课件生成', ['已提交课件生成任务：主题「' + run.theme + '」，知识体系 ' + run.ksCount + ' 个节点，所属专业「' + ((prep.ks.tree && prep.ks.tree.name) || '') + '」', '正在生成课件，请稍候...', '课件生成完成'], { res: t, api: true, out: [] }));
         else s.push(step('ppt', '课件生成', ['正在根据大纲生成课件页面...', '正在匹配版式与配图...', '正在生成课件讲稿...', '课件生成完成'], { res: t, out: ['《' + topic + '》课件.pptx', '《' + topic + '》课件讲稿.docx'] }));
       } else if (t === '教案生成') {
         s.push(step('lesson', '教案生成', ['正在按「' + ({ lite: '精简', standard: '标准', full: '完整', custom: '自定义' }[state.lessonMode]) + '」结构生成教案（' + state.lesson.length + ' 项）...', '正在编写' + state.lesson.slice(0, 3).join('、') + '等内容...', '教案生成完成'], { res: t, out: ['《' + topic + '》教案.docx'] }));
@@ -513,7 +526,7 @@
     run = { topic: topic, title: '《' + topic + '》' + res, text: text, skipConfirm: false, kp: mockKP(topic), outline: mockOutline(topic), steps: [], edit: null };
     // 从能力图谱带入了知识体系且要生成课件：调用课件生成接口（发起即调用，流程推进到「课件生成」时等待结果）
     if (prep && prep.ks && state.selected.indexOf('课件生成') >= 0) {
-      run.ks = knowledgeSystem(prep); run.theme = (prep.current && prep.current.name) || topic;
+      run.ks = knowledgeSystem(prep); run.theme = prep.theme || (prep.current && prep.current.name) || topic; run.desc = genDesc(text, prep);
       run.ksCount = ksSize(run.ks);
     }
     run.steps = buildSteps(topic);
@@ -809,6 +822,10 @@
   }
   function countText(c) { return Object.keys(c.counts).map(function (k) { return k + ' ' + c.counts[k]; }).join('、'); }
   function prepText(p) {
+    if (p.multi) {
+      var cm = prepCounts(p), names = p.selected.map(function (x) { return '「' + x.name + '」'; }).join('');
+      return '帮我基于' + names + '这 ' + p.selected.length + ' 个节点及其下级（共 ' + cm.total + ' 个节点：' + countText(cm) + '）生成一份课件';
+    }
     var cur = p.current || {}, c = prepCounts(p), type = cur.type || '节点';
     return c.total ? '帮我基于「' + cur.name + '」' + type + '及其下级 ' + c.total + ' 个节点（' + countText(c) + '）生成课件'
       : '帮我基于「' + cur.name + '」' + type + '生成课件';
@@ -819,7 +836,9 @@
   function htRoot(p) {
     var chain = (p.chain || []).slice(), tree = prepTreeOf(p);
     var cur = chain.length ? chain.pop() : (p.current || { type: '', name: '' });
-    var node = { type: cur.type, name: cur.name, children: tree, cur: true };
+    // 多选：根为共同上级，路径节点按上级显示，选中的节点高亮
+    if (p.multi) (function mark(l) { l.forEach(function (n) { if (n.sel) n.cur = true; else if (n.path) { n.anc = true; mark(n.children || []); } }); })(tree);
+    var node = { type: cur.type, name: cur.name, children: tree, cur: !p.multi, anc: !!p.multi };
     for (var i = chain.length - 1; i >= 0; i--) node = { type: chain[i].type, name: chain[i].name, children: [node], anc: true };
     return node;
   }
@@ -845,7 +864,8 @@
   function renderPrep(p) {
     var box = $('#wbPrep'); box.hidden = !p; if (!p) return;
     var c = prepCounts(p);
-    $('#wbPrepSum').innerHTML = c.total ? '下级共 <b>' + c.total + '</b> 个节点：' + esc(countText(c)) : '暂无下级节点';
+    if (p.multi) $('#wbPrepSum').innerHTML = '已选 <b>' + p.selected.length + '</b> 个节点，连同下级共 <b>' + c.total + '</b> 个节点：' + esc(countText(c));
+    else $('#wbPrepSum').innerHTML = c.total ? '下级共 <b>' + c.total + '</b> 个节点：' + esc(countText(c)) : '暂无下级节点';
     htRootNode = htRoot(p); htDefault(htRootNode); renderHT(); htFocus();
     var ks = p.ks;
     $('#wbPrepKs').innerHTML = ks && ks.tree

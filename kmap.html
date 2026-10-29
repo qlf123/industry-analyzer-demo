@@ -218,6 +218,14 @@ a.lmenu{text-decoration:none}
 .ctxmenu button.danger{color:var(--crit)}
 .ctxmenu .ctx-h{padding:4px 10px 5px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--rule-2);margin-bottom:3px;
   max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctxmenu button:disabled{color:var(--muted);cursor:not-allowed;background:none}
+.ctxmenu button .mm-hint{margin-left:auto;padding-left:12px;font-size:11px;color:var(--muted)}
+.ctxmenu .mm-sep{height:1px;background:var(--rule-2);margin:3px 4px}
+.vrow .vmore{opacity:0}
+.vrow:hover .vmore,.vrow.sel .vmore,.vmore:focus-visible,.vmore[aria-expanded="true"]{opacity:1}
+.vt-man{flex:0 0 auto;font-size:9.5px;font-weight:600;color:var(--ink-2);border:1px solid var(--ink-3,#94a3b8);border-radius:4px;padding:0 3px;margin-left:5px;line-height:1.5}
+.aidlg select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--card-2);color:var(--ink)}
+.add-ai{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .aidlg textarea{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--rule);border-radius:8px;
   background:var(--card-2);color:var(--ink);resize:vertical;min-height:56px}
 .aidlg textarea:focus{outline:none;border-color:var(--brand)}
@@ -327,8 +335,39 @@ a.lmenu{text-decoration:none}
 .vtog{width:18px;height:18px;flex:0 0 18px;display:inline-flex;align-items:center;justify-content:center;
   font-size:9px;color:var(--muted);font-family:var(--mono);border-radius:4px}
 .vtog.on{cursor:pointer}
+.vpick{flex:0 0 auto;width:14px;height:14px;margin:0 2px 0 0;accent-color:var(--brand);cursor:pointer}
+.vpick:disabled{cursor:not-allowed;opacity:.55}
+#vPickBtn[aria-pressed="true"]{background:var(--brand-soft);color:var(--brand-ink);border-color:var(--brand)}
+.vpick-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border-top:1px solid var(--rule);background:var(--card-2);font-size:12.5px}
+.vpick-bar[hidden]{display:none}
+.vpick-bar .chips{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+.vpick-bar .chip{display:inline-flex;align-items:center;gap:4px;max-width:180px;padding:1px 4px 1px 8px;border:1px solid var(--rule);border-radius:999px;background:var(--card)}
+.vpick-bar .chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vpick-bar .chip button{border:none;background:none;color:var(--muted);cursor:pointer;padding:0 3px;font-size:13px;line-height:1}
+.vpick-bar .chip button:hover{color:var(--crit)}
+.vpick-bar .hint{color:var(--muted)}
 .vtog.on:hover{background:var(--brand-soft);color:var(--brand)}
 .nd-gen{margin-top:4px}
+.vt-regen{margin-left:6px;font-size:12px;color:var(--muted,#94a3b8);font-weight:400}
+.vt-ai{flex:0 0 auto;font-size:9.5px;font-weight:600;color:var(--brand-ink);border:1px dashed var(--brand);border-radius:4px;padding:0 3px;margin-left:5px;line-height:1.5}
+.vrow.vgap{color:var(--ink-2)}
+.vrow.vgap .vname{color:var(--brand-ink)}
+.vl-tag.gap{color:var(--brand);border-style:dashed}
+.vgap-lv{flex:0 0 auto;font-size:10px;font-family:var(--mono);color:var(--muted)}
+.vgap-sum{font-size:11.5px;color:var(--ink-2);padding:3px 8px 3px 26px;line-height:1.6;display:flex;gap:6px;flex-wrap:wrap;align-items:baseline}
+.vgap-sum b{font-weight:600}
+.vgap-sum b.ok{color:var(--good)} .vgap-sum b.warn{color:var(--warn-ink)} .vgap-sum b.crit{color:var(--crit)}
+.vgap-sum .lnk{border:none;background:none;padding:0;color:var(--brand-ink);font:inherit;font-size:11.5px;cursor:pointer}
+.vgap-sum .lnk:hover{text-decoration:underline}
+.gap-res{margin-top:8px}
+.gap-sum{font-size:12.5px;line-height:1.7;margin:4px 0 8px}
+.gap-it{border:1px solid var(--rule);border-radius:8px;padding:8px 10px;margin-bottom:6px}
+.gap-it .gh{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.gap-it .gh b{font-size:12.5px}
+.gap-it .gd{font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.6}
+.gap-it .gr{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.6}
+.gap-it .gh .sp{flex:1}
+.gap-meta{font-size:11.5px;color:var(--muted);margin-top:4px}
 .vkind{flex:0 0 auto;font-size:10px;font-weight:600;border:1px solid currentColor;border-radius:4px;padding:0 4px;line-height:1.4}
 .vl-tag{flex:0 0 auto;font-size:9.5px;font-weight:600;border:1px solid currentColor;border-radius:4px;padding:0 3px;line-height:1.5;opacity:.9}
 .vops{flex:0 0 auto;display:inline-flex;gap:4px;margin-left:6px}
@@ -377,6 +416,7 @@ body.fs-on{overflow:hidden}
           <div class="card burst">
             <div class="burst-h"><span class="burst-t">能力图谱树</span><span style="flex:1"></span>
               <button class="btn-s" id="marketBtn" type="button" title="让 AI 获取市场最新能力" style="display:none">获取市场最新能力</button>
+              <button class="btn-s" id="vPickBtn" type="button" aria-pressed="false" title="勾选多个节点一起带入备课">多选备课</button>
               <button class="btn-s" id="vSaveBtn" type="button" disabled>保存</button>
               <button class="btn-s" id="fullBtn" type="button" title="切换到横向延展的全景图">全屏</button></div>
             <div class="vlegend" aria-hidden="true">
@@ -392,6 +432,7 @@ body.fs-on{overflow:hidden}
               <span class="lg man"><i></i>人工</span>
             </div>
             <div class="vtree" id="vTree" aria-label="能力图谱树"></div>
+            <div class="vpick-bar" id="vPickBar" hidden></div>
           </div>
           <div class="card trends" id="marketTrends" style="display:none">
             <div class="trends-h"><span class="burst-t">市场趋势</span><span class="trends-note">由 AI 基于模型知识归纳</span><span style="flex:1"></span>
@@ -462,6 +503,18 @@ body.fs-on{overflow:hidden}
     <div class="rpt-sum" id="rptSum"></div>
     <div class="rpt-body" id="rptBody"></div>
   </div>
+</dialog>
+<div class="ctxmenu" id="vMoreMenu" role="menu" hidden></div>
+<dialog class="aidlg" id="addDlg">
+  <form method="dialog" id="addForm">
+    <h2 id="addDlgTitle">增加节点</h2>
+    <label id="addKindRow">类型<select id="addKind"><option>知识点</option><option>操作步骤</option><option>标准</option><option>案例</option></select></label>
+    <label>名称<input id="addName" type="text" maxlength="20" required></label>
+    <label>说明<textarea id="addDesc" maxlength="40" rows="2"></textarea></label>
+    <div class="add-ai"><button class="btn-s" type="button" id="addAiBtn">AI 帮我生成</button><span id="addAiNote"></span></div>
+    <div class="note" id="addDlgNote"></div>
+    <div class="acts"><button class="btn-s" value="cancel" formnovalidate>取消</button><button class="btn-p" value="save">添加</button></div>
+  </form>
 </dialog>
 <div class="ctxmenu" id="ctxMenu" role="menu" hidden>
   <div class="ctx-h" id="ctxTitle"></div>
@@ -538,17 +591,19 @@ let posY = {}, subY = {}, indY = 0, posBottom = 0;
 function recomputeLayout(){
   posLayout = [];
   let y = TOP + 26, prev = null;
+  const emptyY = {};
   builtSubs.forEach(sid=>{
     if(prev !== null) y += PSTEP*0.7;
+    if(!sub[sid].positionIds.length){ emptyY[sid] = y; y += PSTEP; }
     sub[sid].positionIds.forEach(pid=>{ posLayout.push({id:pid, y}); y += PSTEP; });
     prev = sid;
   });
   posY = Object.fromEntries(posLayout.map(p=>[p.id,p.y]));
-  posBottom = Math.max(...posLayout.map(p=>p.y)) + 24;
+  posBottom = Math.max(TOP + 26, y - PSTEP) + 24;
   subY = {};
   builtSubs.forEach(sid=>{
     const ys = sub[sid].positionIds.map(p=>posY[p]);
-    subY[sid] = (Math.min(...ys)+Math.max(...ys))/2;
+    subY[sid] = ys.length ? (Math.min(...ys)+Math.max(...ys))/2 : emptyY[sid];
   });
   indY = (TOP + 12 + posBottom)/2;
 }
@@ -881,6 +936,9 @@ function openNodeEdit(i, j){
   $('#nodeDlg').showModal(); $('#nodeName').select();
 }
 $('#nodeForm').addEventListener('submit', ev=>{
+  if(sklEditing){ if(ev.submitter && ev.submitter.value==='save') saveAiSkillEdit(); else sklEditing = null; return; }
+  if(manEditing){ if(ev.submitter && ev.submitter.value==='save') saveManualEdit(); else manEditing = null; return; }
+  if(leafEditing){ if(ev.submitter && ev.submitter.value==='save') saveAiLeafEdit(); else leafEditing = null; return; }
   if(vEditing && ev.submitter && ev.submitter.value==='save'){ saveVNodeEdit(); return; }
   const e = editing; editing = null;
   if(!e || !ev.submitter || ev.submitter.value!=='save') return;
@@ -924,6 +982,8 @@ $('#ctxMenu').addEventListener('click', e=>{
   const b = e.target.closest('[data-ctx]'); if(!b) return;
   if(vCtxTarget){
     const key = vCtxTarget.key; hideCtx();
+    if(isAiSkill(key)){ if(b.dataset.ctx==='edit') editAiSkill(key); else if(b.dataset.ctx==='regen') regenAiSkill(key); else deleteAiSkill(key); return; }
+    if(isAiLeaf(key)){ if(b.dataset.ctx==='edit') editAiLeaf(key); else if(b.dataset.ctx==='regen') regenAiLeaf(key); else deleteAiLeaf(key); return; }
     if(b.dataset.ctx==='edit') vEditNode(key);
     else if(b.dataset.ctx==='regen') vRegenNode(key);
     else vDeleteNode(key);
@@ -1547,6 +1607,8 @@ function openNodeDetail(type, id, level){
     html += ndSec('下级节点', `<div class="nd-kv">${a.skills.length} 个技能</div>` +
       (!a.skills.length && joinedNodes.some(r=>r.id===id) ? `<button type="button" class="btn-s nd-gen" data-ndgen="${esc(id)}">AI 生成技能</button>` : ''));
   } else return;
+  const mr0 = manualOf(type, id);
+  if(mr0) html = ndSec('来源', ndTags([manualSrc(mr0)], true)) + html;
   $('#ndTitle').textContent = title;
   $('#ndSub').textContent = label;
   $('#ndSub').hidden = !label;
@@ -1571,10 +1633,27 @@ function showVDetail(m){
       if(EMERGING_REASONS[m.key]) html += ndSec('新兴原因', `<p class="nd-p">${esc(EMERGING_REASONS[m.key])}</p>`);
     }
     if(k && k.abilityIds && k.abilityIds.length) html += ndSec('归属能力项', ndTags(k.abilityIds.map(x=>abl[x].name)));
+    if(k && k.personal){
+      const rr = aiSkillRec(m.key);
+      html += ndSec('来源', ndTags([`AI 生成 · ${k.personal.source || ''}` + (rr && rr.item.edited ? ' · 已人工编辑' : '')], true)) +
+        (k.personal.desc ? ndSec('说明', `<p class="nd-p">${esc(k.personal.desc)}</p>`) : '') +
+        (k.personal.reason ? ndSec('理由', `<p class="nd-p">${esc(k.personal.reason)}</p>`) : '') +
+        `<button type="button" class="btn-s nd-gen" data-gapedit="${esc(m.key)}">编辑</button> <button type="button" class="btn-s nd-gen" data-gapregen="${esc(m.key)}">重新生成</button> <button type="button" class="btn-s nd-gen" data-gaprm="${esc(m.key)}">删除</button>`;
+    }
+    const mk = manualOf('skl', m.key);
+    if(mk) html += ndSec('来源', ndTags([manualSrc(mk)], true)) + (mk.desc ? ndSec('说明', `<p class="nd-p">${esc(mk.desc)}</p>`) : '');
     if(k && k.ks && k.ks.length) html += ndSec('知识体系位置', `<div class="nd-kv">${k.ks.map(n=>esc(n.name)).join(' › ')}</div>`);
-    html += ndSec('下级节点', `<div class="nd-kv">${k ? k.children.length : 0} 个</div>`);
+    html += ndSec('下级节点', `<div class="nd-kv">${k ? k.children.length : 0} 个</div>` +
+      (k && k.personal && !k.children.length ? `<button type="button" class="btn-s nd-gen" data-ndgen="${esc(m.key)}">AI 生成下级节点</button>` : ''));
   } else if(m.type==='lf'){
     typeLabel = m.kind || '';
+    if(isAiLeaf(m.key)){
+      const lr = aiLeafRec(m.key);
+      html += ndSec('来源', ndTags(['AI 生成' + (lr && lr.node.edited ? ' · 已人工编辑' : '')], true)) +
+        `<button type="button" class="btn-s nd-gen" data-leafedit="${esc(m.key)}">编辑</button> <button type="button" class="btn-s nd-gen" data-leafregen="${esc(m.key)}">重新生成</button> <button type="button" class="btn-s nd-gen" data-leafdel="${esc(m.key)}">删除</button>`;
+    }
+    const ml = manualOf('lf', m.key);
+    if(ml) html += ndSec('来源', ndTags([manualSrc(ml)], true)) + (ml.desc ? ndSec('说明', `<p class="nd-p">${esc(ml.desc)}</p>`) : '');
     const lv0 = aiStore[m.key];
     html += lv0 && lv0.status==='ok' ? ndSec('下级节点', `<div class="nd-kv">${lv0.items.length} 个</div>`)
       : `<div class="nd-empty">尚未细分下级节点</div><button type="button" class="btn-s nd-gen" data-ndgen="${esc(m.key)}">AI 生成下级节点</button>`;
@@ -1628,12 +1707,19 @@ function skillsUnder(type, key){
   else if(type === 'skl') out.add(key);
   return [...out].filter(k => skl[k] && skl[k].ks && skl[k].ks.length);
 }
-function prepKS(){
-  const {type, key, kind} = ndCur;
+function prepKS(t, ms){
+  const {type, key, kind} = t || ndCur;
   let sids, focus = null;   // focus：当前是技能下的节点时，只带「技能 → … → 当前节点」这一支及其下级
   if(type === 'lf' || type === 'ai'){
-    const path = []; let m = vMeta[key];
-    while(m && m.type !== 'skl'){ path.unshift({id: m.key, type: m.type==='lf' ? m.kind : (m.kind || '下级节点'), name: m.name}); m = vMeta[m.parent]; }
+    const path = []; let m;
+    if(ms){   // 按勾选时记录的路径找所属技能
+      let i = ms.length - 1;
+      while(i >= 0 && ms[i].type !== 'skl'){ path.unshift({id: ms[i].key, type: ms[i].type==='lf' ? ms[i].kind : (ms[i].kind || '下级节点'), name: ms[i].name}); i--; }
+      m = i >= 0 ? {key: ms[i].key} : null;
+    } else {
+      m = vMeta[key];
+      while(m && m.type !== 'skl'){ path.unshift({id: m.key, type: m.type==='lf' ? m.kind : (m.kind || '下级节点'), name: m.name}); m = vMeta[m.parent]; }
+    }
     if(!m) return null;   // 竖树未展开到该节点（如从全屏横向树查看）时找不到所属技能
     sids = skillsUnder('skl', m.key); focus = path;
   } else sids = skillsUnder(type, key);
@@ -1659,7 +1745,15 @@ function prepKS(){
     } else kids = prepTree('skl', k, null, new Set(['skl:' + k]));
     parent.children.push({id: k, type: '技能', name: skl[k].name, children: kids});
   });
-  return {tree: root, skillCount: g.sids.length, otherMajors: groups.slice(1).map(x => x.major.name)};
+  // 父级路径：当前节点往上、在知识体系中直到专业的各级节点（专业 › 课程分类 › 课程 › 任务；当前节点在技能之下时再接技能及中间节点）
+  const parents = [];
+  if(focus){
+    const k = g.sids[0];
+    parents.push(skl[k].ks.map(n => n.name).concat([skl[k].name], focus.slice(0, -1).map(n => n.name)).join(' › '));
+  } else {
+    g.sids.forEach(k => { const p = skl[k].ks.map(n => n.name).join(' › '); if(!parents.includes(p)) parents.push(p); });
+  }
+  return {tree: root, skillCount: g.sids.length, otherMajors: groups.slice(1).map(x => x.major.name), parents};
 }
 function prepPayload(){
   if(!ndCur) return null;
@@ -1671,20 +1765,129 @@ function prepPayload(){
   const tree = prepTree(type, key, kind, new Set([type + ':' + key]));
   const counts = {}; let total = 0;
   (function walk(list){ list.forEach(n => { counts[n.type] = (counts[n.type] || 0) + 1; total++; walk(n.children); }); })(tree);
-  const cur = chainArr.length ? chainArr[chainArr.length - 1] : {type: prepTypeLabel(type), name};
+  const cur = Object.assign({}, chainArr.length ? chainArr[chainArr.length - 1] : {type: prepTypeLabel(type), name}, {id: key});
   return { current: cur, chain: chainArr, tree, total, counts,
     children: tree.map(n => ({type: n.type, name: n.name})),   // children：直接下级（兼容）
     ks: prepKS() };   // 所属专业知识体系（根为专业）；找不到时为 null
 }
-$('#lessonBtn').addEventListener('click', ()=>{
-  const payload = prepPayload();
+/* ═══ 多选备课：勾选多个节点，合成一棵树带入工作台 ═══
+   根 = 选中节点最近的共同上级；只保留通往选中节点的路径，选中节点带整棵子树。勾了上级，其下级自动包含。 */
+let vPickMode = false;
+const vPick = new Map();   // 路径 → [{key, type, name, kind}]（从行业到该节点）
+function nodeLabel(x){ return x.type==='lf' || x.type==='ai' ? (x.kind || '下级节点') : prepTypeLabel(x.type); }
+function nodeAlive(x, prev){
+  if(x.type==='ind') return true;
+  if(x.type==='sub') return !!sub[x.key]; if(x.type==='pos') return !!pos[x.key];
+  if(x.type==='abl') return !!abl[x.key]; if(x.type==='skl') return !!skl[x.key]; if(x.type==='lf') return !!snode[x.key];
+  const lv = prev && aiStore[prev.key]; return !!(lv && lv.items && lv.items.some(it=>it.key===x.key));
+}
+function prunePicks(){ [...vPick].forEach(([p, ms])=>{ if(!ms.every((x, i)=>nodeAlive(x, ms[i - 1]))) vPick.delete(p); }); }
+function togglePick(row, on){
+  if(!row) return;
+  const vpath = row.dataset.vpath;
+  if(on){
+    const ms = vpath.split('|').map(k=>{ const m = vMeta[k]; return m ? {key:k, type:m.type, name:m.name, kind:m.kind || null} : null; });
+    if(ms.some(x=>!x)) return;
+    // 同一节点可能挂在多处（如一条能力项被多个岗位要求），内容相同，只带一次
+    const keys = ms.map(x=>x.key), me = keys[keys.length - 1];
+    const cover = [...vPick.values()].find(q=>keys.includes(q[q.length - 1].key));
+    if(cover){ showToast(`已包含在已选的「${cover[cover.length - 1].name}」中`); renderVTree(); return; }
+    [...vPick.entries()].forEach(([p, q])=>{ if(q.some(x=>x.key===me)) vPick.delete(p); });   // 下级并入上级
+    vPick.set(vpath, ms);
+  } else vPick.delete(vpath);
+  renderVTree(); renderPickBar();
+}
+function pickList(){   // 去掉上级已选的
+  const ps = [...vPick.keys()];
+  return ps.filter(p=>!ps.some(q=>q!==p && p.startsWith(q + '|'))).map(p=>({path:p, ms:vPick.get(p)}));
+}
+function renderPickBar(){
+  const bar = $('#vPickBar'); bar.hidden = !vPickMode; if(!vPickMode) return;
+  const list = pickList();
+  bar.innerHTML = list.length
+    ? `<span>已选 <b>${list.length}</b> 个节点</span><span class="chips">${list.map(x=>{ const n = x.ms[x.ms.length - 1];
+        return `<span class="chip" title="${esc(x.ms.map(m=>m.name).join(' › '))}"><span>${esc(n.name)}</span><button type="button" data-unpick="${esc(x.path)}" aria-label="移除">×</button></span>`; }).join('')}</span>` +
+      `<button type="button" class="btn-s" data-pick="clear">清空</button><button type="button" class="btn-p" data-pick="go">带入备课 · 生成课件</button>`
+    : `<span class="hint">勾选要一起备课的节点（可跨岗位、跨能力；勾了上级，下级自动包含）</span>`;
+}
+$('#vPickBtn').addEventListener('click', ()=>{
+  vPickMode = !vPickMode; $('#vPickBtn').setAttribute('aria-pressed', String(vPickMode));
+  $('#vPickBtn').textContent = vPickMode ? '退出多选' : '多选备课';
+  if(!vPickMode) vPick.clear();
+  renderVTree(); renderPickBar();
+});
+$('#vPickBar').addEventListener('click', e=>{
+  const u = e.target.closest('[data-unpick]'); if(u){ vPick.delete(u.dataset.unpick); renderVTree(); renderPickBar(); return; }
+  const b = e.target.closest('[data-pick]'); if(!b) return;
+  if(b.dataset.pick==='clear'){ vPick.clear(); renderVTree(); renderPickBar(); return; }
+  const list = pickList(); if(!list.length) return;
+  goPrep(list.length === 1 ? prepPayloadOf(list[0].ms) : prepPayloadMulti(list));
+});
+// 单个节点（按路径）的带入数据：与详情底部按钮一致
+function prepPayloadOf(ms){
+  const n = ms[ms.length - 1];
+  const chainArr = ms.map(x=>({type: nodeLabel(x), name: x.name}));
+  const tree = prepTree(n.type, n.key, n.kind, new Set([n.type + ':' + n.key]));
+  const counts = {}; let total = 0;
+  (function walk(list){ list.forEach(x => { counts[x.type] = (counts[x.type] || 0) + 1; total++; walk(x.children); }); })(tree);
+  return { current: {type: nodeLabel(n), name: n.name, id: n.key}, chain: chainArr, tree, total, counts,
+    children: tree.map(x => ({type: x.type, name: x.name})), ks: prepKS({type: n.type, key: n.key, kind: n.kind}, ms) };
+}
+function mergeKsTree(a, b){
+  b.children.forEach(c=>{ const hit = a.children.find(x=>x.id===c.id); if(hit) mergeKsTree(hit, c); else a.children.push(c); });
+  return a;
+}
+function prepPayloadMulti(list){
+  // 最近共同上级
+  let lca = 0;
+  for(;;){
+    const k = list[0].ms[lca + 1]; if(!k) break;
+    if(list.every(x=>x.ms[lca + 1] && x.ms[lca + 1].key===k.key) && list.every(x=>x.ms.length > lca + 2)) lca++; else break;
+  }
+  const top = list[0].ms.slice(0, lca + 1), root = top[top.length - 1];
+  const tree = [], counts = {}; let total = 0;
+  list.forEach(x=>{
+    let level = tree;
+    x.ms.slice(lca + 1).forEach((m, i, arr)=>{
+      const last = i === arr.length - 1;
+      let node = level.find(c=>c.id===m.key);
+      if(!node){
+        node = {id: m.key, type: nodeLabel(m), name: m.name, children: []};
+        if(last){ node.sel = true; node.children = prepTree(m.type, m.key, m.kind, new Set([m.type + ':' + m.key])); }
+        else node.path = true;
+        level.push(node);
+      }
+      level = node.children;
+    });
+  });
+  (function walk(l, inSel){ l.forEach(n=>{ const s = inSel || n.sel; if(s){ counts[n.type] = (counts[n.type] || 0) + 1; total++; } walk(n.children, s); }); })(tree, false);
+  // 所属知识体系：各选中节点分别查找后合并，取技能最多的专业
+  const parts = list.map(x=>{ const n = x.ms[x.ms.length - 1]; return prepKS({type: n.type, key: n.key, kind: n.kind}, x.ms); }).filter(Boolean);
+  let ks = null;
+  if(parts.length){
+    const byMajor = {};
+    parts.forEach(p=>{ const g = byMajor[p.tree.id] = byMajor[p.tree.id] || {tree: JSON.parse(JSON.stringify(p.tree)), n: 0, first: true};
+      if(g.first) g.first = false; else mergeKsTree(g.tree, JSON.parse(JSON.stringify(p.tree))); g.n += p.skillCount; });
+    const gs = Object.values(byMajor).sort((a, b)=>b.n - a.n), g = gs[0];
+    let sk = 0; (function w(n){ if(n.type==='技能') sk++; else n.children.forEach(w); })(g.tree);
+    const parents = []; parts.forEach(p=>p.parents.forEach(x=>{ if(!parents.includes(x)) parents.push(x); }));
+    const others = []; gs.slice(1).forEach(x=>others.push(x.tree.name)); parts.forEach(p=>p.otherMajors.forEach(o=>{ if(o!==g.tree.name && !others.includes(o)) others.push(o); }));
+    ks = {tree: g.tree, skillCount: sk, otherMajors: others, parents};
+  }
+  const selected = list.map(x=>{ const n = x.ms[x.ms.length - 1]; return {id: n.key, type: nodeLabel(n), name: n.name, path: x.ms.map(m=>m.name).join(' › ')}; });
+  return { multi: true, current: {type: nodeLabel(root), name: root.name, id: root.key}, chain: top.map(m=>({type: nodeLabel(m), name: m.name})),
+    tree, total, counts, selected, theme: selected.map(x=>x.name).join('、'),
+    children: tree.map(x => ({type: x.type, name: x.name})), ks };
+}
+function goPrep(payload){
   if(!payload){ showToast('请先在左侧选择一个节点'); return; }
   try { localStorage.setItem(PREP_KEY, JSON.stringify(payload)); }
   catch(e){ showToast('带入失败：浏览器不允许本地存储'); return; }
   // 当前在教师端：用当前身份进入工作台；否则用演示教师身份
   const curPortal = window.UI ? UI.currentIdentity(DEMO.getState()).currentPortal : '';
   location.href = curPortal === 'teacher' ? UI.link('workbench.html') : 'workbench.html?u=ACC-WANG';
-});
+}
+$('#lessonBtn').addEventListener('click', ()=>goPrep(prepPayload()));
 
 /* ---- 悬停提示 ---- */
 const tip = $('#tip');
@@ -1755,7 +1958,9 @@ const vExp = new Set([I.id]);      // 竖树里展开的节点 key
 let vSel = null;                    // 竖树里选中的节点（ind/sub/pos/abl，供右侧详情高亮）
 let vMeta = {};                     // key → {key,type,name,kind,chain,siblings,hasKids}
 
+let vStack = [];   // 渲染时的祖先路径（同一能力项可挂在多个岗位下，用路径区分是哪一处）
 function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, desc, parent){
+  const vpath = vStack.concat([key]).join('|');
   let emg = '', badges = '', kids = [], statusHtml = '', bar = '';
   if(type==='ind'){
     kids = builtSubs.map(sid=>({key:sid,type:'sub',name:sub[sid].name,kind:null,aiDepth:0,
@@ -1785,6 +1990,12 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
   } else if(type==='skl'){
     const k = skl[key];
     if(k.emerging) emg = '<span class="vt-emg">新兴</span>';
+    if(k.personal){
+      badges += `<span class="vt-ai" title="AI 生成（${esc(k.personal.source || '')}）">AI</span>`;
+      if(k._regen) statusHtml = `<div class="vt-status">AI 重新生成中…</div>`;
+      else if(k._genning) statusHtml = `<div class="vt-status">AI 生成下级节点中…</div>`;
+      else if(k._generr) statusHtml = `<div class="vt-status err">生成失败：${esc(k._generr)} · 点击箭头重试</div>`;
+    }
     kids = k.children.map(nid=>({key:nid,type:'lf',name:snode[nid].name,kind:snode[nid].kind,aiDepth:0,
       chain:chain.concat([`${snode[nid].kind}：${snode[nid].name}`]),
       siblings:k.children.filter(x=>x!==nid).map(x=>snode[x].name)}));
@@ -1800,12 +2011,18 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
     } else if(lv && lv.status==='error'){
       statusHtml = `<div class="vt-status err" data-v-retry="${esc(key)}">生成失败：${esc(lv.err)} · 点击重试</div>`;
     }
+    if(type==='lf' && manualOf('lf', key)) badges += manualBadge(manualOf('lf', key));
+    if(type==='lf' && isAiLeaf(key)) badges += '<span class="vt-ai" title="AI 生成">AI</span>';
+    if(type==='lf' && snode[key] && snode[key]._regen) badges += '<span class="vt-regen">重新生成中…</span>';
     if(type==='ai') bar = manual
       ? `<span class="vbar" style="background:var(--kgt-${KIND[kind].c})"></span>`
       : `<span class="vbar dash" style="border-color:var(--kgt-${KIND[kind].c})"></span>`;
   }
+  if((type==='sub' || type==='pos' || type==='abl' || type==='skl') && manualOf(type, key)) badges += manualBadge(manualOf(type, key));
   const ablPending = type==='abl' && abl[key] && (abl[key]._genning || abl[key]._generr || (!abl[key].skills.length && joinedNodes.some(r=>r.id===key)));
-  const hasKids = (type==='lf' || type==='ai') ? true : (kids.length>0 || !!ablPending);
+  const sklPending = type==='skl' && skl[key] && skl[key].personal && !skl[key].children.length;
+  const gapPending = type==='abl' && (gapStore.checks[key] || (abl[key] && (abl[key]._gapping || abl[key]._gaperr)));
+  const hasKids = (type==='lf' || type==='ai') ? true : (kids.length>0 || !!ablPending || !!sklPending || !!gapPending);
   const level = type==='ai' ? `AI 细分第${aiDepth}层` : `L${depth+1}`;
   vMeta[key] = {key, type, name, kind, chain, siblings, hasKids, level, desc, manual, parent, depth};
   const open = vExp.has(key);
@@ -1818,21 +2035,35 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
   else if(type==='abl') typeTag = '<span class="vl-tag" style="color:var(--vl-abl)">能力</span>';
   else if(type==='skl') typeTag = '<span class="vl-tag" style="color:var(--vl-skl)">技能</span>';
   let ops = '';
-  if(type==='ai'){
+  if(type==='abl'){
+    ops = `<span class="vops"><button type="button" class="vop" data-vop="gap" aria-label="${abl[key] && abl[key]._gapping ? '检测中…' : 'AI 检测技能缺口'}"${abl[key] && abl[key]._gapping ? ' disabled' : ''}>` +
+      `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.4 10.4L14 14"/><path d="M7 5v4M5 7h4"/></svg></button></span>`;
+  }
+  if(type==='ai' || (type==='skl' && isAiSkill(key)) || (type==='lf' && isAiLeaf(key))){
     ops = `<span class="vops"><button type="button" class="vop" data-vop="regen" aria-label="重新生成"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1"/><path d="M13.5 2.5v3h-3"/></svg></button>` +
       `<button type="button" class="vop" data-vop="edit" aria-label="编辑"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3L6 13H3v-3z"/><path d="M9 4l3 3"/></svg></button></span>`;
   }
-  const row = `<div class="vrow${open?' open':''}${sel?' sel':''}" data-v="${esc(key)}">${tog}${bar}${kindTag}${typeTag}<span class="vname">${emg}${esc(name)}${badges}</span>${ops}</div>`;
+  if(!ops && manualOf(type, key)) ops = `<span class="vops"><button type="button" class="vop" data-vop="edit" aria-label="编辑"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3L6 13H3v-3z"/><path d="M9 4l3 3"/></svg></button></span>`;
+  const more = `<button type="button" class="vop vmore" data-vop="more" aria-label="更多操作" aria-haspopup="menu"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="3.5" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12.5" cy="8" r="1.3"/></svg></button>`;
+  ops = ops ? ops.replace(/<\/span>$/, more + '</span>') : `<span class="vops">${more}</span>`;
+  let pick = '';
+  if(vPickMode){
+    const anc = vStack.some((_, i)=>vPick.has(vStack.slice(0, i + 1).join('|')));
+    pick = `<input type="checkbox" class="vpick" data-vpick aria-label="选择「${esc(name)}」"${anc || vPick.has(vpath) ? ' checked' : ''}${anc ? ' disabled title="上级已选，已包含在内"' : ''}>`;
+  }
+  const row = `<div class="vrow${open?' open':''}${sel?' sel':''}" data-v="${esc(key)}" data-vp="${esc(parent || '')}" data-vpath="${esc(vpath)}">${pick}${tog}${bar}${kindTag}${typeTag}<span class="vname">${emg}${esc(name)}${badges}</span>${ops}</div>`;
   let kidsHtml = '';
   if(open){
     kidsHtml = kids.length
-      ? `<div class="vkids">${kids.map(k=>vNode(k.key,k.type,k.name,k.kind,k.chain,k.siblings,depth+1,k.aiDepth,k.manual,k.desc,key)).join('')}</div>`
+      ? (vStack.push(key), `<div class="vkids">${kids.map(k=>vNode(k.key,k.type,k.name,k.kind,k.chain,k.siblings,depth+1,k.aiDepth,k.manual,k.desc,key)).join('')}</div>`)
       : '';
+    if(kids.length) vStack.pop();
     kidsHtml += statusHtml;
+    if(type==='abl') kidsHtml += gapRowsHTML(key);
   }
   return row + kidsHtml;
 }
-function renderVTree(){ vMeta = {}; $('#vTree').innerHTML = vNode(I.id, 'ind', I.name, null, [`行业：${I.name}`], [], 0, 0, null, null); }
+function renderVTree(){ applyOrder(); prunePicks(); vStack = []; vMeta = {}; $('#vTree').innerHTML = vNode(I.id, 'ind', I.name, null, [`行业：${I.name}`], [], 0, 0, null, null); }
 
 function toggleV(key){ if(vExp.has(key)) vExp.delete(key); else vExp.add(key); renderVTree(); }
 
@@ -1904,10 +2135,22 @@ async function vExpand(m){
 }
 
 $('#vTree').addEventListener('click', e=>{
+  const pk = e.target.closest('[data-vpick]');
+  if(pk){ togglePick(pk.closest('[data-vpath]'), pk.checked); return; }
+  const gb = e.target.closest('[data-gapcheck]');
+  if(gb){ checkSkillGap(gb.dataset.gapcheck); return; }
   const op = e.target.closest('[data-vop]');
   if(op){
     const row = op.closest('[data-v]');
-    if(row){ if(op.dataset.vop==='edit') vEditNode(row.dataset.v); else if(op.dataset.vop==='regen') vRegenNode(row.dataset.v); }
+    if(row){
+      const key = row.dataset.v;
+      if(op.dataset.vop==='more'){ openMoreMenu(row, op); return; }
+      if(op.dataset.vop==='gap') checkSkillGap(key);
+      else if(op.dataset.vop==='edit' && manualOf(vMeta[key] && vMeta[key].type, key)) editManual(key);
+      else if(isAiSkill(key)){ if(op.dataset.vop==='edit') editAiSkill(key); else regenAiSkill(key); }
+      else if(isAiLeaf(key)){ if(op.dataset.vop==='edit') editAiLeaf(key); else regenAiLeaf(key); }
+      else if(op.dataset.vop==='edit') vEditNode(key); else if(op.dataset.vop==='regen') vRegenNode(key);
+    }
     return;
   }
   const retry = e.target.closest('[data-v-retry]');
@@ -1936,10 +2179,19 @@ function vToggleOrGen(m){
     const lv = aiStore[m.key];
     if(lv && (lv.status==='ok' || lv.status==='loading')) toggleV(m.key);
     else vExpand(m);
+  } else if(m.type==='skl' && skl[m.key] && skl[m.key].personal && !skl[m.key].children.length && !skl[m.key]._genning){
+    genGapSkillNodes(m.key);
   } else toggleV(m.key);
 }
 // 详情区「AI 生成下级」按钮（与点箭头效果相同）
 $('#ndBody').addEventListener('click', e=>{
+  const gc = e.target.closest('[data-gapcheck]'); if(gc){ checkSkillGap(gc.dataset.gapcheck); return; }
+  const gr = e.target.closest('[data-gaprm]'); if(gr){ deleteAiSkill(gr.dataset.gaprm); return; }
+  const ge = e.target.closest('[data-gapedit]'); if(ge){ editAiSkill(ge.dataset.gapedit); return; }
+  const le = e.target.closest('[data-leafedit]'); if(le){ editAiLeaf(le.dataset.leafedit); return; }
+  const lg = e.target.closest('[data-leafregen]'); if(lg){ regenAiLeaf(lg.dataset.leafregen); return; }
+  const ld = e.target.closest('[data-leafdel]'); if(ld){ deleteAiLeaf(ld.dataset.leafdel); return; }
+  const gg = e.target.closest('[data-gapregen]'); if(gg){ regenAiSkill(gg.dataset.gapregen); return; }
   const b = e.target.closest('[data-ndgen]'); if(!b) return;
   const m = vMeta[b.dataset.ndgen]; if(m) vToggleOrGen(m);
 });
@@ -1978,10 +2230,10 @@ function applySkills(rec){
   const skids = [];
   (rec.skills || []).forEach(sk=>{
     if(!sk || !sk.name) return;
-    if(!skl[sk.id]) skl[sk.id] = {id:sk.id, name:sk.name, emerging:false, abilityIds:[rec.id], children:[]};
+    if(!skl[sk.id]) skl[sk.id] = {id:sk.id, name:sk.name, emerging:false, abilityIds:[rec.id], children:[], personal:{source:'市场趋势', desc:sk.desc || ''}};
     (sk.children || []).forEach(n=>{
       if(!n || !n.name || !KIND[n.kind]) return;
-      if(!snode[n.id]) snode[n.id] = {id:n.id, kind:n.kind, name:n.name};
+      if(!snode[n.id]) snode[n.id] = {id:n.id, kind:n.kind, name:n.name, ai:true};
       if(!skl[sk.id].children.includes(n.id)) skl[sk.id].children.push(n.id);
     });
     skids.push(sk.id);
@@ -2099,8 +2351,513 @@ async function genSkillsForAbility(aid){
   renderVTree();
 }
 
+/* ═══ 技能缺口检测：AI 对照能力项的定义与 L1–L3 要求，判断现有技能是否覆盖，建议需要新增的技能 ═══
+   检测结果与加入的技能属于当前用户的个人层（演示环境存本机浏览器）。 */
+const GAP_KEY = 'kmapSkillGaps.v1';
+let gapStore = {checks:{}, added:{}};   // checks: 能力项 → 最近一次检测结果；added: 能力项 → 加入的技能
+function loadGaps(){
+  try { const raw = localStorage.getItem(GAP_KEY); if(raw) gapStore = Object.assign({checks:{}, added:{}}, JSON.parse(raw)); } catch(e){}
+  Object.keys(gapStore.added).forEach(applyGapSkills);
+}
+function saveGaps(){ try { localStorage.setItem(GAP_KEY, JSON.stringify(gapStore)); } catch(e){ showToast('保存失败：浏览器不允许本地存储'); } }
+function applyGapSkills(aid){
+  const a = abl[aid]; if(!a) return;
+  (gapStore.added[aid] || []).forEach(sk=>{
+    if(!skl[sk.id]) skl[sk.id] = {id:sk.id, name:sk.name, emerging:false, abilityIds:[aid], children:[], personal:{source:'技能缺口检测', desc:sk.desc, reason:sk.reason, level:sk.level}};
+    (sk.children || []).forEach(n=>{
+      if(!n || !n.name || !KIND[n.kind]) return;
+      if(!snode[n.id]) snode[n.id] = {id:n.id, kind:n.kind, name:n.name, ai:true};
+      if(!skl[sk.id].children.includes(n.id)) skl[sk.id].children.push(n.id);
+    });
+    skl[sk.id].children.sort((x, y)=>Object.keys(KIND).indexOf(snode[x].kind) - Object.keys(KIND).indexOf(snode[y].kind));
+    if(!a.skills.includes(sk.id)) a.skills.push(sk.id);
+  });
+}
+const GAP_SCHEMA = {type:'object', additionalProperties:false, required:['coverage','summary','missing'],
+  properties:{ coverage:{type:'string', enum:['充分','部分缺失','明显缺失']}, summary:{type:'string'},
+    missing:{type:'array', items:{type:'object', additionalProperties:false, required:['name','desc','level','reason'],
+      properties:{ name:{type:'string'}, desc:{type:'string'}, level:{type:'string', enum:['L1','L2','L3']}, reason:{type:'string'} } } } } };
+const GAP_OPT = {schema:GAP_SCHEMA, effort:'medium', maxTokens:3000,
+  formatHint:'{"coverage":"充分|部分缺失|明显缺失","summary":"…","missing":[{"name":"技能名","desc":"一句话说明","level":"L1|L2|L3","reason":"对应哪一级要求、为什么现有技能覆盖不了"}]}'};
+function refreshAblDetail(aid){ if(ndCur && ndCur.type==='abl' && ndCur.key===aid) openNodeDetail('abl', aid); }
+// 树上能力项下方：检测状态与覆盖结论（AI 技能直接在树中，见能力项下的技能）
+function gapRowsHTML(aid){
+  const a = abl[aid]; if(!a) return '';
+  if(a._gapping) return `<div class="vt-status">AI 检测技能缺口中…</div>`;
+  let h = a._gaperr ? `<div class="vt-status err">检测失败：${esc(a._gaperr)} · <button type="button" class="lnk" data-gapcheck="${esc(aid)}" style="border:none;background:none;color:inherit;cursor:pointer;padding:0">重试</button></div>` : '';
+  const c = gapStore.checks[aid]; if(!c) return h;
+  const n = (gapStore.added[aid] || []).length;
+  const cls = c.coverage==='充分' ? 'ok' : c.coverage==='部分缺失' ? 'warn' : 'crit';
+  return h + `<div class="vgap-sum" title="${esc(c.summary)}">技能覆盖：<b class="${cls}">${esc(c.coverage)}</b>` +
+    `<span>${n ? `AI 新增 ${n} 项技能（标 AI）` : '无需新增'}</span>` +
+    `<button type="button" class="lnk" data-gapcheck="${esc(aid)}">重新检测</button></div>`;
+}
+async function checkSkillGap(aid){
+  const a = abl[aid]; if(!a || a._gapping) return;
+  const cfg = aiCfg();
+  if(!cfg.key){ openAiCfg(); return; }
+  a._gapping = true; delete a._gaperr; vExp.add(aid); renderVTree();
+  const dt = a.detail || {};
+  const levels = (dt.levels || []).map(lv=>`${lv.level}：${lv.behaviorDesc || ''}${lv.observablePoints && lv.observablePoints.length ? '（观察要点：' + lv.observablePoints.join('；') + '）' : ''}`).join('\n');
+  const posTxt = (a.requiredBy || []).map(r=>pos[r.position] ? `${pos[r.position].name}${r.level ? `（要求 ${r.level}）` : ''}` : '').filter(Boolean).join('、');
+  // 现有技能不含上次检测加入且未编辑的 AI 技能（重新检测时会被替换）
+  const replaced = new Set((gapStore.added[aid] || []).filter(x=>!x.edited).map(x=>x.id));
+  const skillTxt = a.skills.filter(k=>!replaced.has(k)).map(k=>skl[k] ? skl[k].name : '').filter(Boolean);
+  const system = '你是职业教育课程设计与行业能力分析专家。判断一条岗位能力现有的技能是否足以支撑其各等级要求，只指出确有必要新增的技能，不凑数，不编造法规条款编号。';
+  const prompt =
+    `行业：${I.name}\n要求该能力的岗位：${posTxt || '—'}\n能力项：${a.name}\n` +
+    (dt.definition || dt.describe ? `定义：${dt.definition || dt.describe}\n` : '') +
+    (levels ? `等级要求：\n${levels}\n` : '') +
+    `\n现有技能（${skillTxt.length} 个）：${skillTxt.length ? skillTxt.join('、') : '无'}\n\n` +
+    `请判断：\n1. coverage：现有技能对上述等级要求的覆盖情况（充分 / 部分缺失 / 明显缺失）；\n` +
+    `2. summary：一两句话说明判断依据；\n` +
+    `3. missing：需要新增的技能 0–5 项，每项写 name（动作＋对象，不超过 16 个汉字）、desc（一句话，不超过 40 个汉字）、level（主要支撑哪一级要求）、reason（对应哪一级要求中的哪项行为、为什么现有技能覆盖不了）；不得与现有技能重复或同义；覆盖充分时 missing 为空。`;
+  try {
+    const out = await aiCallJSON(cfg, system, prompt, GAP_OPT);
+    const missing = (out.missing || []).filter(x=>x && x.name).slice(0, 5).map(x=>({name:x.name.trim(), desc:(x.desc||'').trim(), level:x.level, reason:(x.reason||'').trim()}));
+    gapStore.checks[aid] = {at: new Date().toISOString(), coverage: out.coverage || '部分缺失', summary: (out.summary || '').trim()};
+    // 上次检测加入、未经人工编辑的技能先移除；人工编辑过的保留
+    const list = gapStore.added[aid] = gapStore.added[aid] || [];
+    const keep = list.filter(x=>x.edited), drop = list.filter(x=>!x.edited);
+    drop.forEach(x=>dropAiSkillFromTree(aid, x));
+    list.length = 0; keep.forEach(x=>list.push(x));
+    const names = new Set(a.skills.map(k=>skl[k] && skl[k].name));
+    missing.forEach(g=>{ if(!names.has(g.name)) list.push({id: jid('GSKS-'), name:g.name, desc:g.desc, reason:g.reason, level:g.level, children:[]}); });
+    saveGaps(); applyGapSkills(aid); vExp.add(aid);
+    const added = list.length - keep.length;
+    showToast(added ? `检测完成：已在树中新增 ${added} 项 AI 技能${keep.length ? `（保留人工编辑的 ${keep.length} 项）` : ''}` : '检测完成：现有技能已覆盖');
+  } catch(err){
+    a._gaperr = err.message || String(err);
+  }
+  delete a._gapping; renderVTree();
+}
+// AI 技能（技能缺口检测加入 / 市场趋势生成）的存储位置
+function aiSkillRec(skid){
+  for(const aid of Object.keys(gapStore.added)){
+    const list = gapStore.added[aid], i = list.findIndex(x=>x.id===skid);
+    if(i >= 0) return {aid, list, i, item:list[i], save:saveGaps, apply:()=>applyGapSkills(aid)};
+  }
+  for(const rec of joinedNodes){
+    const list = rec.skills || [], i = list.findIndex(x=>x && x.id===skid);
+    if(i >= 0) return {aid:rec.id, list, i, item:list[i], save:saveJoined, apply:()=>applySkills(rec)};
+  }
+  return null;
+}
+function dropAiSkillFromTree(aid, item){
+  (item.children || []).forEach(n=>{ delete snode[n.id]; delete aiStore[n.id]; });
+  delete skl[item.id];
+  if(abl[aid]) abl[aid].skills = abl[aid].skills.filter(x=>x!==item.id);
+}
+function isAiSkill(key){ return !!(skl[key] && skl[key].personal); }
+// 编辑：复用节点编辑弹窗
+let sklEditing = null;
+function editAiSkill(skid){
+  const r = aiSkillRec(skid); if(!r) return;
+  sklEditing = skid;
+  $('#nodeDlgTitle').textContent = '编辑技能';
+  $('#nodeDlgNote').textContent = '名称不超过 20 个字，说明不超过 40 个字。编辑过的技能，重新检测时会保留。';
+  $('#nodeName').value = r.item.name; $('#nodeDesc').value = r.item.desc || '';
+  $('#nodeDlg').showModal(); $('#nodeName').select();
+}
+function saveAiSkillEdit(){
+  const skid = sklEditing; sklEditing = null;
+  const r = aiSkillRec(skid); if(!r) return;
+  const name = $('#nodeName').value.trim(), desc = $('#nodeDesc').value.trim();
+  if(!name || (name===r.item.name && desc===(r.item.desc||''))) return;
+  r.item.name = name; r.item.desc = desc; r.item.edited = true;
+  skl[skid].name = name; skl[skid].personal.desc = desc;
+  r.save(); renderVTree(); if(ndCur && ndCur.key===skid) showVDetail(vMeta[skid]);
+  showToast(`已修改「${name}」`);
+}
+// 删除：下级一并删除，可撤销一次
+function deleteAiSkill(skid){
+  const r = aiSkillRec(skid); if(!r) return;
+  const {aid, list, i, item} = r, pos0 = abl[aid] ? abl[aid].skills.indexOf(skid) : -1;
+  list.splice(i, 1); dropAiSkillFromTree(aid, item); r.save();
+  if(ndCur && ndCur.key===skid){ vSel = {type:'abl', id:aid}; openNodeDetail('abl', aid); }
+  renderVTree();
+  showToast(`已删除「${item.name}」`, '撤销', ()=>{
+    list.splice(Math.min(i, list.length), 0, item); r.save(); r.apply();
+    const sk = abl[aid] && abl[aid].skills; if(sk && pos0 >= 0){ sk.splice(sk.indexOf(skid), 1); sk.splice(Math.min(pos0, sk.length), 0, skid); }
+    renderVTree();
+  });
+}
+// 重新生成：AI 换一项技能（下级清空，点箭头可重新生成），可撤销
+const SKILL_REGEN_SCHEMA = {type:'object', additionalProperties:false, required:['name','desc','reason'],
+  properties:{ name:{type:'string'}, desc:{type:'string'}, reason:{type:'string'} } };
+const SKILL_REGEN_OPT = {schema:SKILL_REGEN_SCHEMA, effort:'medium', maxTokens:1200, formatHint:'{"name":"技能名","desc":"一句话说明","reason":"为什么该能力需要这项技能"}'};
+async function regenAiSkill(skid){
+  const r = aiSkillRec(skid); if(!r || skl[skid]._regen) return;
+  const cfg = aiCfg(); if(!cfg.key){ openAiCfg(); return; }
+  const {aid, item} = r, a = abl[aid], k = skl[skid];
+  k._regen = true; renderVTree();
+  const levels = ((a.detail || {}).levels || []).map(lv=>`${lv.level}：${lv.behaviorDesc || ''}`).join('\n');
+  const others = a.skills.filter(x=>x!==skid).map(x=>skl[x] ? skl[x].name : '').filter(Boolean);
+  const system = '你是职业教育课程设计与行业能力分析专家。为一条岗位能力重新给出一项需要的技能，内容具体、可教学，不编造法规条款编号。';
+  const prompt = `行业：${I.name}\n能力项：${a.name}\n` + (levels ? `等级要求：\n${levels}\n` : '') +
+    `\n同一能力下的其他技能（不要与之重复或同义）：${others.join('、') || '无'}\n当前这项技能：${item.name}${item.desc ? '（' + item.desc + '）' : ''}\n\n` +
+    `请给出一项替换它的技能：name 动作＋对象、不超过 16 个汉字；desc 一句话、不超过 40 个汉字；reason 对应哪一级要求、为什么需要。`;
+  try {
+    const out = await aiCallJSON(cfg, system, prompt, SKILL_REGEN_OPT);
+    const old = JSON.parse(JSON.stringify(item));
+    (item.children || []).forEach(n=>{ delete snode[n.id]; });
+    item.name = (out.name || item.name).trim(); item.desc = (out.desc || '').trim(); item.reason = (out.reason || '').trim();
+    item.children = []; delete item.edited;
+    k.name = item.name; k.children = []; Object.assign(k.personal, {desc:item.desc, reason:item.reason});
+    r.save(); delete k._regen; renderVTree(); if(ndCur && ndCur.key===skid) showVDetail(vMeta[skid]);
+    showToast(`已重新生成为「${item.name}」`, '撤销', ()=>{
+      const cur = aiSkillRec(skid); if(!cur) return;
+      (cur.item.children || []).forEach(n=>{ delete snode[n.id]; });
+      Object.assign(cur.item, old); k.name = old.name; k.children = []; Object.assign(k.personal, {desc:old.desc, reason:old.reason});
+      cur.save(); cur.apply(); renderVTree();
+    });
+  } catch(err){ delete k._regen; renderVTree(); showToast(`重新生成失败：${err.message || err}`); }
+}
+// AI 技能下的末级节点（AI 生成）：定位、编辑、删除、重新生成
+function aiLeafRec(nid){
+  if(!snode[nid] || !snode[nid].ai) return null;
+  const skid = Object.keys(skl).find(k=>skl[k].personal && skl[k].children.includes(nid)); if(!skid) return null;
+  const r = aiSkillRec(skid); if(!r) return null;
+  const i = (r.item.children || []).findIndex(n=>n.id===nid); if(i < 0) return null;
+  return Object.assign({}, r, {skid, ci:i, node:r.item.children[i]});
+}
+function isAiLeaf(key){ return !!(snode[key] && snode[key].ai); }
+let leafEditing = null;
+function editAiLeaf(nid){
+  const r = aiLeafRec(nid); if(!r) return;
+  leafEditing = nid;
+  $('#nodeDlgTitle').textContent = `编辑${r.node.kind}`;
+  $('#nodeDlgNote').textContent = '名称不超过 20 个字。';
+  $('#nodeName').value = r.node.name; $('#nodeDesc').value = '';
+  $('#nodeDlg').showModal(); $('#nodeName').select();
+}
+function saveAiLeafEdit(){
+  const nid = leafEditing; leafEditing = null;
+  const r = aiLeafRec(nid); if(!r) return;
+  const name = $('#nodeName').value.trim(); if(!name || name===r.node.name) return;
+  r.node.name = name; r.node.edited = true; snode[nid].name = name;
+  r.save(); renderVTree(); if(ndCur && ndCur.key===nid && vMeta[nid]) showVDetail(vMeta[nid]);
+  showToast(`已修改「${name}」`);
+}
+function deleteAiLeaf(nid){
+  const r = aiLeafRec(nid); if(!r) return;
+  const {skid, ci, node} = r, k = skl[skid], pos0 = k.children.indexOf(nid), below = aiStore[nid];
+  r.item.children.splice(ci, 1); k.children = k.children.filter(x=>x!==nid); delete snode[nid]; delete aiStore[nid];
+  r.save(); renderVTree(); renderSaveBtn();
+  if(ndCur && ndCur.key===nid){ vSel = {type:'skl', id:skid}; if(vMeta[skid]) showVDetail(vMeta[skid]); }
+  showToast(`已删除「${node.name}」`, '撤销', ()=>{
+    const cur = aiSkillRec(skid); if(!cur) return;
+    cur.item.children.splice(Math.min(ci, cur.item.children.length), 0, node);
+    snode[nid] = {id:nid, kind:node.kind, name:node.name, ai:true}; k.children.splice(Math.min(pos0, k.children.length), 0, nid);
+    if(below) aiStore[nid] = below;
+    cur.save(); renderVTree(); renderSaveBtn();
+  });
+}
+const LEAF_REGEN_SCHEMA = {type:'object', additionalProperties:false, required:['name'], properties:{ name:{type:'string'} } };
+const LEAF_REGEN_OPT = {schema:LEAF_REGEN_SCHEMA, effort:'low', maxTokens:600, formatHint:'{"name":"节点名称"}'};
+async function regenAiLeaf(nid){
+  const r = aiLeafRec(nid); if(!r || snode[nid]._regen) return;
+  const cfg = aiCfg(); if(!cfg.key){ openAiCfg(); return; }
+  const {skid, node} = r, k = skl[skid], a = abl[r.aid];
+  snode[nid]._regen = true; renderVTree();
+  const others = k.children.filter(x=>x!==nid).map(x=>snode[x] ? `${snode[x].kind}：${snode[x].name}` : '').filter(Boolean);
+  const system = '你是职业教育课程设计与行业能力分析专家。为一项技能重新给出一个末级节点，类型保持不变，内容具体、可教学，不编造法规条款编号。';
+  const prompt = `行业：${I.name}\n能力项：${a ? a.name : ''}\n技能：${k.name}\n该技能下的其他节点（不要与之重复）：${others.join('；') || '无'}\n当前节点（${node.kind}）：${node.name}\n\n请给出一个替换它的${node.kind}，name 不超过 20 个汉字。`;
+  try {
+    const out = await aiCallJSON(cfg, system, prompt, LEAF_REGEN_OPT);
+    const oldName = node.name, below = aiStore[nid];
+    node.name = (out.name || node.name).trim(); delete node.edited; snode[nid].name = node.name; delete aiStore[nid];
+    r.save(); delete snode[nid]._regen; renderVTree(); renderSaveBtn();
+    showToast(`已重新生成为「${node.name}」`, '撤销', ()=>{
+      const cur = aiLeafRec(nid); if(!cur) return;
+      cur.node.name = oldName; snode[nid].name = oldName; if(below) aiStore[nid] = below;
+      cur.save(); renderVTree(); renderSaveBtn();
+    });
+  } catch(err){ delete snode[nid]._regen; renderVTree(); showToast(`重新生成失败：${err.message || err}`); }
+}
+// 生成下级（知识点 / 操作步骤 / 标准 / 案例）
+async function genGapSkillNodes(skid){
+  const r = aiSkillRec(skid), k = skl[skid]; if(!r || !k) return;
+  const a = abl[r.aid];
+  const cfg = aiCfg(); if(!cfg.key){ openAiCfg(); return; }
+  k._genning = true; delete k._generr; vExp.add(skid); renderVTree();
+  const system = '你是职业教育课程设计与行业能力分析专家。给出一项技能，为它生成可教学的末级节点（知识点 / 操作步骤 / 标准 / 案例），内容准确、具体，不编造法规条款编号。';
+  const prompt = `行业：${I.name}\n能力项：${a ? a.name : ''}\n技能：${k.name}\n说明：${r.item.desc || ''}\n\n请生成 4–8 个末级节点，四类尽量都有；name 不超过 20 个汉字。按格式输出，skills 只含这一项技能（name 为「${k.name}」）。`;
+  try {
+    const out = await aiCallJSON(cfg, system, prompt, SKILLS_OPT);
+    const nodes = ((out.skills || [])[0] || {}).nodes || [];
+    r.item.children = nodes.filter(n=>n && n.name && KIND[n.kind]).map(n=>({id: jid('GNOD-'), kind:n.kind, name:n.name.trim()}));
+    r.save(); r.apply();
+    showToast(r.item.children.length ? `已生成 ${r.item.children.length} 个下级节点` : 'AI 认为该技能无需再细分');
+  } catch(err){ k._generr = err.message || String(err); }
+  delete k._genning; renderVTree();
+}
+
+/* ═══ 树节点「…」更多操作：查看详情 / 增加同级 / 增加下级 / 上移 / 下移 / 删除 ═══
+   人工新增（或在新增弹窗里由 AI 生成）的节点、同级顺序属于当前用户的个人层（演示环境存本机浏览器）。
+   标准节点（标准能力图谱、知识体系原有节点）不可删除。 */
+const MANUAL_KEY = 'kmapManual.v1';
+let manualStore = {nodes:[], order:{}};   // nodes：{id, type, parent, name, desc, kind?, ai?, edited?}；order：上级 key → 下级 key 顺序
+const MAN_MAP = {sub:()=>sub, pos:()=>pos, abl:()=>abl, skl:()=>skl, lf:()=>snode};
+const TYPE_CN = {ind:'行业', sub:'子行业', pos:'岗位', abl:'能力项', skl:'技能'};
+const CHILD_TYPE = {ind:'sub', sub:'pos', pos:'abl', abl:'skl', skl:'lf', lf:'ai', ai:'ai'};
+function manualOf(type, key){ const f = MAN_MAP[type]; const o = f && f()[key]; return o && o.manual || null; }
+function manualSrc(n){ return n.ai ? 'AI 生成' + (n.edited ? ' · 已人工编辑' : '') : '人工新增'; }
+function manualBadge(n){ return n.ai ? '<span class="vt-ai" title="AI 生成">AI</span>' : '<span class="vt-man" title="人工新增">人工</span>'; }
+function loadManual(){
+  try { const raw = localStorage.getItem(MANUAL_KEY); if(raw) manualStore = Object.assign({nodes:[], order:{}}, JSON.parse(raw)); } catch(e){}
+  manualStore.nodes.forEach(applyManual);
+  applyOrder(); recomputeLayout();
+}
+function saveManual(){ try { localStorage.setItem(MANUAL_KEY, JSON.stringify(manualStore)); } catch(e){ showToast('保存失败：浏览器不允许本地存储'); } }
+function applyManual(n){
+  if(n.type==='sub'){
+    if(sub[n.id]) return;
+    sub[n.id] = {id:n.id, name:n.name, emerging:false, detail:{describe:n.desc||''}, positionIds:[], distinctAbilityCount:0, built:true, manual:n};
+    if(!builtSubs.includes(n.id)){ builtSubs.push(n.id); subSharedSet[n.id] = new Set(); }
+  } else if(n.type==='pos'){
+    const s = sub[n.parent]; if(!s || pos[n.id]) return;
+    pos[n.id] = {id:n.id, name:n.name, sub:n.parent, aliases:[], emerging:false, detail:{describe:n.desc||''}, abilities:[], abilityCount:0, l3Count:0, manual:n};
+    if(!s.positionIds.includes(n.id)) s.positionIds.push(n.id);
+  } else if(n.type==='abl'){
+    const p = pos[n.parent]; if(!p || abl[n.id]) return;
+    abl[n.id] = {id:n.id, name:n.name, type:'skill', domain:'', core:false, emerging:false, detail:{describe:n.desc||''},
+      requiredBy:[{position:n.parent, weight:0, level:''}], positionCount:1, maxRequiredLevel:'', typeCn:'技能', acrossSubIndustries:[p.sub], skills:[], manual:n};
+    p.abilities.push({ability:n.id, weight:0, level:''}); p.abilityCount = p.abilities.length;
+    if(gapStore.added[n.id]) applyGapSkills(n.id);
+  } else if(n.type==='skl'){
+    const a = abl[n.parent]; if(!a || skl[n.id]) return;
+    skl[n.id] = {id:n.id, name:n.name, emerging:false, abilityIds:[n.parent], children:[], manual:n};
+    if(!a.skills.includes(n.id)) a.skills.push(n.id);
+  } else if(n.type==='lf'){
+    const k = skl[n.parent]; if(!k || snode[n.id]) return;
+    snode[n.id] = {id:n.id, kind:n.kind, name:n.name, manual:n};
+    if(!k.children.includes(n.id)) k.children.push(n.id);
+  }
+}
+function unapplyManual(n){
+  if(n.type==='sub'){ delete sub[n.id]; delete subSharedSet[n.id]; builtSubs = builtSubs.filter(x=>x!==n.id); }
+  else if(n.type==='pos'){ if(sub[n.parent]) sub[n.parent].positionIds = sub[n.parent].positionIds.filter(x=>x!==n.id); delete pos[n.id]; }
+  else if(n.type==='abl'){ const p = pos[n.parent]; if(p){ p.abilities = p.abilities.filter(r=>r.ability!==n.id); p.abilityCount = p.abilities.length; } delete abl[n.id]; }
+  else if(n.type==='skl'){ if(abl[n.parent]) abl[n.parent].skills = abl[n.parent].skills.filter(x=>x!==n.id); delete skl[n.id]; }
+  else if(n.type==='lf'){ if(skl[n.parent]) skl[n.parent].children = skl[n.parent].children.filter(x=>x!==n.id); delete snode[n.id]; delete aiStore[n.id]; }
+}
+// 上级节点的下级列表（顺序即树上顺序）
+function ptypeOf(k){ return k===I.id ? 'ind' : sub[k] ? 'sub' : pos[k] ? 'pos' : abl[k] ? 'abl' : skl[k] ? 'skl' : (snode[k] || vMeta[k] && vMeta[k].type==='ai') ? 'ai' : null; }
+function kidList(pk){
+  const t = ptypeOf(pk);
+  if(t==='ind') return {arr:builtSubs, id:x=>x};
+  if(t==='sub') return {arr:sub[pk].positionIds, id:x=>x};
+  if(t==='pos') return {arr:pos[pk].abilities, id:x=>x.ability};
+  if(t==='abl') return {arr:abl[pk].skills, id:x=>x};
+  if(t==='skl') return {arr:skl[pk].children, id:x=>x};
+  const lv = aiStore[pk]; return lv && lv.status==='ok' ? {arr:lv.items, id:x=>x.key, ai:true} : null;
+}
+function applyOrder(){
+  Object.keys(manualStore.order).forEach(pk=>{
+    if(!ptypeOf(pk) || ptypeOf(pk)==='ai') return;
+    const L = kidList(pk); if(!L) return;
+    const idx = new Map(manualStore.order[pk].map((k,i)=>[k,i]));
+    L.arr.sort((a, b)=>(idx.has(L.id(a)) ? idx.get(L.id(a)) : 1e9) - (idx.has(L.id(b)) ? idx.get(L.id(b)) : 1e9));
+  });
+}
+function snapOrder(pk){ const L = kidList(pk); if(L && !L.ai) manualStore.order[pk] = L.arr.map(L.id); }
+function afterTreeChange(){ recomputeLayout(); renderVTree(); renderSaveBtn(); if(document.body.classList.contains('fs-on')) renderGraph(); }
+
+// 删除：只对人工新增 / AI 生成 / 市场趋势加入的节点可用
+function delAction(type, key){
+  if(type==='ai') return ()=>vDeleteNode(key);
+  if(type==='skl' && isAiSkill(key)) return ()=>deleteAiSkill(key);
+  if(type==='lf' && isAiLeaf(key)) return ()=>deleteAiLeaf(key);
+  if(manualOf(type, key)) return ()=>deleteManual(key);
+  const jr = joinedNodes.find(r=>(type==='abl' && r.id===key) || (r.kind==='branch' && ((type==='sub' && r.subId===key) || (type==='pos' && r.posId===key))));
+  if(jr) return ()=>{ unjoin(jr.src); pruneManual(); };
+  return null;
+}
+function pruneManual(){   // 上级已不在树上的人工节点一并移除
+  let changed = true;
+  while(changed){
+    changed = false;
+    manualStore.nodes = manualStore.nodes.filter(n=>{
+      const ok = n.type==='sub' || (n.type==='pos' ? sub[n.parent] : n.type==='abl' ? pos[n.parent] : n.type==='skl' ? abl[n.parent] : skl[n.parent]);
+      if(!ok){ unapplyManual(n); changed = true; }
+      return !!ok;
+    });
+  }
+  saveManual(); afterTreeChange();
+}
+function deleteManual(key){
+  const ids = [key];
+  for(let i=0; i<ids.length; i++) manualStore.nodes.forEach(n=>{ if(n.parent===ids[i] && !ids.includes(n.id)) ids.push(n.id); });
+  const root = manualStore.nodes.find(n=>n.id===key); if(!root) return;
+  snapOrder(root.parent || I.id);
+  const removed = manualStore.nodes.map((n,i)=>({n,i})).filter(x=>ids.includes(x.n.id));
+  const gapBak = {}; ids.forEach(id=>{ if(gapStore.added[id] || gapStore.checks[id]) gapBak[id] = {added:gapStore.added[id], checks:gapStore.checks[id]}; });
+  const aiBak = {}; ids.forEach(id=>{ if(aiStore[id]) aiBak[id] = aiStore[id]; });
+  removed.slice().reverse().forEach(x=>{ unapplyManual(x.n); manualStore.nodes.splice(x.i, 1); });
+  Object.keys(gapBak).forEach(id=>{ (gapStore.added[id] || []).forEach(sk=>dropAiSkillFromTree(id, sk)); delete gapStore.added[id]; delete gapStore.checks[id]; });
+  if(Object.keys(gapBak).length) saveGaps();
+  saveManual();
+  if(ndCur && ids.includes(ndCur.key)){ vSel = null; openNodeDetail('ind', I.id); }
+  afterTreeChange();
+  showToast(`已删除「${root.name}」`, '撤销', ()=>{
+    removed.forEach(x=>{ manualStore.nodes.splice(Math.min(x.i, manualStore.nodes.length), 0, x.n); applyManual(x.n); });
+    Object.keys(gapBak).forEach(id=>{ if(gapBak[id].added) gapStore.added[id] = gapBak[id].added; if(gapBak[id].checks) gapStore.checks[id] = gapBak[id].checks; applyGapSkills(id); });
+    if(Object.keys(gapBak).length) saveGaps();
+    Object.assign(aiStore, aiBak);
+    saveManual(); afterTreeChange();
+  });
+}
+// 编辑人工 / AI 新增的节点
+let manEditing = null;
+function editManual(key){
+  const n = manualStore.nodes.find(x=>x.id===key); if(!n) return;
+  manEditing = key;
+  $('#nodeDlgTitle').textContent = `编辑${n.type==='lf' ? n.kind : TYPE_CN[n.type]}`;
+  $('#nodeDlgNote').textContent = '名称不超过 20 个字，说明不超过 40 个字。';
+  $('#nodeName').value = n.name; $('#nodeDesc').value = n.desc || '';
+  $('#nodeDlg').showModal(); $('#nodeName').select();
+}
+function saveManualEdit(){
+  const key = manEditing; manEditing = null;
+  const n = manualStore.nodes.find(x=>x.id===key); if(!n) return;
+  const name = $('#nodeName').value.trim(), desc = $('#nodeDesc').value.trim();
+  if(!name || (name===n.name && desc===(n.desc||''))) return;
+  n.name = name; n.desc = desc; if(n.ai) n.edited = true;
+  const o = MAN_MAP[n.type]()[key]; if(o){ o.name = name; if(o.detail) o.detail.describe = desc; }
+  saveManual(); renderVTree();
+  if(ndCur && ndCur.key===key) vMeta[key] && vShowDetail(vMeta[key]);
+  showToast(`已修改「${name}」`);
+}
+// 上移 / 下移
+function moveNode(key, pk, dir){
+  const L = kidList(pk); if(!L) return;
+  const i = L.arr.findIndex(x=>L.id(x)===key), j = i + dir;
+  if(i < 0 || j < 0 || j >= L.arr.length) return;
+  [L.arr[i], L.arr[j]] = [L.arr[j], L.arr[i]];
+  if(!L.ai){ snapOrder(pk); saveManual(); }
+  afterTreeChange();
+}
+
+// 「…」菜单
+let moreTarget = null;   // {key, parent, type}
+function hideMore(){ const m = $('#vMoreMenu'); m.hidden = true; moreTarget = null; document.querySelectorAll('.vmore[aria-expanded="true"]').forEach(b=>b.setAttribute('aria-expanded', 'false')); }
+function openMoreMenu(row, btn, x, y){
+  const key = row.dataset.v, parent = row.dataset.vp || '', m = vMeta[key]; if(!m) return;
+  hideMore();
+  moreTarget = {key, parent, type:m.type};
+  const L = parent ? kidList(parent) : null;
+  const i = L ? L.arr.findIndex(z=>L.id(z)===key) : -1;
+  const isAiNode = m.type==='ai' || (m.type==='skl' && isAiSkill(key)) || (m.type==='lf' && isAiLeaf(key));
+  const canEdit = isAiNode || !!manualOf(m.type, key);
+  const del = delAction(m.type, key);
+  const kidCn = m.type==='skl' ? '知识点等' : m.type==='lf' || m.type==='ai' ? '细分节点' : TYPE_CN[CHILD_TYPE[m.type]];
+  const it = (act, label, dis, hint, cls) => `<button type="button" role="menuitem" data-mm="${act}"${cls ? ` class="${cls}"` : ''}${dis ? ' disabled' : ''}>${label}${hint ? `<span class="mm-hint">${hint}</span>` : ''}</button>`;
+  const loading = aiStore[key] && aiStore[key].status==='loading';
+  $('#vMoreMenu').innerHTML = `<div class="ctx-h">${esc(m.name)}</div>` +
+    (canEdit ? it('edit', '编辑') : '') + (isAiNode ? it('regen', '重新生成') : '') +
+    it('detail', '查看详情') + '<div class="mm-sep"></div>' +
+    it('sib', '增加同级节点', m.type==='ind' || !parent) +
+    it('kid', `增加下级节点`, loading, kidCn) + '<div class="mm-sep"></div>' +
+    it('up', '上移', !L || i <= 0) + it('down', '下移', !L || i < 0 || i >= L.arr.length - 1) + '<div class="mm-sep"></div>' +
+    it('del', '删除', !del, del ? '' : '标准节点不可删除', 'danger');
+  const menu = $('#vMoreMenu'); menu.hidden = false;
+  if(btn){ btn.setAttribute('aria-expanded', 'true'); const r = btn.getBoundingClientRect(); x = r.right - menu.offsetWidth; y = r.bottom + 4; }
+  menu.style.left = Math.max(8, Math.min(x, innerWidth - menu.offsetWidth - 8)) + 'px';
+  menu.style.top = Math.max(8, Math.min(y, innerHeight - menu.offsetHeight - 8)) + 'px';
+  const first = menu.querySelector('button:not(:disabled)'); if(first) first.focus();
+}
+$('#vMoreMenu').addEventListener('click', e=>{
+  const b = e.target.closest('[data-mm]'); if(!b || b.disabled || !moreTarget) return;
+  const {key, parent, type} = moreTarget; hideMore();
+  const act = b.dataset.mm;
+  if(act==='detail'){ if(vMeta[key]) vShowDetail(vMeta[key]); }
+  else if(act==='edit'){
+    if(type==='skl' && isAiSkill(key)) editAiSkill(key); else if(type==='lf' && isAiLeaf(key)) editAiLeaf(key);
+    else if(type==='ai') vEditNode(key); else editManual(key);
+  } else if(act==='regen'){
+    if(type==='skl') regenAiSkill(key); else if(type==='lf') regenAiLeaf(key); else vRegenNode(key);
+  } else if(act==='sib') openAdd(parent, key);
+  else if(act==='kid') openAdd(key, null);
+  else if(act==='up') moveNode(key, parent, -1);
+  else if(act==='down') moveNode(key, parent, 1);
+  else if(act==='del'){ const f = delAction(type, key); if(f) f(); }
+});
+document.addEventListener('mousedown', e=>{ if(!(e.target.closest && (e.target.closest('#vMoreMenu') || e.target.closest('.vmore')))) hideMore(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') hideMore(); });
+window.addEventListener('blur', hideMore);
+
+// 增加同级 / 下级节点：手动填写，可由 AI 帮忙生成后再修改
+let adding = null;   // {pk, pt, ct, after, kind, aiFill}
+function openAdd(pk, after){
+  const pt = ptypeOf(pk) || (vMeta[pk] && vMeta[pk].type); if(!pt) return;
+  const pm = vMeta[pk];
+  const ct = CHILD_TYPE[pt];
+  const kind = ct==='ai' ? (pm && pm.kind) : ct==='lf' ? (after && snode[after] ? snode[after].kind : '知识点') : null;
+  if(ct==='ai' && aiStore[pk] && aiStore[pk].status==='loading'){ showToast('AI 正在生成该节点的下级，请稍后再添加'); return; }
+  adding = {pk, pt, ct, after, kind, aiFill:null, pname: pm ? pm.name : (pt==='ind' ? I.name : '')};
+  const cn = ct==='lf' ? '下级节点' : ct==='ai' ? `细分节点（${kind}）` : TYPE_CN[ct];
+  $('#addDlgTitle').textContent = `${after ? '增加同级节点' : '增加下级节点'} · ${cn}`;
+  $('#addDlgNote').textContent = `添加到「${adding.pname}」下${after && vMeta[after] ? `，排在「${vMeta[after].name}」之后` : '，排在最后'}。添加后保存到个人全景图谱。`;
+  $('#addKindRow').hidden = ct!=='lf';
+  if(ct==='lf') $('#addKind').value = kind;
+  $('#addName').value = ''; $('#addDesc').value = ''; $('#addAiNote').textContent = '';
+  $('#addAiBtn').disabled = false;
+  $('#addDlg').showModal(); $('#addName').focus();
+}
+const ADD_SCHEMA = {type:'object', additionalProperties:false, required:['name','desc'], properties:{ name:{type:'string'}, desc:{type:'string'} } };
+const ADD_OPT = {schema:ADD_SCHEMA, effort:'low', maxTokens:600, formatHint:'{"name":"节点名称","desc":"一句话说明"}'};
+$('#addAiBtn').addEventListener('click', async ()=>{
+  const a = adding; if(!a) return;
+  const cfg = aiCfg(); if(!cfg.key){ openAiCfg(); return; }
+  const kind = a.ct==='lf' ? $('#addKind').value : a.kind;
+  const L = kidList(a.pk);
+  const sibs = L ? L.arr.map(x=>{ const k = L.id(x); return L.ai ? x.name : (MAN_MAP[a.ct] ? (MAN_MAP[a.ct]()[k] || {}).name : ''); }).filter(Boolean) : [];
+  const chain = (vMeta[a.pk] && vMeta[a.pk].chain) || [`行业：${I.name}`];
+  const what = a.ct==='lf' || a.ct==='ai' ? kind : TYPE_CN[a.ct];
+  $('#addAiBtn').disabled = true; $('#addAiNote').textContent = 'AI 生成中…';
+  try {
+    const out = await aiCallJSON(cfg,
+      '你是职业教育课程设计与行业能力分析专家。在给定上级节点下补充一个新的下级节点，内容准确、具体、可教学，始终停留在该行业与岗位场景内，不编造法规条款编号。',
+      `归属链：\n${chain.join('\n')}\n\n已有的下级节点（不要与之重复或同义）：${sibs.join('、') || '无'}\n\n请在「${a.pname}」下补充一个${what}：name 不超过 20 个汉字；desc 一句话，不超过 40 个汉字。`, ADD_OPT);
+    if(adding!==a) return;
+    a.aiFill = {name:(out.name||'').trim().slice(0, 20), desc:(out.desc||'').trim().slice(0, 40)};
+    $('#addName').value = a.aiFill.name; $('#addDesc').value = a.aiFill.desc;
+    $('#addAiNote').textContent = '已生成，可修改后添加';
+  } catch(err){ if(adding===a) $('#addAiNote').textContent = `生成失败：${err.message || err}`; }
+  if(adding===a) $('#addAiBtn').disabled = false;
+});
+$('#addForm').addEventListener('submit', ev=>{
+  const a = adding; adding = null;
+  if(!a || !ev.submitter || ev.submitter.value!=='save') return;
+  const name = $('#addName').value.trim(), desc = $('#addDesc').value.trim(); if(!name) return;
+  const isAi = !!(a.aiFill && a.aiFill.name===name);
+  if(a.ct==='ai'){
+    let lv = aiStore[a.pk];
+    if(!lv || lv.status!=='ok') lv = aiStore[a.pk] = {parent:a.pk, parentName:a.pname, kind:a.kind, status:'ok', err:'', items:[]};
+    const it = {key:`${a.pk}/${newKeyPart('m')}`, name, desc, ...(isAi ? {} : {manual:true})};
+    const at = a.after ? lv.items.findIndex(x=>x.key===a.after) + 1 : lv.items.length;
+    lv.items.splice(at > 0 ? at : lv.items.length, 0, it);
+  } else {
+    const id = jid({sub:'MSUB-', pos:'MPOS-', abl:'MABL-', skl:'MSKS-', lf:'MNOD-'}[a.ct]);
+    const n = {id, type:a.ct, parent:a.pk, name, desc, ...(a.ct==='lf' ? {kind:$('#addKind').value} : {}), ...(isAi ? {ai:true} : {})};
+    manualStore.nodes.push(n); applyManual(n);
+    const L = kidList(a.pk);
+    if(L && a.after){
+      const from = L.arr.findIndex(x=>L.id(x)===id), item = L.arr.splice(from, 1)[0];
+      L.arr.splice(L.arr.findIndex(x=>L.id(x)===a.after) + 1, 0, item);
+    }
+    snapOrder(a.pk); saveManual();
+  }
+  vExp.add(a.pk);
+  afterTreeChange();
+  showToast(`已添加「${name}」`);
+});
+
 // 首次渲染放在最后：用到的状态（自检、已保存的 AI 节点等）都已声明并载入
 loadJoined();
+loadGaps();
+loadManual();
 renderGraph();
 renderVTree();
 openNodeDetail('ind', I.id);   // 右侧详情默认显示行业
@@ -2298,19 +3055,11 @@ function vDeleteNode(key){
 $('#vTree').addEventListener('contextmenu', e=>{
   const row = e.target.closest('[data-v]');
   if(!row){ hideCtx(); return; }
-  const m = vMeta[row.dataset.v];
-  if(!m || m.type !== 'ai'){ hideCtx(); return; }
-  e.preventDefault();
-  vCtxTarget = {key: m.key};
-  const menu = $('#ctxMenu');
-  $('#ctxTitle').textContent = m.name;
-  menu.hidden = false;
-  const w = menu.offsetWidth, h = menu.offsetHeight;
-  menu.style.left = Math.min(e.clientX, innerWidth - w - 8) + 'px';
-  menu.style.top  = Math.min(e.clientY, innerHeight - h - 8) + 'px';
-  menu.querySelector('button').focus();
+  if(!vMeta[row.dataset.v]){ hideCtx(); return; }
+  e.preventDefault(); hideCtx();
+  openMoreMenu(row, null, e.clientX, e.clientY);
 });
-$('#vTree').addEventListener('scroll', hideCtx);
+$('#vTree').addEventListener('scroll', ()=>{ hideCtx(); hideMore(); });
 
 loadMarket();
 </script>
