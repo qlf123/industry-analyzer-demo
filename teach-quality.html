@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>教学质量</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+/* 教学质量：教学达成（老师确认的课堂证据汇总）+ 课程改进建议（老师提出 / 专业负责人处理） */
+.tq-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}
+.tq-kpi{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px 14px}
+.tq-kpi b{display:block;font-size:22px;font-family:var(--mono);color:var(--ink)}
+.tq-kpi span{font-size:12px;color:var(--muted)}
+.tq-card{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden;margin-bottom:14px}
+.tq-card .tw{overflow-x:auto}
+.tq-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--rule-2)}
+.tq-h b{font-size:14px}
+.tq-h .sp{flex:1}
+.tabs-s{display:flex;gap:6px}
+.tabs-s button{border:1px solid var(--rule);background:var(--card);border-radius:7px;padding:3px 12px;font:inherit;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+.tabs-s button[aria-pressed="true"]{border-color:var(--brand);color:var(--brand-ink);background:var(--brand-soft)}
+.tbl2 td{font-size:12.5px;vertical-align:top}
+.tbl2 .mono{font-family:var(--mono);font-size:12px}
+.xrow{cursor:pointer}
+.xrow:hover td{background:var(--rule-2)}
+.det td{background:var(--card-2)}
+.det ul{margin:4px 0 0;padding-left:18px;font-size:12.5px;line-height:1.8}
+.note{font-size:12px;color:var(--muted)}
+.rate{font-family:var(--mono);font-weight:600}
+.rate.low{color:var(--crit)}
+.kpbar{display:inline-flex;height:16px;border-radius:5px;overflow:hidden;vertical-align:middle;width:180px}
+.kpbar span{display:block;height:100%}
+.empty3{font-size:12.5px;color:var(--muted);padding:36px 0;text-align:center}
+.lk{color:var(--brand-ink);background:none;border:0;padding:0;font:inherit;font-size:12.5px;cursor:pointer}
+.lk:hover{text-decoration:underline}
+.imp{padding:12px 14px;border-bottom:1px solid var(--rule-2);font-size:13px}
+.imp:last-child{border-bottom:0}
+.imp-f{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:12.5px;padding:14px}
+.imp-f label{display:flex;flex-direction:column;gap:4px;color:var(--ink-2)}
+.imp-in{font:inherit;font-size:12.5px;padding:6px 8px;border:1px solid var(--rule);border-radius:7px;background:var(--card);color:var(--ink)}
+@media (max-width:1100px){.tq-kpis{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t" id="pt"></h1><div class="pt-d" id="pd"></div></div></div></div>
+    <div class="body"><div class="card filters" id="filters"></div><div id="main"></div></div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script src="js/teach-reach.js"></script>
+<script>
+(function () {
+  'use strict';
+  var qs = new URLSearchParams(location.search),
+    view = qs.get('t') === 'improve' ? 'improve' : qs.get('t') === 'kps' ? 'kps' : 'reach';
+  var V = {
+    reach: { key: 'tq-reach', title: '教学达成', desc: '课程计划执行后，老师在任务中心确认的课堂证据汇总：按能力看哪些岗位能力达成得好、哪些薄弱，按课程看哪门课、哪个班需要关注。学生自评不计入' },
+    kps: { key: 'tq-kps', title: '知识点掌握', desc: '专业范围内的知识点掌握分布：按每个学生最近一次老师确认的评价（含退回）统计技能下各知识点是否体现，与教师端学情、学生端成长中心同口径；只做统计展示，不计入证据、不汇总到能力达成' },
+    improve: { key: 'tq-improve', title: '课程改进建议', desc: '老师在学情里提出的建议由专业负责人在这里处理（采纳 / 暂不处理并说明），也可以针对薄弱能力提出建议交给任课老师；处理结果回到老师的学情页' }
+  }[view];
+  UI.boot({ portal: 'admin', active: V.key });
+  document.title = V.title; document.getElementById('pt').textContent = V.title; document.getElementById('pd').textContent = V.desc;
+  var esc = TK.esc, $ = function (s) { return document.querySelector(s); };
+  var ctx = DEMO.getState(), iden = UI.currentIdentity(ctx);
+  if (!UI.hasPerm(ctx, iden, 'teach:quality:view')) { $('.body').innerHTML = '<div class="card"><div class="empty3">当前身份没有「教学质量查看与改进处理」权限</div></div>'; return; }
+  var S = TK.load(), E = S.edu;
+
+  // 专业负责人（没有教务维护权限）：只看自己负责的专业（含下级），不提供「全部专业」
+  var LEAD = (function () {
+    if (UI.hasPerm(ctx, iden, 'edu:base:manage')) return null;
+    var names = {}; ctx.assignments.filter(function (a) { return a.accountId === iden.account.id && a.roleId === 'R-MAJOR-LEAD'; }).forEach(function (a) {
+      ((a.teachingScope || {}).majorIds || []).forEach(function (mid) { var m = ctx.majors.filter(function (x) { return x.id === mid; })[0]; if (m) names[m.name] = 1; });
+    });
+    return E.majors.filter(function (m) { return names[m.name]; }).map(function (m) { return m.id; });
+  })();
+  var F = { major: LEAD ? (LEAD[0] || '__none__') : '', term: TK.TERM, course: '', cls: '', by: qs.get('by') === 'course' ? 'course' : 'abl', st: '' };
+  var OPEN = {}, impForm = qs.get('new') != null ? { target: qs.get('new') || '', course: qs.get('course') || '' } : null, impReply = null;
+
+  function cls(id) { return S.classes.filter(function (c) { return c.id === id; })[0] || {}; }
+  function majorIds() { if (!F.major) return null; var out = []; (LEAD && !F.major ? LEAD : [F.major]).forEach(function (id) { out = out.concat(TK.majorSubIds(E, id)); }); return out; }
+  function inMajor(mid) { var ids = majorIds(); return !ids || ids.indexOf(mid) >= 0; }
+  function majorName(mid) { return (E.majors.filter(function (m) { return m.id === mid; })[0] || {}).name || ''; }
+  function scopePlans(withCourse) {
+    return S.plans.filter(function (p) {
+      return inMajor(cls(p.classId).majorId) && (!F.term || p.term === F.term) && (!withCourse || ((!F.course || p.course === F.course) && (!F.cls || p.classId === F.cls)));
+    });
+  }
+  function uniq(a) { return a.filter(function (v, i) { return v && a.indexOf(v) === i; }); }
+  function sel(k, label, opts, all) {
+    return '<label>' + label + '<select class="sel" data-f="' + k + '">' + (all != null ? '<option value="">' + all + '</option>' : '') + opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (F[k] === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></label>';
+  }
+  function majorOpts() {
+    return TK.majorTree(E).filter(function (x) { return x.m.status === '启用' && (!LEAD || LEAD.some(function (id) { return TK.majorSubIds(E, id).indexOf(x.m.id) >= 0; })); })
+      .map(function (x) { return [x.m.id, new Array(x.depth + 1).join('　') + x.m.name]; });
+  }
+  function filters() {
+    var h = sel('major', '专业', majorOpts(), LEAD ? null : '全部专业');
+    if (view !== 'improve') {
+      var terms = uniq(S.plans.map(function (p) { return p.term; }));
+      var ps = scopePlans(false);
+      h += sel('term', '学期', terms.map(function (t) { return [t, t]; }), '全部学期') +
+        sel('course', '课程', uniq(ps.map(function (p) { return p.course; })).map(function (c) { return [c, c]; }), '全部课程') +
+        sel('cls', '班级', uniq(ps.map(function (p) { return p.classId; })).map(function (id) { return [id, cls(id).name || id]; }), '全部班级');
+    } else {
+      h += sel('st', '状态', [['待处理', '待处理'], ['已采纳', '已采纳'], ['暂不处理', '暂不处理'], ['已发出', '已发出（专业负责人提出）']], '全部状态');
+    }
+    $('#filters').innerHTML = h + '<span style="flex:1"></span><button class="btn-s" data-reset>重置</button>';
+  }
+
+  /* ── 教学达成 ── */
+  function rateHTML(ok, n) { var r = TR.rate(ok, n); return r == null ? '—' : '<span class="rate' + (r < 70 ? ' low' : '') + '">' + r + '%</span>'; }
+  function courseOf(K, sid) { var x = K.skill[sid] || {}, t = K.task[x.taskId] || {}; return (K.course[t.courseId] || {}).name || '—'; }
+  function reach() {
+    var plans = scopePlans(true), R = TR.compute(S, plans);
+    var h = '<div class="tq-kpis">' + [['学生', R.students, '名有课堂证据'], ['课程计划', Object.keys(R.byPlan).length + ' / ' + plans.length, '有证据 / 范围内'], ['技能', R.skills, '个产生课堂证据'], ['岗位能力', R.abilities.length, '项有支撑证据'], ['达成率', TR.rate(R.ok, R.pairs) == null ? '—' : TR.rate(R.ok, R.pairs) + '%', '学生 × 技能 ' + R.pairs + ' 次评价，未达成 ' + R.no]].map(function (k) {
+      return '<div class="tq-kpi"><span>' + k[0] + '</span><b>' + k[1] + '</b><span>' + k[2] + '</span></div>';
+    }).join('') + '</div>';
+    h += '<div class="tq-card"><div class="tq-h"><b>' + (F.by === 'abl' ? '按能力' : '按课程') + '</b><span class="tabs-s"><button data-by="abl" aria-pressed="' + (F.by === 'abl') + '">按能力</button><button data-by="course" aria-pressed="' + (F.by === 'course') + '">按课程</button></span><span class="sp"></span>' +
+      '<span class="note">每个「学生 × 技能」取最近一次评价，需改进为未达成；点击行查看明细</span></div><div class="tw">';
+    if (F.by === 'abl') {
+      h += '<table class="tbl2"><thead><tr><th>能力</th><th>支撑技能</th><th>有课堂证据</th><th>学生 × 技能 评价</th><th>已达成</th><th>未达成</th><th>达成率</th></tr></thead><tbody>' +
+        (R.abilities.map(function (r) {
+          var k = 'A|' + r.id;
+          return '<tr class="xrow" data-x="' + k + '"><td>' + esc(r.name) + (r.a && r.a.core ? ' <span style="color:var(--brand)" title="核心能力">★</span>' : '') + '</td><td class="mono">' + r.sk.length + ' 个</td><td class="mono">' + r.withEv.length + ' 个</td>' +
+            '<td class="mono">' + r.pairs + '</td><td class="mono" style="color:var(--good)">' + r.ok + '</td><td class="mono"' + (r.no ? ' style="color:var(--crit);font-weight:600"' : '') + '>' + r.no + '</td><td>' + rateHTML(r.ok, r.pairs) + '</td></tr>' +
+            '<tr class="det"' + (OPEN[k] ? '' : ' hidden') + '><td colspan="7"><div class="note">支撑技能及课堂证据：</div><ul>' + r.sk.map(function (x) {
+              var ev = R.bySkill[x.sid] || [], bad = ev.filter(function (e) { return e.grade === '需改进'; }).length;
+              return '<li><b>' + esc(TK.skillName(x.sid)) + '</b> <span class="note">《' + esc(courseOf(R.K, x.sid)) + '》· ' + esc(x.type) + '</span> — ' + (ev.length ? '已评价 ' + ev.length + ' 人次，达成 ' + (ev.length - bad) + (bad ? '，<span style="color:var(--crit)">未达成 ' + bad + '</span>' : '') : '<span class="note">还没有课堂证据</span>') + '</li>';
+            }).join('') + '</ul><a class="lk" href="' + esc(UI.link('teach-quality.html?t=improve&new=' + encodeURIComponent(r.name), 'admin')) + '" style="display:inline-block;margin-top:6px">针对这项能力提改进建议 ›</a></td></tr>';
+        }).join('') || '<tr><td colspan="7"><div class="empty3">当前范围还没有课堂证据。老师在任务中心按评价标准确认后，这里会显示。</div></td></tr>') + '</tbody></table>';
+    } else {
+      var rows = plans.map(function (p) { return { p: p, b: R.byPlan[p.id] }; }).sort(function (a, b) { var ra = a.b ? TR.rate(a.b.pairs - a.b.no, a.b.pairs) : 101, rb = b.b ? TR.rate(b.b.pairs - b.b.no, b.b.pairs) : 101; return ra - rb; });
+      h += '<table class="tbl2"><thead><tr><th>课程</th><th>班级</th><th>任课教师</th><th>学期</th><th>已评价课次</th><th>学生</th><th>学生 × 技能 评价</th><th>未达成</th><th>达成率</th></tr></thead><tbody>' +
+        (rows.map(function (x) {
+          var p = x.p, b = x.b, k = 'P|' + p.id;
+          if (!b) return '<tr><td>' + esc(p.course) + '</td><td>' + esc(cls(p.classId).name || '') + '</td><td>' + esc(p.teacher) + '</td><td class="note">' + esc(p.term) + '</td><td colspan="5" class="note">还没有课堂证据</td></tr>';
+          var weak = Object.keys(b.weak).sort(function (m, n) { return b.weak[n] - b.weak[m]; });
+          return '<tr class="xrow" data-x="' + k + '"><td>' + esc(p.course) + '</td><td>' + esc(cls(p.classId).name || '') + '</td><td>' + esc(p.teacher) + '</td><td class="note">' + esc(p.term) + '</td>' +
+            '<td class="mono">' + Object.keys(b.lessons).length + '</td><td class="mono">' + Object.keys(b.students).length + '</td><td class="mono">' + b.pairs + '</td><td class="mono"' + (b.no ? ' style="color:var(--crit);font-weight:600"' : '') + '>' + b.no + '</td><td>' + rateHTML(b.pairs - b.no, b.pairs) + '</td></tr>' +
+            '<tr class="det"' + (OPEN[k] ? '' : ' hidden') + '><td colspan="9">' + (weak.length ? '<div class="note">未达成较多的技能：</div><ul>' + weak.slice(0, 6).map(function (sid) { return '<li>' + esc(TK.skillName(sid)) + ' — <span style="color:var(--crit)">未达成 ' + b.weak[sid] + ' 人</span></li>'; }).join('') + '</ul>' : '<div class="note">评价过的技能都已达成。</div>') +
+            '<a class="lk" href="' + esc(UI.link('teach-quality.html?t=improve&new=&course=' + encodeURIComponent(p.course), 'admin')) + '" style="display:inline-block;margin-top:6px">针对这门课提改进建议 ›</a></td></tr>';
+        }).join('') || '<tr><td colspan="9"><div class="empty3">当前范围没有课程计划</div></td></tr>') + '</tbody></table>';
+    }
+    return h + '</div></div>';
+  }
+
+  /* ── 知识点掌握（统计展示） ──
+     口径与教师端学情一致：每个学生取某技能最近一次老师确认的评价（含退回那次），
+     看该技能下各知识点是否体现；只做统计，不计入证据、不汇总到能力达成 */
+  function kpsAgg() {
+    var plans = scopePlans(true), bySid = {}, order = [];
+    plans.forEach(function (p) {
+      S.courses.filter(function (c) { return c.planId === p.id && c.publish && c.publish.task && c.publish.task.on; }).forEach(function (c) {
+        (((c.publish.task || {}).criteria) || []).forEach(function (x) {
+          var sid = x.sid; if (!sid) return;
+          var g = bySid[sid];
+          if (!g) { g = bySid[sid] = { sid: sid, name: TK.skillName(sid), courses: {}, kps: ((TK.kn().skill[sid] || {}).kps) || [], last: {} }; order.push(g); }
+          g.courses[c.id] = 1;
+          (c.submissions || []).forEach(function (sb) {
+            var it = sb.teacher && (sb.teacher.items || []).filter(function (y) { return y.sid === sid; })[0];
+            if (it && (!g.last[sb.student] || sb.teacher.at >= g.last[sb.student].at)) g.last[sb.student] = { at: sb.teacher.at, marks: TK.itemKps(it, sb.student) };
+          });
+        });
+      });
+    });
+    order.forEach(function (g) {
+      g.stus = Object.keys(g.last).length; g.cnt = {}; g.ok = 0; g.miss = 0;
+      g.kps.forEach(function (k) {
+        var c = { ok: 0, miss: 0, who: [] };
+        Object.keys(g.last).forEach(function (st) {
+          if (g.last[st].marks[k.id] === 'miss') { c.miss++; c.who.push(st); } else c.ok++;
+        });
+        g.cnt[k.id] = c; g.ok += c.ok; g.miss += c.miss;
+      });
+    });
+    var groups = order.filter(function (g) { return g.kps.length && g.stus; });
+    var rows = [];
+    groups.forEach(function (g) { g.kps.forEach(function (k) { rows.push({ g: g, k: k, c: g.cnt[k.id] }); }); });
+    rows.sort(function (a, b) { return b.c.miss - a.c.miss || a.c.ok - b.c.ok; });
+    return { plans: plans, groups: groups, rows: rows, noEv: order.filter(function (g) { return g.kps.length && !g.stus; }) };
+  }
+  function kpBarHTML(c) {
+    var sum = c.ok + c.miss || 0;
+    if (!sum) return '<span class="note">—</span>';
+    return '<span class="kpbar"><span style="flex:' + c.ok + ';background:var(--good)" title="已掌握 ' + c.ok + ' 人"></span><span style="flex:' + (c.miss || 0.0001) + ';background:var(--crit)" title="未掌握 ' + c.miss + ' 人"></span></span>';
+  }
+  function kpsView() {
+    var A = kpsAgg(), tot = A.rows.reduce(function (a, r) { return a + r.c.ok + r.c.miss; }, 0), ok = A.rows.reduce(function (a, r) { return a + r.c.ok; }, 0);
+    var nKp = A.groups.reduce(function (a, g) { return a + g.kps.length; }, 0);
+    var weak = A.rows.filter(function (r) { return r.c.miss; }).slice(0, 5);
+    var h = '<div class="tq-kpis" style="grid-template-columns:repeat(4,1fr)">' + [
+      ['考查技能', A.groups.length, '项有已确认的逐项评价'],
+      ['考查知识点', nKp, '个（按技能实时带出）'],
+      ['已掌握', ok, '人次'],
+      ['掌握率', tot ? TR.rate(ok, tot) + '%' : '—', '已掌握 / 已评价 ' + tot + ' 人次']
+    ].map(function (k) { return '<div class="tq-kpi"><span>' + k[0] + '</span><b>' + k[1] + '</b><span>' + k[2] + '</span></div>'; }).join('') + '</div>';
+    h += '<div class="tq-card"><div class="tq-h"><b>未掌握最多的知识点</b><span class="sp"></span><span class="note">点击行展开查看未掌握学生名单</span></div>' +
+      (weak.length ? '<div class="tw"><table class="tbl2"><thead><tr><th>知识点</th><th>所属技能</th><th>已评价学生</th><th>掌握情况</th><th>未掌握</th><th>掌握率</th></tr></thead><tbody>' +
+        weak.map(function (r) {
+          var k = 'K|' + r.g.sid + '|' + r.k.id;
+          return '<tr class="xrow" data-x="' + k + '"><td>' + esc(r.k.name) + (r.k.type ? ' <small class="note">' + esc(r.k.type) + '</small>' : '') + '</td><td>' + esc(r.g.name) + '</td><td class="mono">' + (r.c.ok + r.c.miss) + ' 人</td><td>' + kpBarHTML(r.c) + '</td><td class="mono"' + (r.c.miss ? ' style="color:var(--crit);font-weight:600"' : '') + '>' + r.c.miss + ' 人</td><td>' + rateHTML(r.c.ok, r.c.ok + r.c.miss) + '</td></tr>' +
+            '<tr class="det"' + (OPEN[k] ? '' : ' hidden') + '><td colspan="6"><div class="note">未掌握学生：' + (r.c.who.map(esc).join('、') || '—') + '</div><div class="note" style="margin-top:4px">依据：这些学生该技能最近一次老师确认的评价（含退回）中未体现此知识点；可在教师端任务中心安排补训</div></td></tr>';
+        }).join('') + '</tbody></table></div>' : '<div style="padding:12px 14px;font-size:12.5px;color:var(--muted)">' + (A.groups.length ? '已评价的学生都掌握了考查的知识点' : '当前范围还没有已确认的逐项评价') + '</div>') + '</div>';
+    h += A.groups.map(function (g) {
+      return '<div class="tq-card"><div class="tq-h"><b>' + esc(g.name) + '</b><span class="note">' + Object.keys(g.courses).length + ' 个课次 · ' + g.stus + ' 名学生已评价</span><span class="sp"></span><span class="note">未掌握 ' + (g.miss ? '<span style="color:var(--crit);font-weight:600">' + g.miss + '</span>' : '0') + ' 人次</span></div><div class="tw"><table class="tbl2"><thead><tr><th>知识点</th><th>类型</th><th>已掌握</th><th>未掌握</th><th>掌握率</th></tr></thead><tbody>' +
+        g.kps.map(function (k) {
+          var c = g.cnt[k.id];
+          return '<tr><td title="' + esc(k.core || '') + '">' + esc(k.name) + '</td><td class="mono">' + esc(k.type || '—') + '</td><td class="mono" style="color:var(--good)">' + c.ok + '</td><td class="mono"' + (c.miss ? ' style="color:var(--crit);font-weight:600"' : '') + '>' + c.miss + '</td><td>' + rateHTML(c.ok, c.ok + c.miss) + '</td></tr>';
+        }).join('') + '</tbody></table></div></div>';
+    }).join('');
+    if (A.noEv.length) h += '<div class="tq-card"><div class="tq-h"><b>已考查但还没有评价</b></div><div style="padding:12px 14px;font-size:12.5px;color:var(--muted)">' + A.noEv.map(function (g) { return esc(g.name); }).join('、') + ' — 发布过考查任务，但还没有老师确认的逐项评价，暂不计入统计</div></div>';
+    if (!A.plans.length) h = '<div class="tq-card"><div class="empty3">当前范围没有课程计划</div></div>';
+    return h;
+  }
+
+  /* ── 课程改进建议 ── */
+  function scopeNames() { var ids = majorIds(); return ids ? ids.map(majorName) : null; }
+  function improve() {
+    S = TK.load();
+    var names = scopeNames(), all = (S.improves || []).filter(function (x) { return !names || names.indexOf(x.major) >= 0; });
+    var list = all.filter(function (x) { return !F.st || x.status === F.st; }), pend = all.filter(function (x) { return x.status === '待处理'; }).length;
+    var plans = S.plans.filter(function (p) { return inMajor(cls(p.classId).majorId); }), courses = uniq(plans.map(function (p) { return p.course; }));
+    var abls = TR.compute(S, plans).abilities.map(function (r) { return r.name; });
+    if (impForm && impForm.target && abls.indexOf(impForm.target) < 0) abls.unshift(impForm.target);
+    var h = '<div class="tq-card"><div class="tq-h"><b>建议</b><span class="note">' + (pend ? pend + ' 条待处理' : '没有待处理的建议') + '</span><span class="sp"></span><button class="btn-s" data-imp-new>提出改进建议</button></div>';
+    if (impForm) {
+      h += '<div style="border-bottom:1px solid var(--rule-2)"><div class="imp-f">' +
+        '<label>建议类型<select data-imp-k="type" class="imp-in"><option>知识体系调整</option><option>能力图谱调整</option><option>课程安排</option><option>教学资源</option><option>其他</option></select></label>' +
+        '<label>涉及课程<select data-imp-k="course" class="imp-in">' + courses.map(function (c) { return '<option' + (impForm.course === c ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select></label>' +
+        '<label>涉及能力<select data-imp-k="target" class="imp-in"><option value="">（不指定）</option>' + abls.map(function (n) { return '<option' + (impForm.target === n ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select></label>' +
+        '<label style="grid-column:1/-1">建议内容<textarea data-imp-k="text" class="imp-in" rows="3" placeholder="例如：「旅游资源采购与供应商管理」支撑技能未达成较多，建议在《旅行社经营与管理》增加供应商谈判实训任务"></textarea></label></div>' +
+        '<div style="display:flex;gap:10px;justify-content:flex-end;padding:0 14px 14px"><button class="btn-s" data-imp-cancel>取消</button><button class="btn" data-imp-save>提交给任课老师</button></div></div>';
+    }
+    h += (list.map(function (x) {
+      var st = x.status === '待处理' ? 'color:var(--warn-ink)' : x.status === '已采纳' || x.status === '已发出' ? 'color:var(--good)' : 'color:var(--muted)';
+      var acts = x.status === '待处理' && x.role !== '专业负责人' ? (impReply && impReply.id === x.id
+          ? '<div style="margin-top:8px"><textarea data-imp-reply class="imp-in" rows="2" style="width:100%" placeholder="' + (impReply.act === '已采纳' ? '说明怎么调整，例如：下周在知识体系里拆出「报价构成」任务' : '说明暂不处理的原因') + '"></textarea><div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px"><button class="btn-s" data-imp-cancel>取消</button><button class="btn" data-imp-done="' + x.id + '">确认' + impReply.act + '</button></div></div>'
+          : '<div style="margin-top:6px;display:flex;gap:12px;align-items:center"><button class="btn-s" data-imp-act="' + x.id + '|已采纳">采纳</button><button class="btn-s" data-imp-act="' + x.id + '|暂不处理">暂不处理</button><a class="lk" href="' + esc(UI.link('graph/knowledge-system.html', 'admin')) + '">去知识体系调整 ›</a><a class="lk" href="' + esc(UI.link('graph/ability-graph.html', 'admin')) + '">去能力图谱调整 ›</a></div>') : '';
+      return '<div class="imp"><span style="font-weight:600;' + st + '">' + esc(x.status) + '</span>　<b>' + esc(x.type) + '</b> · 《' + esc(x.course) + '》' + (x.target ? ' · ' + esc(x.target) : '') +
+        '<span class="note" style="margin-left:8px">' + esc(x.role + ' ' + x.from + ' · ' + x.major + ' · ' + x.at) + '</span><div style="margin-top:4px">' + esc(x.text) + '</div>' +
+        (x.reply ? '<div class="note" style="margin-top:4px">处理：' + esc(x.reply.by + '：' + x.reply.text + ' · ' + x.reply.at) + '</div>' : '') + acts + '</div>';
+    }).join('') || '<div class="empty3">' + (all.length ? '没有符合条件的建议' : '还没有课程改进建议。老师在任务中心学情里提出的建议会出现在这里；也可以针对教学达成里未达成较多的能力提出建议，交给任课老师。') + '</div>');
+    return h + '</div>';
+  }
+  function audit(action, object, after) { try { var st = DEMO.getState(), id = UI.currentIdentity(st); DEMO.addAudit(st, id.account.id, action, object, null, after, '成功'); DEMO.saveState(st); } catch (e) {} }
+
+  function render() { filters(); $('#main').innerHTML = view === 'reach' ? reach() : improve(); }
+
+  document.addEventListener('change', function (e) {
+    var k = e.target.getAttribute('data-f'); if (!k) return;
+    F[k] = e.target.value; if (k === 'major' || k === 'term') { F.course = ''; F.cls = ''; } render();
+  });
+  document.addEventListener('click', function (e) {
+    var t;
+    if (e.target.closest('[data-reset]')) { F.major = LEAD ? (LEAD[0] || '__none__') : ''; F.term = TK.TERM; F.course = ''; F.cls = ''; F.st = ''; render(); return; }
+    if ((t = e.target.closest('[data-by]'))) { F.by = t.getAttribute('data-by'); render(); return; }
+    if ((t = e.target.closest('.xrow'))) { var k = t.getAttribute('data-x'); OPEN[k] = !OPEN[k]; t.nextElementSibling.hidden = !OPEN[k]; return; }
+    if (e.target.closest('[data-imp-new]')) { impForm = { target: '', course: '' }; impReply = null; render(); return; }
+    if (e.target.closest('[data-imp-cancel]')) { impForm = null; impReply = null; render(); return; }
+    if ((t = e.target.closest('[data-imp-act]'))) { var ia = t.getAttribute('data-imp-act').split('|'); impReply = { id: ia[0], act: ia[1] }; impForm = null; render(); return; }
+    if (e.target.closest('[data-imp-save]')) {
+      var g = function (k) { var el = document.querySelector('[data-imp-k="' + k + '"]'); return el ? el.value.trim() : ''; };
+      if (!g('text')) { document.querySelector('[data-imp-k="text"]').focus(); return; }
+      if (!g('course')) { TK.toast('当前范围没有课程计划，不能提出建议'); return; }
+      var TS = TK.load(), pl = TS.plans.filter(function (p) { return p.course === g('course') && inMajor(cls(p.classId).majorId); })[0], cl = pl && TS.classes.filter(function (c) { return c.id === pl.classId; })[0];
+      TS.improves = TS.improves || [];
+      TS.improves.unshift({ id: TK.uid('IMP'), planId: pl ? pl.id : '', course: g('course'), major: cl ? majorName(cl.majorId) : '', role: '专业负责人', from: iden.account.name, type: g('type'), target: g('target'), text: g('text'), at: TK.fmt(new Date()), status: '已发出', reply: null });
+      TK.save(TS); audit('提出课程改进建议', g('course'), { 类型: g('type'), 能力: g('target') }); impForm = null; TK.toast('已发给《' + g('course') + '》的任课老师'); render(); return;
+    }
+    if ((t = e.target.closest('[data-imp-done]'))) {
+      var note = ((document.querySelector('[data-imp-reply]') || {}).value || '').trim();
+      if (!note) { document.querySelector('[data-imp-reply]').focus(); return; }
+      var TS2 = TK.load(), x = (TS2.improves || []).filter(function (y) { return y.id === t.getAttribute('data-imp-done'); })[0];
+      if (x) { x.status = impReply.act; x.reply = { by: iden.account.name, text: note, at: TK.fmt(new Date()) }; TK.save(TS2); audit('处理课程改进建议', x.course, { 结果: x.status, 说明: note }); }
+      impReply = null; render(); return;
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

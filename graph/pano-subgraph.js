@@ -9,7 +9,7 @@
   if(!G||!ctrl)return;
   var KEY='pano_subgraphs_v1',ROLE_KEY='pano_role';
   // 演示用视角：管理员看全部；教师按数据权限只看所在专业
-  var ROLES={admin:{label:'平台管理员',majors:null},teacher:{label:'李老师 · 旅游管理',majors:['旅游管理']}};
+  var ROLES={admin:{label:'平台管理员',majors:null},teacher:{label:'李老师 · 导游',majors:['导游']}};
   // 场景模板登记：赛、证、资源入图后新增模板即可
   var SCENES=[
     {id:'course',label:'课程图谱',ready:true},
@@ -20,7 +20,7 @@
   var role=sessionStorage.getItem(ROLE_KEY)||'admin';
   // 图谱中心：视角跟随登录身份，不再手动切换
   var GC_ROLE=!!window.GC;
-  if(GC_ROLE){ role=GC.teacher()?'teacher':'admin'; ROLES.teacher.label=GC.me()+' · 旅游管理'; }
+  if(GC_ROLE){ role=GC.teacher()?'teacher':'admin'; ROLES.teacher.label=GC.me()+' · 导游'; }
   var saved=[];try{saved=JSON.parse(sessionStorage.getItem(KEY))||[]}catch(e){}
   var rule={kind:'all'},active=null;
 

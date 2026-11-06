@@ -67,6 +67,7 @@
     'class': { key: 'edu-class', title: '班级管理', desc: '班级归属专业和年级；学生在「学生管理」中维护，班级名单只算在读学生' },
     student: { key: 'edu-student', title: '学生管理', desc: '学生档案按班级维护；班级名单和老师发布任务只算在读学生；转班后从下一次发布的任务开始跟新班级走，已有记录不动；有学习记录的学生不能删除，只能改学籍状态' },
     term: { key: 'edu-term', title: '学期与学年管理', desc: '课程计划按学年学期建立；停用的学期不能新建课程计划' },
+    lab: { key: 'edu-lab', title: '实训资源管理', desc: '本校校内实训资源（实训室、设备、软件）及其能提供的实训条件；课程需要哪些实训条件，按知识体系里审核通过的实训需求汇总；能力测评的实训条件差距读这里的登记。校外基地第一阶段不在这里登记' },
     course: { key: 'edu-course', title: '课程管理', desc: '课程分专业课和公共基础课，公共基础课默认不计入技能达成；课程与知识体系的关联一般由专业负责人在图谱中心建知识体系时完成' }
   };
   var view = (location.search.match(/[?&]t=(\w+)/) || [])[1];
@@ -74,6 +75,8 @@
   var V = VIEWS[view];
   document.title = V.title;
   UI.boot({ portal: 'admin', active: V.key });
+  // 教务基础数据、课程计划只给有「教务基础数据与课程计划维护」权限的身份（专业负责人等看不到）
+  (function () { var c = DEMO.getState(), id = UI.currentIdentity(c); var need = view === 'lab' ? ['edu:lab:manage', '实训资源维护'] : ['edu:base:manage', '教务基础数据与课程计划维护']; if (!UI.hasPerm(c, id, need[0])) { document.querySelector('.panel').innerHTML = '<div class="body"><div class="card" style="padding:40px;text-align:center;color:var(--muted)">当前身份没有「' + need[1] + '」权限</div></div>'; throw new Error('no-perm'); } })();
 
   var S = TK.load(), E = S.edu, F = {}, SEL = {};
   var preCl = (location.search.match(/[?&]cl=([^&]+)/) || [])[1];
@@ -188,6 +191,22 @@
           '<td class="ops">' + opsLink('edit', t.id, '编辑') + toggleLink(t) + (t.status === '停用' ? opsLink('del', t.id, '删除', np > 0, '该学期已有课程计划，不能删除') : '') + '</td></tr>';
       }), list.length);
     },
+    lab: function () {
+      $('#filters').innerHTML = filterHTML([{ k: 'q', label: '名称', ph: '请输入实训资源名称' }, { type: 'select', k: 'ty', label: '类型', all: '全部类型', options: LAB_TYPES },
+        { type: 'select', k: 'cd', label: '实训条件', all: '全部实训条件', options: LAB_CONDS.map(function (d) { return d.name; }) }, STATUS]);
+      var labs = E.labs || [];
+      var list = labs.filter(function (l) { return (!F.q || l.name.indexOf(F.q) >= 0) && (!F.ty || l.type === F.ty) && (!F.cd || l.conds.some(function (c) { return condName(c) === F.cd; })) && (!F.st || l.status === F.st); });
+      // 开设课程需要的实训条件（不含校外基地）对照本校登记
+      var need = openedConds().filter(function (x) { return COND[x.cond] && COND[x.cond].category !== '校外基地'; });
+      var miss = need.filter(function (x) { return x.level === '必需' && !providers(x.cond).length; });
+      setBanner(need.length ? '开设课程需要的校内实训条件 <b>' + need.length + '</b> 项（必需 ' + need.filter(function (x) { return x.level === '必需'; }).length + ' 项），本校已登记能提供 <b>' + need.filter(function (x) { return providers(x.cond).length; }).length + '</b> 项' +
+        (miss.length ? '；<span style="color:var(--crit)">缺必需：' + esc(miss.map(function (x) { return condName(x.cond); }).join('、')) + '</span>' : '；必需条件都已具备') + '。<button class="lk" data-needlist>查看明细</button>' : '');
+      table(['名称', '类型', '能提供的实训条件', '容纳人数', '地点', '负责人', '状态', '操作'], list.map(function (l) {
+        return '<tr><td>' + esc(l.name) + (l.desc ? '<div class="muted" style="font-size:11.5px">' + esc(l.desc) + '</div>' : '') + '</td><td>' + esc(l.type) + '</td><td style="max-width:300px;white-space:normal">' + l.conds.map(function (c) { return '<span class="pill k" style="margin:0 4px 4px 0">' + esc(condName(c)) + '</span>'; }).join('') + '</td>' +
+          '<td>' + (l.seats ? esc(l.seats) + ' 人' : '—') + '</td><td>' + esc(l.location || '—') + '</td><td>' + esc(l.owner || '—') + '</td><td>' + pill(l.status) + '</td>' +
+          '<td class="ops">' + opsLink('edit', l.id, '编辑') + toggleLink(l) + (l.status === '停用' ? opsLink('del', l.id, '删除') : '') + '</td></tr>';
+      }), list.length);
+    },
     course: function () {
       $('#filters').innerHTML = filterHTML([{ k: 'q', label: '课程名称', ph: '请输入课程名称' },
         { type: 'select', k: 'ty', label: '课程类型', all: '全部类型', options: ['专业课', '公共基础课'] },
@@ -232,8 +251,49 @@
     return o || { v: c.ks, label: c.ks };
   }
 
+  /* ── 实训资源 × 实训条件 ── */
+  var TD = (window.ASSESS_DATA || {}).training || { dict: [], reqs: {} };
+  var COND = {}; TD.dict.forEach(function (d) { COND[d.id] = d; });
+  var LAB_CONDS = TD.dict.filter(function (d) { return d.category !== '校外基地'; }), LAB_TYPES = ['实训室', '设备', '软件'];
+  function condName(id) { return COND[id] ? COND[id].name : id; }
+  function providers(cid) { return (E.labs || []).filter(function (l) { return l.status === '启用' && l.conds.indexOf(cid) >= 0; }); }
+  // 课程需要的实训条件：课程关联的知识体系里，各技能审核通过的实训需求（必需 / 建议），合并到条件
+  function courseConds(c) {
+    var K = TK.kn(), kc = c && c.ks ? K.course[c.ks] : null; if (!kc) return [];
+    var sids = {}; kc.tasks.forEach(function (t) { t.skills.forEach(function (k) { sids[k.id] = 1; }); });
+    var out = {};
+    ((TD.reqs || {})['MAJOR-GUIDE'] || []).forEach(function (r) {
+      if (r.status !== '已审核' || !sids[r.skill]) return;
+      var x = out[r.cond] = out[r.cond] || { cond: r.cond, level: '建议', skills: {} };
+      if (r.level === '必需') x.level = '必需'; x.skills[TK.skillName(r.skill)] = 1;
+    });
+    return Object.keys(out).map(function (k) { return out[k]; }).sort(function (a, b) { return (a.level === '必需' ? 0 : 1) - (b.level === '必需' ? 0 : 1); });
+  }
+  // 开设课程（有课程计划的）需要的实训条件
+  function openedConds() {
+    var out = {};
+    E.courses.filter(function (c) { return S.plans.some(function (p) { return p.eduCourseId === c.id; }); }).forEach(function (c) {
+      courseConds(c).forEach(function (x) { var y = out[x.cond] = out[x.cond] || { cond: x.cond, level: '建议', courses: [] }; if (x.level === '必需') y.level = '必需'; y.courses.push(c.name); });
+    });
+    return Object.keys(out).map(function (k) { return out[k]; }).sort(function (a, b) { return (a.level === '必需' ? 0 : 1) - (b.level === '必需' ? 0 : 1); });
+  }
+  function condRows(list, withCourses) {
+    return '<table class="tbl2" style="min-width:0"><thead><tr><th>实训条件</th><th>级别</th><th>' + (withCourses ? '需要它的课程' : '来自技能') + '</th><th>本校提供</th></tr></thead><tbody>' + list.map(function (x) {
+      var d = COND[x.cond] || {}, pv = providers(x.cond), ext = d.category === '校外基地';
+      return '<tr><td><b>' + esc(d.name || x.cond) + '</b><div class="muted" style="font-size:11px">' + esc(d.category || '') + '</div></td><td><span class="pill ' + (x.level === '必需' ? 'core' : 'k') + '">' + x.level + '</span></td>' +
+        '<td style="font-size:12px;white-space:normal;max-width:220px">' + esc(withCourses ? x.courses.map(function (n) { return '《' + n + '》'; }).join('') : Object.keys(x.skills).join('、')) + '</td>' +
+        '<td style="font-size:12px">' + (ext ? '<span class="muted">校外基地，第一阶段不在这里登记</span>' : pv.length ? esc(pv.map(function (l) { return l.name; }).join('、')) : x.level === '必需' ? '<span class="pill crit">缺</span>' : '<span class="muted">无</span>') + '</td></tr>';
+    }).join('') + '</tbody></table>';
+  }
+
   /* ── 新增 / 编辑 ── */
   var FORMS = {
+    lab: function () {
+      return [{ k: 'name', label: '名称', req: true, full: true, ph: '如：导游服务综合实训室' }, { k: 'type', label: '类型', type: 'select', req: true, options: LAB_TYPES },
+        { k: 'seats', label: '容纳人数', type: 'number', ph: '选填' }, { k: 'location', label: '地点', ph: '如：实训楼 302' }, { k: 'owner', label: '负责人', ph: '选填' },
+        { k: 'conds', label: '能提供的实训条件', type: 'chips', req: true, options: LAB_CONDS.map(function (d) { return d.name; }) },
+        { k: 'desc', label: '说明', type: 'textarea', full: true, ph: '如：可同时开展两组演练；设备维修中可写在这里' }];
+    },
     major: function (x, parent) {
       return [{ k: 'name', label: '专业名称', req: true, full: true, ph: '请输入专业名称' }, { k: 'code', label: '专业编码', req: true, ph: '请输入专业编码' },
         { k: 'desc', label: '专业说明', type: 'textarea', full: true, ph: '请输入专业说明' }];
@@ -266,7 +326,7 @@
         { k: 'desc', label: '课程说明', type: 'textarea', full: true, ph: '请输入课程说明' }];
     }
   };
-  function listOf() { return { major: E.majors, grade: E.grades, 'class': S.classes, student: E.students, term: E.terms, course: E.courses }[view]; }
+  function listOf() { return { major: E.majors, grade: E.grades, 'class': S.classes, student: E.students, term: E.terms, course: E.courses, lab: E.labs }[view]; }
   function openForm(x, parent) {
     var fields = FORMS[view](x, parent), v = {};
     if (x) {
@@ -274,7 +334,9 @@
       if (x.majorId) v.major = TK.majorPath(E, x.majorId);
       if (x.gradeId) v.grade = gradeName(x.gradeId);
       if (view === 'student') { v.cl = className(x.classId); v.org = orgName(x.orgId); }
+      if (view === 'lab') v.conds = (x.conds || []).map(condName);
     }
+    if (view === 'lab' && !x) v.type = '实训室';
     if (view === 'student' && !x) { v.status = '在读'; v.org = (ORGS.filter(function (o) { return o.id === 'ORG-GUIDE-ROOM'; })[0] || ORGS[0] || {}).name; if (F.cl) v.cl = F.cl; }
     var title = (x ? '编辑' : parent ? '添加子专业 · ' + parent.name : '新增') + (x || parent ? '' : V.title.replace('管理', '').replace('与学年', ''));
     if (view === 'term' && !x) title = '新增学期';
@@ -303,7 +365,8 @@
         if (!/^\d{4}-\d{4}$/.test(d.year)) { TK.toast('学年格式如：2027-2028'); return; }
         if (d.end <= d.start) { TK.toast('结束日期需晚于开始日期'); return; }
       }
-      var rec = x || { id: TK.uid({ major: 'M', grade: 'GR', 'class': 'CL', student: 'ST', term: 'TM', course: 'EC' }[view]), status: '启用', by: me(), at: now() };
+      var rec = x || { id: TK.uid({ major: 'M', grade: 'GR', 'class': 'CL', student: 'ST', term: 'TM', course: 'EC', lab: 'LAB' }[view]), status: '启用', by: me(), at: now() };
+      if (view === 'lab') { rec.name = d.name; rec.type = d.type; rec.seats = d.seats; rec.location = d.location; rec.owner = d.owner; rec.desc = d.desc; rec.conds = LAB_CONDS.filter(function (c) { return d.conds.indexOf(c.name) >= 0; }).map(function (c) { return c.id; }); }
       var oldTerm = x && view === 'term' ? termLabel(x) : '', oldName = x ? x.name : '';
       if (view === 'major') { rec.name = d.name; rec.code = d.code; rec.desc = d.desc; if (!x) rec.parentId = parent ? parent.id : null; }
       if (view === 'grade') { rec.name = d.name; rec.code = d.code; }
@@ -343,6 +406,7 @@
         : c.type === '公共基础课' ? '<div style="font-size:12.5px;color:var(--muted)">公共基础课，默认不计入技能达成：老师照常建课次、备课、布置和评价，任务按整体等级评价，不记学习证据。</div>'
         : '<div style="font-size:12.5px;color:var(--warn-ink)">专业课，还没关联知识体系。老师可以照常上课，发布任务时从备课资源确认技能；关联后才能统计课程技能覆盖。</div>') +
       '<a class="lk" style="display:inline-block;margin-top:8px" href="' + esc(UI.link('graph/knowledge-system.html', 'admin')) + '">去图谱中心查看知识体系 ›</a></div>' +
+      (c.ks ? '<div class="dr-s"><div class="dr-st">需要的实训条件（' + courseConds(c).length + '）</div>' + (courseConds(c).length ? '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">按知识体系里审核通过的实训需求汇总，对照本校「实训资源管理」的登记</div>' + condRows(courseConds(c), false) : '<div style="font-size:12.5px;color:var(--muted)">知识体系里这门课的技能还没有审核通过的实训需求</div>') + '</div>' : '') +
       '<div class="dr-s"><div class="dr-st">使用该课程的课程计划（' + plans.length + '）</div>' + (plans.length ? plans.map(function (p) { var cl = byId(S.classes, p.classId) || {}; return '<div style="font-size:12.5px;padding:6px 0;border-bottom:1px solid var(--rule-2)">' + esc(p.term + ' · ' + (cl.name || '') + ' · ' + p.teacher) + '</div>'; }).join('') : '<div class="empty" style="padding:10px 0">暂无</div>') + '</div>';
   }
   function classStudents(c) {
@@ -404,6 +468,10 @@
       if (b === 'acct') openAccounts(ids);
       return;
     }
+    if (t.closest('[data-needlist]')) {
+      var nd = TK.drawer({ title: '开设课程需要的实训条件', sub: '按课程关联的知识体系里审核通过的实训需求汇总 · 校内部分对照本页登记', width: 640 });
+      nd.body.innerHTML = '<div class="dr-s">' + condRows(openedConds(), true) + '</div>'; return;
+    }
     if (t.closest('[data-reset]')) { F = {}; render(); return; }
     var fd = t.closest('[data-fold]');
     if (fd) { var k = 'fold-' + fd.dataset.fold; F[k] = !F[k]; render(); return; }
@@ -419,7 +487,7 @@
     else if (act === 'acct') openAccounts([x.id]);
     else if (act === 'toggle') {
       var to = x.status === '启用' ? '停用' : '启用';
-      var tip = to === '停用' ? ({ major: '停用后新建班级、课程时不能再选这个专业', grade: '停用后新建班级时不能再选这个年级', 'class': '停用后不能再为这个班级新建课程计划', term: '停用后不能再在这个学期新建课程计划', course: '停用后不能再用这门课新建课程计划' }[view]) : '启用后可正常使用';
+      var tip = to === '停用' ? ({ lab: '停用后不再算作本校已具备的实训条件（能力测评的实训条件差距同步变化）', major: '停用后新建班级、课程时不能再选这个专业', grade: '停用后新建班级时不能再选这个年级', 'class': '停用后不能再为这个班级新建课程计划', term: '停用后不能再在这个学期新建课程计划', course: '停用后不能再用这门课新建课程计划' }[view]) : '启用后可正常使用';
       var subs = [];
       if (view === 'major') {
         var up = x.parentId ? byId(E.majors, x.parentId) : null;

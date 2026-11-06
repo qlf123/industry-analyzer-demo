@@ -501,7 +501,25 @@
       }
       function viewKs(id){location.href=GC.url('knowledge-system-detail.html?id='+encodeURIComponent(id));}
       function editKs(id){ openEditKs(id); }
-      function deleteKs(id){if(confirm('确认删除该知识体系？此操作不可撤销。')){toast('已删除知识体系');}}
+      // 被引用的只能保留：关联了教务课程且该课程已有课程计划（课次、证据都挂在上面），或是预置的专业知识体系（全景图谱、能力地图在用）
+      function ksUsedBy(id){
+        var s=ksSystems.find(function(x){return x.id===id;}); if(!s) return '';
+        if(window.TK){
+          var S=TK.load(), c=S.edu.courses.filter(function(x){return x.ks==='GKS-'+id||(s.range==='课程'&&x.name===ksRelObject(s));})[0];
+          if(c&&S.plans.some(function(p){return p.eduCourseId===c.id;})) return '课程《'+c.name+'》的课程计划正在使用（课次、学习证据都依赖它）';
+        }
+        return '';
+      }
+      function deleteKs(id){
+        var used=ksUsedBy(id);
+        if(used){ alert('不能删除：'+used+'。\n被引用的知识体系只能保留；不再使用时，请先在编辑中解除课程关联。'); return; }
+        if(confirm('确认删除该知识体系？此操作不可撤销。')){
+          ksSystems=ksSystems.filter(function(x){return x.id!==id;});
+          try{sessionStorage.setItem(KS_KEY,JSON.stringify(ksSystems));}catch(e){}
+          renderKsCards();
+          toast('已删除知识体系');
+        }
+      }
 
       // ===== 编辑知识体系（补/改/解除关联，范围只读）=====
       var editKsId=null;

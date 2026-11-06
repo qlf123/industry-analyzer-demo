@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>标准图谱建议｜图谱中心</title>
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="../css/teacher.css">
+<style>
+/* 标准图谱建议：老师从能力地图提交的个人节点，管理员 / 专业负责人审核、发布 */
+.sr-tabs{display:flex;gap:6px;margin-bottom:12px}
+.sr-tabs button{border:1px solid var(--rule);background:var(--card);border-radius:8px;padding:6px 14px;font:inherit;font-size:13px;color:var(--ink-2);cursor:pointer}
+.sr-tabs button[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
+.sr-tabs b{font-weight:500;margin-left:4px}
+.sr-tabs .sp{flex:1}
+.sr-card{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden}
+.sr-card .tw{overflow-x:auto}
+.tbl2{min-width:1080px}
+.tbl2 td{vertical-align:top}
+.tbl2 .nm{font-weight:600;color:var(--ink)}
+.tbl2 .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.tbl2 .path{font-size:12px;color:var(--ink-2);max-width:280px}
+.tbl2 .why{font-size:12px;color:var(--ink-2);max-width:260px}
+.tbl2 .ops{white-space:nowrap}
+.tbl2 .ops .lk{margin-right:10px}
+.lk{color:var(--brand-ink);cursor:pointer;background:none;border:0;padding:0;font:inherit;font-size:12.5px}
+.lk:hover{text-decoration:underline}
+.lk.danger{color:var(--crit)}
+.tg{display:inline-block;font-size:11px;border-radius:5px;padding:0 6px;margin-right:6px;background:var(--card-2);color:var(--ink-2);border:1px solid var(--rule)}
+.dup{color:var(--crit);font-size:11.5px}
+.empty3{font-size:12.5px;color:var(--muted);padding:40px 0;text-align:center}
+.tree{font-size:12.5px;line-height:1.9}
+.tree ul{list-style:none;margin:0;padding-left:18px;border-left:1px dashed var(--rule)}
+.tree>ul{border-left:0;padding-left:0}
+.kvd{display:grid;grid-template-columns:88px 1fr;gap:8px 12px;font-size:13px;margin-bottom:14px}
+.kvd .k{color:var(--muted)}
+.note2{background:var(--card-2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--ink-2);line-height:1.8}
+.pubbar{display:flex;align-items:center;gap:10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#9a3412}
+.pubbar .sp{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">标准图谱建议</h1><div class="pt-d">老师在能力地图里提交的个人节点。采纳后进入待发布，发布后并入标准图谱，全校老师在能力地图里都能看到，并标注贡献人</div></div></div></div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="../js/mock-data.js"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js"></script>
+<script src="gc-shell.js"></script>
+<script src="../js/assess-data.js"></script>
+<script src="../js/teacher-kit.js"></script>
+<script src="../js/graph-suggest.js"></script>
+<script>GC.boot('gc-sr');</script>
+<script>
+(function () {
+  'use strict';
+  var esc = TK.esc, F = { tab: '待审核', target: '', by: '' };
+  var ctx = DEMO.getState(), iden = UI.currentIdentity(ctx);
+  var me = iden.account ? iden.account.name : '';
+  var TABS = ['待审核', '已采纳', '已发布', '已退回'];
+  var TAB_LABEL = { '已采纳': '已采纳 · 待发布' };
+  function canReview() { return UI.hasPerm(ctx, iden, 'graph:suggest:review'); }
+  function place(r) { return (r.chain || []).slice(0, -1).map(function (x) { return x.replace(/^[^：]+：/, ''); }).join(' › '); }
+  function typeName(r) { return r.kind || { sub: '子行业', pos: '岗位', abl: '能力项', skl: '技能', lf: '末级节点', ai: '细分节点' }[r.type] || r.type; }
+  function treeHTML(t) { return '<li>' + esc(t.name) + ' <span class="tg">' + esc(t.kind || { sub: '子行业', pos: '岗位', abl: '能力项', skl: '技能', ai: '细分节点' }[t.type] || '') + '</span>' + (t.children && t.children.length ? '<ul>' + t.children.map(treeHTML).join('') + '</ul>' : '') + '</li>'; }
+
+  function render() {
+    if (!canReview()) { document.getElementById('body').innerHTML = '<div class="card"><div class="empty3">当前身份没有「标准图谱建议审核」权限</div></div>'; return; }
+    var all = GSuggest.list();
+    var cnt = {}; TABS.forEach(function (t) { cnt[t] = all.filter(function (r) { return r.status === t; }).length; });
+    var people = all.map(function (r) { return r.by; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+    var list = all.filter(function (r) { return r.status === F.tab && (!F.target || r.target === F.target) && (!F.by || r.by === F.by); });
+    var h = '<div class="sr-tabs">' + TABS.map(function (t) { return '<button data-tab="' + t + '" aria-pressed="' + (F.tab === t) + '">' + (TAB_LABEL[t] || t) + '<b>' + cnt[t] + '</b></button>'; }).join('') + '</div>';
+    if (cnt['已采纳']) h += '<div class="pubbar">有 ' + cnt['已采纳'] + ' 项已采纳的建议待发布。发布后并入标准图谱，全校老师在能力地图里可见<span class="sp"></span><button class="btn" style="height:32px" data-publish>发布到标准图谱</button></div>';
+    h += '<div class="card filters"><label>提交到<select class="sel" data-f="target"><option value="">全部</option><option' + (F.target === '知识体系' ? ' selected' : '') + '>知识体系</option><option' + (F.target === '能力图谱' ? ' selected' : '') + '>能力图谱</option></select></label>' +
+      '<label>提交人<select class="sel" data-f="by"><option value="">全部</option>' + people.map(function (p) { return '<option' + (F.by === p ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('') + '</select></label></div>';
+    var heads = ['节点', '提交到', '挂载位置', '提交人', '提交理由', F.tab === '待审核' ? '提交时间' : '审核', '操作'];
+    var rows = list.map(function (r) {
+      var rv = r.review || {};
+      var ops = '<button class="lk" data-view="' + r.id + '">查看</button>' + (F.tab === '待审核' ? '<button class="lk" data-adopt="' + r.id + '">采纳</button><button class="lk danger" data-reject="' + r.id + '">退回</button>' : F.tab === '已采纳' ? '<button class="lk" data-undo="' + r.id + '">撤销采纳</button>' : '');
+      return '<tr><td><div class="nm">' + esc(rv.rename || r.name) + '</div><div class="sub">' + esc(typeName(r)) + (r.count > 1 ? ' · 连同下级共 ' + r.count + ' 个节点' : '') + (rv.rename ? ' · 原名「' + esc(r.name) + '」' : '') + '</div>' + (r.dup ? '<div class="dup">同级已有同名标准节点</div>' : '') + '</td>' +
+        '<td>' + esc(r.target) + '<div class="sub">' + esc(r.targetName) + '</div></td><td class="path">' + esc(place(r)) + '</td><td>' + esc(r.by) + '</td><td class="why">' + esc(r.reason) + '</td>' +
+        '<td>' + (F.tab === '待审核' ? '<span class="sub">' + esc(r.at) + '</span>' : esc(rv.by || '') + '<div class="sub">' + esc(F.tab === '已发布' ? (r.publishedAt || '') : (rv.at || '')) + '</div>' + (rv.note ? '<div class="sub">' + esc(rv.note) + '</div>' : '')) + '</td>' +
+        '<td class="ops">' + ops + '</td></tr>';
+    });
+    h += '<div class="sr-card"><div class="tw"><table class="tbl2"><thead><tr>' + heads.map(function (x) { return '<th>' + x + '</th>'; }).join('') + '</tr></thead><tbody>' + (rows.join('') || '<tr><td colspan="7"><div class="empty3">' + (F.tab === '待审核' ? '暂无待审核的建议。老师可在能力地图里，把自己补充的节点「提交到标准图谱」' : '暂无') + '</div></td></tr>') + '</tbody></table></div></div>';
+    document.getElementById('body').innerHTML = h;
+  }
+  function byId(id) { return GSuggest.list().filter(function (r) { return r.id === id; })[0]; }
+  function view(r) {
+    var d = TK.drawer({ title: r.review && r.review.rename || r.name, sub: typeName(r) + ' · ' + r.status, width: 640 });
+    d.body.innerHTML = '<div class="kvd"><span class="k">提交到</span><span>' + esc(r.target + ' · ' + r.targetName) + '</span><span class="k">挂载位置</span><span>' + esc(place(r)) + '</span><span class="k">提交人</span><span>' + esc(r.by + ' · ' + r.at) + '</span><span class="k">提交理由</span><span>' + esc(r.reason) + '</span>' +
+      (r.desc ? '<span class="k">说明</span><span>' + esc(r.desc) + '</span>' : '') + (r.dup ? '<span class="k">重复检查</span><span class="dup">同级已有同名的标准节点，采纳前请确认不重复，或改名后采纳</span>' : '') +
+      (r.review ? '<span class="k">审核</span><span>' + esc((r.review.by || '') + ' · ' + (r.review.at || '') + (r.review.note ? ' · ' + r.review.note : '')) + '</span>' : '') + '</div>' +
+      '<div class="lh" style="font-size:13px;font-weight:600;margin-bottom:6px">提交的内容（共 ' + r.count + ' 个节点）</div><div class="tree"><ul>' + treeHTML(r.tree) + '</ul></div>';
+  }
+  function adopt(r) {
+    var m = TK.modal({ title: '采纳建议', width: 480, body: '<div class="fgrid"><div class="ff full"><span class="lh"><span class="req">节点名称</span></span><input data-k="name" maxlength="20" value="' + esc(r.name) + '"><span style="font-size:11.5px;color:var(--muted)">可改名后采纳；下级节点按提交内容并入</span></div>' +
+      (r.dup ? '<div class="ff full dup">同级已有同名的标准节点，建议改名或确认后再采纳</div>' : '') +
+      '<div class="ff full"><span class="lh"><span>审核意见</span></span><textarea data-k="note" maxlength="200" placeholder="选填"></textarea></div></div>',
+      foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">采纳</button>' });
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () {
+      var nm = m.body.querySelector('[data-k="name"]').value.trim(); if (!nm) return TK.toast('请输入节点名称');
+      GSuggest.update(r.id, { status: '已采纳', review: { by: me, at: GSuggest.now(), note: m.body.querySelector('[data-k="note"]').value.trim(), rename: nm !== r.name ? nm : '' } });
+      m.close(); TK.toast('已采纳，发布后并入标准图谱'); render();
+    };
+  }
+  function reject(r) {
+    var m = TK.modal({ title: '退回建议', width: 460, body: '<div class="fgrid"><div class="ff full"><span class="lh"><span class="req">退回原因</span></span><textarea data-k="note" maxlength="200" placeholder="说明退回原因，提交人会在能力地图里看到"></textarea></div></div>',
+      foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">退回</button>' });
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () {
+      var note = m.body.querySelector('[data-k="note"]').value.trim(); if (!note) return TK.toast('请填写退回原因');
+      GSuggest.update(r.id, { status: '已退回', review: { by: me, at: GSuggest.now(), note: note } });
+      m.close(); TK.toast('已退回'); render();
+    };
+  }
+  // 发布：已采纳的全部并入标准图谱；给提交人记一条成长记录（教研贡献）
+  function publish() {
+    var list = GSuggest.list().filter(function (r) { return r.status === '已采纳'; });
+    TK.confirm('发布 ' + list.length + ' 项建议到标准图谱？发布后全校老师在能力地图里可见，并标注贡献人。', function () {
+      var S = TK.load(), at = GSuggest.now();
+      list.forEach(function (r) {
+        GSuggest.update(r.id, { status: '已发布', publishedAt: at });
+        TK.addGrowth(S, { type: '教研贡献', owner: r.by, target: (r.review.rename || r.name), desc: '贡献到标准图谱（' + r.target + ' · ' + r.targetName + '），共 ' + r.count + ' 个节点', stars: r.count });
+      });
+      TK.save(S); TK.toast('已发布 ' + list.length + ' 项'); F.tab = '已发布'; render();
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-tab]'))) { F.tab = t.dataset.tab; render(); }
+    else if ((t = e.target.closest('[data-view]'))) view(byId(t.dataset.view));
+    else if ((t = e.target.closest('[data-adopt]'))) adopt(byId(t.dataset.adopt));
+    else if ((t = e.target.closest('[data-reject]'))) reject(byId(t.dataset.reject));
+    else if ((t = e.target.closest('[data-undo]'))) { GSuggest.update(t.dataset.undo, { status: '待审核', review: null }); render(); }
+    else if (e.target.closest('[data-publish]')) publish();
+  });
+  document.addEventListener('change', function (e) { var k = e.target.getAttribute('data-f'); if (k) { F[k] = e.target.value; render(); } });
+  render();
+})();
+</script>
+</body>
+</html>

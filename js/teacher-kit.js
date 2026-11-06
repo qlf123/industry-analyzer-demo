@@ -34,6 +34,32 @@
     return KN;
   }
   function skillName(id) { var x = kn().skill[id]; return x ? x.name : id; }
+  // 考查知识点：技能下的知识点（知识体系「知识点数据」），按技能分组 [{sid, skill, kps:[{id, name, type, core}]}]
+  function kpsOf(skillIds) { return (skillIds || []).map(function (sid) { var x = kn().skill[sid]; return { sid: sid, skill: x ? x.name : sid, kps: (x && x.kps) || [] }; }).filter(function (g) { return g.kps.length; }); }
+  /* 知识点掌握（只用于学情分析和补训，不进证据、不汇总到能力）：
+     演示用 AI 标注——按该技能的评价等级和提交内容，标出没体现的知识点；老师确认评价时可改。 */
+  function hash(str) { var h = 0; for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; return Math.abs(h); }
+  function aiKpMarks(sid, grade, student) {
+    var x = kn().skill[sid], ks = (x && x.kps) || [], out = {};
+    ks.forEach(function (k, i) {
+      var miss = grade === '需改进' ? (hash(student + k.id) % 2 === 0 || i === 0) : grade === '合格' ? (ks.length > 1 && hash(student + k.id) % 3 === 0) : false;
+      out[k.id] = miss ? 'miss' : 'ok';
+    });
+    return out;
+  }
+  // 一次老师评价里，某技能下各知识点的结果：老师确认过的优先，没有则用 AI 标注（存量数据）
+  function itemKps(item, student) { return (item && item.kps) || (item ? aiKpMarks(item.sid, item.grade, student) : {}); }
+  function kpCount(skillIds) { return kpsOf(skillIds).reduce(function (a, g) { return a + g.kps.length; }, 0); }
+  // 考查知识点展示：每个技能一行，知识点标类型，悬停看核心内容
+  function kpHTML(skillIds) {
+    var gs = kpsOf(skillIds);
+    if (!gs.length) return '<span style="color:var(--muted);font-size:12px">' + ((skillIds || []).length ? '所选技能下没有知识点' : '未挂技能，没有考查知识点') + '</span>';
+    return gs.map(function (g) {
+      return '<div style="font-size:12.5px;line-height:1.9"><span style="color:var(--muted)">' + esc(g.skill) + '：</span>' + g.kps.map(function (k) {
+        return '<span title="' + esc(k.core || '') + '" style="display:inline-block;border:1px solid var(--rule);border-radius:6px;padding:0 7px;margin:0 6px 4px 0;background:var(--card)">' + esc(k.name) + (k.type ? '<small style="color:var(--muted);margin-left:4px">' + esc(k.type) + '</small>' : '') + '</span>';
+      }).join('') + '</div>';
+    }).join('');
+  }
 
   /* ── 图谱中心（graph/）新建的课程级知识体系：建课次时可选用；选用时导入一份到本机数据（st.gks），之后与预置知识体系同样使用 ── */
   function graphSystems(courseName) {
@@ -290,9 +316,19 @@
       if (s && s.v === 8) { seedMajorLevel(s); s.v = 9; save(s); }   // 专业树补第三层
       if (s && s.v === 9) { seedStudents(s); s.v = 10; save(s); }   // 学生档案
       if (s && s.v === 10) { syncSessions(s); s.v = 11; save(s); }   // 排课自动生成课次
-      if (s && s.v === 11) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return s; }
+      if (s && s.v === 11) { if (seedLabs(s)) save(s); Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return s; }
     } catch (e) {}
-    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); s2.v = 11; save(s2); return s2;
+    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); s2.v = 11; save(s2); return s2;
+  }
+  /* 实训资源（校内：实训室 / 设备 / 软件）：管理端「教务基础数据 › 实训资源管理」维护；能力测评的实训条件差距读这里。
+     首次从能力测评原来预置的本校校内实训资源导入；校外基地第一阶段不在这里管 */
+  function seedLabs(st) {
+    if (!st.edu || st.edu.labs) return false;
+    var A = root.ASSESS_DATA, base = (((A || {}).plans || {})['MAJOR-GUIDE'] || {}).labs || [], n = 0;
+    st.edu.labs = base.filter(function (l) { return (l.kind || '校内') === '校内'; }).map(function (l) {
+      return { id: 'LAB' + (++n), name: l.name, type: /机房|实训室/.test(l.name) ? '实训室' : '设备', conds: (l.conds || []).slice(), seats: l.seats || '', location: '', owner: '', desc: '', status: '启用', by: '超管', at: '2026-08-20 10:00' };
+    });
+    return true;
   }
   /* 课程类型：专业课 / 公共基础课（公共基础课默认不计入技能达成）；预置两门公共基础课，并给「大学英语」建一个课程计划 */
   function seedCourseType(st) {
@@ -576,6 +612,6 @@
     periodRange: periodRange, inRange: inRange, addGrowth: addGrowth, addStuGrowth: addStuGrowth, STU_STAR: STU_STAR, toast: toast, drawer: drawer, modal: modal, confirm: confirmBox,
     formHTML: formHTML, bindForm: bindForm, readForm: readForm, fileRow: fileRow, FT_COLOR: FT_COLOR,
     PERIODS: PERIODS, periodOf: periodOf,
-    kn: kn, skillName: skillName, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs,
+    kn: kn, skillName: skillName, kpsOf: kpsOf, kpCount: kpCount, kpHTML: kpHTML, aiKpMarks: aiKpMarks, itemKps: itemKps, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs,
     syncRoster: syncRoster, syncSessions: syncSessions, fillSkillsFromRes: fillSkillsFromRes, studentHasRecords: studentHasRecords, majorPath: majorPath, majorTop: majorTop, majorSubIds: majorSubIds, majorTree: majorTree, majorChain: majorChain, GRADES: GRADES, genCriteria: genCriteria, overall: overall, addEvidence: addEvidence };
 })(window);

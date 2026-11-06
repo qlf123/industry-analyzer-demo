@@ -399,6 +399,13 @@ body.fs-on{overflow:hidden}
 .pano-sel b{font-weight:600}
 .pano-sel .ph{color:var(--muted)}
 .pano-tip{font-size:12px;color:var(--muted)}
+.vt-sg{display:inline-block;font-size:10.5px;font-weight:500;border-radius:5px;padding:0 6px;margin-left:6px;background:#eef2ff;color:#4338ca}
+.vt-sg.ok{background:#ecfdf5;color:#047857}
+.vt-sg.rej{background:#fef2f2;color:#b91c1c}
+.vt-contrib{display:inline-block;font-size:10.5px;font-weight:500;border-radius:5px;padding:0 6px;margin-left:6px;background:#fff7ed;color:#c2410c}
+.nd-sg{border:1px solid var(--rule);border-radius:10px;padding:10px 12px;margin-top:12px;font-size:12.5px;line-height:1.7}
+.nd-sg .h{font-weight:600;margin-bottom:4px}
+.nd-sg .m{color:var(--muted)}
 .pano-sel .v{font-size:11.5px;color:var(--muted)}
 .pano-sel:hover{border-color:var(--brand)}
 .pano-bar .sp{flex:1}
@@ -432,6 +439,7 @@ body.fs-on{overflow:hidden}
   <script src="js/assess-data.js"></script>
   <script src="js/teacher-kit.js"></script>
   <script src="graph/pano-tasks.js"></script>
+  <script src="js/graph-suggest.js"></script>
   <script>UI.boot({ portal: 'auto', active: 'kmap' });</script>
 
   <div class="panel">
@@ -1057,9 +1065,9 @@ function aiReachable(){
   return out;
 }
 function aiSnapshot(){
-  return JSON.stringify(aiReachable().map(lv=>({
+  return JSON.stringify(aiReachable().filter(lv=>!lv.stdOnly).map(lv=>({
     parent: lv.parent, parentName: lv.parentName, kind: lv.kind, missing: lv.missing || '', checkedAt: lv.checkedAt || '',
-    items: lv.items.map(it=>({key:it.key, name:it.name, desc:it.desc||'',
+    items: lv.items.filter(it=>!it.std).map(it=>({key:it.key, name:it.name, desc:it.desc||'',
       ...(it.manual?{manual:true}:{}), ...(it.edited?{edited:true}:{}), ...(it.regen?{regen:true}:{}), ...(it.check?{check:it.check}:{})})),
   })));
 }
@@ -1751,6 +1759,7 @@ function showVDetail(m){
     html += lv1 && lv1.status==='ok' ? ndSec('下级节点', `<div class="nd-kv">${lv1.items.length} 个</div>`)
       : `<button type="button" class="btn-s nd-gen" data-ndgen="${esc(m.key)}">AI 生成下级节点</button>`;
   }
+  html += sgDetailHTML(m);
   $('#ndSub').textContent = sub;
   $('#ndSub').hidden = !sub;
   $('#ndBody').innerHTML = html || `<div class="nd-empty">暂无详情</div>`;
@@ -2123,7 +2132,7 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
     const lv = aiStore[key];
     if(lv && lv.status==='ok'){
       const d = aiDepth + 1;
-      kids = lv.items.map(it=>({key:it.key,type:'ai',name:it.name,kind,aiDepth:d,manual:it.manual,desc:it.desc,
+      kids = lv.items.map(it=>({key:it.key,type:'ai',name:it.name,kind,aiDepth:d,manual:it.manual || !!it.std,desc:it.desc,
         chain:chain.concat([`${kind}：${it.name}`]),
         siblings:lv.items.filter(x=>x.key!==it.key).map(x=>x.name)}));
     } else if(lv && lv.status==='loading'){
@@ -2141,6 +2150,9 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
   // 只看我的课程相关：下级只留和我教的课程有关的子行业 / 岗位 / 能力项 / 技能
   if(MINE && mineOnly && (type==='ind' || type==='sub' || type==='pos' || type==='abl')) kids = kids.filter(k=>mineHas(k.type, k.key));
   const isMine = !!(MINE && mineHas(type, key));
+  const stdRec = stdOf(type, key);
+  if(stdRec) badges += `<span class="vt-contrib" title="由${esc(stdRec.by)}贡献，已并入标准图谱">贡献 · ${esc(stdRec.by)}</span>`;
+  else if(personalRef(type, key)) badges += sgBadge(key);
   if(isMine && type==='skl') badges += `<span class="vt-mine" title="我教的课程">${esc(MINE.courseOf[key])}</span>`;
   if((type==='sub' || type==='pos' || type==='abl' || type==='skl') && manualOf(type, key)) badges += manualBadge(manualOf(type, key));
   const ablPending = type==='abl' && abl[key] && (abl[key]._genning || abl[key]._generr || (!abl[key].skills.length && joinedNodes.some(r=>r.id===key)));
@@ -2165,7 +2177,7 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
   }
   // 本节点只能人工编辑；「重新生成」只针对已由 AI 生成的下级
   const regenBtn = hasAiKids(key, type) ? `<button type="button" class="vop" data-vop="regen" aria-label="重新生成下级"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1"/><path d="M13.5 2.5v3h-3"/></svg></button>` : '';
-  if(type==='ai' || (type==='skl' && isAiSkill(key)) || (type==='lf' && isAiLeaf(key))){
+  if((type==='ai' && !stdRec) || (type==='skl' && isAiSkill(key)) || (type==='lf' && isAiLeaf(key))){
     ops = `<span class="vops">${regenBtn}` +
       `<button type="button" class="vop" data-vop="edit" aria-label="编辑"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3L6 13H3v-3z"/><path d="M9 4l3 3"/></svg></button></span>`;
   }
@@ -2320,6 +2332,7 @@ $('#ndBody').addEventListener('click', e=>{
   const ge = e.target.closest('[data-gapedit]'); if(ge){ editAiSkill(ge.dataset.gapedit); return; }
   const le = e.target.closest('[data-leafedit]'); if(le){ editAiLeaf(le.dataset.leafedit); return; }
   const kr = e.target.closest('[data-kidregen]'); if(kr){ vRegenChildren(kr.dataset.kidregen); return; }
+  const ss = e.target.closest('[data-sgsubmit]'); if(ss){ goPano(ss.dataset.sgsubmit); return; }
   const ld = e.target.closest('[data-leafdel]'); if(ld){ deleteAiLeaf(ld.dataset.leafdel); return; }
   const b = e.target.closest('[data-ndgen]'); if(!b) return;
   const m = vMeta[b.dataset.ndgen]; if(m) vToggleOrGen(m);
@@ -2812,6 +2825,7 @@ function afterTreeChange(){ recomputeLayout(); renderVTree(); renderSaveBtn(); i
 
 // 删除：只对人工新增 / AI 生成 / 市场趋势加入的节点可用
 function delAction(type, key){
+  if(stdOf(type, key)) return null;
   if(type==='ai') return ()=>vDeleteNode(key);
   if(type==='skl' && isAiSkill(key)) return ()=>deleteAiSkill(key);
   if(type==='lf' && isAiLeaf(key)) return ()=>deleteAiLeaf(key);
@@ -2894,7 +2908,7 @@ function openMoreMenu(row, btn, x, y){
   moreTarget = {key, parent, type:m.type};
   const L = parent ? kidList(parent) : null;
   const i = L ? L.arr.findIndex(z=>L.id(z)===key) : -1;
-  const isAiNode = m.type==='ai' || (m.type==='skl' && isAiSkill(key)) || (m.type==='lf' && isAiLeaf(key));
+  const isAiNode = (m.type==='ai' && !stdOf('ai', key)) || (m.type==='skl' && isAiSkill(key)) || (m.type==='lf' && isAiLeaf(key));
   const canEdit = isAiNode || !!manualOf(m.type, key);
   const del = delAction(m.type, key);
   const kidCn = m.type==='skl' ? '知识点等' : m.type==='lf' || m.type==='ai' ? '细分节点' : TYPE_CN[CHILD_TYPE[m.type]];
@@ -2904,7 +2918,7 @@ function openMoreMenu(row, btn, x, y){
   const stdFixed = ['ind','sub','pos','abl'].includes(m.type) && !del;
   $('#vMoreMenu').innerHTML = `<div class="ctx-h">${esc(m.name)}</div>` +
     (canEdit ? it('edit', '编辑') : '') + (hasAiKids(key, m.type) ? it('regen', '重新生成下级') : '') +
-    it('detail', '查看详情') + (stdFixed ? '<div class="mm-note">标准图谱节点，不可调整</div>' : '<div class="mm-sep"></div>' +
+    sgMenuItem(key, m) + it('detail', '查看详情') + (stdFixed ? '<div class="mm-note">标准图谱节点，不可调整</div>' : '<div class="mm-sep"></div>' +
     it('sib', '增加同级节点', m.type==='ind' || !parent) +
     it('kid', `增加下级节点`, loading, kidCn) + '<div class="mm-sep"></div>' +
     it('up', '上移', !L || i <= 0) + it('down', '下移', !L || i < 0 || i >= L.arr.length - 1) + '<div class="mm-sep"></div>' +
@@ -2921,6 +2935,7 @@ $('#vMoreMenu').addEventListener('click', e=>{
   const act = b.dataset.mm;
   if(['ind','sub','pos','abl'].includes(type) && !delAction(type, key) && ['sib','kid','up','down','del'].includes(act)) return;
   if(act==='detail'){ if(vMeta[key]) vShowDetail(vMeta[key]); }
+  else if(act==='sgsubmit') goPano(key);
   else if(act==='edit'){
     if(type==='skl' && isAiSkill(key)) editAiSkill(key); else if(type==='lf' && isAiLeaf(key)) editAiLeaf(key);
     else if(type==='ai') vEditNode(key); else editManual(key);
@@ -3061,10 +3076,116 @@ const PANO = (function(){
 })();
 PANO.start();
 
+/* ═══ 提交到标准图谱（反哺）═══
+   个人节点（人工新增、技能缺口加入的 AI 技能、AI 细分节点、市场趋势加入的能力项）可提交到标准图谱，连同下级一起；
+   只能提交挂在标准节点下的那一层（上级也是个人节点时，提交上级）。由管理员 / 专业负责人在图谱中心「标准图谱建议」审核：
+   采纳 → 待发布 → 发布后并入标准图谱，全校老师可见，节点标「贡献 · 提交人」；提交人自己的个人节点同时转为标准节点。 */
+function stdOf(type, key){
+  if(type==='ai'){ const l = vNodeLocate(key); return l && l.it.std || null; }
+  const f = MAN_MAP[type]; const o = f && f()[key]; return o && o.std || null;
+}
+// 个人节点的来源：manual / gapskill / ai / joined；不是个人节点返回 null
+function personalRef(type, key){
+  if(!type || stdOf(type, key)) return null;
+  if(type==='ai') return {kind:'ai', key};
+  if(manualOf(type, key)) return {kind:'manual', key};
+  if(type==='skl' && isAiSkill(key) && Object.keys(gapStore.added).some(a=>(gapStore.added[a]||[]).some(x=>x.id===key))) return {kind:'gapskill', key};
+  if(type==='abl' && joinedNodes.some(r=>r.id===key)) return {kind:'joined', key};
+  if(type==='skl' && isAiSkill(key)) return {kind:'joinedskill', key};
+  if(type==='lf' && isAiLeaf(key)) return {kind:'aileaf', key};
+  return null;
+}
+function personalNode(type, key){ return !!(type && !stdOf(type, key) && (type==='ai' || manualOf(type, key) || (type==='skl' && isAiSkill(key)) || (type==='lf' && isAiLeaf(key)) || (type==='abl' && joinedNodes.some(r=>r.id===key)))); }
+// 能单独提交：自己是个人节点，上级是标准节点
+function sgSubmittable(m){
+  if(!m || !personalNode(m.type, m.key)) return false;
+  const pm = vMeta[m.parent];
+  return !!pm && !personalNode(pm.type, pm.key);
+}
+function sgBadge(key){
+  const r = window.GSuggest && GSuggest.byRef(key); if(!r) return '';
+  if(r.status==='待审核') return '<span class="vt-sg" title="已提交到标准图谱，等待审核">已提交</span>';
+  if(r.status==='已采纳') return '<span class="vt-sg ok" title="已采纳，发布后并入标准图谱">已采纳 · 待发布</span>';
+  if(r.status==='已退回') return `<span class="vt-sg rej" title="退回原因：${esc(r.review && r.review.note || '')}">已退回</span>`;
+  return '';
+}
+// 提交入口在图谱中心「知识图谱 › 全景图谱」的「我的补充」：能力地图只显示状态，并可跳过去
+function sgMenuItem(key, m){
+  if(!personalNode(m.type, key)) return '';
+  if(!sgSubmittable(m)) return `<button type="button" role="menuitem" disabled>去全景图谱提交<span class="mm-hint">请在上级节点提交（连同下级）</span></button>`;
+  const r = window.GSuggest && GSuggest.byRef(key);
+  return `<button type="button" role="menuitem" data-mm="sgsubmit">${r ? '去全景图谱查看提交' : '去全景图谱提交'}</button>`;
+}
+function goPano(key){
+  try { sessionStorage.setItem('viewTaskId', 'T001'); sessionStorage.setItem('viewTaskName', '旅游业'); sessionStorage.setItem('viewIndustry', '旅游业'); } catch(e){}
+  const to = UI.link('graph/knowledge-graph-view.html', UI.portal()) + '&mine=' + encodeURIComponent(key);
+  confirmLeave(()=>{ location.href = to; });
+}
+function sgDetailHTML(m){
+  const sr = stdOf(m.type, m.key);
+  if(sr) return `<div class="nd-sg"><div class="h">来源：标准图谱</div><div class="m">由 ${esc(sr.by)} 提交，${esc(sr.review && sr.review.by || '')} 审核，${esc(sr.publishedAt || '')} 发布</div></div>`;
+  if(!personalNode(m.type, m.key)) return '';
+  const r = window.GSuggest && GSuggest.byRef(m.key);
+  let h = '<div class="nd-sg"><div class="h">提交到标准图谱</div>';
+  if(r && r.status==='待审核') h += `<div class="m">已于 ${esc(r.at)} 提交，等待管理员或专业负责人审核</div>`;
+  else if(r && r.status==='已采纳') h += `<div class="m">${esc(r.review.by)} 已采纳${r.review.rename ? `（名称调整为「${esc(r.review.rename)}」）` : ''}，发布后全校可见</div>`;
+  else if(r && r.status==='已退回') h += `<div class="m" style="color:var(--crit,#b91c1c)">已退回：${esc(r.review && r.review.note || '')}（${esc(r.review && r.review.by || '')}）</div>`;
+  else h += '<div class="m">效果好的话，可以在「知识图谱 › 全景图谱」的「我的补充」里提交，管理员或专业负责人审核、发布后全校老师都能用到</div>';
+  h += sgSubmittable(m) ? `<button type="button" class="btn-s nd-gen" data-sgsubmit="${esc(m.key)}">${r ? '去全景图谱查看提交' : '去全景图谱提交'}</button>` : '<div class="m">请在上级节点提交（会连同下级一起提交）</div>';
+  return h + '</div>';
+}
+// 已发布的建议：并入标准图谱（所有人可见）；提交人本机上的个人节点转为标准节点（移除个人副本）
+function applyPublished(){
+  if(!window.GSuggest) return;
+  let aiChanged = false, n = 0;
+  GSuggest.published().forEach(rec=>{
+    const ref = rec.ref || {};
+    if(ref.kind==='manual' && manualStore.nodes.some(x=>x.id===ref.key)){
+      const ids = new Set([ref.key]); let grew = true;
+      while(grew){ grew = false; manualStore.nodes.forEach(x=>{ if(!ids.has(x.id) && ids.has(x.parent)){ ids.add(x.id); grew = true; } }); }
+      manualStore.nodes.filter(x=>ids.has(x.id)).reverse().forEach(x=>{ Object.keys(aiSubtree(x.id)).forEach(k=>{ delete aiStore[k]; aiChanged = true; }); unapplyManual(x); });
+      manualStore.nodes = manualStore.nodes.filter(x=>!ids.has(x.id)); saveManual();
+    } else if(ref.kind==='gapskill'){
+      Object.keys(gapStore.added).forEach(aid=>{
+        const L = gapStore.added[aid] || [], it = L.find(x=>x.id===ref.key);
+        if(it){ (it.children || []).forEach(c=>{ Object.keys(aiSubtree(c.id)).forEach(k=>{ delete aiStore[k]; aiChanged = true; }); }); dropAiSkillFromTree(aid, it); gapStore.added[aid] = L.filter(x=>x!==it); saveGaps(); }
+      });
+    } else if(ref.kind==='ai'){
+      const lv = aiStore[rec.parentKey];
+      if(lv && lv.items.some(x=>x.key===ref.key)){ lv.items = lv.items.filter(x=>x.key!==ref.key); Object.keys(aiSubtree(ref.key)).forEach(k=>delete aiStore[k]); aiChanged = true; }
+    } else if(ref.kind==='joined'){
+      const jr = joinedNodes.find(r=>r.id===ref.key);
+      if(jr){ joinedNodes = joinedNodes.filter(r=>r!==jr); removeJoin(jr); saveJoined(); }
+    }
+    injectStd(rec.tree, rec.parentKey, rec.parentType, rec.parentName, rec, {n: 0});
+    n++;
+  });
+  if(aiChanged){ savedSnapshot = aiSnapshot(); try { localStorage.setItem(AI_SAVE_KEY, savedSnapshot); } catch(e){} }
+  return n;
+}
+function injectStd(t, pk, ptype, pname, rec, ctr){
+  const name = (ctr.n === 0 && rec.review && rec.review.rename) || t.name;
+  const id = 'STD-' + rec.id + '-' + (ctr.n++);
+  let me = id;
+  if(t.type==='sub'){ if(ptype!=='ind') return; sub[id] = {id, name, emerging:false, detail:{describe:t.desc||''}, positionIds:[], distinctAbilityCount:0, built:true, std:rec}; builtSubs.push(id); subSharedSet[id] = new Set(); }
+  else if(t.type==='pos'){ if(!sub[pk]) return; pos[id] = {id, name, sub:pk, aliases:[], emerging:false, detail:{describe:t.desc||''}, abilities:[], abilityCount:0, l3Count:0, std:rec}; sub[pk].positionIds.push(id); }
+  else if(t.type==='abl'){ const p = pos[pk]; if(!p) return; abl[id] = {id, name, type:'skill', domain:'', core:false, emerging:false, detail:{describe:t.desc||''}, requiredBy:[{position:pk, weight:0, level:''}], positionCount:1, maxRequiredLevel:'', typeCn:'技能', acrossSubIndustries:[p.sub], skills:[], std:rec}; p.abilities.push({ability:id, weight:0, level:''}); p.abilityCount = p.abilities.length; }
+  else if(t.type==='skl'){ if(!abl[pk]) return; skl[id] = {id, name, emerging:false, abilityIds:[pk], children:[], std:rec}; abl[pk].skills.push(id); }
+  else if(t.type==='lf'){ if(!skl[pk]) return; snode[id] = {id, kind:t.kind, name, std:rec}; skl[pk].children.push(id); }
+  else if(t.type==='ai'){
+    let lv = aiStore[pk];
+    if(!lv){ lv = aiStore[pk] = {parent:pk, parentName:pname, kind:t.kind, status:'ok', err:'', items:[], stdOnly:true}; }
+    me = pk + '/s' + id.toLowerCase();
+    lv.items.push({key:me, name, desc:t.desc||'', std:rec});
+  } else return;
+  (t.children || []).forEach(c=>injectStd(c, me, t.type, name, rec, ctr));
+}
+
 // 首次渲染放在最后：用到的状态（自检、已保存的 AI 节点等）都已声明并载入
 loadJoined();
 loadGaps();
 loadManual();
+applyPublished();
 renderGraph();
 renderVTree();
 openNodeDetail('ind', I.id);   // 右侧详情默认显示行业
@@ -3205,7 +3326,7 @@ function hasAiKids(key, type){
   type = type || (vMeta[key] && vMeta[key].type);
   if(type==='skl') return !!(isAiSkill(key) && skl[key] && skl[key].children.length);
   const lv = aiStore[key];
-  return !!(lv && lv.status==='ok' && lv.items.some(x=>!x.manual));
+  return !!(lv && lv.status==='ok' && lv.items.some(x=>!x.manual && !x.std));
 }
 function aiSubtree(key){ const out = {}; Object.keys(aiStore).forEach(k=>{ if(k===key || k.indexOf(key + '/')===0) out[k] = aiStore[k]; }); return out; }
 async function vRegenChildren(key){

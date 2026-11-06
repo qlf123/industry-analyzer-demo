@@ -92,6 +92,7 @@
 .radar-leg{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--ink-2);min-width:180px}
 .radar-leg i{display:inline-block;width:18px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .abl-row{cursor:pointer}
+.imp-in{display:block;width:100%;box-sizing:border-box;margin-top:4px;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--rule);border-radius:7px;background:var(--card);color:var(--ink)}
 .abl-row:hover td{background:var(--rule-2)}
 .abl-det td{background:var(--card-2);font-size:12px;line-height:1.65}
 .abl-det .lv{margin-bottom:8px}
@@ -273,11 +274,16 @@
   }
   function saveStore() { try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {} }
   var store = loadStore();
+  // 校内实训资源统一读管理端「实训资源管理」的登记（启用的）；校外基地第一阶段仍在测评里填
+  function regLabs() {
+    var E = (window.TK && TK.load().edu) || {};
+    return (E.labs || []).filter(function (l) { return l.status === '启用'; }).map(function (l) { return { name: l.name, kind: '校内', conds: (l.conds || []).slice(), seats: l.seats === '' || l.seats == null ? null : +l.seats, status: '在用', reg: true }; });
+  }
   function planOf(mid) {
     var base = clone(D.plans[mid]);
-    if (!store.plans[mid]) return base;
-    var p = clone(store.plans[mid]);
-    if (!p.labs) p.labs = base.labs;
+    var p = store.plans[mid] ? clone(store.plans[mid]) : base;
+    var ext = (p.labs || base.labs || []).filter(function (l) { return l.kind === '校外'; });
+    p.labs = regLabs().concat(ext);
     return p;
   }
   /* 实训条件字典与数量标准（标准为空时，不显示任何数量） */
@@ -483,7 +489,6 @@
         '<div class="mcard-acts">' +
           (runOk ? '<a class="btn" href="#new/' + m.id + '" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">新建测评</a>' : '') +
           (last ? '<a class="btn ghost" href="#report/' + last.id + '" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">查看报告</a>' : '') +
-          (m.id === 'MAJOR-GUIDE' ? '<a class="btn ghost" href="#teaching/' + m.id + '" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">课堂教学达成</a>' : '') +
         '</div></div>';
     }).join('') + '</div>';
 
@@ -577,7 +582,7 @@
     function prov(cid) { return live.filter(function (o) { return (o.l.conds || []).indexOf(cid) >= 0; }); }
     var okReq = sc.filter(function (x) { return x.level === '必需' && prov(x.cond).length; }).length;
     var h = '<div class="sub-h">实训资源 <span class="note" style="font-weight:400">· 按本校开设课程的已确认实训需求，必需 ' + nReq + ' 项（本校已具备 ' + okReq + ' 项）、建议 ' + (sc.length - nReq) +
-      ' 项；逐项填写本校由哪个实训室或校外基地提供，可选已有的或输入新名称，没有就留空</span></div>';
+      ' 项；校内实训室、设备、软件读「实训资源管理」的登记，校外基地在这里填写</span>' + (UI.hasPerm(DEMO.getState(), UI.currentIdentity(DEMO.getState()), 'edu:lab:manage') ? ' <a href="edu-base.html?t=lab" style="font-size:12px;font-weight:400;color:var(--brand-ink)">去实训资源管理登记 ›</a>' : '') + '</div>';
     if (TD.standards.length) {
       h += '<div style="font-size:12.5px;margin-bottom:8px">同时上课人数 <input type="number" min="0" data-plan="classSize" value="' + esc(plan.classSize || '') +
         '" style="width:70px;padding:3px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink)"> <span class="note">用于按标准计算建议工位数</span></div>';
@@ -594,12 +599,13 @@
           '<td><span class="pill ' + (x.level === '必需' ? 'core' : 'k') + '">' + x.level + '</span></td>' +
           '<td class="note" title="' + esc(x.courses.map(function (n) { return '《' + n + '》'; }).join('')) + '">' + x.courses.length + ' 门：' + esc(x.courses.slice(0, 2).map(function (n) { return '《' + n + '》'; }).join('')) + (x.courses.length > 2 ? ' 等' : '') + '</td>' +
           '<td><div class="provs">' + has.map(function (o) {
+              if (o.l.reg) return '<span class="prov" title="来自实训资源管理的登记">' + esc(o.l.name) + (std && o.l.seats != null ? ' · ' + o.l.seats + ' 工位' : '') + '</span>';
               return '<span class="prov">' + esc(o.l.name) +
                 (std ? ' <input type="number" min="0" class="seat" data-seat="' + o.i + '" value="' + (o.l.seats == null ? '' : o.l.seats) + '" placeholder="工位" title="工位数（用于按标准判断工位是否足够）">' : '') +
                 '<button type="button" class="x" data-unprov="' + o.i + '|' + x.cond + '" aria-label="移除 ' + esc(o.l.name) + '">×</button></span>';
             }).join('') +
-            '<span class="prov-add"><input class="lab-in" data-addfor="' + x.cond + '" list="labList-' + kind + '" placeholder="' + (kind === '校外' ? '选择或输入校外基地' : '选择或输入实训室') + '">' +
-            '<button type="button" class="btn-s" data-addbtn="' + x.cond + '">添加</button></span></div></td>' +
+            (kind === '校外' ? '<span class="prov-add"><input class="lab-in" data-addfor="' + x.cond + '" list="labList-校外" placeholder="选择或输入校外基地">' +
+            '<button type="button" class="btn-s" data-addbtn="' + x.cond + '">添加</button></span>' : has.length ? '' : '<span class="note">实训资源管理里还没有登记</span>') + '</div></td>' +
           '<td>' + (has.length ? '<span class="pill good">具备</span>' : x.level === '必需' ? '<span class="pill crit">缺</span>' : '<span class="pill k">无</span>') + '</td></tr>';
       }).join('') + '</tbody></table></div>';
     return h;
@@ -608,8 +614,9 @@
   function addProvider(cid, name) {
     name = (name || '').trim(); if (!name) return;
     var labs = draft.plan.labs = draft.plan.labs || [];
-    var lab = labs.find(function (l) { return l.name === name; });
-    if (!lab) { lab = { name: name, kind: COND[cid].category === '校外基地' ? '校外' : '校内', conds: [], seats: null, status: '在用' }; labs.push(lab); }
+    if (COND[cid].category !== '校外基地') return;
+    var lab = labs.find(function (l) { return l.name === name && !l.reg; });
+    if (!lab) { lab = { name: name, kind: '校外', conds: [], seats: null, status: '在用' }; labs.push(lab); }
     lab.status = '在用';
     if ((lab.conds || []).indexOf(cid) < 0) (lab.conds = lab.conds || []).push(cid);
     savePlanDraft(); render();
@@ -1238,40 +1245,7 @@
     return h;
   }
 
-  /* ═══ 课堂教学达成：读取老师确认通过的学习证据，经已确认的能力—技能映射汇总到能力 ═══
-     单个「学生 × 技能」按最近一次证据判断，需改进为未达成；学生自评不计入 */
-  function viewTeaching(mid) {
-    var TS = TK.load(), K = TK.kn(), last = {};
-    (TS.evidence || []).forEach(function (e) { var k = e.student + '|' + e.sid; if (!last[k] || e.at >= last[k].at) last[k] = e; });   // 同一分钟内取后记的
-    var bySkill = {};
-    Object.keys(last).forEach(function (k) { var e = last[k]; (bySkill[e.sid] = bySkill[e.sid] || []).push(e); });
-    // 支撑技能只算已开课程（有课程计划的课程）里的技能
-    var opened = (TS.plans || []).map(function (pl) { return pl.courseId; });
-    var inOpened = function (sid) { var x = K.skill[sid], t = x && K.task[x.taskId]; return !!t && opened.indexOf(t.courseId) >= 0; };
-    var openedNames = (TS.plans || []).map(function (pl) { return pl.course; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).map(function (n) { return '《' + n + '》'; }).join('');
-    var sup = {};
-    Object.keys(K.map).forEach(function (sid) { if (inOpened(sid)) K.map[sid].forEach(function (m) { (sup[m.abl] = sup[m.abl] || []).push({ sid: sid, type: m.type }); }); });
-    var rows = Object.keys(sup).map(function (id) {
-      var sk = sup[id], withEv = sk.filter(function (x) { return bySkill[x.sid]; });
-      var pairs = withEv.reduce(function (a, x) { return a.concat(bySkill[x.sid]); }, []), no = pairs.filter(function (e) { return e.grade === '需改进'; }).length;
-      return { id: id, a: ABL[id] || K.abl[id], sk: sk, withEv: withEv, pairs: pairs.length, ok: pairs.length - no, no: no };
-    });
-    var shown = rows.filter(function (r) { return r.withEv.length; }).sort(function (a, b) { return b.no - a.no || b.pairs - a.pairs; });
-    var students = Object.keys(last).map(function (k) { return k.split('|')[0]; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
-    var h = '<div class="sec-h" style="margin-top:0"><a href="#" style="font-size:13px">‹ 返回</a><h2>课堂教学达成</h2><span class="sub">' + esc((majorById(mid) || {}).name || '') + ' · 来自教师确认通过的学习证据</span></div>' +
-      '<div class="card pad" style="margin-bottom:14px;font-size:13px;line-height:1.8">已有 <b>' + students.length + '</b> 名学生、<b>' + Object.keys(bySkill).length + '</b> 个技能产生课堂证据，对应 <b>' + shown.length + '</b> 项岗位能力。' +
-        '<div class="note">技能经已确认的「能力—技能映射」（直接支撑、部分支撑）汇总到能力，能力不单独打分；每个「学生 × 技能」按最近一次证据判断，需改进为未达成。学生自评不计入。支撑技能只算已开课程' + esc(openedNames) + '里的技能；这些课程还支撑另外 ' + (rows.length - shown.length) + ' 项能力，目前没有课堂证据。</div></div>';
-    h += '<div class="card tbl-wrap"><table class="tbl"><thead><tr><th>能力</th><th>支撑技能</th><th>有课堂证据</th><th>学生 × 技能 评价</th><th>已达成</th><th>未达成</th></tr></thead><tbody>' +
-      (shown.length ? shown.map(function (r) {
-        return '<tr class="abl-row" data-abl="T|' + r.id + '"><td>' + esc(r.a ? r.a.name : r.id) + (r.a && r.a.core ? ' <span class="star" title="核心能力">★</span>' : '') + '</td><td class="mono">' + r.sk.length + ' 个</td><td class="mono">' + r.withEv.length + ' 个</td>' +
-          '<td class="mono">' + r.pairs + '</td><td class="mono" style="color:var(--good)">' + r.ok + '</td><td class="mono"' + (r.no ? ' style="color:var(--crit);font-weight:600"' : '') + '>' + r.no + '</td></tr>' +
-          '<tr class="abl-det" data-det="T|' + r.id + '" hidden><td colspan="6"><div class="note" style="margin-bottom:6px">支撑技能及课堂证据：</div><ul class="cd-l">' + r.sk.map(function (x) {
-            var ev = bySkill[x.sid] || [], bad = ev.filter(function (e) { return e.grade === '需改进'; }).length, kt = K.task[(K.skill[x.sid] || {}).taskId], kc = kt && K.course[kt.courseId];
-            return '<li><b>' + esc(TK.skillName(x.sid)) + '</b><span class="note">《' + esc(kc ? kc.name : '—') + '》· ' + esc(x.type) + '</span> — ' + (ev.length ? '已评价 ' + ev.length + ' 人，达成 ' + (ev.length - bad) + ' 人' + (bad ? '，未达成 ' + bad + ' 人' : '') : '<span class="note">暂无课堂证据</span>') + '</li>';
-          }).join('') + '</ul></td></tr>';
-      }).join('') : '<tr><td colspan="6" class="note">还没有课堂证据。老师在任务中心按评价标准确认通过后，这里会显示。</td></tr>') + '</tbody></table></div>';
-    return h;
-  }
+  function audit(action, object, after) { try { var st = DEMO.getState(), id = UI.currentIdentity(st); DEMO.addAudit(st, id.account.id, action, object, null, after, '成功'); DEMO.saveState(st); } catch (e) {} }
 
   /* ═══ 路由与渲染 ═══ */
   function route() {
@@ -1291,9 +1265,6 @@
       var rep = store.reports.find(function (x) { return x.id === r.arg; });
       var m = rep && majorById(rep.majorId);
       body.innerHTML = rep && m && majorVisible(m) ? viewReport(rep) : '<div class="card empty">报告不存在或不在当前身份可见范围内。<a href="#">返回</a></div>';
-    } else if (r.name === 'teaching') {
-      var tm = majorById(r.arg);
-      body.innerHTML = tm && majorVisible(tm) && r.arg === 'MAJOR-GUIDE' ? viewTeaching(r.arg) : '<div class="card empty">该专业暂无课堂证据。<a href="#">返回</a></div>';
     } else {
       draft = null;
       body.innerHTML = '<div class="sec-h" style="margin-top:0"><h2>专业</h2><span class="sub">当前身份可见范围内的专业</span><span class="sp"></span>' +

@@ -217,11 +217,15 @@
   </div>
 </main>
 </div>
+<script src="../js/graph-suggest.js"></script>
+<script src="../js/kmap-personal.js"></script>
+<script src="kmap-data.js"></script>
+<script src="pano-mine.js"></script>
 <script>
   var taskName = sessionStorage.getItem('viewTaskName') || '';
   if(taskName){
     var t = document.getElementById('graphTitle');
-    if(t) t.textContent = taskName + ' · 全景图谱';
+    if(t) t.textContent = /全景图谱$/.test(taskName) ? taskName : taskName + ' · 全景图谱';
   }
 (function(){
   // 节点类型：按所属来源分组（岗 / 课 / 全景自建 / 赛证）
@@ -232,6 +236,9 @@
     {type:'任务',group:'知识体系',color:'#fa8c16',r:8},
     {type:'技能',group:'知识体系',color:'#1890ff',r:7},
     {type:'知识点',group:'知识体系',color:'#52c41a',r:6},
+    {type:'操作步骤',group:'知识体系',color:'#13a8a8',r:6},
+    {type:'标准',group:'知识体系',color:'#9254de',r:6},
+    {type:'案例',group:'知识体系',color:'#d48806',r:6},
     {type:'细化知识点',group:'全景自建',color:'#eb2f96',r:5},
     {type:'赛项',group:'标准库',color:'#c72c2a',r:10},
     {type:'证书',group:'标准库',color:'#d48806',r:10},
@@ -259,6 +266,7 @@
       +'<span class="graph-legend-item"><span class="graph-legend-line" style="border-top:1.5px dashed #8f89f2"></span>能力映射</span>'
       +'<span class="graph-legend-item"><span class="graph-legend-line" style="border-top:1.5px dotted #f4a58a"></span>标准对应</span>'
       +'<span class="graph-legend-item"><span class="graph-legend-dot off"></span>来源已停用</span></div>'
+      +'<div class="graph-legend-group"><b>补充</b><span class="graph-legend-item"><span class="graph-legend-dot" style="background:#fff;border:2px dashed #f97316"></span>我的补充（仅自己可见）</span><span class="graph-legend-item"><span class="graph-legend-dot" style="background:#fff;border:2px solid #f97316"></span>老师贡献（已并入标准）</span></div>'
       +'<div class="graph-legend-group"><b>资源</b>'+Object.keys(RES_COLORS).map(function(k){return '<span class="graph-legend-item"><span class="graph-legend-dot" style="border-radius:2px;background:'+RES_COLORS[k]+'"></span>'+k+'</span>'}).join('')
       +'<span class="graph-legend-item" style="color:#8b99ac">节点角标为挂载数，点「显示资源」叠加</span></div>';
     document.getElementById('graphLegend').innerHTML=html;
@@ -405,18 +413,20 @@
     return {nodes:nodes,links:links,res:res};
   }
 
-  var data=generateData();
-  // 图谱中心：「映射审核」里已确认的映射，作为 能力项 → 技能 / 知识点 的「能力映射」关系并入全景
+  // 与能力地图同一份图谱（graph/kmap-data.js）+ 老师的个人补充 + 已发布的老师贡献；没有该数据时用原演示数据
+  var viewInd=sessionStorage.getItem('viewIndustry')||'';
+  var data=((!viewInd||viewInd==='旅游业')&&window.PanoMine&&PanoMine.buildData())||generateData();   // 「全部」「旅游业」用同源数据，其他行业仍为原演示数据
+  // 图谱中心：「映射审核」里已确认的映射，作为 能力项 → 技能 / 知识点 的「能力映射」关系并入全景（只连已有节点）
   (function(){
     var ap=window.GCF?GCF.approved():[];
     function node(type,name){
       for(var i=0;i<data.nodes.length;i++){var x=data.nodes[i];if(x.type===type&&x.name===name)return x}
-      var n={id:data.nodes.length,name:name,type:type,src:type==='能力项'?'ag':'ks',majors:['旅游管理'],major:'旅游管理',industry:'旅游'};
-      data.nodes.push(n);return n;
+      return null;
     }
     ap.forEach(function(r){
       if(!r.sourceName||!r.targetName)return;
       var a=node('能力项',r.targetName),b=node(r.sourceType==='知识点'?'知识点':'技能',r.sourceName);
+      if(!a||!b)return;
       if(!data.links.some(function(l){return l.source===a.id&&l.target===b.id}))data.links.push({source:a.id,target:b.id,kind:'map'});
     });
   })();
@@ -486,7 +496,7 @@
     if(viewMode==='layer'&&layerMeta)drawLayerFrame(g);
     if(showRes)drawResources(g);
     for(var i=0;i<act.length;i++){var n=act[i];var ng=document.createElementNS(SVGNS,'g');ng.setAttribute('class','graph-node'+(n.off?' off':''));ng.setAttribute('transform','translate('+n.x+','+n.y+')');ng.setAttribute('data-id',n.id);ng.setAttribute('data-name',n.name);ng.setAttribute('data-type',n.type);
-      var c=document.createElementNS(SVGNS,'circle');c.setAttribute('r',typeRadius[n.type]||6);c.setAttribute('fill',typeColors[n.type]||'#8b99ac');c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','1.5');ng.appendChild(c);
+      var c=document.createElementNS(SVGNS,'circle');c.setAttribute('r',typeRadius[n.type]||6);c.setAttribute('fill',typeColors[n.type]||'#8b99ac');c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','1.5');if(n.mine){c.setAttribute('stroke','#f97316');c.setAttribute('stroke-width','2.2');c.setAttribute('stroke-dasharray','3 2')}else if(n.contrib){c.setAttribute('stroke','#f97316');c.setAttribute('stroke-width','2.2')}ng.appendChild(c);
       if(n.res){var rr=(typeRadius[n.type]||6)*0.8,bc=document.createElementNS(SVGNS,'circle');bc.setAttribute('cx',rr);bc.setAttribute('cy',-rr);bc.setAttribute('r',5.5);bc.setAttribute('fill','#5149e9');bc.setAttribute('stroke','#fff');ng.appendChild(bc);
         var bt=document.createElementNS(SVGNS,'text');bt.setAttribute('class','res-badge');bt.setAttribute('x',rr);bt.setAttribute('y',-rr+3);bt.textContent=n.res.length;ng.appendChild(bt)}
       if(viewMode==='layer'){var tx=document.createElementNS(SVGNS,'text');tx.setAttribute('class','graph-node-label');tx.setAttribute('x',(typeRadius[n.type]||6)+(n.res?11:6));tx.setAttribute('y',4);tx.style.textAnchor='start';tx.style.fontSize='11px';tx.style.fill='#31425e';tx.textContent=n.name+(n.off?'（来源已停用）':'');ng.appendChild(tx)}
@@ -516,8 +526,8 @@
 
   // 分层视图：需求侧（岗位、赛证 → 能力项）在上，供给侧（课程 → 任务）在下，汇聚到技能 → 知识点 → 细化知识点
   var viewMode='layer',layerMeta=null;
-  var COL_OF={'岗位':0,'赛项':0,'证书':0,'考核要求':1,'课程':1,'能力项':2,'任务':2,'技能':3,'知识点':4,'细化知识点':5};
-  var COL_TITLE=[['岗位 · 赛项 · 证书',''],['考核要求','课程'],['能力项','任务'],['技能',''],['知识点',''],['细化知识点','']];
+  var COL_OF={'岗位':0,'赛项':0,'证书':0,'考核要求':1,'课程':1,'能力项':2,'任务':2,'技能':3,'知识点':4,'操作步骤':4,'标准':4,'案例':4,'细化知识点':5};
+  var COL_TITLE=[['岗位 · 赛项 · 证书',''],['考核要求','课程'],['能力项','任务'],['技能',''],['知识点 · 步骤 · 标准 · 案例',''],['细化节点','']];
   var COL_W=230,ROW=26,SEG_GAP=70;
   function segOf(n){return n.type==='课程'||n.type==='任务'?1:0}
   function layeredLayout(){
@@ -838,7 +848,9 @@
       +row(n.src==='ag'?'服务专业':'所属专业',(n.majors||[]).join('、')||'—')
       +(info?row('所属来源',info.source)+row('来源版本',info.sourceVer)+row('全景版本',info.panoVer):'')
       +(n.creator?row('创建人',n.creator+' · 课程负责人已审核，已共享'):'')
+      +(n.attrs?n.attrs.map(function(a){return row(a[0],a[1])}).join(''):'')
       +row('关联节点',conn.length+' 个'+(maps?'（其中跨来源关系 '+maps+' 条）':''))
+      +(window.PanoMine?PanoMine.detailHTML(n):'')
       +(n.off?'<div class="graph-detail-warn">'+n.off+'</div>':'')
       +(n.type==='能力项'&&!conn.some(function(c){return c.k==='map'})?'<div class="graph-detail-warn">该能力项还没有映射到知识体系，计入覆盖率缺口</div>':'')
       +'<div class="graph-detail-connected"><div class="graph-detail-connected-title">关联节点</div>'
@@ -897,7 +909,14 @@
 
   // 供子图 / 数据权限过滤使用：只显示 ids 内的节点，重新布局
   window.PanoGraph={
-    nodes:nodes,links:links,typeColors:typeColors,
+    nodes:nodes,links:links,typeColors:typeColors,hint:hint,showDetail:showDetail,
+    current:function(){return selectedId!=null?nodes[selectedId]:null},
+    // 按能力地图节点编号定位：选中并把它移到视野中间
+    focusKey:function(key){
+      var n=nodes.filter(function(x){return x.key===key})[0];if(!n)return;
+      if(act.indexOf(n)<0)return hint('该节点不在当前子图中');
+      var r=svg.getBoundingClientRect();panX=r.width/2-n.x*zoom;panY=r.height/2-n.y*zoom;showDetail(n);
+    },
     setVisible:function(ids){
       act=ids?nodes.filter(function(n){return ids[n.id]}):nodes;
       actLinks=ids?links.filter(function(l){return ids[l.source]&&ids[l.target]}):links;
@@ -909,6 +928,7 @@
   };
 
   animate();
+  if(window.PanoMine&&PanoMine.model())PanoMine.init(window.PanoGraph);
 })();
 </script>
 <script src="pano-version.js"></script>

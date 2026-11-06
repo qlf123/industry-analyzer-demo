@@ -81,6 +81,8 @@
           { key: 'gc-ag', label: '能力图谱', icon: '◇', href: 'graph/ability-graph.html', external: true },
           { key: 'gc-ks', label: '知识体系', icon: '◇', href: 'graph/knowledge-system.html', external: true },
           { key: 'gc-mr', label: '映射审核', icon: '◇', href: 'graph/mapping-review.html', external: true },
+          // 标准图谱建议：老师在能力地图里提交的个人节点，管理员 / 专业负责人审核、发布
+          { key: 'gc-sr', label: '标准图谱建议', icon: '◇', href: 'graph/suggest-review.html', perms: ['graph:suggest:review'], landing: false },
           { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true }
         ] },
         // 账号与角色：和参考系统一致
@@ -92,15 +94,23 @@
         ] },
         // 教务基础数据 / 课程计划管理：课程计划与教师端任务中心共用数据（teacher-kit.js）
         { label: '教务基础数据', items: [
-          { key: 'edu-major', label: '专业管理', icon: '▤', href: 'edu-base.html?t=major', landing: false },
-          { key: 'edu-grade', label: '年级管理', icon: '▤', href: 'edu-base.html?t=grade', landing: false },
-          { key: 'edu-class', label: '班级管理', icon: '▤', href: 'edu-base.html?t=class', landing: false },
-          { key: 'edu-student', label: '学生管理', icon: '▤', href: 'edu-base.html?t=student', landing: false },
-          { key: 'edu-term', label: '学期与学年管理', icon: '▤', href: 'edu-base.html?t=term', landing: false },
-          { key: 'edu-course', label: '课程管理', icon: '▤', href: 'edu-base.html?t=course', landing: false }
+          { key: 'edu-major', label: '专业管理', icon: '▤', href: 'edu-base.html?t=major', perms: ['edu:base:manage'], landing: false },
+          { key: 'edu-grade', label: '年级管理', icon: '▤', href: 'edu-base.html?t=grade', perms: ['edu:base:manage'], landing: false },
+          { key: 'edu-class', label: '班级管理', icon: '▤', href: 'edu-base.html?t=class', perms: ['edu:base:manage'], landing: false },
+          { key: 'edu-student', label: '学生管理', icon: '▤', href: 'edu-base.html?t=student', perms: ['edu:base:manage'], landing: false },
+          { key: 'edu-term', label: '学期与学年管理', icon: '▤', href: 'edu-base.html?t=term', perms: ['edu:base:manage'], landing: false },
+          { key: 'edu-course', label: '课程管理', icon: '▤', href: 'edu-base.html?t=course', perms: ['edu:base:manage'], landing: false },
+          // 实训资源：管理员维护（权限「实训资源维护」，可在角色管理里配给其他角色）
+          { key: 'edu-lab', label: '实训资源管理', icon: '▤', href: 'edu-base.html?t=lab', perms: ['edu:lab:manage'], landing: false }
         ] },
         { label: '课程计划管理', items: [
-          { key: 'plan', label: '课程计划', icon: '▤', href: 'course-plan.html', landing: false }
+          { key: 'plan', label: '课程计划', icon: '▤', href: 'course-plan.html', perms: ['edu:base:manage'], landing: false }
+        ] },
+        // 教学质量：课程计划执行后的结果（老师确认的课堂证据汇总）与课程改进建议的处理
+        { label: '教学质量', items: [
+          { key: 'tq-reach', label: '教学达成', icon: '▤', href: 'teach-quality.html?t=reach', perms: ['teach:quality:view'], landing: false },
+          { key: 'tq-kps', label: '知识点掌握', icon: '▤', href: 'teach-quality.html?t=kps', perms: ['teach:quality:view'], landing: false },
+          { key: 'tq-improve', label: '课程改进建议', icon: '▤', href: 'teach-quality.html?t=improve', perms: ['teach:quality:view'], landing: false }
         ] },
         // 系统配置：组织管理、院校基础信息、字典、基础信息配置
         { label: '系统配置', items: [
@@ -108,7 +118,8 @@
             perms: ['org:node:view'] },
           { key: 'college', label: '院校基础信息管理', icon: '▤', href: 'college.html', landing: false, perms: ['org:node:edit'] },
           { key: 'dict', label: '字典管理', icon: '▤', href: 'dict.html', landing: false, perms: ['org:node:edit'] },
-          { key: 'sysconf', label: '基础信息配置', icon: '▤', href: 'sysconf.html', landing: false, perms: ['org:node:edit'] }
+          { key: 'sysconf', label: '基础信息配置', icon: '▤', href: 'sysconf.html', landing: false, perms: ['org:node:edit'] },
+          { key: 'audit', label: '操作日志', icon: '▤', href: 'audit.html', perms: ['org:audit:view'], landing: false }
         ] }
       ]
     },

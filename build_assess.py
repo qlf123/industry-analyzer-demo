@@ -60,6 +60,16 @@ def load_knowledge(path):
                     k, v = re.split('[:：]', part, 1); kv[k.strip()] = v.strip()
             nodes[cur] = {'level': kv.get('层级') or kv.get('类型') or kv.get('level'), 'ctype': kv.get('课程类型'), 'desc': desc, 'attrs': {}}
         if an and cur: nodes[cur]['attrs'][an] = av
+    # 知识点（「知识点数据」页）：技能规范路径 → [{id, name, type, core}]；编号规则与能力地图一致（P + 路径|名称|序号）
+    kps, kcur = {}, None
+    for r in list(wb['知识点数据'].iter_rows(values_only=True))[3:]:
+        r = list(r) + [None] * 6
+        if r[0] and r[1]:
+            sp0 = str(r[0]).strip(); lst = kps.setdefault(sp0, [])
+            kcur = {'id': nid('P', sp0 + '|' + str(r[1]).strip() + '|' + str(len(lst))), 'name': str(r[1]).strip()}; lst.append(kcur)
+        if kcur is not None and r[3] and r[4]:
+            if r[3] == '知识点类型': kcur['type'] = str(r[4]).strip()
+            elif r[3] == '核心内容': kcur['core'] = str(r[4]).strip()
     major_path = next(p for p, n in nodes.items() if n['level'] == '专业')
     courses = []
     for p, n in nodes.items():
@@ -72,7 +82,8 @@ def load_knowledge(path):
             for sp, sn in nodes.items():
                 if sn['level'] != '技能规范' or not sp.startswith(tp + '--') or sp.count('--') != tp.count('--') + 1: continue
                 task['skills'].append({'id': nid('K', sp), 'path': sp, 'name': sp.split('--')[-1],
-                                       'require': sn['attrs'].get('可观察能力要求', ''), 'result': sn['attrs'].get('达成结果', '')})
+                                       'require': sn['attrs'].get('可观察能力要求', ''), 'result': sn['attrs'].get('达成结果', ''),
+                                       'kps': kps.get(sp, [])})
             course['tasks'].append(task)
         courses.append(course)
     return major_path, courses

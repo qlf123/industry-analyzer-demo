@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>操作日志</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+/* 操作日志：平台审计记录（账号权限变更，以及发布、评价、证据、补训 / 辅导、改进建议等教学关键状态变化） */
+.au-card{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden}
+.au-card .tw{overflow-x:auto}
+.tbl2{min-width:1100px}
+.tbl2 td{vertical-align:top;font-size:12.5px}
+.tbl2 .mono{font-family:var(--mono);font-size:11.5px;white-space:nowrap;color:var(--ink-2)}
+.tbl2 .ch{max-width:300px;color:var(--ink-2);word-break:break-all}
+.foot2{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-top:1px solid var(--rule-2);font-size:12px;color:var(--muted)}
+.pg button{border:1px solid var(--rule);background:var(--card);border-radius:6px;min-width:26px;height:26px;font:inherit;font-size:12px;cursor:pointer;margin-left:4px}
+.pg button[aria-pressed="true"]{border-color:var(--brand);color:var(--brand-ink)}
+.empty3{font-size:12.5px;color:var(--muted);padding:40px 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">操作日志</h1><div class="pt-d">账号与权限变更，以及发布课次、评价、证据、补训 / 辅导、课程改进建议等关键操作的记录；记录只能查看和导出，不能修改或删除</div></div></div></div>
+    <div class="body"><div class="card filters" id="filters"></div><div class="au-card" id="main"></div></div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'admin', active: 'audit' });
+  var esc = TK.esc, ctx = DEMO.getState(), iden = UI.currentIdentity(ctx), F = { who: '', act: '', q: '', a: '', b: '', page: 1 };
+  if (!UI.hasPerm(ctx, iden, 'org:audit:view')) { document.querySelector('.body').innerHTML = '<div class="card"><div class="empty3">当前身份没有「审计查看」权限</div></div>'; return; }
+  function nameOf(id) { var a = ctx.accounts.filter(function (x) { return x.id === id; })[0]; return a ? a.name : id; }
+  function when(r) { return TK.fmt(new Date(r.ts)); }
+  function ch(v) { if (v == null || v === 'null') return '—'; try { var o = typeof v === 'string' ? JSON.parse(v) : v; if (o && typeof o === 'object') return Object.keys(o).map(function (k) { return k + '：' + (typeof o[k] === 'object' ? JSON.stringify(o[k]) : o[k]); }).join('；'); return String(o); } catch (e) { return String(v); } }
+  function rows() {
+    return ctx.audits.slice().reverse().filter(function (r) {
+      var d = when(r).slice(0, 10);
+      return (!F.who || nameOf(r.actorId) === F.who) && (!F.act || r.action === F.act) && (!F.q || (r.object + ch(r.before) + ch(r.after)).indexOf(F.q) >= 0) && (!F.a || d >= F.a) && (!F.b || d <= F.b);
+    });
+  }
+  function render() {
+    var acts = ctx.audits.map(function (r) { return r.action; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+    var whos = ctx.audits.map(function (r) { return nameOf(r.actorId); }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+    document.getElementById('filters').innerHTML = '<label>操作人<select class="sel" data-f="who"><option value="">全部</option>' + whos.map(function (w) { return '<option' + (F.who === w ? ' selected' : '') + '>' + esc(w) + '</option>'; }).join('') + '</select></label>' +
+      '<label>操作<select class="sel" data-f="act"><option value="">全部</option>' + acts.map(function (w) { return '<option' + (F.act === w ? ' selected' : '') + '>' + esc(w) + '</option>'; }).join('') + '</select></label>' +
+      '<label>关键词<input class="inp search" data-f="q" placeholder="对象或变更内容" value="' + esc(F.q) + '"></label>' +
+      '<label>日期<input class="inp" type="date" data-f="a" value="' + F.a + '" style="width:140px"> 至 <input class="inp" type="date" data-f="b" value="' + F.b + '" style="width:140px"></label><span style="flex:1"></span><button class="btn-s" data-reset>重置</button><button class="btn-s" data-export>导出</button>';
+    var list = rows(), per = 20, pages = Math.max(1, Math.ceil(list.length / per)); if (F.page > pages) F.page = pages;
+    document.getElementById('main').innerHTML = '<div class="tw"><table class="tbl2"><thead><tr><th>时间</th><th>操作人</th><th>操作</th><th>对象</th><th>变更前</th><th>变更后</th><th>结果</th></tr></thead><tbody>' +
+      (list.slice((F.page - 1) * per, F.page * per).map(function (r) {
+        return '<tr><td class="mono">' + esc(when(r)) + '</td><td>' + esc(nameOf(r.actorId)) + '</td><td>' + esc(r.action) + '</td><td>' + esc(r.object) + '</td><td class="ch">' + esc(ch(r.before)) + '</td><td class="ch">' + esc(ch(r.after)) + '</td><td>' + (r.result === '成功' ? '<span class="tag g">成功</span>' : '<span class="tag r">' + esc(r.result || '') + '</span>') + '</td></tr>';
+      }).join('') || '<tr><td colspan="7"><div class="empty3">没有符合条件的记录</div></td></tr>') + '</tbody></table></div>' +
+      '<div class="foot2"><span>共 ' + list.length + ' 条</span><span class="pg">' + Array.apply(null, { length: Math.min(pages, 10) }).map(function (_, i) { return '<button data-page="' + (i + 1) + '" aria-pressed="' + (F.page === i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</span></div>';
+  }
+  function csv(name, rows) {
+    var cell = function (v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + rows.map(function (r) { return r.map(cell).join(','); }).join('\n')], { type: 'text/csv;charset=utf-8' }));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-page]'))) { F.page = +t.dataset.page; render(); }
+    else if (e.target.closest('[data-reset]')) { F = { who: '', act: '', q: '', a: '', b: '', page: 1 }; render(); }
+    else if (e.target.closest('[data-export]')) csv('操作日志_' + TK.fmt(new Date(), false) + '.csv', [['时间', '操作人', '操作', '对象', '变更前', '变更后', '结果']].concat(rows().map(function (r) { return [when(r), nameOf(r.actorId), r.action, r.object, ch(r.before), ch(r.after), r.result]; })));
+  });
+  document.addEventListener('change', function (e) { var k = e.target.getAttribute('data-f'); if (k && k !== 'q') { F[k] = e.target.value; F.page = 1; render(); } });
+  document.addEventListener('input', function (e) { if (e.target.getAttribute('data-f') === 'q') { F.q = e.target.value.trim(); F.page = 1; var pos = e.target.selectionStart; render(); var i = document.querySelector('[data-f="q"]'); i.focus(); i.setSelectionRange(pos, pos); } });
+  render();
+})();
+</script>
+</body>
+</html>

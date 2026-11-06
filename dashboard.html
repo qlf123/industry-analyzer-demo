@@ -77,7 +77,7 @@ svg text{font-family:inherit}
 <div class="app">
   <aside class="lnav" id="lnav"></aside>
   <div class="panel">
-    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">数据概览</h1><div class="pt-d">全校教学运行情况，数据来自教务基础数据、课程计划、教师备课与任务中心</div></div></div></div>
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">数据概览</h1><div class="pt-d">教学运行情况，数据来自教务基础数据、课程计划、教师备课与任务中心</div></div></div></div>
     <div class="body" id="body"></div>
   </div>
 </div>
@@ -86,6 +86,7 @@ svg text{font-family:inherit}
 <script src="js/common.js"></script>
 <script src="js/assess-data.js"></script>
 <script src="js/teacher-kit.js"></script>
+<script src="js/teach-reach.js"></script>
 <script>
 (function () {
   'use strict';
@@ -93,6 +94,16 @@ svg text{font-family:inherit}
   var esc = TK.esc, S = TK.load(), E = S.edu;
   var C = ['#4f7cff', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
   var F = { p: 'term', off: 0, scope: '', trend: 0 };
+  // 专业负责人（没有教务维护权限）：只看自己负责的专业（含下级），不提供「全校」
+  var LEAD = (function () {
+    var c = DEMO.getState(), id = UI.currentIdentity(c);
+    if (UI.hasPerm(c, id, 'edu:base:manage')) return null;
+    var names = {}; c.assignments.filter(function (a) { return a.accountId === id.account.id && a.roleId === 'R-MAJOR-LEAD'; }).forEach(function (a) {
+      ((a.teachingScope || {}).majorIds || []).forEach(function (mid) { var m = c.majors.filter(function (x) { return x.id === mid; })[0]; if (m) names[m.name] = 1; });
+    });
+    return E.majors.filter(function (m) { return names[m.name]; }).map(function (m) { return m.id; });
+  })();
+  if (LEAD) F.scope = LEAD[0] || '__none__';
 
   /* ── 基础数据 ── */
   function teachers() { try { return DEMO.getState().accounts.filter(function (a) { return a.kind === '教师' && a.status === '正常'; }).map(function (a) { return a.name; }); } catch (e) { return ['李老师', '王老师', '何老师']; } }
@@ -249,7 +260,7 @@ svg text{font-family:inherit}
     var r = cur(), pr = prev(), T = scopedTeachers();
     var majors = TK.majorTree(E).filter(function (x) { return x.m.status === '启用'; });
     var h = '<div class="db-bar"><span class="tabs-s" style="margin:0">' + [['week', '本周'], ['month', '本月'], ['term', '本学期'], ['year', '本学年']].map(function (p) { return '<button data-p="' + p[0] + '" aria-pressed="' + (F.p === p[0]) + '">' + p[1] + '</button>'; }).join('') + '</span>' +
-      '<span style="font-size:12.5px;color:var(--muted)">查看范围</span><select class="sel" data-scope><option value="">全校</option>' + majors.map(function (x) { return '<option value="' + x.m.id + '"' + (F.scope === x.m.id ? ' selected' : '') + '>' + esc(TK.majorPath(E, x.m.id)) + '</option>'; }).join('') + '</select>' +
+      '<span style="font-size:12.5px;color:var(--muted)">查看范围</span><select class="sel" data-scope>' + (LEAD ? '' : '<option value="">全校</option>') + majors.filter(function (x) { return !LEAD || LEAD.some(function (id) { return TK.majorSubIds(E, id).indexOf(x.m.id) >= 0; }); }).map(function (x) { return '<option value="' + x.m.id + '"' + (F.scope === x.m.id ? ' selected' : '') + '>' + esc(TK.majorPath(E, x.m.id)) + '</option>'; }).join('') + '</select>' +
       '<span class="sp"></span><span class="cyc">当前周期：' + esc(cycleLabel(r)) + '</span><button class="lk" data-off="-1">‹ 上一' + UNIT[F.p] + '</button><button class="lk" data-off="1">下一' + UNIT[F.p] + ' ›</button>' + (F.off ? '<button class="lk" data-off="0">回到本' + UNIT[F.p] + '</button>' : '') + '</div>';
 
     // 1 教学基本概况
@@ -338,6 +349,25 @@ svg text{font-family:inherit}
       '<div class="panel2"><div class="don">' + donut(stParts, '排课总数', 120) + rows(stParts) + '</div></div>' +
       '<div class="panel2"><div class="don">' + donut(srcParts, '排课总数', 120) + rows(srcParts) + '</div><div style="font-size:11.5px;color:var(--muted)">教务排课：管理端排课自动生成的课次；教师自建：老师另建的额外课次和补训课次</div></div>' +
       '</div></div>';
+
+    // 6 教学质量（摘要）：老师确认的课堂证据达成情况 + 待处理的课程改进建议，明细到「教学质量」
+    if (UI.hasPerm(DEMO.getState(), UI.currentIdentity(DEMO.getState()), 'teach:quality:view')) {
+      var tq = TR.compute(S, scopedPlans(), r), tqp = TR.compute(S, scopedPlans(), pr), tr = TR.rate(tq.ok, tq.pairs), trp = TR.rate(tqp.ok, tqp.pairs);
+      var mNames = F.scope ? TK.majorSubIds(E, F.scope).map(function (id) { return (E.majors.filter(function (m) { return m.id === id; })[0] || {}).name; }) : null;
+      var imps = (S.improves || []).filter(function (x) { return x.status === '待处理' && (!mNames || mNames.indexOf(x.major) >= 0); });
+      var weak = tq.abilities.filter(function (a) { return a.no; }).slice(0, 5);
+      var go = function (q, txt) { return '<a class="lk" href="' + esc(UI.link('teach-quality.html?' + q, 'admin')) + '">' + txt + ' ›</a>'; };
+      h += '<div class="db-sec"><div class="db-st"><span class="no">6</span>教学质量<span class="sp"></span>' + go('t=reach', '进入教学达成') + '</div>' +
+        '<div class="db-sub">来自老师在任务中心确认的课堂证据（学生自评不计入）；每个「学生 × 技能」取最近一次评价，需改进为未达成</div><div class="kpis">' +
+        kpi('🎯', '#ecfdf5', '本' + UNIT[F.p] + '教学达成率', tr == null ? '—' : tr, tr == null ? '' : '%', tr != null && trp != null ? delta(tr, trp, ' 个百分点') : '') +
+        kpi('📝', '#eef2ff', '学生 × 技能 评价', tq.pairs, '次', delta(tq.pairs, tqp.pairs)) +
+        kpi('⚠️', '#fff7ed', '未达成', tq.no, '次') +
+        kpi('💬', '#f3e8ff', '待处理改进建议', imps.length, '条') + '</div>' +
+        '<div class="grid2"><div class="panel2"><div class="ph2">未达成较多的能力<span class="sp"></span>' + go('t=reach', '查看全部') + '</div>' +
+          (weak.length ? '<div class="hb">' + weak.map(function (a) { var rr = TR.rate(a.ok, a.pairs); return '<div><span class="nm" title="' + esc(a.name) + '" style="flex:1;width:auto;text-align:left">' + esc(a.name) + '</span><span style="font-size:12px;color:var(--crit);white-space:nowrap;flex:none">未达成 ' + a.no + ' 次</span><span style="font-size:12px;color:var(--muted);margin-left:10px;white-space:nowrap;flex:none">达成率 ' + rr + '%</span></div>'; }).join('') + '</div>' : '<div class="empty3">' + (tq.pairs ? '本' + UNIT[F.p] + '评价过的能力都已达成' : '本' + UNIT[F.p] + '还没有课堂证据') + '</div>') + '</div>' +
+        '<div class="panel2"><div class="ph2">待处理的课程改进建议<span class="sp"></span>' + go('t=improve', '去处理') + '</div>' +
+          (imps.length ? imps.slice(0, 4).map(function (x) { return '<div style="font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--rule-2)"><b>' + esc(x.type) + '</b> · 《' + esc(x.course) + '》<span style="color:var(--muted);margin-left:6px">' + esc(x.from + ' · ' + x.at.slice(0, 10)) + '</span><div style="color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(x.text) + '</div></div>'; }).join('') : '<div class="empty3">没有待处理的建议</div>') + '</div></div></div>';
+    }
     document.getElementById('body').innerHTML = h;
   }
   // 按专业汇总（取课程计划所在班级的专业）

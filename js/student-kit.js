@@ -32,7 +32,7 @@
     if (fb && !fb.overall) fb = Object.assign({ overall: Math.round((fb.scores['讲授内容'] + fb.scores['教学方式'] + fb.scores['互动体验'] + fb.scores['学习收获']) / 4), tags: [] }, fb);
     var pl = (S.plans || []).find(function (x) { return x.id === c.planId; });
     return { id: c.id, course: c.name, plan: pl ? pl.course : '', major: c.major, teacher: (pl && pl.teacher) || S.teacher || '老师', publishAt: p.at, due: sub ? p.task.due : '', status: st,
-      task: sub ? { name: p.task.name, desc: p.task.desc, modes: p.task.modes, criteria: p.task.criteria || [] } : null, files: files, submissions: subs,
+      task: sub ? { name: p.task.name, desc: p.task.desc, modes: p.task.modes, criteria: p.task.criteria || [], skillIds: p.task.skillIds || [] } : null, files: files, submissions: subs,
       evalSeen: !sub || sub.evalSeen !== false, feedbackOn: !!p.feedback, feedback: fb || null };
   }
   /* 当前学生的视图：{ name, klass, tasks, growth } */
@@ -40,7 +40,7 @@
     var S = TK.load(), who = me();
     var k = S.classes.find(function (c) { return c.students.indexOf(who) >= 0; });
     return { name: who, klass: k ? k.name : '', tasks: S.courses.filter(function (c) { return mine(S, c, who); }).map(function (c) { return taskView(S, c, who); }),
-      growth: (S.stuGrowth[who] || []).slice(), skills: skillView(S, who) };
+      growth: (S.stuGrowth[who] || []).slice(), skills: skillView(S, who), kps: kpView(S, who) };
   }
 
   /* 技能达成：只看老师确认通过的证据，单个技能按最近一次证据判断（需改进 = 未达成）；
@@ -70,6 +70,32 @@
     return { list: list, abls: abls };
   }
 
+  /* 知识点掌握统计（学生端）：与老师端学情口径一致——
+     按每个技能取本人最近一次老师确认的评价（含退回的那次），看技能下各知识点是否体现；
+     只用于学习参考，不进证据、不汇总到技能达成 */
+  function kpView(S, who) {
+    var K = TK.kn(), last = {};
+    S.courses.forEach(function (c) {
+      if (!mine(S, c, who) || !c.publish.task) return;
+      (c.submissions || []).forEach(function (sb) {
+        if (sb.student !== who || !sb.teacher) return;
+        (sb.teacher.items || []).forEach(function (it) {
+          var ks = ((K.skill[it.sid] || {}).kps) || []; if (!ks.length) return;
+          if (!last[it.sid] || sb.teacher.at >= last[it.sid].at)
+            last[it.sid] = { at: sb.teacher.at, marks: TK.itemKps(it, who), tid: c.id, task: c.publish.task.name, course: c.name };
+        });
+      });
+    });
+    var list = Object.keys(last).map(function (sid) {
+      var x = K.skill[sid], l = last[sid];
+      var kps = x.kps.map(function (k) { return { id: k.id, name: k.name, type: k.type, core: k.core, miss: l.marks[k.id] === 'miss' }; });
+      return { sid: sid, name: x.name, kps: kps, ok: kps.filter(function (k) { return !k.miss; }).length, miss: kps.filter(function (k) { return k.miss; }).length,
+        at: l.at, tid: l.tid, task: l.task, course: l.course };
+    }).sort(function (a, b) { return a.at < b.at ? 1 : -1; });
+    var all = list.reduce(function (a, x) { return a.concat(x.kps); }, []);
+    return { list: list, total: all.length, ok: all.filter(function (k) { return !k.miss; }).length, miss: all.filter(function (k) { return k.miss; }).length };
+  }
+
   /* ── 学生操作（写回共用数据） ── */
   function edit(cid, fn) { var S = TK.load(), c = S.courses.find(function (x) { return x.id === cid; }), r = fn(S, c, me()); TK.save(S); return r; }
   function learn(cid, fid, name) {
@@ -83,11 +109,14 @@
   }
   // 演示用 AI 初评：按提交内容是否完整，逐项给出等级，供老师在教师端确认或修改
   var AI_REASON = { '合格': '基本做到，细节和依据还需完善。', '需改进': '提交内容中没有体现该项要求。' };
-  function mockAi(items, modes, crit) {
+  function mockAi(items, modes, crit, who) {
     var types = items.map(function (x) { return x.type; }).filter(function (t, i, a) { return a.indexOf(t) === i; });
     var txt = items.filter(function (x) { return x.type === '文字'; }).map(function (x) { return x.text; }).join('');
     var full = items.length >= 2 || txt.length >= 50;
-    var per = (crit || []).map(function (x, i) { var g = full || i === 0 ? '合格' : '需改进'; return { sid: x.sid, grade: g, reason: AI_REASON[g] }; });
+    var per = (crit || []).map(function (x, i) {
+      var g = full || i === 0 ? '合格' : '需改进', kps = TK.aiKpMarks(x.sid, g, who || ''), miss = (TK.kn().skill[x.sid] || { kps: [] }).kps.filter(function (k) { return kps[k.id] === 'miss'; }).map(function (k) { return k.name; });
+      return { sid: x.sid, grade: g, reason: AI_REASON[g] + (miss.length ? '没有体现：' + miss.join('、') + '。' : ''), kps: kps };
+    });
     return { result: per.length ? TK.overall(per) : full ? '合格' : '需改进', items: per, summary: '提交了' + types.join('、') + '，共 ' + items.length + ' 项内容。',
       highlights: full ? '内容覆盖了任务要求的主要方面，结构比较完整。' : '按时提交，结论明确。',
       problems: full ? '部分分析缺少数据来源。' : '内容较少，缺少分析过程' + (modes.length > types.length ? '，未使用' + modes.filter(function (m) { return types.indexOf(m) < 0; }).join('、') + '等形式补充' : '') + '。',
@@ -98,7 +127,7 @@
       var sub = c.submissions.find(function (x) { return x.student === who; }), t = c.publish.task, late = t.due < TK.fmt(new Date());
       var first = !sub.at;
       if (!first) { sub.history = sub.history || []; sub.history.push({ at: sub.at, late: !!sub.late, files: sub.files, teacher: sub.teacher }); }
-      Object.assign(sub, { status: '已提交', at: TK.fmt(new Date()), late: late, files: items, modes: items.map(function (x) { return x.type; }).filter(function (m, i, a) { return a.indexOf(m) === i; }), teacher: null, ai: t.ai ? mockAi(items, t.modes, t.criteria) : null, evalSeen: true });
+      Object.assign(sub, { status: '已提交', at: TK.fmt(new Date()), late: late, files: items, modes: items.map(function (x) { return x.type; }).filter(function (m, i, a) { return a.indexOf(m) === i; }), teacher: null, ai: t.ai ? mockAi(items, t.modes, t.criteria, who) : null, evalSeen: true });
       // 成长星只记第一次提交，退回后重新提交不重复计
       var stars = first ? (late ? STAR.submitLate : STAR.submit) : 0;
       if (first) TK.addStuGrowth(S, who, { type: '提交任务', target: t.name, desc: late ? '超时提交情景任务' : '正常提交情景任务', stars: stars, tid: cid });
@@ -139,7 +168,7 @@
   function learned(t) { return t.files.filter(function (f) { return f.learnedAt; }).length; }
   function maxStars(t) { return t.files.length * STAR.learn + (t.task ? STAR.submit + STAR.grade['优秀'] : 0) + (t.feedbackOn ? STAR.feedback : 0); }
 
-  root.SK = { view: view, learn: learn, submit: submit, feedback: feedback, seen: seen, periodRange: periodRange,
+  root.SK = { view: view, learn: learn, submit: submit, feedback: feedback, seen: seen, periodRange: periodRange, kpView: kpView,
     STAR: STAR, GTYPES: GTYPES, maxStars: maxStars, overdue: overdue, soon: soon, canSubmit: canSubmit, learned: learned,
     GCOL: { '学习资源': '#6366f1', '提交任务': '#10b981', '老师评价': '#f59e0b', '课程反馈': '#8b5cf6' } };
 })(window);

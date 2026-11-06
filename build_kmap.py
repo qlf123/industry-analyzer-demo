@@ -225,6 +225,11 @@ out_path = os.path.join(HERE, "kmap.html")
 html = tpl.replace("/*__DATA__*/", payload).replace("/*__AI_CFG__*/", ai_cfg_json)
 open(out_path, "w", encoding="utf-8").write(html)
 
+# 同一份图谱数据给图谱中心「知识图谱 › 全景图谱」用（不含 AI 配置）：能力地图与全景图谱读同一份，老师的个人补充两边同步
+GRAPH_DATA = {k: v for k, v in DATA.items() if k != "selfCheckRules"}
+open(os.path.join(HERE, "graph", "kmap-data.js"), "w", encoding="utf-8").write(
+    "/* 由 build_kmap.py 生成，勿手改：能力地图与全景图谱共用的图谱数据 */\nwindow.KMAP_DATA = " + json.dumps(GRAPH_DATA, ensure_ascii=False, separators=(",", ":")) + ";\n")
+
 print(f"子行业 {sum(1 for s in subs if s['built'])}（共 {len(subs)}）· 岗位 {len(positions)} · "
       f"能力项 {len(abilities)} · 能力要求 {len(K.POSITION_ABILITY)} · "
       f"技能 {len(skills)}（能力项 → 技能 {len(ABILITY_SKILL_SRC)}，无技能的能力项 {sum(1 for a in abilities if not a['skills'])}）· "

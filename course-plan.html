@@ -83,6 +83,8 @@
   var $ = function (s) { return document.querySelector(s); };
   var esc = TK.esc;
   UI.boot({ portal: 'admin', active: 'plan' });
+  // 教务基础数据、课程计划只给有「教务基础数据与课程计划维护」权限的身份（专业负责人等看不到）
+  (function () { var c = DEMO.getState(), id = UI.currentIdentity(c); if (!UI.hasPerm(c, id, 'edu:base:manage')) { document.querySelector('.panel').innerHTML = '<div class="body"><div class="card" style="padding:40px;text-align:center;color:var(--muted)">当前身份没有「教务基础数据与课程计划维护」权限</div></div>'; throw new Error('no-perm'); } })();
 
   var S = TK.load(), E = S.edu, F = {}, tab = 'plan';
   var WD = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];

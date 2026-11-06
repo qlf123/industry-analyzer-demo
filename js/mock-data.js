@@ -10,7 +10,7 @@
   'use strict';
 
   var STORAGE_KEY = 'permission-demo-state';
-  var DATA_VERSION = 4; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
+  var DATA_VERSION = 9; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
 
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
@@ -181,7 +181,11 @@
     { id: 'P-MEMBER-MANAGE',     code: 'org:member:manage',        name: '组织成员管理',   module: '组织', resource: '成员', action: '管理' },
     { id: 'P-ACCOUNT-CREATE',    code: 'account:account:create',   name: '账号新建',       module: '组织', resource: '账号', action: '新建' },
     { id: 'P-ASSESS-VIEW',       code: 'major:assess:view',        name: '能力测评查看',   module: '专业建设', resource: '能力测评', action: '查看' },
-    { id: 'P-ASSESS-RUN',        code: 'major:assess:run',         name: '发起能力测评',   module: '专业建设', resource: '能力测评', action: '发起' }
+    { id: 'P-ASSESS-RUN',        code: 'major:assess:run',         name: '发起能力测评',   module: '专业建设', resource: '能力测评', action: '发起' },
+    { id: 'P-EDU-MANAGE',        code: 'edu:base:manage',          name: '教务基础数据与课程计划维护', module: '教务', resource: '教务基础数据', action: '维护' },
+    { id: 'P-TEACH-QUALITY',     code: 'teach:quality:view',       name: '教学质量查看与改进处理', module: '教学质量', resource: '教学达成 / 课程改进建议', action: '查看处理' },
+    { id: 'P-LAB-MANAGE',        code: 'edu:lab:manage',           name: '实训资源维护',   module: '教务', resource: '实训资源', action: '维护' },
+    { id: 'P-GRAPH-SUGGEST',     code: 'graph:suggest:review',     name: '标准图谱建议审核', module: '图谱中心', resource: '标准图谱建议', action: '审核发布' }
   ];
 
   /* ── 角色（type：内置 / 预设 / 部门模板 / 自定义；key 供权限模块判定用） ── */
@@ -191,16 +195,16 @@
       'org:node:view','org:node:edit','org:account:view','org:account:edit','org:account:assign','org:teachingScope:grant',
       'org:role:define','org:audit:view','student:info:view','student:score:view','student:idcard:plain','teaching:profile:view',
       'teaching:content:view','teaching:content:audit','intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view','org:member:manage','account:account:create',
-      'major:assess:view','major:assess:run' ] },
+      'major:assess:view','major:assess:run','graph:suggest:review','edu:base:manage','edu:lab:manage','teach:quality:view' ] },
     { id: 'R-ORG-ADMIN', key: 'orgAdmin', portal: 'admin', name: '组织管理员', type: '预设', status: '启用', aiQuota: 100,
       description: '负责本单位组织、账号与基础数据的日常维护', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'org:node:view','org:node:edit','org:account:view','org:account:edit','org:account:assign','org:teachingScope:grant',
       'org:audit:view','student:info:view','student:score:view','teaching:profile:view','teaching:content:view','teaching:content:audit',
       'intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view','org:member:manage','account:account:create',
-      'major:assess:view','major:assess:run' ] },
-    { id: 'R-MAJOR-LEAD', key: 'majorLead', portal: 'teacher', name: '专业负责人', type: '预设', status: '启用', aiQuota: 50,
+      'major:assess:view','major:assess:run','graph:suggest:review','edu:base:manage','edu:lab:manage','teach:quality:view' ] },
+    { id: 'R-MAJOR-LEAD', key: 'majorLead', portal: 'admin', name: '专业负责人', type: '预设', status: '启用', aiQuota: 50,
       description: '负责本专业教学与人才培养相关的查看与协作', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
-      'teaching:profile:view','teaching:content:view','student:score:view','resource:share','resource:schoolpub:view' ] },
+      'teaching:profile:view','teaching:content:view','student:score:view','resource:share','resource:schoolpub:view','graph:suggest:review','major:assess:view','teach:quality:view' ] },
     { id: 'R-TEACHER', key: 'teacher', portal: 'teacher', name: '教师', type: '预设', status: '启用', aiQuota: 30,
       description: '授课教师，可查看所带班级学生与备课资源', createdBy: '超管', createdAt: '2024-09-10', permissionIds: [
       'student:info:view','student:score:view','teaching:profile:view','resource:share','resource:schoolpub:view' ] },
@@ -217,7 +221,7 @@
       description: '教务管理，负责教学安排、成绩与课程内容', createdBy: '超管', createdAt: '2024-10-15', permissionIds: [
       'org:account:view','org:teachingScope:grant','org:audit:view','student:info:view','student:score:view','teaching:profile:view',
       'teaching:content:view','teaching:content:audit','resource:share','resource:schoolpub:publish','resource:schoolpub:view',
-      'major:assess:view','major:assess:run' ] },
+      'major:assess:view','major:assess:run','edu:base:manage','teach:quality:view' ] },
     { id: 'R-STUDENT-AFFAIRS', key: 'studentAffairs', portal: 'admin', name: '学工', type: '部门模板', status: '启用', aiQuota: 50,
       description: '学生工作管理，负责学生信息与实习任务', createdBy: '超管', createdAt: '2024-10-15', permissionIds: [
       'org:account:view','org:audit:view','student:info:view','student:score:view','intern:task:view' ] },
@@ -270,6 +274,7 @@
     { id: 'A-07', accountId: 'ACC-LI', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-T26-1'], courseIds: ['CRS-T1', 'CRS-T3'] }, extraPermIds: [] },
     { id: 'A-22', accountId: 'ACC-LI', roleId: 'R-SUPER', scopeOrgIds: ['ORG-HOTEL'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-08', accountId: 'ACC-WANG', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-T26-1', 'K-H26-1'], courseIds: ['CRS-T1', 'CRS-T2', 'CRS-H1', 'CRS-H2'] }, extraPermIds: [] },
+    { id: 'A-30', accountId: 'ACC-HE', roleId: 'R-MAJOR-LEAD', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: ['MAJOR-GUIDE'], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-09', accountId: 'ACC-HE', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-T25-1'], courseIds: ['CRS-T1', 'CRS-T2'] }, extraPermIds: [] },
     { id: 'A-10', accountId: 'ACC-MA', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-H25-1'], courseIds: ['CRS-H2', 'CRS-H3'] }, extraPermIds: [] },
     { id: 'A-11', accountId: 'ACC-ZHAO', roleId: 'R-COUNSELOR', scopeOrgIds: ['ORG-TOURISM'], scopeGrades: { 'ORG-TOURISM': ['G-2026'] }, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },

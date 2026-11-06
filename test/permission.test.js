@@ -653,13 +653,17 @@ test('能力测评权限点：超管 / 组织管理员 / 教务可见，专业�
   ['R-SUPER', 'R-ORG-ADMIN', 'R-ACADEMIC'].forEach(function (rid) {
     assert.ok(perms(rid).includes('major:assess:view') && perms(rid).includes('major:assess:run'), rid + ' 有能力测评权限');
   });
-  ['R-MAJOR-LEAD', 'R-TEACHER', 'R-STUDENT-AFFAIRS', 'R-SUPERVISOR'].forEach(function (rid) {
+  ['R-TEACHER', 'R-STUDENT-AFFAIRS', 'R-SUPERVISOR'].forEach(function (rid) {
     assert.ok(!perms(rid).includes('major:assess:view'), rid + ' 无能力测评权限');
   });
+  // 专业负责人（管理端）：可查看能力测评，只看自己负责的专业，不能发起
+  assert.ok(perms('R-MAJOR-LEAD').includes('major:assess:view') && !perms('R-MAJOR-LEAD').includes('major:assess:run'), '专业负责人只读能力测评');
   const guide = c.majors.find(function (m) { return m.id === 'MAJOR-GUIDE'; });
   const hotel = c.majors.find(function (m) { return m.id === 'MAJOR-HOTEL'; });
   assert.ok(Perm.check(c, id(c, 'ACC-ZHOU'), 'major:assess:view', guide, 'major').allowed, '教务（全校）可看导游专业');
   assert.ok(Perm.check(c, id(c, 'ACC-LIU'), 'major:assess:view', guide, 'major').allowed, '旅游学院管理员可看导游专业');
   assert.ok(Perm.check(c, id(c, 'ACC-LIU'), 'major:assess:view', hotel, 'major').allowed, '专业不挂组织：旅游学院管理员也可看酒店专业');
-  assert.ok(!Perm.check(c, id(c, 'ACC-HE'), 'major:assess:view', null, null).allowed, '教师无能力测评权限');
+  assert.ok(!Perm.check(c, id(c, 'ACC-WANG'), 'major:assess:view', null, null).allowed, '教师无能力测评权限');
+  assert.ok(Perm.check(c, id(c, 'ACC-HE'), 'major:assess:view', guide, 'major').allowed, '专业负责人可看自己负责的导游专业');
+  assert.ok(!Perm.check(c, id(c, 'ACC-HE'), 'major:assess:view', hotel, 'major').allowed, '专业负责人看不到酒店专业');
 });

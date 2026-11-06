@@ -62,10 +62,11 @@
 (function () {
   'use strict';
   var esc = TK.esc, S = TK.load();
+  S.growth = S.growth.filter(function (g) { return !g.owner || g.owner === teacherName(); });   // 教研贡献等带提交人的记录只算本人
   var period = 'term', RF = { from: '', to: '', type: '' }, page = 1;
-  var TYPES = ['备课', '发布学习内容', '评价学生任务', '学生课程反馈'];
-  var COL = { '备课': '#3b82f6', '发布学习内容': '#10b981', '评价学生任务': '#f59e0b', '学生课程反馈': '#8b5cf6' };
-  var GT = { '备课': '备课成长', '发布学习内容': '发布成长', '评价学生任务': '评价成长', '学生课程反馈': '反馈成长' };
+  var TYPES = ['备课', '发布学习内容', '评价学生任务', '学生课程反馈', '教研贡献'];
+  var COL = { '备课': '#3b82f6', '发布学习内容': '#10b981', '评价学生任务': '#f59e0b', '学生课程反馈': '#8b5cf6', '教研贡献': '#ea580c' };
+  var GT = { '备课': '备课成长', '发布学习内容': '发布成长', '评价学生任务': '评价成长', '学生课程反馈': '反馈成长', '教研贡献': '教研贡献' };
   var RES_T = ['课件', '教案', '图片', '视频', '情景互动游戏'], RES_C = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
   var DIMS = ['讲授内容', '教学方式', '互动体验', '学习收获'];
   function teacherName() { try { return UI.currentIdentity(DEMO.getState()).account.name; } catch (e) { return '教师'; } }
