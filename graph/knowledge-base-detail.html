@@ -154,6 +154,58 @@
 .dd-mini.pri{background:#5149e9;border-color:#5149e9;color:#fff;}
 .dd-mini.pri:hover{background:#4038c0;color:#fff;}
 
+/* ---------- 文本分段页码 & 定位原文 ---------- */
+.seg-page{font-size:11px;font-weight:600;color:#5149e9;background:#eef0ff;border-radius:5px;padding:1px 7px;white-space:nowrap;}
+.seg-icon{width:26px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:1px solid #dfe6ef;border-radius:6px;background:#fff;color:#60718a;cursor:pointer;flex:none;}
+.seg-icon:hover{background:#f5f7fa;border-color:#5149e9;color:#5149e9;}
+.seg-icon.danger:hover{background:#fff1f0;border-color:#c72c2a;color:#c72c2a;}
+.seg-ops{margin-left:auto;display:inline-flex;align-items:center;gap:4px;flex:none;}
+/* 段落操作按钮：默认隐藏，悬停到段落时浮现 */
+.seg-act{opacity:0;visibility:hidden;transition:opacity .15s ease,visibility .15s ease;}
+.seg-card:hover .seg-act,.seg-card:focus-within .seg-act{opacity:1;visibility:visible;}
+.seg-card.seg-off{background:#fafbfc;}
+.seg-card.seg-off .seg-body{opacity:.55;}
+.seg-off-tag{font-size:11px;font-weight:600;color:#8b99ac;background:#f0f2f5;border-radius:5px;padding:1px 7px;white-space:nowrap;}
+.doc-toc-pg{margin-left:auto;font-size:10px;color:#b4bdcb;background:#f0f2f5;border-radius:8px;padding:0 6px;flex:none;}
+
+/* 源文预览 · 分页定位 */
+.pv-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.pv-info{font-size:12px;color:#8b99ac;margin-right:auto;}
+.pv-pager{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+.pv-pager button{min-width:26px;height:26px;padding:0 7px;border:1px solid #dfe6ef;border-radius:6px;background:#fff;font-size:12px;color:#41536f;cursor:pointer;font-family:inherit;}
+.pv-pager button:hover{border-color:#5149e9;color:#5149e9;}
+.pv-pager button.on{background:#5149e9;border-color:#5149e9;color:#fff;}
+.pv-page{border:1px solid #eef0f2;border-radius:10px;padding:16px 18px;margin-bottom:14px;background:#fff;}
+.pv-page:last-child{margin-bottom:0;}
+.pv-page-head{display:flex;align-items:center;gap:8px;font-size:12px;color:#8b99ac;padding-bottom:10px;margin-bottom:4px;border-bottom:1px dashed #eef0f2;}
+.pv-page-head b{color:#2f405d;font-size:13px;}
+.pv-doc{font-size:var(--pv-size,14px);line-height:1.9;color:#41536f;}
+.pv-para{margin:0 0 12px;white-space:pre-line;}
+.pv-para:last-child{margin-bottom:0;}
+.pv-para.hl{background:#fef7e6;border-radius:6px;padding:8px 10px;}
+.pv-para.pv-empty{color:#b4bdcb;}
+/* 扫描件预览：页面 + OCR 大致块 */
+.pv-scan-page{position:relative;background:#fff;border:1px solid #e6e9ee;border-radius:8px;box-shadow:0 1px 3px rgba(16,24,40,.06);padding:28px 26px 42px;margin-bottom:16px;min-height:300px;background-image:repeating-linear-gradient(0deg,rgba(15,23,42,.03) 0 1px,transparent 1px 7px);}
+.pv-scan-page:last-child{margin-bottom:0;}
+.pv-scan-block{position:relative;border:1px dashed #d5dbe4;border-radius:6px;padding:10px 12px;margin-bottom:12px;font-size:var(--pv-size,14px);line-height:1.8;color:#41536f;background:#fbfcfe;}
+.pv-scan-block.hl{border:1px solid #F79009;background:#fef7e6;}
+.pv-scan-empty{color:#b4bdcb;font-size:13px;padding:24px 0;text-align:center;}
+.pv-scan-pg{position:absolute;bottom:12px;right:16px;font-size:11px;color:#9aa6b8;font-variant-numeric:tabular-nums;}
+.pv-pgnum{margin-left:auto;font-variant-numeric:tabular-nums;}
+.pv-zoom{display:flex;align-items:center;gap:4px;font-size:12px;color:#8b99ac;flex:none;}
+.pv-zoom button{width:24px;height:24px;padding:0;border:1px solid #dfe6ef;border-radius:6px;background:#fff;color:#41536f;cursor:pointer;font-size:14px;line-height:1;font-family:inherit;}
+.pv-zoom button:hover{border-color:#5149e9;color:#5149e9;}
+.pv-title-tag{margin-left:10px;font-size:11px;font-weight:600;color:#5149e9;background:#eef0ff;border-radius:5px;padding:2px 8px;vertical-align:middle;}
+.pv-wrap{display:flex;gap:16px;align-items:flex-start;}
+.pv-side{position:sticky;top:0;width:224px;flex:none;border-right:1px solid #eef0f2;padding-right:14px;max-height:calc(90vh - 150px);overflow:auto;}
+.pv-side-title{font-size:13px;font-weight:700;color:#2f405d;padding:2px 10px 10px;}
+.pv-side-item{display:flex;align-items:center;gap:6px;width:100%;text-align:left;border:0;background:none;padding:7px 10px;border-radius:8px;font-size:13px;color:#41536f;cursor:pointer;font-family:inherit;}
+.pv-side-item:hover{background:#f5f7fa;}
+.pv-side-item.on{background:#eef0ff;color:#5149e9;}
+.pv-side-item .pg{margin-left:auto;font-size:10px;color:#b4bdcb;background:#f0f2f5;border-radius:8px;padding:0 6px;flex:none;}
+.pv-side-ch{font-weight:600;color:#2f405d;}
+.pv-main{flex:1;min-width:0;}
+
 /* 播放器 */
 .player{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:14px;}
 .video{position:relative;aspect-ratio:16/8;background:#101828;display:flex;align-items:center;justify-content:center;color:#98A2B3;font-size:13px;}
@@ -272,8 +324,12 @@ a.kp-link:hover{border-color:#5149e9;}
 .seg-drawer.show{display:block;}
 .seg-drawer-mask{position:absolute;inset:0;background:rgba(15,23,42,.35);}
 .seg-drawer-panel{position:absolute;top:0;right:0;bottom:0;width:520px;max-width:94vw;background:#fff;box-shadow:-10px 0 40px rgba(0,0,0,.18);display:flex;flex-direction:column;}
+/* 无遮罩抽屉：不遮挡后方内容，可继续与页面交互 */
+.seg-drawer.no-mask{pointer-events:none;}
+.seg-drawer.no-mask .seg-drawer-mask{display:none;}
+.seg-drawer.no-mask .seg-drawer-panel{pointer-events:auto;}
 .drawer-head{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid #eef0f2;}
-.drawer-head h2{font-size:16px;font-weight:700;color:#2f405d;margin:0;flex:1;}
+.drawer-head h2{font-size:16px;font-weight:700;color:#2f405d;margin:0;flex:1;display:flex;align-items:center;gap:8px;min-width:0;}
 .drawer-body{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:18px;min-height:0;}
 .drawer-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #eef0f2;}
 .drawer-sec-title{font-size:13px;font-weight:700;color:#2f405d;}
@@ -467,7 +523,7 @@ a.kp-link:hover{border-color:#5149e9;}
   <div class="seg-drawer-panel" id="segDrawerPanel"></div>
 </div>
 
-<!-- 源文预览弹窗 -->
+<!-- 一键确认弹窗 -->
 <div class="kbd-modal" id="confirmModal">
   <div class="kbd-dialog" style="width:420px">
     <div class="kbd-dialog-head"><h2>一键通过高置信关联</h2><button class="kbd-close" onclick="closeConfirm()">×</button></div>
@@ -475,11 +531,9 @@ a.kp-link:hover{border-color:#5149e9;}
     <div class="kbd-dialog-foot"><button class="kbd-ghost" onclick="closeConfirm()">取消</button><button class="kbd-primary" onclick="doOneClick()">确认通过</button></div>
   </div>
 </div>
-<div class="kbd-modal" id="previewModal">
-  <div class="kbd-dialog" style="width:860px">
-    <div class="kbd-dialog-head"><h2 id="previewTitle"></h2><button class="kbd-close" onclick="closePreview()">×</button></div>
-    <div class="kbd-dialog-body" id="previewBody"></div>
-  </div>
+<!-- 源文预览（右侧抽屉） -->
+<div class="seg-drawer no-mask" id="srcDrawer">
+  <div class="seg-drawer-panel" id="srcDrawerPanel" style="width:560px"></div>
 </div>
 
 <script>
@@ -541,29 +595,66 @@ const IMG_MENU = `<svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" 
 
 let DOCS = [
   /* ---- 文本 ---- */
-  {id:'d1', cat:'text', name:'前厅服务规范.docx', ext:'DOCX', size:'1.2 MB', status:'available', source:'local', time:'2026-09-18 14:22', hits:12,
+  {id:'d1', cat:'text', name:'前厅服务规范.docx', ext:'DOCX', size:'1.2 MB', status:'available', source:'local', time:'2026-09-18 14:22', hits:12, pageCount:6, pages:[1,1,2,2,3,3,4,4,5,5,6,6],
     segs:[
-      '第一章 总则：前厅部是酒店对客服务的第一窗口，员工须统一着装、佩戴工牌，站立服务，主动问候。',
-      '前厅员工应熟悉酒店各营业场所的位置与营业时间，能准确回答客人问询。',
-      '第二章 入住登记：核验有效证件，确认预订信息与房型、房价、离店日期，收取押金后制作房卡并告知早餐时间。',
-      '无预订的散客入住时，先查询当前可售房态，向客人介绍房型与房价，确认后再办理登记。',
+      '第一章 总则：前厅部是酒店对客服务的第一窗口，员工须统一着装、佩戴工牌，站立服务，主动问候，做到「来有迎声、问有答声、走有送声」。',
+      '前厅员工应熟悉酒店各营业场所的位置与营业时间，能准确回答客人问询，遇有不清楚的问题不得随意答复，须及时请示领班或经理。',
+      '第二章 入住登记：核验有效证件，确认预订信息与房型、房价、离店日期，收取押金后制作房卡并告知早餐时间与楼层位置。',
+      '无预订的散客入住时，先查询当前可售房态，向客人介绍房型与房价，确认后再办理登记；团队入住应提前与领队核对名单并统一分房。',
       '第三章 提前入住与延迟退房：提前入住视当日可售房态安排；延迟退房至 14:00 不另收费，14:00–18:00 加收半日房费，18:00 后按全日房费计。',
-      '第四章 交接班：每班结束前核对房态、备用金和未完成事项，填写交接班记录本并双方签字。'
+      '客人要求加床、换房或延住时，须先确认费用并在系统中做相应变更，同时通知客房部与礼宾部。',
+      '第四章 行李服务：礼宾员接收行李时逐件清点并拴挂行李牌，寄存行李须与客人核对领取人信息，贵重易碎物品婉拒寄存并说明原因。',
+      '第五章 问询与留言：为客人提供交通、景点、商务等信息，留言服务须记录客人姓名、房号、留言内容与时间，并确保及时转交。',
+      '第六章 投诉处理：接到投诉先致歉安抚，耐心倾听并记录要点，能当场解决的立即处理，不能解决的立即上报值班经理，24 小时内回复处理结果。',
+      '第七章 交接班：每班结束前核对房态、备用金和未完成事项，填写交接班记录本并双方签字，重要事项须当面交接清楚。',
+      '第八章 安全防范：严格执行访客登记制度，核对客人身份后方可办理续卡、换卡，严禁向无关人员透露客人房号与隐私信息。',
+      '每班按规定检查消防通道与设备状态，发现异常立即上报安保部并做好记录。'
     ]},
-  {id:'d2', cat:'text', name:'夜审操作手册（扫描件）.pdf', ext:'PDF', size:'8.6 MB', status:'available', source:'local', time:'2026-09-17 09:05', hits:5, scanned:true,
+  {id:'d2', cat:'text', name:'夜审操作手册（扫描件）.pdf', ext:'PDF', size:'8.6 MB', status:'available', source:'local', time:'2026-09-17 09:05', hits:5, scanned:true, pageCount:2, pages:[1,1,2,2],
     segs:[
-      '夜审时间一般为每日 0:00 至 3:00，夜审员需核对当日所有入住、退房及在住房间的房价与账务。',
-      '完成核对后执行日结，生成营业日报，并将系统营业日期滚动至次日。'
+      '夜审时间一般为每日 0:00 至 3:00，夜审员需核对当日所有入住、退房及在住房间的房价与账务，逐笔比对客房状态与实际占用情况。',
+      '核对中若发现房价不符、押金不足或账务异常，应立即登记并上报值班经理，未经批准不得自行冲账或调整。',
+      '完成核对后执行日结，生成营业日报，并将系统营业日期滚动至次日；日结前须确认所有账务已入账、无未结挂账。',
+      '日结完成后打印营业日报与在住宾客名单，交次日早班复核，同时做好夜审记录本与备用金交接。'
     ]},
-  {id:'d3', cat:'text', name:'客房部服务标准.docx', ext:'DOCX', size:'3.4 MB', status:'available', source:'local', time:'2026-09-16 16:40', hits:9,
+  {id:'d3', cat:'text', name:'客房部服务标准.docx', ext:'DOCX', size:'3.4 MB', status:'available', source:'local', time:'2026-09-16 16:40', hits:9, pageCount:3, pages:[1,1,2,2,3,3],
     segs:[
       '客房清洁按「先住客房、后空房」顺序进行，退房房需在 15 分钟内完成查房并通知前台。',
-      '布草更换标准：床单、被套、枕套每客一换，续住客人按三天一换或按客人要求更换。'
+      '清洁流程：敲门确认无人后进入，先收垃圾、撤布草，再铺床、除尘、清洁卫生间，最后补充客用品并检查。',
+      '布草更换标准：床单、被套、枕套每客一换，续住客人按三天一换或按客人要求更换。',
+      '卫生间清洁须用专用清洁工具，做到洁具光洁无污渍、无毛发、无异味，镜面无水渍。',
+      '客房用品配备：按标准配置洗漱用品、拖鞋、茶叶、矿泉水与便签纸，数量齐全、摆放整齐。',
+      '完成清洁后自检并关闭门窗与电源，挂好「请即打扫」或「请勿打扰」相关状态，及时向领班报备。'
     ]},
-  {id:'d4', cat:'text', name:'餐饮服务流程.pdf', ext:'PDF', size:'5.1 MB', status:'available', source:'local', time:'2026-09-15 11:30', hits:2,
-    segs:['餐前准备：检查台面、餐具、菜单，确认预订信息。','席间服务：上菜报菜名、斟酒茶水、及时撤换骨碟。']},
-  {id:'d5', cat:'text', name:'酒店英语情景对话.txt', ext:'TXT', size:'64 KB', status:'available', source:'web', time:'2026-09-14 20:11', hits:15,
-    segs:['Receptionist: Good afternoon, welcome to our hotel. May I help you with check-in?','Guest: I have a reservation under the name of Li. A double room for two nights.']},
+  {id:'d4', cat:'text', name:'餐饮服务流程.pdf', ext:'PDF', size:'5.1 MB', status:'available', source:'local', time:'2026-09-15 11:30', hits:2, pageCount:3, pages:[1,1,2,2,3,3],
+    segs:[
+      '餐前准备：检查台面、餐具、菜单，确认预订信息，备好开水与纸巾。',
+      '迎宾引位：面带微笑问候，询问人数与预订情况，为客人引领座位并拉椅让座。',
+      '点餐服务：递上菜单，介绍当日特色与招牌菜，记录客人点单并复述确认。',
+      '席间服务：上菜报菜名、斟酒茶水、及时撤换骨碟，观察客人需求主动补位。',
+      '结账送客：核对账单金额后双手递送，客人离座时提醒带好随身物品并道别。',
+      '收台整理：撤台、分类餐具、更换台布，为下一批客人备好干净台面。'
+    ]},
+  {id:'d5', cat:'text', name:'酒店英语情景对话.txt', ext:'TXT', size:'64 KB', status:'available', source:'web', time:'2026-09-14 20:11', hits:15, pageCount:1, pages:[1,1,1,1,1,1,1],
+    segs:[
+      'Receptionist: Good afternoon, welcome to our hotel. May I help you with check-in?',
+      'Guest: I have a reservation under the name of Li. A double room for two nights.',
+      'Receptionist: One moment, please. Yes, Mr. Li, a double room with breakfast included. May I see your ID, please?',
+      'Guest: Here you are. Could we get a room on a higher floor with a nice view?',
+      'Receptionist: Certainly. I can offer you a quiet room on the 12th floor overlooking the garden. Breakfast is served from 7:00 to 10:00 on the second floor.',
+      'Guest: Great, thank you. What time is check-out?',
+      'Receptionist: Check-out is before noon. Here is your room card. Have a pleasant stay.'
+    ]},
+  {id:'d18', cat:'text', name:'前厅服务礼仪培训.pptx', ext:'PPTX', size:'7.9 MB', status:'available', source:'local', time:'2026-09-19 09:30', hits:7, pageCount:6, pages:[1,2,2,3,4,5,6],
+    segs:[
+      '封面：前厅服务礼仪培训，主讲人：张明，酒店管理学院。',
+      '第一节 仪容仪表：员工须着统一工装、佩戴工牌，发型整洁，女员工淡妆上岗，不得佩戴夸张首饰。',
+      '仪容自检要点：工装平整无污渍、工牌佩戴端正、双手清洁、指甲修剪整齐。',
+      '第二节 站姿与坐姿：站立时挺胸收腹、双手交叠置于身前，坐姿只坐椅面三分之二，忌跷腿、抖腿。',
+      '第三节 微笑与问候：做到「三米微笑、一米问候」，主动使用「您好、欢迎光临」等规范用语。',
+      '第四节 手势与递物：指引方向五指并拢、掌心向上，递物时双手奉上，房卡正面朝向客人。',
+      '第五节 电话礼仪：铃响三声内接听，先报部门与姓名，记录要点并复述确认，挂机前道谢。'
+    ]},
   {id:'d6', cat:'text', name:'旅游管理专业人才培养方案.docx', ext:'DOCX', size:'2.8 MB', status:'indexing', source:'local', time:'2026-09-20 10:02', hits:0, segs:[]},
   {id:'d7', cat:'text', name:'导游资格考试大纲.pdf', ext:'PDF', size:'6.2 MB', status:'error', source:'local', time:'2026-09-13 08:45', hits:0, segs:[], errReason:'文件已加密，无法解析'},
   {id:'d8', cat:'text', name:'2024级学生名单.xlsx', ext:'XLSX', size:'210 KB', status:'waiting', source:'local', time:'2026-09-20 11:20', hits:0, segs:[]},
@@ -636,7 +727,12 @@ const IC={
   audio:(c,w=20)=>`<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>`,
   video:(c,w=20)=>`<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"><rect x="2.5" y="5" width="13" height="14" rx="2.5"/><path d="M15.5 10l5-3v10l-5-3"/></svg>`,
   play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5.5v13l10.5-6.5z"/></svg>',
-  pause:'<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
+  pause:'<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+  edit:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>',
+  locate:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>',
+  trash:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/><path d="M10 11v6M14 11v6"/></svg>',
+  eye:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  eyeOff:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
 };
 function docIcon(d,w=20){
   const c=TYPE[d.cat].color;
@@ -662,6 +758,10 @@ function segModeLabel(d){
   if(d.scanned) return d.ocrOff ? '扫描件 · 未识别' : '扫描件 · OCR';
   return '语义';
 }
+
+/* 文本分段页码：segs 为字符串数组，pages 为等长页码数组；未配置时按每页 2 段推导 */
+function pageOf(d,i){ return (d.pages && d.pages[i]) ? d.pages[i] : (Math.floor(i/2)+1); }
+function pageCountOf(d){ if(d.cat!=='text') return 0; return d.pageCount || (d.segs.length ? pageOf(d,d.segs.length-1) : 0); }
 
 /* ================= 表格 ================= */
 function filtered(){
@@ -833,9 +933,10 @@ function doRecall(){
 /* 命中图文：查看原图；命中音视频：打开文档并从分段开始时间播放 */
 function openImage(id){
   const d=DOCS.find(x=>x.id===id); if(!d) return;
-  document.getElementById('previewTitle').innerHTML=docIcon(d,20)+'<span style="margin-left:8px">'+esc(d.name)+'</span>';
-  document.getElementById('previewBody').innerHTML=`<div class="dd-img">${d.svg||placeholder('图片处理中')}</div>`;
-  document.getElementById('previewModal').classList.add('show');
+  document.getElementById('srcDrawerPanel').innerHTML=
+    `<div class="drawer-head"><h2>${docIcon(d,20)}<span style="margin-left:8px;font-weight:400;font-size:14px;color:#60718a">${esc(d.name)}</span><span class="pv-title-tag" style="margin-left:4px">查看原图</span></h2><button class="kbd-close" data-act="srcClose">×</button></div>`
+    +`<div class="drawer-body"><div class="dd-img">${d.svg||placeholder('图片处理中')}</div></div>`;
+  document.getElementById('srcDrawer').classList.add('show');
 }
 function playFrom(id,t){
   openDoc(id); curTime=t; togglePlay();
@@ -972,6 +1073,26 @@ function segTextOf(d,key){
   if(typeof key==='string'&&key.startsWith('ch')){ const i=+key.slice(2), g=textChapters(d).find(x=>x.items[0].i===i); return g?g.items.map(x=>d.segs[x.i]).join('\n'):''; }
   if(d.cat==='image') return [d.ocr,d.desc].filter(Boolean).join('\n'); const s=d.segs[+key]; return d.cat==='av'?s[3]:s; }
 function segState(d,key){ if(!SEG_STATE[d.id]) seedState(d); return SEG_STATE[d.id][key] || (SEG_STATE[d.id][key]={kps:[],sugg:[],enabled:true}); }
+function deleteSeg(d,key){
+  const i=+key;
+  if(d.cat==='image'){ toast('图文仅一个分段，不可删除'); return; }
+  d.segs.splice(i,1);
+  if(d.pages) d.pages.splice(i,1);
+  const old=SEG_STATE[d.id]||{};
+  const next={};
+  Object.keys(old).forEach(k=>{
+    if(k.startsWith('ch')) return; // 章节状态（chX）随分段删除而失效，丢弃
+    const idx=+k;
+    if(idx===i) return;
+    next[String(idx>i?idx-1:idx)]=old[k];
+  });
+  SEG_STATE[d.id]=next;
+  selCh=null;
+  closeDrawer();
+  refreshDoc();
+  renderTable();
+  toast('已删除分段 #'+(i+1));
+}
 function seedState(d){
   SEG_STATE[d.id]={};
   segKeys(d).forEach(k=> SEG_STATE[d.id][k]={kps:[],sugg:[],enabled:true});
@@ -1100,44 +1221,84 @@ function docToc(d){
       <div class="doc-toc-title">目录</div>
       <button type="button" class="doc-toc-btn ${selCh==null?'on':''}" data-act="chClear">全部分段<span class="doc-toc-n">${d.segs.length}</span></button>
       ${groups.map(g=>`${g.title?`<button type="button" class="doc-toc-btn doc-toc-ch ${selCh===g.items[0].i?'on':''}" data-act="tocCh" data-k="${g.items[0].i}">${esc(g.title)}${chState(d,g.items[0].i).sugg.some(x=>x.status==='pending')?'<span class="doc-toc-dot" title="有待确认的章节建议"></span>':''}<span class="doc-toc-n">${g.items.length}</span></button>`:''}
-        ${g.items.map(x=>`<button type="button" class="doc-toc-btn ${g.title?'sub':''}" data-act="tocJump" data-k="${x.i}">#${x.i+1} · ${esc(x.label.slice(0,14))}${x.label.length>14?'…':''}</button>`).join('')}`).join('')}
+        ${g.items.map(x=>`<button type="button" class="doc-toc-btn ${g.title?'sub':''}" data-act="tocJump" data-k="${x.i}" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">#${x.i+1} · ${esc(x.label.slice(0,14))}${x.label.length>14?'…':''}</span><span class="doc-toc-pg">P${pageOf(d,x.i)}</span></button>`).join('')}`).join('')}
     </nav>`;
   }
   let items=[];
   if(d.cat==='image'){ if(d.ocr||d.ocrFailed) items.push(['ocr','图中文字']); if(d.desc) items.push(['desc','画面描述']); }
   else if(d.cat==='av') items=d.segs.map((s,i)=>[String(i),`${fmt(s[0])}  ${s[3].slice(0,12)}${s[3].length>12?'…':''}`]);
-  else items=d.segs.map((s,i)=>[String(i),`#${i+1} · ${s.slice(0,16)}${s.length>16?'…':''}`]);
+  else items=d.segs.map((s,i)=>[String(i),`#${i+1} · P${pageOf(d,i)} · ${s.slice(0,16)}${s.length>16?'…':''}`]);
   return `<nav class="doc-toc" aria-label="目录">
     <div class="doc-toc-title">目录</div>
     ${items.map(([k,label])=>`<button type="button" class="doc-toc-btn" data-act="tocJump" data-k="${k}">${esc(label)}</button>`).join('')||'<span class="kp-none" style="padding:0 10px">无分段</span>'}
   </nav>`;
 }
-function previewBodyOf(d){
+function previewScannedBody(d, target){
+  // 扫描件：按页渲染为扫描页，OCR 文本以「大致块」呈现；定位时高亮对应块
+  const pc=pageCountOf(d);
+  const tp=target!=null ? pageOf(d,+target) : 1;
+  const bar=pc>1
+    ? `<div class="pv-toolbar"><span class="pv-info">扫描件 · 共 ${pc} 页</span><div class="pv-pager">${Array.from({length:pc},(_,k)=>`<button type="button" data-act="pvPage" data-p="${k+1}" class="${tp===k+1?'on':''}">${k+1}</button>`).join('')}</div></div>`
+    : '';
+  const groups={};
+  d.segs.forEach((s,i)=>{ const p=pageOf(d,i); (groups[p]||(groups[p]=[])).push(i); });
+  const pages=Array.from({length:pc},(_,k)=>{
+    const p=k+1, idxs=groups[p]||[];
+    return `<div class="pv-scan-page" id="pv-page-${p}">
+      ${idxs.map(i=>`<div class="pv-scan-block${target!=null && String(i)===String(target)?' hl':''}" id="pv-seg-${i}">${esc(d.segs[i])}</div>`).join('') || '<div class="pv-scan-empty">（本页未识别到文字）</div>'}
+      <div class="pv-scan-pg">${p} / ${pc}</div>
+    </div>`;
+  }).join('');
+  return bar+pages;
+}
+function previewTextBody(d, target){
+  // 源文件直接展示：原文连续段落，无目录、无「第X页」标题；顶部保留页码导航
+  const pc=pageCountOf(d);
+  const tp=target!=null ? pageOf(d,+target) : 1;
+  const bar=pc>1
+    ? `<div class="pv-toolbar"><span class="pv-info">源文件 · 共 ${pc} 页</span><div class="pv-pager">${Array.from({length:pc},(_,k)=>`<button type="button" data-act="pvPage" data-p="${k+1}" class="${tp===k+1?'on':''}">${k+1}</button>`).join('')}</div></div>`
+    : '';
+  const doc=`<div class="pv-doc">${d.segs.map((s,i)=>`<p class="pv-para${target!=null && String(i)===String(target)?' hl':''}" id="pv-seg-${i}">${esc(s)}</p>`).join('')}</div>`;
+  return bar+doc;
+}
+function previewBodyOf(d, target){
   if(d.cat==='image') return `<div class="dd-img">${d.svg||placeholder('图片处理中')}</div>`;
-  if(d.cat==='text') return `<div style="font-size:14px;line-height:1.9;color:#41536f">${d.segs.map((s,i)=>`<div style="margin-bottom:14px"><b style="color:#2f405d">#${i+1}</b>　${esc(s)}</div>`).join('')||placeholder('暂无内容')}</div>`;
+  if(d.cat==='text') return d.segs.length ? (d.scanned?previewScannedBody(d,target):previewTextBody(d,target)) : placeholder('暂无内容');
   const N=72, seed=d.id.charCodeAt(d.id.length-1);
   const bars=Array.from({length:N},(_,i)=>`<span class="bar" style="height:${Math.round(12+Math.abs(Math.sin(i*1.7+seed)*Math.cos(i*.37+seed))*68)}px"></span>`).join('');
   const media=d.media==='video'?`<div class="video" style="margin-bottom:12px">视频画面（mock）</div>`:`<div class="wave" style="margin-bottom:12px">${bars}</div>`;
   const segs=`<div class="dd-sub">转写全文（${d.segs.length} 段）</div>`+d.segs.map((s,i)=>`<div style="font-size:13px;color:#41536f;line-height:1.8;padding:8px 0;border-bottom:1px solid #f0f0f0"><span style="color:#8b99ac">${fmt(s[0])} – ${fmt(s[1])}</span>　<span class="sp-tag sp${s[2]}">${esc(spName(d,s[2]))}</span><div style="margin-top:4px">${esc(s[3])}</div></div>`).join('');
   return media+segs;
 }
-function openPreview(){
+function openPreview(){ openPreviewAt(null); }
+function openPreviewAt(key){
   if(!activeDoc) return;
   const d=activeDoc;
-  document.getElementById('previewTitle').innerHTML=docIcon(d,20)+'<span style="margin-left:8px">'+esc(d.name)+'</span>';
-  document.getElementById('previewBody').innerHTML=previewBodyOf(d);
-  document.getElementById('previewModal').classList.add('show');
+  document.getElementById('srcDrawerPanel').innerHTML=
+    `<div class="drawer-head"><h2>${docIcon(d,20)}<span style="margin-left:8px;font-weight:400;font-size:14px;color:#60718a">${esc(d.name)}</span><span class="pv-title-tag" style="margin-left:4px">源文件预览</span></h2><button class="kbd-close" data-act="srcClose">×</button></div>`
+    +`<div class="drawer-body" id="srcBody">${previewBodyOf(d, key)}</div>`;
+  document.getElementById('srcDrawer').classList.add('show');
+  if(key!=null){
+    requestAnimationFrame(()=>{
+      const el=document.getElementById('pv-seg-'+key);
+      if(el) el.scrollIntoView({block:'center',behavior:'smooth'});
+    });
+  }
 }
-function closePreview(){ document.getElementById('previewModal').classList.remove('show'); }
+function closeSrcPreview(){ document.getElementById('srcDrawer').classList.remove('show'); }
 
 function statRow(items){ return `<div class="dd-stats">${items.map(([b,s])=>`<div class="dd-stat"><b>${b}</b><span>${s}</span></div>`).join('')}</div>`; }
 function segChips(d,key){
   const st=segState(d,key);
   const kps=st.kps.map(id=>`<a class="kp kp-link" href="knowledge-system-detail.html" target="_blank" rel="noopener" title="${esc(linkTitle(st,id))}；点击在图谱平台查看">${linkSrc(st,id).by==='ai'?'<span class="kp-ai" aria-label="AI 识别">✦</span>':''}${esc(kpById(id)?.name||id)}</a>`).join('');
   const pend=st.sugg.filter(g=>g.status==='pending').length;
+  const ops=(d.cat==='text'?`<button class="seg-icon seg-act" data-act="segLocate" data-k="${key}" title="定位原文" aria-label="定位原文">${IC.locate}</button>`:'')
+    +`<button class="seg-icon seg-act" data-act="segToggle" data-k="${key}" title="${st.enabled?'停用':'启用'}" aria-label="${st.enabled?'停用':'启用'}">${st.enabled?IC.eyeOff:IC.eye}</button>`
+    +`<button class="seg-icon seg-act" data-act="segEdit" data-k="${key}" title="编辑分段" aria-label="编辑分段">${IC.edit}</button>`
+    +`<button class="seg-icon seg-act danger" data-act="segDelete" data-k="${key}" title="删除分段" aria-label="删除分段">${IC.trash}</button>`;
   return `<div class="seg-foot">${kps||(pend?'':'<span class="kp-none">无知识点</span>')}
     ${pend?`<span class="sugg-badge" data-act="segEdit" data-k="${key}">✦ ${pend} 条建议待确认</span>`:''}
-    <button class="dd-mini seg-edit" data-act="segEdit" data-k="${key}">编辑分段</button></div>`;
+    <span class="seg-ops">${ops}</span></div>`;
 }
 
 function segMatch(f,key){
@@ -1171,8 +1332,8 @@ function docText(f){
     segs=segToolbar(f)
       +(items.length?items.map(([i,s])=>{const key=String(i), g=chOf[i]; let head='';
       if(g&&g!==shown){ shown=g; head=chapterHead(f,g); }
-      return head+`<div class="seg-card" id="seg-${key}">
-      <div class="seg-head"><span style="font-weight:600">#${i+1}</span>${f.scanned?'<span class="dd-tag" style="color:#5149e9;background:#eef0ff">OCR</span>':''}<span style="margin-left:auto">${s.length} 字</span></div>
+      return head+`<div class="seg-card ${segState(f,key).enabled?'':'seg-off'}" id="seg-${key}">
+      <div class="seg-head"><span style="font-weight:600">#${i+1}</span>${f.scanned?'<span class="dd-tag" style="color:#5149e9;background:#eef0ff">OCR</span>':''}${segState(f,key).enabled?'':'<span class="seg-off-tag">已禁用</span>'}<span style="margin-left:auto">${s.length} 字</span></div>
       <div class="seg-body">${esc(s)}</div>${segChips(f,key)}</div>`;}).join(''):'<div class="kbd-hit-empty">没有匹配的分段。</div>');
   } else segs=`<div class="kbd-hit-empty">${f.scanned&&f.ocrOff?'无分段：该文件没有文字层且处理时未开启 OCR，不参与检索。可开启 OCR 后重新解析。':'无分段，不参与检索。'}</div>`;
   return statRow([[f.ext+(f.scanned?' · 扫描件':''),'类型'],[f.segs.length,'分段数'],[charCount(f),'字数']])+segs;
@@ -1189,7 +1350,7 @@ function docImage(f){
   if(f.status!=='available') return processingNote(f);
   return `<div class="dd-img">${f.svg||placeholder('图片处理中')}</div>
     ${statRow([[f.ext,'类型'],[1,'分段数'],[charCount(f),'识别字数']])}
-    <div class="seg-card" id="seg-0">
+    <div class="seg-card ${segState(f,'0').enabled?'':'seg-off'}" id="seg-0">
       <div class="seg-head"><span style="font-weight:600">#1</span><span class="dd-tag" style="color:#0e9384;background:#e6f6f3">${IMG_MODE_LABEL[f.imgMode||'both']}</span><span style="margin-left:auto">${charCount(f)} 字</span></div>
       ${f.ocr||f.ocrFailed?`<div class="seg-part" id="seg-ocr"><div class="seg-part-title">图中文字</div>${f.ocrFailed
         ?`<div class="seg-fail">识别失败${f.desc?'，已保留画面描述':''} <button class="dd-mini" data-act="ocrRetry">重试</button></div>`
@@ -1216,7 +1377,7 @@ function docAV(f){
     ${spk.map(n=>`<button class="sp-rename" data-act="sprename" data-v="${n}"><span class="sp-tag sp${n}">${esc(spName(f,n))}</span> 改名</button>`).join('')}</div>`;
   const items=f.segs.map((s,i)=>[i,s]).filter(([i,s])=>segMatch(f,String(i)));
   const segs=segToolbar(f)
-    +(items.length?items.map(([i,s])=>{const key=String(i);return `<div class="seg-card ${i===ai?'on':''}" id="seg-${key}" data-act="segjump" data-t="${s[0]}" style="cursor:pointer">
+    +(items.length?items.map(([i,s])=>{const key=String(i);return `<div class="seg-card ${i===ai?'on':''} ${segState(f,key).enabled?'':'seg-off'}" id="seg-${key}" data-act="segjump" data-t="${s[0]}" style="cursor:pointer">
     <div class="seg-head"><span style="font-weight:600">#${i+1}</span><span class="dd-tag" style="color:#8b99ac;background:#f0f2f5">${fmt(s[0])} – ${fmt(s[1])}</span>
       <span class="sp-tag sp${s[2]}">${esc(spName(f,s[2]))}</span><span style="margin-left:auto">${s[3].length} 字</span></div>
     <div class="seg-body">${esc(s[3])}</div>${segChips(f,key)}</div>`;}).join(''):'<div class="kbd-hit-empty">没有匹配的分段。</div>');
@@ -1498,6 +1659,10 @@ document.addEventListener('click',e=>{
   else if(a==='seek'){ if(!activeDoc||!activeDoc.sec) return; const r=el.getBoundingClientRect(); curTime=Math.round((e.clientX-r.left)/r.width*activeDoc.sec); refreshDoc(); }
   else if(a==='segjump'){ if(e.target.closest('button,input,textarea,label')) return; curTime=+el.dataset.t; refreshDoc(); }
   else if(a==='tocJump'){ if(selCh!=null&&!document.getElementById('seg-'+el.dataset.k)){ selCh=null; refreshDoc(); } const seg=document.getElementById('seg-'+el.dataset.k); if(seg) seg.scrollIntoView({block:'center',behavior:'smooth'}); }
+  else if(a==='segLocate'){ openPreviewAt(el.dataset.k); }
+  else if(a==='segToggle'){ const st=segState(activeDoc,el.dataset.k); st.enabled=!st.enabled; refreshDoc(); renderTable(); toast((st.enabled?'已启用':'已停用')+'分段 #'+(+el.dataset.k+1)); }
+  else if(a==='segDelete'){ if(activeDoc && confirm('确认删除该分段？其关联的知识点将一并解除。')) deleteSeg(activeDoc, el.dataset.k); }
+  else if(a==='pvPage'){ const p=+el.dataset.p; const q=el.closest('.pv-pager'); if(q) q.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.p===p)); const idx=activeDoc?activeDoc.segs.findIndex((_,i)=>pageOf(activeDoc,i)===p):-1; const t=document.getElementById('pv-seg-'+(idx<0?0:idx)); if(t) t.scrollIntoView({block:'start',behavior:'smooth'}); }
   else if(a==='sprename'){ const n=prompt('重命名说话人',spName(activeDoc,el.dataset.v)); if(n&&n.trim()) renames[activeDoc.id+'-'+el.dataset.v]=n.trim(); refreshDoc(); }
   else if(a==='segEdit') openDrawer(el.dataset.k);
   else if(a==='tocCh') selectChapter(+el.dataset.k);
@@ -1511,6 +1676,7 @@ document.addEventListener('click',e=>{
   else if(a==='onlypending'){ kpFilter='pending'; refreshDoc(); }
   else if(a==='drClose'){ closeDrawer(); refreshDoc(); renderTable(); }
   else if(a==='drSave') saveDrawer();
+  else if(a==='srcClose'){ closeSrcPreview(); }
   else if(a==='unlink'){ const st=ctxState(); if(st){ dropLink(st,el.dataset.kp); renderDrawer(); refreshDoc(); renderTable(); } }
   else if(a==='pkToggle'){ pickerOpen=!pickerOpen; renderDrawer(); if(!drawerDoc) refreshDoc(); }
   else if(a==='pkToggleItem'){ const st=ctxState(), id=el.dataset.kp; if(st){ st.kps.includes(id)?dropLink(st,id):addLink(st,id,'manual'); renderDrawer(); refreshDoc(); renderTable(); } }
@@ -1530,7 +1696,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    if(document.getElementById('previewModal').classList.contains('show')) closePreview();
+    if(document.getElementById('srcDrawer').classList.contains('show')) closeSrcPreview();
     else if(pickerOpen){ pickerOpen=false; renderDrawer(); }
     else if(drawerDoc){ closeDrawer(); refreshDoc(); renderTable(); }
   }

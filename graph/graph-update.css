@@ -34,12 +34,6 @@
 .gu-old{color:#8b99ac;text-decoration:line-through}
 .gu-new{color:#067647;font-weight:600}
 .gu-desc{font-size:13px;color:#41536f;line-height:1.7}
-.gu-ev{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
-.gu-metric{border:1px solid #edf1f5;border-radius:8px;padding:8px 10px;background:#fbfcfe}
-.gu-metric b{display:block;font-size:16px;color:#1f2d46;font-variant-numeric:tabular-nums}
-.gu-metric span{font-size:12px;color:#8b99ac}
-.gu-up{color:#16a34a;font-size:12px;font-weight:600;margin-left:4px}
-.gu-down{color:#c72c2a;font-size:12px;font-weight:600;margin-left:4px}
 .gu-foot-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .gu-impact{font-size:12px;color:#8b99ac}
 .gu-impact b{color:#41536f;font-weight:600}

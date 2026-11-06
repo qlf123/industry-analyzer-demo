@@ -23,7 +23,6 @@
       .kb-card-icon img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
       .kb-card-info{flex:1;min-width:0;}
       .kb-card-title{font-size:16px;font-weight:600;color:#31425e;line-height:1.4;word-break:break-all;margin-bottom:4px;padding-right:44px;}
-      .kb-card-owner{font-size:12px;color:#8b99ac;}
       .kb-card-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:#8b99ac;flex-wrap:wrap;}
       .kb-card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
       .kb-tag{padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;background:#eef0ff;color:#5149e9;}
@@ -268,12 +267,11 @@
               +'<div class="kb-card-icon">'+iconHtml+'</div>'
               +'<div class="kb-card-info">'
                 +'<div class="kb-card-title">'+k.name+'</div>'
-                +'<div class="kb-card-owner">'+k.creator+'</div>'
               +'</div>'
             +'</div>'
             +(tagsHtml?'<div class="kb-card-tags">'+tagsHtml+'</div>':'')
             +'<div class="kb-card-desc">'+(k.desc||'暂无描述')+'</div>'
-            +'<div class="kb-card-meta"><span>'+kbPermText(k)+' · 文档 '+k.docs+'</span><span>'+kbTimeText(k)+'</span></div>'
+            +'<div class="kb-card-meta"><span>创建人：'+(k.creator||KB_CURRENT_USER)+' · '+kbPermText(k)+' · 文档 '+k.docs+'</span><span>'+kbTimeText(k)+'</span></div>'
           +'</div>';
         }).join('');
       }

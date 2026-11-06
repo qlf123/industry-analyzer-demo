@@ -469,7 +469,7 @@
             +'<div class="ks-card-name">'+s.name+'</div>'
             +ksCardTags(s)
             +'<div class="ks-card-desc">'+(s.desc||'暂无描述')+'</div>'
-            +'<div class="ks-card-meta"><span>'+ksPermText(s)+' · 节点数 '+s.nodes+'</span><span>'+ksTimeText(s)+'</span></div>'
+            +'<div class="ks-card-meta"><span>创建人：'+(s.creator||'—')+' · '+ksPermText(s)+' · 节点数 '+s.nodes+'</span><span>'+ksTimeText(s)+'</span></div>'
             +'<div class="ks-card-actions" onclick="event.stopPropagation()">'+bottom+'</div>'
           +'</div>';
         }).join('');

@@ -5,7 +5,7 @@
    GraphUpdate.mount({
      btn:'#checkUpdateBtn', title, scope, sources:[], lastChecked, steps:[],
      version:()=>'v1.3', disabled:()=>false|'原因',
-     getItems:()=>[{id,kind,title,path,diff,desc,metrics,links,conf,impact,editName,note}],
+     getItems:()=>[{id,kind,title,path,diff,desc,links,conf,impact,editName,note}],
      onApply:(accepted)=>'结果提示', toast:fn, storeKey,
      seedHist:[{time,from,version,scope,acc,ign,total,items:[{kind,name}]}]  // 历史报告 mock 初始数据
    })
@@ -89,7 +89,6 @@
         ${x.diff ? `<div class="gu-diff">${esc(x.diff.label||'')}<span class="gu-old">${esc(x.diff.from)}</span>→<span class="gu-new">${esc(x.diff.to)}</span></div>` : ''}
         ${x.desc ? `<div class="gu-desc">${esc(x.desc)}</div>` : ''}
         ${nameEdit}
-        ${x.metrics && x.metrics.length ? `<div class="gu-ev">${x.metrics.map(m=>`<div class="gu-metric"><b>${esc(m.v)}${m.trend?`<span class="${m.dir==='down'?'gu-down':'gu-up'}">${m.dir==='down'?'↓':'↑'} ${esc(m.trend)}</span>`:''}</b><span>${esc(m.label)}</span></div>`).join('')}</div>` : ''}
         ${x.note ? `<div class="gu-note">${esc(x.note)}</div>` : ''}
         ${open[x.id] ? `<div class="gu-links">${x.links.map(l=>'· '+esc(l)).join('<br>')}</div>` : ''}
         <div class="gu-foot-row">

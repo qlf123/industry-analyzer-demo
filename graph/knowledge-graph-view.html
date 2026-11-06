@@ -9,13 +9,40 @@
 <link rel="stylesheet" href="mapping-compact.css" />
 <link rel="stylesheet" href="pano-version.css" />
 <style>
-  .graph-canvas-wrap{position:relative;width:100%;height:calc(100vh - 110px);overflow:hidden;background:#f5f3fa;}
+  .graph-canvas-wrap{position:relative;width:100%;height:calc(100vh - 170px);min-height:480px;overflow:hidden;background:#f5f3fa;}
   .graph-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
   .graph-toolbar button{height:32px;padding:0 14px;border:1px solid #dfe6ef;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;transition:all .15s;}
   .graph-toolbar button:hover{border-color:#5149e9;color:#5149e9;}
-  .graph-legend{position:absolute;bottom:12px;left:12px;z-index:10;display:flex;gap:16px;padding:10px 16px;background:rgba(255,255,255,.92);border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.06);font-size:12px;}
+  .graph-legend{position:absolute;bottom:12px;left:12px;z-index:10;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;max-width:calc(100% - 24px);box-sizing:border-box;padding:10px 16px;background:rgba(255,255,255,.92);border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.06);font-size:12px;}
   .graph-legend-item{display:flex;align-items:center;gap:6px;}
   .graph-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .graph-legend-group{display:flex;align-items:center;gap:10px;}
+  .graph-legend-group>b{font-weight:500;color:#8b99ac;}
+  .graph-legend-line{width:18px;height:0;border-top:1.5px solid #ccc;}
+  .graph-legend-dot.off{background:#fff!important;border:1.5px dashed #98a2b3;box-sizing:border-box;}
+  .graph-node.off circle{fill:#fff;stroke:#98a2b3;stroke-dasharray:3 2;}
+  .graph-node.off .graph-node-label{fill:#98a2b3;}
+  .graph-detail-panel{max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;}
+  .graph-node text.res-badge{font-size:8px;fill:#fff;font-weight:600;}
+  .res-link{stroke:#b9b4f5;stroke-width:1;stroke-dasharray:2 2;fill:none;}
+  .res-sq{cursor:pointer;}
+  .graph-toolbar-btn,.view-switch button{white-space:nowrap;}
+  #sgSel{max-width:220px;}
+  .view-switch{display:inline-flex;border:1px solid #dfe6ef;border-radius:6px;overflow:hidden;}
+  .view-switch button{height:30px;padding:0 12px;border:0;background:#fff;font-size:13px;cursor:pointer;color:#60718a;}
+  .view-switch button.on{background:#5149e9;color:#fff;}
+  .col-head{font-size:12px;font-weight:600;fill:#60718a;}
+  .col-sub{font-size:11px;fill:#98a2b3;}
+  .band-label{font-size:12px;font-weight:600;fill:#5149e9;}
+  .band-line{stroke:#c9c5f7;stroke-dasharray:6 4;}
+  .graph-toolbar-btn.on{border-color:#5149e9;color:#5149e9;background:#f0efff;}
+  .graph-res-item{display:flex;gap:6px;align-items:flex-start;font-size:12px;line-height:1.5;margin:4px 0;}
+  .graph-res-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;margin-top:5px;}
+  .graph-res-item a{color:#31425e;text-decoration:none;}
+  .graph-res-item a:hover{color:#5149e9;}
+  .graph-res-meta{color:#8b99ac;font-size:11px;}
+  .graph-detail-tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;background:#f2f4f7;color:#60718a;}
+  .graph-detail-warn{margin:8px 0;padding:6px 8px;border-radius:6px;background:#fff7e6;color:#ad6800;font-size:12px;line-height:1.5;}
   .graph-info{position:absolute;top:12px;left:12px;z-index:10;display:flex;align-items:center;gap:8px;}
   .graph-info a{color:#5149e9;text-decoration:none;font-size:13px;}
   .graph-info a:hover{text-decoration:underline;}
@@ -27,9 +54,10 @@
   .graph-node text{font-size:11px;fill:#31425e;pointer-events:none;user-select:none;text-anchor:middle;}
   .graph-link{stroke:#ccc;stroke-width:1;fill:none;transition:stroke-width .2s,stroke .2s;}
   .graph-node.dimmed{opacity:.15;}
+  .graph-link.map{stroke:#8f89f2;stroke-dasharray:5 3;}
+  .graph-link.std{stroke:#f4a58a;stroke-dasharray:2 3;}
   .graph-link.dimmed{opacity:.08;}
   .graph-link.highlighted{stroke:#5149e9;stroke-width:2;}
-  .graph-link.mapped{stroke:#eb2f96;stroke-width:1.6;stroke-dasharray:4 3;}
   .graph-node-label{font-size:10px;fill:#555;pointer-events:none;user-select:none;text-anchor:middle;}
   .graph-tooltip{position:absolute;z-index:20;background:rgba(33,33,33,.92);color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;pointer-events:none;white-space:nowrap;display:none;line-height:1.5;}
   .graph-search{height:32px;padding:0 12px;border:1px solid #dfe6ef;border-radius:6px;font-size:13px;width:180px;}
@@ -103,7 +131,9 @@
       <a href="knowledge-graph.html" style="color:#5149e9;text-decoration:none;font-size:14px;">← 返回</a>
       <h1 id="graphTitle">全景图谱</h1>
       <div class="sg-ctrl" id="sgCtrl"></div>
-      <div style="display:flex;gap:8px;align-items:center;margin-left:auto;">
+      <div style="display:flex;gap:8px;align-items:center;margin-left:auto;flex-shrink:0;">
+        <span class="view-switch" id="viewSwitch"><button type="button" data-view="layer" class="on" title="按岗课赛证分层，从左到右汇聚到技能、知识点">分层</button><button type="button" data-view="net" title="力导向关系网络">网络</button></span>
+        <button id="resBtn" type="button" class="graph-toolbar-btn" title="资源不是图谱节点，只作为展示层叠加">显示资源</button>
         <button id="zoomInBtn" type="button" class="graph-toolbar-btn">放大</button>
         <button id="zoomOutBtn" type="button" class="graph-toolbar-btn">缩小</button>
         <button id="resetBtn" type="button" class="graph-toolbar-btn">重置</button>
@@ -120,6 +150,7 @@
         <div class="graph-search-tabs">
           <span class="graph-search-tab active" data-tab="node">找节点</span>
           <span class="graph-search-tab" data-tab="path">找链路</span>
+          <span class="graph-search-tab" data-tab="res">找资源</span>
         </div>
         <div class="graph-search-content active" id="contentNode">
           <div class="graph-search-row">
@@ -139,10 +170,9 @@
                 <div class="combo-option" data-value="all" data-label="全部专业">全部专业</div>
                 <div class="combo-option" data-value="旅游管理" data-label="旅游管理">旅游管理</div>
                 <div class="combo-option" data-value="酒店管理" data-label="酒店管理">酒店管理</div>
-                <div class="combo-option" data-value="景区开发" data-label="景区开发">景区开发</div>
               </div>
             </div>
-            <select id="filterNodeType"><option value="all">全部类型</option><option value="课程">课程</option><option value="章节">章节</option><option value="知识点">知识点</option><option value="技能规范">技能规范</option><option value="核心概念">核心概念</option><option value="能力项">能力项</option></select>
+            <select id="filterNodeType"><option value="all">全部类型</option></select>
             <input id="quickSearchInput" placeholder="节点名称" style="flex:1;min-width:100px;" />
             <button class="primary-button" id="quickSearchBtn" type="button">搜索</button>
             <button class="ghost-button" id="clearNodeBtn" type="button">清除</button>
@@ -151,15 +181,24 @@
         </div>
         <div class="graph-search-content" id="contentPath">
           <div class="graph-search-row">
-            <select id="pathStartType"><option value="all">全部类型</option><option value="课程">课程</option><option value="章节">章节</option><option value="知识点">知识点</option><option value="技能规范">技能规范</option><option value="核心概念">核心概念</option><option value="能力项">能力项</option></select>
+            <select id="pathStartType"><option value="all">全部类型</option></select>
             <input id="pathStart" placeholder="起点节点名称" style="flex:1;min-width:80px;" />
             <span style="color:#8b99ac;font-size:13px;">→</span>
-            <select id="pathEndType"><option value="all">全部类型</option><option value="课程">课程</option><option value="章节">章节</option><option value="知识点">知识点</option><option value="技能规范">技能规范</option><option value="核心概念">核心概念</option><option value="能力项">能力项</option></select>
+            <select id="pathEndType"><option value="all">全部类型</option></select>
             <input id="pathEnd" placeholder="终点节点名称" style="flex:1;min-width:80px;" />
             <button class="primary-button" id="pathSearchBtn" type="button">查找链路</button>
             <button class="ghost-button" id="clearFilterBtn" type="button">清除</button>
           </div>
           <div class="graph-path-result" id="pathResult"></div>
+        </div>
+        <div class="graph-search-content" id="contentRes">
+          <div class="graph-search-row">
+            <input id="resSearchInput" list="resNameList" placeholder="资源名称，如：景点讲解单元课件" style="flex:1;min-width:160px;" />
+            <datalist id="resNameList"></datalist>
+            <button class="primary-button" id="resSearchBtn" type="button">查找挂载节点</button>
+            <button class="ghost-button" id="resClearBtn" type="button">清除</button>
+          </div>
+          <div class="graph-path-result" id="resResult"></div>
         </div>
         <div class="graph-search-suggest" id="searchSuggest"></div>
       </div>
@@ -171,14 +210,7 @@
       <div id="detailBody"></div>
     </div>
     <div class="graph-hover-label" id="hoverLabel"></div>
-    <div class="graph-legend">
-      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#52c41a;"></span>知识点</div>
-      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#1890ff;"></span>技能规范</div>
-      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#722ed1;"></span>课程</div>
-      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#fa8c16;"></span>章节</div>
-      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#c72c2a;"></span>核心概念</div>
-      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#eb2f96;"></span>能力项（已确认映射）</div>
-    </div>
+    <div class="graph-legend" id="graphLegend"></div>
     <div class="graph-tooltip" id="tooltip"></div>
     <div class="sg-note" id="sgNote"></div>
     <svg class="graph-svg" id="graphSvg"></svg>
@@ -192,52 +224,206 @@
     if(t) t.textContent = taskName + ' · 全景图谱';
   }
 (function(){
-  var typeColors = {'知识点':'#52c41a','技能规范':'#1890ff','课程':'#722ed1','章节':'#fa8c16','核心概念':'#c72c2a','能力项':'#eb2f96'};
-  var typeRadius = {'知识点':6,'技能规范':7,'课程':10,'章节':8,'核心概念':9,'能力项':9};
+  // 节点类型：按所属来源分组（岗 / 课 / 全景自建 / 赛证）
+  var TYPES=[
+    {type:'岗位',group:'能力图谱',color:'#0e9f9f',r:10},
+    {type:'能力项',group:'能力图谱',color:'#5cdbd3',r:7},
+    {type:'课程',group:'知识体系',color:'#722ed1',r:10},
+    {type:'任务',group:'知识体系',color:'#fa8c16',r:8},
+    {type:'技能',group:'知识体系',color:'#1890ff',r:7},
+    {type:'知识点',group:'知识体系',color:'#52c41a',r:6},
+    {type:'细化知识点',group:'全景自建',color:'#eb2f96',r:5},
+    {type:'赛项',group:'标准库',color:'#c72c2a',r:10},
+    {type:'证书',group:'标准库',color:'#d48806',r:10},
+    {type:'考核要求',group:'标准库',color:'#ff9c6e',r:6}
+  ];
+  var typeColors={},typeRadius={};
+  TYPES.forEach(function(t){typeColors[t.type]=t.color;typeRadius[t.type]=t.r});
+  var LABEL_TYPES={'岗位':1,'课程':1,'赛项':1,'证书':1};
+  // 关系类型：contain=来源内部的层级（父 → 子）；map=能力项 → 技能（映射审核产出）；std=考核要求 → 能力项（标准对应）
+  var LINK_KIND={contain:'包含',map:'能力映射',std:'标准对应'};
+  var RES_COLORS={'知识库资料':'#597ef7','课件':'#13c2c2','教案':'#faad14','教学视频':'#f759ab','题目':'#9254de'};
+  var GROUP_OF={};TYPES.forEach(function(t){GROUP_OF[t.type]=t.group});
 
-  function generateData(){
-    var nodes=[], links=[], idc=0;
-    var courses=['旅游学概论','导游实务','旅游营销','酒店管理','景区开发','旅游地理','旅游法规','客户服务'];
-    var chapters=['第一章','第二章','第三章','第四章','第五章'];
-    var knNames=['旅游概念','旅游资源','旅游业','旅游产品','旅游市场','旅游文化','旅游心理','旅游行为','旅游动机','旅游决策','旅游体验','旅游满意度','目的地形象','旅游规划','可持续旅游','生态旅游','文化旅游','遗产旅游','乡村旅游','智慧旅游'];
-    var skNames=['线路设计','行程规划','成本核算','客户沟通','应急处理','资源调度','市场分析','渠道管理','服务标准','质量管控','投诉处理','团队管理','预算编制','合同管理','安全管理','风险管理','数据统计','报告撰写','方案策划','项目执行'];
-    var cpNames=['OTA平台','旅游电商','共享经济','区块链','AI推荐','大数据','云计算','物联网','5G应用','元宇宙'];
-    var industries=['旅游','旅游','旅游','旅游','旅游','旅游','旅游','旅游'];
-    courses.forEach(function(c,i){nodes.push({id:idc++,name:c,type:'课程',industry:industries[i]||'旅游',major:courses[i].indexOf('酒店')>=0?'酒店管理':courses[i].indexOf('景区')>=0?'景区开发':'旅游管理'})});
-    chapters.forEach(function(c){nodes.push({id:idc++,name:c,type:'章节',industry:'旅游',major:'旅游管理'})});
-    knNames.forEach(function(n){nodes.push({id:idc++,name:n,type:'知识点',industry:'旅游',major:'旅游管理'})});
-    skNames.forEach(function(n){nodes.push({id:idc++,name:n,type:'技能规范',industry:'旅游',major:'旅游管理'})});
-    cpNames.forEach(function(n){nodes.push({id:idc++,name:n,type:'核心概念',industry:'旅游',major:'旅游管理'})});
-    var nC=courses.length,nCh=chapters.length,nK=knNames.length,nS=skNames.length;
-    for(var i=0;i<nC;i++)for(var j=0;j<nCh;j++){if(Math.random()>0.6)links.push({source:i,target:nC+j})}
-    for(var i=0;i<nC;i++)for(var k=0;k<nK;k++){if(Math.random()>0.75)links.push({source:i,target:nC+nCh+k})}
-    for(var j=0;j<nCh;j++)for(var k=0;k<nK;k++){if(Math.random()>0.7)links.push({source:nC+j,target:nC+nCh+k})}
-    for(var k=0;k<nK;k++)for(var s=0;s<nS;s++){if(Math.random()>0.8)links.push({source:nC+nCh+k,target:nC+nCh+nK+s})}
-    var cpStart=nC+nCh+nK+nS;
-    for(var c=0;c<cpNames.length;c++)for(var k=0;k<nK;k++){if(Math.random()>0.75)links.push({source:cpStart+c,target:nC+nCh+k})}
-    for(var c=0;c<cpNames.length;c++)for(var s=0;s<nS;s++){if(Math.random()>0.85)links.push({source:cpStart+c,target:nC+nCh+nK+s})}
-    for(var k=0;k<nK;k++)for(var k2=k+1;k2<nK;k2++){if(Math.random()>0.88)links.push({source:nC+nCh+k,target:nC+nCh+k2})}
-    return {nodes:nodes,links:links};
-  }
-
-  // 原页面调用了 clearFilters 但未定义：清空筛选条件
-  function clearFilters(){
-    svg.querySelectorAll('.graph-node,.graph-link').forEach(function(e){e.classList.remove('dimmed');e.classList.remove('highlighted');});
-  }
-  var data=generateData();
-  // 图谱中心：「映射审核」已确认的映射显示为 能力项 —— 知识体系节点
+  // 图例：按来源分组；类型筛选下拉同步生成
   (function(){
-    var ap=window.GCF?GCF.approved():[], idx={};
-    data.nodes.forEach(function(n){idx[n.type+'|'+n.name]=n.id;});
-    function node(type,name){var k=type+'|'+name;if(idx[k]===undefined){idx[k]=data.nodes.length;data.nodes.push({id:data.nodes.length,name:name,type:type,industry:'旅游',major:'旅游管理'});}return idx[k];}
+    var groups=[],html='';
+    TYPES.forEach(function(t){if(groups.indexOf(t.group)<0)groups.push(t.group)});
+    groups.forEach(function(g){
+      html+='<div class="graph-legend-group"><b>'+g+'</b>'+TYPES.filter(function(t){return t.group===g}).map(function(t){
+        return '<span class="graph-legend-item"><span class="graph-legend-dot" style="background:'+t.color+'"></span>'+t.type+'</span>';
+      }).join('')+'</div>';
+    });
+    html+='<div class="graph-legend-group"><b>关系</b>'
+      +'<span class="graph-legend-item"><span class="graph-legend-line"></span>包含</span>'
+      +'<span class="graph-legend-item"><span class="graph-legend-line" style="border-top:1.5px dashed #8f89f2"></span>能力映射</span>'
+      +'<span class="graph-legend-item"><span class="graph-legend-line" style="border-top:1.5px dotted #f4a58a"></span>标准对应</span>'
+      +'<span class="graph-legend-item"><span class="graph-legend-dot off"></span>来源已停用</span></div>'
+      +'<div class="graph-legend-group"><b>资源</b>'+Object.keys(RES_COLORS).map(function(k){return '<span class="graph-legend-item"><span class="graph-legend-dot" style="border-radius:2px;background:'+RES_COLORS[k]+'"></span>'+k+'</span>'}).join('')
+      +'<span class="graph-legend-item" style="color:#8b99ac">节点角标为挂载数，点「显示资源」叠加</span></div>';
+    document.getElementById('graphLegend').innerHTML=html;
+    var opts=TYPES.map(function(t){return '<option value="'+t.type+'">'+t.type+'</option>'}).join('');
+    ['filterNodeType','pathStartType','pathEndType'].forEach(function(id){document.getElementById(id).insertAdjacentHTML('beforeend',opts)});
+  })();
+
+  // 演示数据（固定）：旅游业下两个专业，各自已发布的全景版本
+  function generateData(){
+    var nodes=[],links=[],idx={};
+    var HT='酒店管理',LY='旅游管理';
+    function add(name,type,src,majors,extra){
+      var key=(src==='ag'?'':majors.join('/'))+'|'+type+'|'+name;
+      if(idx[key])return idx[key];
+      var n={id:nodes.length,name:name,type:type,src:src,majors:majors,major:majors[0],industry:'旅游'};
+      for(var k in extra)n[k]=extra[k];
+      nodes.push(n);idx[key]=n;return n;
+    }
+    function link(a,b,kind){links.push({source:a.id,target:b.id,kind:kind||'contain'})}
+    function find(type,name){return nodes.filter(function(n){return n.type===type&&n.name===name})}
+
+    // 能力图谱「旅游业」：行业级共享，只读引用；岗位按服务的专业标注
+    [
+      ['导游',[LY],['景点讲解','带团组织协调','导游词创作','游客投诉处理','景区数字化讲解']],
+      ['旅行社计调',[LY],['线路设计','计调操作系统与订单处理','成本核算']],
+      ['研学旅行指导师',[LY],['研学课程设计']],
+      ['前厅接待员',[HT],['入住与退房办理','宾客投诉处理']],
+      ['客房服务员',[HT],['客房清洁与查房']],
+      ['餐饮服务员',[HT],['中餐宴会摆台','酒水服务']],
+      ['收益管理专员',[HT],['房价与渠道管理']],
+      ['旅行社门店',[HT],['传统门市接待']],
+      ['旅游客服专员',[HT,LY],['客户投诉处理']]
+    ].forEach(function(p){
+      var post=add(p[0],'岗位','ag',p[1]);
+      p[2].forEach(function(a){link(post,add(a,'能力项','ag',p[1]))});
+    });
+    // 能力图谱 v1.5 已停用该能力项；酒店管理当前发布版本引用的是 v1.4，下次同步进草稿后处理
+    find('能力项','传统门市接待')[0].off='能力图谱 v1.5 已停用。酒店管理当前版本引用 v1.4，下次同步时进入草稿，关系在发布时下线';
+
+    // 知识体系：各专业一套，课程 → 任务 → 技能 → 知识点
+    var KS={};
+    KS[LY]=[
+      ['导游业务',[
+        ['景点讲解服务',[['讲解词撰写',['讲解基本要求','景点文化背景']],['讲解技巧运用',['讲解基本要求']]]],
+        ['带团服务',[['团队组织协调',['旅游团队管理']],['突发事件处理',['旅游安全常识','应急处理流程']],['游客诉求处理',['投诉处理原则']]]]
+      ]],
+      ['旅行社计调实务',[
+        ['线路产品设计',[['线路方案设计',['线路设计原则']],['线路成本核算',['报价构成']]]],
+        ['订单操作',[['计调系统操作',['订单处理流程']],['机票与火车票代订',['票务规则']]]]
+      ]],
+      ['旅游服务礼仪',[
+        ['接待礼仪',[['迎送礼仪',['礼仪基本规范']]]]
+      ]]
+    ];
+    KS[HT]=[
+      ['前厅服务与管理',[
+        ['入住接待',[['入住登记办理',['证件查验规范','房态管理']],['客史档案维护',['客史档案内容']]]],
+        ['问询与投诉',[['礼宾问询服务',['问询服务规范']],['投诉受理与处理',['投诉处理流程']]]]
+      ]],
+      ['客房服务与管理',[
+        ['客房清扫',[['做床',['客房清洁标准']],['查房',['查房要点']]]]
+      ]],
+      ['餐饮服务与管理',[
+        ['宴会服务',[['中餐摆台',['摆台规范']],['斟酒服务',['酒水知识']]]]
+      ]],
+      ['酒店收益管理',[
+        ['房价管理',[['房价制定',['收益管理指标']],['渠道分销管理',['OTA 渠道规则']]]]
+      ]]
+    ];
+    Object.keys(KS).forEach(function(m){
+      KS[m].forEach(function(c){
+        var course=add(c[0],'课程','ks',[m]);
+        c[1].forEach(function(t){
+          var task=add(t[0],'任务','ks',[m]);link(course,task);
+          t[1].forEach(function(s){
+            var skill=add(s[0],'技能','ks',[m]);link(task,skill);
+            s[1].forEach(function(k){link(skill,add(k,'知识点','ks',[m]))});
+          });
+        });
+      });
+    });
+
+    // 细化知识点：老师在知识体系知识点下细化，课程负责人审核后共享，随全景版本发布
+    [
+      [LY,'讲解基本要求',['讲解语速与节奏控制','讲解中的互动设计'],'李老师'],
+      [LY,'应急处理流程',['游客走失处置步骤'],'李老师'],
+      [HT,'证件查验规范',['外籍护照识别要点'],'秦老师'],
+      [HT,'摆台规范',['十人位中餐摆台尺寸'],'秦老师']
+    ].forEach(function(r){
+      var kp=add(r[1],'知识点','ks',[r[0]]);
+      r[2].forEach(function(nm){link(kp,add(nm,'细化知识点','self',[r[0]],{creator:r[3]}))});
+    });
+
+    // 能力映射（映射审核通过的关系）：能力项 → 技能。导游词创作 / 游客投诉处理 / 景区数字化讲解 / 研学课程设计 暂无映射（覆盖缺口）
+    [
+      ['景点讲解',['讲解词撰写','讲解技巧运用']],
+      ['带团组织协调',['团队组织协调','突发事件处理']],
+      ['线路设计',['线路方案设计']],
+      ['成本核算',['线路成本核算']],
+      ['计调操作系统与订单处理',['计调系统操作','机票与火车票代订']],
+      ['入住与退房办理',['入住登记办理','客史档案维护']],
+      ['宾客投诉处理',['投诉受理与处理']],
+      ['客房清洁与查房',['做床','查房']],
+      ['中餐宴会摆台',['中餐摆台']],
+      ['酒水服务',['斟酒服务']],
+      ['房价与渠道管理',['房价制定','渠道分销管理']],
+      ['传统门市接待',['礼宾问询服务']],
+      ['客户投诉处理',['投诉受理与处理','游客诉求处理']]
+    ].forEach(function(m){
+      var a=find('能力项',m[0])[0];
+      m[1].forEach(function(s){find('技能',s).forEach(function(sk){link(a,sk,'map')})});
+    });
+
+    // 标准库：赛项 / 证书 → 考核要求 → 对应能力项
+    [
+      {src:'comp',type:'赛项',name:'全国职业院校技能大赛 · 导游服务',major:LY,reqs:[['现场导游讲解',['景点讲解']],['导游词创作与展示',['导游词创作']],['旅游应急处置',['带团组织协调']]]},
+      {src:'cert',type:'证书',name:'1+X 现代酒店服务质量管理',major:HT,reqs:[['前厅服务质量管理',['入住与退房办理','宾客投诉处理']],['客房服务质量检查',['客房清洁与查房']],['餐饮服务质量控制',['中餐宴会摆台','酒水服务']]]}
+    ].forEach(function(s){
+      var root=add(s.name,s.type,s.src,[s.major]);
+      s.reqs.forEach(function(r){
+        var req=add(r[0],'考核要求',s.src,[s.major]);link(root,req);
+        r[1].forEach(function(a){link(req,find('能力项',a)[0],'std')});
+      });
+    });
+
+    // 资源：不是节点，是挂在节点上的记录（节点、定位、挂载方式），实时生效、不进全景版本
+    var res=[
+      {name:'讲解词范例.pdf',kind:'知识库资料',by:'AI 建议后确认',on:[['知识点','讲解基本要求','第 3 段'],['技能','讲解词撰写','第 1–2 段'],['能力项','景点讲解','']]},
+      {name:'景点讲解实训视频.mp4',kind:'教学视频',by:'手动',on:[['能力项','景点讲解','00:00–12:30 · 主推荐'],['知识点','讲解基本要求','03:10–06:40']]},
+      {name:'景点讲解单元课件.pptx',kind:'课件',by:'生成时自动挂载',on:[['任务','景点讲解服务',''],['知识点','讲解基本要求','第 4–9 页'],['知识点','景点文化背景','第 10–15 页'],['能力项','景点讲解','']]},
+      {name:'景点讲解服务教案.docx',kind:'教案',by:'手动',on:[['任务','景点讲解服务',''],['能力项','景点讲解','']]},
+      {name:'带团应急处置题组',kind:'题目',by:'手动',on:[['知识点','应急处理流程',''],['知识点','旅游安全常识',''],['能力项','带团组织协调','']]},
+      {name:'线路报价案例集.docx',kind:'知识库资料',by:'AI 建议后确认',on:[['知识点','报价构成','第 2 段'],['能力项','成本核算','']]},
+      {name:'前厅入住接待课件.pptx',kind:'课件',by:'生成时自动挂载',on:[['任务','入住接待',''],['知识点','证件查验规范','第 3–8 页'],['知识点','房态管理','第 9–12 页'],['能力项','入住与退房办理','']]},
+      {name:'外籍护照识别微课.mp4',kind:'教学视频',by:'手动',on:[['细化知识点','外籍护照识别要点','00:00–05:20'],['能力项','入住与退房办理','']]},
+      {name:'中餐摆台标准图解.pdf',kind:'知识库资料',by:'AI 建议后确认',on:[['知识点','摆台规范','第 1–4 段'],['细化知识点','十人位中餐摆台尺寸','第 2 段'],['能力项','中餐宴会摆台','']]},
+      {name:'门市接待话术.pdf',kind:'知识库资料',by:'手动',on:[['能力项','传统门市接待','']]},
+      {name:'前厅服务质量考点题组',kind:'题目',by:'手动',on:[['考核要求','前厅服务质量管理',''],['知识点','投诉处理流程',''],['能力项','宾客投诉处理','']]}
+    ];
+    res.forEach(function(r,i){
+      r.id=i;r.mounts=[];
+      r.on.forEach(function(m){var n=find(m[0],m[1])[0];if(!n)return;r.mounts.push({node:n.id,loc:m[2]});(n.res=n.res||[]).push({r:r,loc:m[2]})});
+    });
+    return {nodes:nodes,links:links,res:res};
+  }
+
+  var data=generateData();
+  // 图谱中心：「映射审核」里已确认的映射，作为 能力项 → 技能 / 知识点 的「能力映射」关系并入全景
+  (function(){
+    var ap=window.GCF?GCF.approved():[];
+    function node(type,name){
+      for(var i=0;i<data.nodes.length;i++){var x=data.nodes[i];if(x.type===type&&x.name===name)return x}
+      var n={id:data.nodes.length,name:name,type:type,src:type==='能力项'?'ag':'ks',majors:['旅游管理'],major:'旅游管理',industry:'旅游'};
+      data.nodes.push(n);return n;
+    }
     ap.forEach(function(r){
       if(!r.sourceName||!r.targetName)return;
-      var a=node('能力项',r.targetName), b=node(r.sourceType==='知识点'?'知识点':'技能规范',r.sourceName);
-      data.links.push({source:a,target:b,mapped:true});
+      var a=node('能力项',r.targetName),b=node(r.sourceType==='知识点'?'知识点':'技能',r.sourceName);
+      if(!data.links.some(function(l){return l.source===a.id&&l.target===b.id}))data.links.push({source:a.id,target:b.id,kind:'map'});
     });
   })();
   var nodes=data.nodes;
   var links=data.links;
+  var resources=data.res;
+  var showRes=false,selectedId=null,focusRes=null;
   var wrap=document.getElementById('canvasWrap');
   var W=wrap.clientWidth, H=wrap.clientHeight;
   nodes.forEach(function(n){n.x=W/2+(Math.random()-0.5)*400;n.y=H/2+(Math.random()-0.5)*400;n.vx=0;n.vy=0});
@@ -248,10 +434,10 @@
   function tick(){
     if(alpha<alphaMin)return;
     alpha*=(1-alphaDecay);
-    for(var i=0;i<act.length;i++){var ni=act[i];for(var j=i+1;j<act.length;j++){var nj=act[j];var dx=nj.x-ni.x,dy=nj.y-ni.y;var d=Math.sqrt(dx*dx+dy*dy)||1;var f=(-1500)/(d*d)*alpha;ni.vx-=dx/d*f;ni.vy-=dy/d*f;nj.vx+=dx/d*f;nj.vy+=dy/d*f}}
-    for(var l=0;l<actLinks.length;l++){var s=nodes[actLinks[l].source],t=nodes[actLinks[l].target];var dx=t.x-s.x,dy=t.y-s.y;var d=Math.sqrt(dx*dx+dy*dy)||1;var f=(d-90)*0.06*alpha;s.vx+=dx/d*f;s.vy+=dy/d*f;t.vx-=dx/d*f;t.vy-=dy/d*f}
+    for(var i=0;i<act.length;i++){var ni=act[i];for(var j=i+1;j<act.length;j++){var nj=act[j];var dx=nj.x-ni.x,dy=nj.y-ni.y;var d=Math.sqrt(dx*dx+dy*dy)||1;var f=(18/d+1200/(d*d))*alpha;ni.vx-=dx/d*f;ni.vy-=dy/d*f;nj.vx+=dx/d*f;nj.vy+=dy/d*f}}
+    for(var l=0;l<actLinks.length;l++){var s=nodes[actLinks[l].source],t=nodes[actLinks[l].target];var dx=t.x-s.x,dy=t.y-s.y;var d=Math.sqrt(dx*dx+dy*dy)||1;var f=(d-60)*0.08*alpha;s.vx+=dx/d*f;s.vy+=dy/d*f;t.vx-=dx/d*f;t.vy-=dy/d*f}
     var cx=W/2,cy=H/2;
-    for(var i=0;i<act.length;i++){var n=act[i];n.vx+=(cx-n.x)*0.03*alpha;n.vy+=(cy-n.y)*0.03*alpha}
+    for(var i=0;i<act.length;i++){var n=act[i];n.vx+=(cx-n.x)*0.012*alpha;n.vy+=(cy-n.y)*0.012*alpha}
     for(var i=0;i<act.length;i++){var n=act[i];n.vx*=0.6;n.vy*=0.6;var sp=Math.sqrt(n.vx*n.vx+n.vy*n.vy);if(sp>20){n.vx*=20/sp;n.vy*=20/sp}n.x+=n.vx;n.y+=n.vy}
   }
 
@@ -260,34 +446,164 @@
   var zoom=1,panX=0,panY=0;
   var SVGNS='http://www.w3.org/2000/svg';
 
+  // 资源图层：只是展示，不是节点。子图内显示全部，整张图谱只显示选中节点的资源
+  function drawResources(g){
+    var vis={},full=act===nodes;act.forEach(function(n){vis[n.id]=true});
+    resources.forEach(function(r){
+      var ms=r.mounts.filter(function(m){return vis[m.node]&&(!full||m.node===selectedId)});
+      if(!ms.length)return;
+      var x,y;
+      if(ms.length===1){
+        var n=nodes[ms[0].node],list=full?n.res:n.res.filter(function(o){return o.r.mounts.filter(function(m){return vis[m.node]}).length===1}),idx=0;
+        list.forEach(function(o,i){if(o.r===r)idx=i});
+        var ang=-Math.PI/2+idx*2*Math.PI/Math.max(list.length,1),d=(typeRadius[n.type]||6)+26;
+        x=n.x+Math.cos(ang)*d;y=n.y+Math.sin(ang)*d;
+      }else{
+        x=0;y=0;ms.forEach(function(m){x+=nodes[m.node].x;y+=nodes[m.node].y});x/=ms.length;y/=ms.length;
+        x+=Math.cos(r.id*2.4)*20;y+=Math.sin(r.id*2.4)*20;
+      }
+      ms.forEach(function(m){var n=nodes[m.node],ln=document.createElementNS(SVGNS,'line');ln.setAttribute('x1',x);ln.setAttribute('y1',y);ln.setAttribute('x2',n.x);ln.setAttribute('y2',n.y);ln.setAttribute('class','res-link');g.appendChild(ln)});
+      var sq=document.createElementNS(SVGNS,'rect');sq.setAttribute('x',x-5);sq.setAttribute('y',y-5);sq.setAttribute('width',10);sq.setAttribute('height',10);sq.setAttribute('rx',2);
+      sq.setAttribute('fill',RES_COLORS[r.kind]);sq.setAttribute('stroke','#fff');sq.setAttribute('class','res-sq');
+      sq.addEventListener('mouseenter',function(e){tooltip.style.display='block';tooltip.innerHTML='<strong>'+r.name+'</strong><br/>'+r.kind+' · 挂在 '+r.mounts.length+' 个节点上';var rect=wrap.getBoundingClientRect();tooltip.style.left=(e.clientX-rect.left+15)+'px';tooltip.style.top=(e.clientY-rect.top+15)+'px'});
+      sq.addEventListener('mouseleave',function(){tooltip.style.display='none'});
+      sq.addEventListener('click',function(){hint('演示：在资源平台打开「'+r.name+'」')});
+      g.appendChild(sq);
+    });
+  }
+  function hint(t){var el=document.getElementById('pvToast');if(!el){el=document.createElement('div');el.id='pvToast';el.style.cssText='position:fixed;left:50%;top:24px;transform:translateX(-50%);z-index:80;background:#1f2d46;color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;display:none';document.body.appendChild(el)}el.textContent=t;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(function(){el.style.display='none'},2600)}
+  document.getElementById('resBtn').addEventListener('click',function(){
+    showRes=!showRes;this.classList.toggle('on',showRes);this.textContent=showRes?'隐藏资源':'显示资源';
+    if(showRes&&act===nodes&&selectedId==null)hint('整张图谱资源较多，只显示选中节点的资源；打开子图可查看子图内全部资源');
+    render();
+  });
+
   function render(){
     while(svg.firstChild)svg.removeChild(svg.firstChild);
     var g=document.createElementNS(SVGNS,'g');
     g.setAttribute('transform','translate('+panX+','+panY+') scale('+zoom+')');
-    for(var l=0;l<actLinks.length;l++){var s=nodes[actLinks[l].source],t=nodes[actLinks[l].target];var ln=document.createElementNS(SVGNS,'line');ln.setAttribute('x1',s.x);ln.setAttribute('y1',s.y);ln.setAttribute('x2',t.x);ln.setAttribute('y2',t.y);ln.setAttribute('class','graph-link'+(actLinks[l].mapped?' mapped':''));ln.setAttribute('data-source',actLinks[l].source);ln.setAttribute('data-target',actLinks[l].target);g.appendChild(ln)}
-    for(var i=0;i<act.length;i++){var n=act[i];var ng=document.createElementNS(SVGNS,'g');ng.setAttribute('class','graph-node');ng.setAttribute('transform','translate('+n.x+','+n.y+')');ng.setAttribute('data-id',n.id);ng.setAttribute('data-name',n.name);ng.setAttribute('data-type',n.type);
+    for(var l=0;l<actLinks.length;l++){var s=nodes[actLinks[l].source],t=nodes[actLinks[l].target];var ln=document.createElementNS(SVGNS,'path'),mx=(s.x+t.x)/2;ln.setAttribute('d',viewMode==='layer'&&s.x!==t.x?'M'+s.x+','+s.y+' C'+mx+','+s.y+' '+mx+','+t.y+' '+t.x+','+t.y:'M'+s.x+','+s.y+' L'+t.x+','+t.y);ln.setAttribute('class','graph-link'+(actLinks[l].kind!=='contain'?' '+actLinks[l].kind:''));ln.setAttribute('data-source',actLinks[l].source);ln.setAttribute('data-target',actLinks[l].target);g.appendChild(ln)}
+    if(viewMode==='layer'&&layerMeta)drawLayerFrame(g);
+    if(showRes)drawResources(g);
+    for(var i=0;i<act.length;i++){var n=act[i];var ng=document.createElementNS(SVGNS,'g');ng.setAttribute('class','graph-node'+(n.off?' off':''));ng.setAttribute('transform','translate('+n.x+','+n.y+')');ng.setAttribute('data-id',n.id);ng.setAttribute('data-name',n.name);ng.setAttribute('data-type',n.type);
       var c=document.createElementNS(SVGNS,'circle');c.setAttribute('r',typeRadius[n.type]||6);c.setAttribute('fill',typeColors[n.type]||'#8b99ac');c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','1.5');ng.appendChild(c);
-      if(zoom>1.5||n.type==='课程'||n.type==='核心概念'||n.type==='能力项'){var tx=document.createElementNS(SVGNS,'text');tx.setAttribute('class','graph-node-label');tx.setAttribute('y',(typeRadius[n.type]||6)+12);tx.textContent=n.name;ng.appendChild(tx)}
+      if(n.res){var rr=(typeRadius[n.type]||6)*0.8,bc=document.createElementNS(SVGNS,'circle');bc.setAttribute('cx',rr);bc.setAttribute('cy',-rr);bc.setAttribute('r',5.5);bc.setAttribute('fill','#5149e9');bc.setAttribute('stroke','#fff');ng.appendChild(bc);
+        var bt=document.createElementNS(SVGNS,'text');bt.setAttribute('class','res-badge');bt.setAttribute('x',rr);bt.setAttribute('y',-rr+3);bt.textContent=n.res.length;ng.appendChild(bt)}
+      if(viewMode==='layer'){var tx=document.createElementNS(SVGNS,'text');tx.setAttribute('class','graph-node-label');tx.setAttribute('x',(typeRadius[n.type]||6)+(n.res?11:6));tx.setAttribute('y',4);tx.style.textAnchor='start';tx.style.fontSize='11px';tx.style.fill='#31425e';tx.textContent=n.name+(n.off?'（来源已停用）':'');ng.appendChild(tx)}
+      else if(zoom>1.5||LABEL_TYPES[n.type]){var tx=document.createElementNS(SVGNS,'text');tx.setAttribute('class','graph-node-label');tx.setAttribute('y',(typeRadius[n.type]||6)+12);tx.textContent=n.name+(n.off?'（来源已停用）':'');ng.appendChild(tx)}
       ng.addEventListener('mousedown',startDrag);
-      ng.addEventListener('mouseenter',function(e){var nd=e.target.closest('.graph-node');if(!nd)return;var nm=nd.getAttribute('data-name'),tp=nd.getAttribute('data-type');tooltip.style.display='block';tooltip.innerHTML='<strong>'+nm+'</strong><br/>'+tp;var rect=wrap.getBoundingClientRect();tooltip.style.left=(e.clientX-rect.left+15)+'px';tooltip.style.top=(e.clientY-rect.top+15)+'px';var nid=Number(nd.getAttribute('data-id'));var conn={};conn[nid]=true;actLinks.forEach(function(l){if(l.source===nid)conn[l.target]=true;if(l.target===nid)conn[l.source]=true});svg.querySelectorAll('.graph-node').forEach(function(nn){var id=Number(nn.getAttribute('data-id'));if(!conn[id])nn.classList.add('dimmed');else nn.classList.remove('dimmed')});svg.querySelectorAll('.graph-link').forEach(function(lk){var s2=Number(lk.getAttribute('data-source')),t2=Number(lk.getAttribute('data-target'));if(s2===nid||t2===nid){lk.classList.add('highlighted');lk.classList.remove('dimmed')}else{lk.classList.add('dimmed');lk.classList.remove('highlighted')}})});
-      ng.addEventListener('mouseleave',function(){tooltip.style.display='none';svg.querySelectorAll('.graph-node').forEach(function(n){n.classList.remove('dimmed')});svg.querySelectorAll('.graph-link').forEach(function(l){l.classList.remove('dimmed');l.classList.remove('highlighted')})});
+      ng.addEventListener('mouseenter',function(e){var nd=e.target.closest('.graph-node');if(!nd)return;var nm=nd.getAttribute('data-name'),tp=nd.getAttribute('data-type');tooltip.style.display='block';var nn0=nodes[Number(nd.getAttribute('data-id'))];tooltip.innerHTML='<strong>'+nm+'</strong><br/>'+tp+' · '+GROUP_OF[tp]+(nn0.off?' · 来源已停用':'')+(nn0.res?'<br/>挂载资源 '+nn0.res.length+' 个':'');var rect=wrap.getBoundingClientRect();tooltip.style.left=(e.clientX-rect.left+15)+'px';tooltip.style.top=(e.clientY-rect.top+15)+'px';var nid=Number(nd.getAttribute('data-id'));var conn={};conn[nid]=true;actLinks.forEach(function(l){if(l.source===nid)conn[l.target]=true;if(l.target===nid)conn[l.source]=true});svg.querySelectorAll('.graph-node').forEach(function(nn){var id=Number(nn.getAttribute('data-id'));if(!conn[id])nn.classList.add('dimmed');else nn.classList.remove('dimmed')});svg.querySelectorAll('.graph-link').forEach(function(lk){var s2=Number(lk.getAttribute('data-source')),t2=Number(lk.getAttribute('data-target'));if(s2===nid||t2===nid){lk.classList.add('highlighted');lk.classList.remove('dimmed')}else{lk.classList.add('dimmed');lk.classList.remove('highlighted')}})});
+      ng.addEventListener('mouseleave',function(){tooltip.style.display='none';applyFocus()});
       g.appendChild(ng)}
     svg.appendChild(g);
+    applyFocus();
+  }
+
+  // 点选节点：高亮它的上游（岗位、赛证、课程）和下游（技能、知识点、细化知识点）整条链路
+  function chainOf(id){
+    var out={},inn={},s={};s[id]=true;
+    actLinks.forEach(function(l){(out[l.source]=out[l.source]||[]).push(l.target);(inn[l.target]=inn[l.target]||[]).push(l.source)});
+    [out,inn].forEach(function(adj){var seen={},q=[id];while(q.length){(adj[q.shift()]||[]).forEach(function(y){if(!seen[y]){seen[y]=true;s[y]=true;q.push(y)}})}});
+    return s;
+  }
+  function applyFocus(){
+    var on,ch;
+    if(focusRes!=null){on=true;ch={};resources[focusRes].mounts.forEach(function(m){ch[m.node]=true})}
+    else{on=selectedId!=null&&act.indexOf(nodes[selectedId])>=0;ch=on?chainOf(selectedId):null}
+    svg.querySelectorAll('.graph-node').forEach(function(nn){nn.classList.toggle('dimmed',on&&!ch[+nn.getAttribute('data-id')])});
+    svg.querySelectorAll('.graph-link').forEach(function(lk){var a=+lk.getAttribute('data-source'),b=+lk.getAttribute('data-target'),inC=on&&ch[a]&&ch[b];lk.classList.toggle('dimmed',on&&!inC);lk.classList.toggle('highlighted',!!inC)});
+  }
+
+  // 分层视图：需求侧（岗位、赛证 → 能力项）在上，供给侧（课程 → 任务）在下，汇聚到技能 → 知识点 → 细化知识点
+  var viewMode='layer',layerMeta=null;
+  var COL_OF={'岗位':0,'赛项':0,'证书':0,'考核要求':1,'课程':1,'能力项':2,'任务':2,'技能':3,'知识点':4,'细化知识点':5};
+  var COL_TITLE=[['岗位 · 赛项 · 证书',''],['考核要求','课程'],['能力项','任务'],['技能',''],['知识点',''],['细化知识点','']];
+  var COL_W=230,ROW=26,SEG_GAP=70;
+  function segOf(n){return n.type==='课程'||n.type==='任务'?1:0}
+  function layeredLayout(){
+    var cols=[[],[],[],[],[],[]],nb={},rank={},MO={'旅游管理':0,'酒店管理':1};
+    act.forEach(function(n){cols[COL_OF[n.type]].push(n);nb[n.id]=[]});
+    actLinks.forEach(function(l){nb[l.source].push(l.target);nb[l.target].push(l.source)});
+    function setRank(c){c.forEach(function(n,i){rank[n.id]=i/Math.max(c.length-1,1)})}
+    cols.forEach(function(c){c.sort(function(a,b){return segOf(a)-segOf(b)||(MO[a.major]||0)-(MO[b.major]||0)||a.id-b.id});setRank(c)});
+    // 重心法排序，减少连线交叉
+    for(var it=0;it<8;it++){
+      (it%2?[4,3,2,1,0]:[1,2,3,4,5]).forEach(function(ci){
+        var c=cols[ci];
+        c.forEach(function(n){var ns=nb[n.id].filter(function(m){return COL_OF[nodes[m].type]!==ci});n._b=ns.length?ns.reduce(function(t,m){return t+rank[m]},0)/ns.length:rank[n.id]});
+        c.sort(function(a,b){return segOf(a)-segOf(b)||a._b-b._b});setRank(c);
+      });
+    }
+    // 前三列分上下两段；上段居中对齐，下段从分隔线下开始
+    var topMax=0,botMax=0;
+    [0,1,2].forEach(function(ci){var t=cols[ci].filter(function(n){return!segOf(n)}).length;topMax=Math.max(topMax,t);botMax=Math.max(botMax,cols[ci].length-t)});
+    var splitY=topMax*ROW,botY=splitY+(botMax?SEG_GAP:0);
+    [0,1,2].forEach(function(ci){
+      var top=cols[ci].filter(function(n){return!segOf(n)}),bot=cols[ci].filter(segOf);
+      top.forEach(function(n,i){n.y=(topMax-top.length)*ROW/2+i*ROW});
+      bot.forEach(function(n,i){n.y=botY+(botMax-bot.length)*ROW/2+i*ROW});
+    });
+    // 后三列按左侧相连节点的平均高度放置，再保持最小间距
+    [3,4,5].forEach(function(ci){
+      var c=cols[ci];
+      c.forEach(function(n){var ns=nb[n.id].filter(function(m){return COL_OF[nodes[m].type]<ci});n._d=ns.length?ns.reduce(function(t,m){return t+nodes[m].y},0)/ns.length:0});
+      c.sort(function(a,b){return a._d-b._d});
+      var shift=0;c.forEach(function(n,i){n.y=i?Math.max(n._d,c[i-1].y+ROW):n._d;shift+=n._d-n.y});
+      if(c.length)c.forEach(function(n){n.y+=shift/c.length});
+    });
+    var x=0,colX=[];
+    cols.forEach(function(c,ci){colX[ci]=c.length?x:null;c.forEach(function(n){n.x=x});if(c.length)x+=COL_W});
+    var ys=act.map(function(n){return n.y});
+    layerMeta={cols:cols,colX:colX,top:Math.min.apply(null,ys),split:botMax&&topMax?splitY+SEG_GAP/2-ROW/2:null,botY:botY,hasBot:botMax>0};
+  }
+  function drawLayerFrame(g){
+    var m=layerMeta,SV=SVGNS;
+    function text(x,y,t,cls,anchor){var e=document.createElementNS(SV,'text');e.setAttribute('x',x);e.setAttribute('y',y);e.setAttribute('class',cls);if(anchor)e.style.textAnchor=anchor;e.textContent=t;g.appendChild(e)}
+    m.cols.forEach(function(c,ci){
+      if(m.colX[ci]==null)return;
+      var hasTop=c.some(function(n){return!segOf(n)}),hasBot=c.some(segOf);
+      if(hasTop||ci>2)text(m.colX[ci]-8,m.top-30,ci===1||ci===2?COL_TITLE[ci][0]:COL_TITLE[ci][0],'col-head');
+      if(hasBot&&ci<=2)text(m.colX[ci]-8,m.botY-22,COL_TITLE[ci][1],'col-head');
+    });
+    if(m.split!=null){
+      var xs=[0,1,2].map(function(ci){return m.colX[ci]}).filter(function(v){return v!=null});
+      var x0=Math.min.apply(null,xs)-20,x1=Math.max.apply(null,xs)+COL_W-40;
+      var ln=document.createElementNS(SV,'line');ln.setAttribute('x1',x0);ln.setAttribute('x2',x1);ln.setAttribute('y1',m.split);ln.setAttribute('y2',m.split);ln.setAttribute('class','band-line');g.appendChild(ln);
+      text(x0-12,m.split-8,'需求侧 · 岗、赛、证','band-label','end');
+      text(x0-12,m.split+18,'供给侧 · 课','band-label','end');
+    }
   }
 
   // 布局在首屏前一次性算完再渲染，避免节点持续晃动；之后只在拖拽 / 缩放 / 平移时重绘
   var running=false;
-  function layout(){alpha=1;while(alpha>=alphaMin)tick();act.forEach(function(n){n.vx=0;n.vy=0})}
+  function layout(){if(viewMode==='layer'){layeredLayout();return}alpha=1;while(alpha>=alphaMin)tick();act.forEach(function(n){n.vx=0;n.vy=0})}
   // 按节点范围自适应缩放并居中
   function fitView(){
+    if(!act.length){zoom=1;panX=0;panY=0;return}
     var x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
     act.forEach(function(n){x0=Math.min(x0,n.x);y0=Math.min(y0,n.y);x1=Math.max(x1,n.x);y1=Math.max(y1,n.y)});
-    // 搜索面板占据画布顶部，按 svg 可见区域计算
+    if(viewMode==='layer'){x0-=150;x1+=200;y0-=50;y1+=10}
+    // 搜索面板占据画布顶部、图例占据底部，按 svg 可见区域计算
     var r=svg.getBoundingClientRect(),wr=wrap.getBoundingClientRect(),vw=r.width,vh=Math.min(r.height,Math.min(wr.bottom,window.innerHeight)-r.top);
+    var lg=document.getElementById('graphLegend');if(lg)vh-=lg.offsetHeight+12;
+    // 分层视图按宽度适配、保证字号可读，超出高度的部分滚轮上下滚动
+    if(viewMode==='layer'){
+      zoom=Math.max(0.8,Math.min(1.2,(vw-40)/((x1-x0)||1)));
+      panX=(x1-x0)*zoom<vw?vw/2-(x0+x1)/2*zoom:20-x0*zoom;
+      panY=(y1-y0)*zoom<vh?vh/2-(y0+y1)/2*zoom:16-y0*zoom;
+      return;
+    }
     var pad=40;zoom=Math.max(0.3,Math.min(1.5,Math.min((vw-pad*2)/((x1-x0)||1),(vh-pad*2)/((y1-y0)||1))));
     panX=vw/2-(x0+x1)/2*zoom;panY=vh/2-(y0+y1)/2*zoom;
   }
   function animate(){layout();fitView();render()}
+  document.querySelectorAll('#viewSwitch button').forEach(function(b){b.addEventListener('click',function(){
+    if(viewMode===b.getAttribute('data-view'))return;
+    viewMode=b.getAttribute('data-view');
+    document.querySelectorAll('#viewSwitch button').forEach(function(x){x.classList.toggle('on',x===b)});
+    if(viewMode==='net')act.forEach(function(n){n.x=W/2+(Math.random()-0.5)*400;n.y=H/2+(Math.random()-0.5)*400;n.vx=0;n.vy=0});
+    animate();
+  })});
 
   var dragNode=null,dragMoved=false,dragOffset={x:0,y:0};
   function startDrag(e){e.preventDefault();var ng=e.target.closest('.graph-node');if(!ng)return;var id=Number(ng.getAttribute('data-id'));dragNode=nodes[id];dragMoved=false;var pt=svgPoint(svg,e);dragOffset.x=pt.x/zoom-panX/zoom-dragNode.x;dragOffset.y=pt.y/zoom-panY/zoom-dragNode.y;window.addEventListener('mousemove',onDrag);window.addEventListener('mouseup',endDrag)}
@@ -302,7 +618,7 @@
   document.getElementById('zoomInBtn').addEventListener('click',function(){zoom=Math.min(zoom*1.3,5);render()});
   document.getElementById('zoomOutBtn').addEventListener('click',function(){zoom=Math.max(zoom/1.3,0.2);render()});
   document.getElementById('resetBtn').addEventListener('click',function(){fitView();render()});
-  svg.addEventListener('wheel',function(e){e.preventDefault();var d=e.deltaY>0?0.9:1.1;zoom=Math.max(0.2,Math.min(5,zoom*d));render()});
+  svg.addEventListener('wheel',function(e){e.preventDefault();if(viewMode==='layer'&&!e.ctrlKey&&!e.metaKey){panY-=e.deltaY;panX-=e.deltaX;render();return}var d=e.deltaY>0?0.9:1.1;zoom=Math.max(0.2,Math.min(5,zoom*d));render()});
 
   document.getElementById('clearFilterBtn').addEventListener('click',function(){
     document.getElementById('quickSearchInput').value='';
@@ -334,7 +650,7 @@
       if(q&&n.name.toLowerCase().indexOf(q)<0)ok=false;
       if(fType!=='all'&&n.type!==fType)ok=false;
       if(fInd!=='all'&&(!n.industry||n.industry!==fInd))ok=false;
-      if(fMaj!=='all'&&(!n.major||n.major!==fMaj))ok=false;
+      if(fMaj!=='all'&&(n.majors||[]).indexOf(fMaj)<0)ok=false;
       if(ok)m[n.id]=true;
     });
     var count=Object.keys(m).length;
@@ -493,9 +809,10 @@
     tab.addEventListener('click',function(){
       document.querySelectorAll('.graph-search-tab').forEach(function(t){t.classList.remove('active')});
       tab.classList.add('active');
-      var isNode=tab.dataset.tab==='node';
-      document.getElementById('contentNode').classList.toggle('active',isNode);
-      document.getElementById('contentPath').classList.toggle('active',!isNode);
+      var tb=tab.dataset.tab;
+      document.getElementById('contentNode').classList.toggle('active',tb==='node');
+      document.getElementById('contentPath').classList.toggle('active',tb==='path');
+      document.getElementById('contentRes').classList.toggle('active',tb==='res');
     });
   });
   // Clear for node search tab
@@ -510,18 +827,72 @@
 
   // 节点详情：所属来源与来源版本（版本信息由 pano-version.js 提供）
   var detailPanel=document.getElementById('detailPanel');
-  document.getElementById('detailClose').addEventListener('click',function(){detailPanel.classList.remove('show')});
+  document.getElementById('detailClose').addEventListener('click',function(){detailPanel.classList.remove('show');selectedId=null;render()});
   function showDetail(n){
-    var deg=actLinks.filter(function(l){return l.source===n.id||l.target===n.id}).length;
+    var conn=[];actLinks.forEach(function(l){if(l.source===n.id)conn.push({n:nodes[l.target],k:l.kind});if(l.target===n.id)conn.push({n:nodes[l.source],k:l.kind})});
     var info=window.PanoVersion?PanoVersion.nodeSource(n):null;
     var row=function(k,v){return '<div class="graph-detail-row"><span>'+k+'</span><span>'+v+'</span></div>'};
     document.getElementById('detailTitle').textContent=n.name;
-    document.getElementById('detailBody').innerHTML=row('类型',n.type)+row('所属专业',n.major||'—')
+    var maps=conn.filter(function(c){return c.k!=='contain'}).length;
+    document.getElementById('detailBody').innerHTML=row('类型',n.type+' <span class="graph-detail-tag">'+GROUP_OF[n.type]+'</span>')
+      +row(n.src==='ag'?'服务专业':'所属专业',(n.majors||[]).join('、')||'—')
       +(info?row('所属来源',info.source)+row('来源版本',info.sourceVer)+row('全景版本',info.panoVer):'')
-      +row('关联节点',deg+' 个')
-      +'<div class="graph-detail-connected"><div class="graph-detail-connected-title">节点在所属来源中维护，全景图谱与子图不能直接修改</div>'
-      +'<a href="'+(info?info.href:'#')+'" style="font-size:12px;color:#5149e9;text-decoration:none">在'+(info?info.sourceType:'来源图谱')+'中查看 →</a></div>';
+      +(n.creator?row('创建人',n.creator+' · 课程负责人已审核，已共享'):'')
+      +row('关联节点',conn.length+' 个'+(maps?'（其中跨来源关系 '+maps+' 条）':''))
+      +(n.off?'<div class="graph-detail-warn">'+n.off+'</div>':'')
+      +(n.type==='能力项'&&!conn.some(function(c){return c.k==='map'})?'<div class="graph-detail-warn">该能力项还没有映射到知识体系，计入覆盖率缺口</div>':'')
+      +'<div class="graph-detail-connected"><div class="graph-detail-connected-title">关联节点</div>'
+      +conn.slice(0,12).map(function(c){return '<span class="graph-detail-connected-item" data-id="'+c.n.id+'" title="'+c.n.type+' · '+LINK_KIND[c.k]+'">'+c.n.name+'</span>'}).join('')
+      +'</div><div class="graph-detail-connected"><div class="graph-detail-connected-title">'+(n.src==='self'?'细化知识点在全景图谱维护，随全景版本发布':'节点在所属来源中维护，全景图谱与子图不能直接修改')+'</div>'
+      +(info&&info.href?'<a href="'+info.href+'" style="font-size:12px;color:#5149e9;text-decoration:none">在'+info.sourceType+'中查看 →</a>':'')+'</div>';
+    var rs=n.res||[],only=rs.filter(function(o){return o.r.mounts.length===1}).length,kinds=Object.keys(RES_COLORS);
+    rs=rs.slice().sort(function(a,b){return kinds.indexOf(a.r.kind)-kinds.indexOf(b.r.kind)});
+    document.getElementById('detailBody').insertAdjacentHTML('beforeend','<div class="graph-detail-connected"><div class="graph-detail-connected-title">挂载资源 '+rs.length+' 个 · 实时生效，不进全景版本</div>'
+      +(rs.length?rs.map(function(o){var r=o.r;return '<div class="graph-res-item"><span class="graph-res-dot" style="background:'+RES_COLORS[r.kind]+'"></span><div><a href="javascript:;" data-res="'+r.id+'" title="高亮该资源挂载的全部节点">'+r.name+'</a> <a href="javascript:;" data-open="'+r.id+'" style="color:#5149e9;font-size:11px">打开</a>'
+        +'<div class="graph-res-meta">'+r.kind+(o.loc?' · '+o.loc:'')+' · '+r.by+(r.mounts.length>1?' · 另挂 '+(r.mounts.length-1)+' 个节点':'')+'</div></div></div>'}).join(''):'<div class="graph-res-meta">暂无挂载资源</div>')
+      +(n.off&&only?'<div class="graph-detail-warn">其中 '+only+' 个资源只挂在该节点上，下次同步并发布后进入悬挂资源池（不删除）</div>':'')+'</div>');
+    detailPanel.querySelectorAll('[data-res]').forEach(function(el){el.onclick=function(){findResource(resources[+el.getAttribute('data-res')])}});
+    detailPanel.querySelectorAll('[data-open]').forEach(function(el){el.onclick=function(){hint('演示：在资源平台打开「'+resources[+el.getAttribute('data-open')].name+'」')}});
+    detailPanel.querySelectorAll('.graph-detail-connected-item').forEach(function(el){el.onclick=function(){showDetail(nodes[+el.getAttribute('data-id')])}});
     detailPanel.classList.add('show');
+    selectedId=n.id;focusRes=null;render();
+  }
+  // 按资源反查：高亮它挂载的全部节点，并列出节点清单
+  var resResult=document.getElementById('resResult'),resInput=document.getElementById('resSearchInput');
+  document.getElementById('resNameList').innerHTML=resources.map(function(r){return '<option value="'+r.name+'">'}).join('');
+  function findResource(r){
+    document.querySelector('.graph-search-tab[data-tab="res"]').click();
+    resInput.value=r.name;focusRes=r.id;
+    var vis={};act.forEach(function(n){vis[n.id]=true});
+    var shown=r.mounts.filter(function(m){return vis[m.node]}),hidden=r.mounts.length-shown.length;
+    resResult.style.display='block';
+    resResult.innerHTML='<span style="color:#8b99ac;">「'+r.name+'」'+r.kind+' · 挂在 '+r.mounts.length+' 个节点上：</span><br>'
+      +shown.map(function(m){var n=nodes[m.node];return '<span class="path-node" data-node="'+n.id+'" style="cursor:pointer"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+typeColors[n.type]+';"></span>'+n.type+' · '+n.name+(m.loc?' <span style="color:#8b99ac">'+m.loc+'</span>':'')+'</span>'}).join(' ')
+      +(hidden?'<br><span style="color:#8b99ac;">另有 '+hidden+' 个挂载节点不在当前视图（子图或权限范围外）</span>':'');
+    resResult.querySelectorAll('[data-node]').forEach(function(el){el.onclick=function(){showDetail(nodes[+el.getAttribute('data-node')])}});
+    resultCount.innerHTML='挂载节点 <strong>'+r.mounts.length+'</strong> 个';
+    // 分层视图下节点可能在屏幕外：把挂载节点滚到可视区域中间
+    if(shown.length&&viewMode==='layer'){
+      var ys=shown.map(function(m){return nodes[m.node].y}),r0=svg.getBoundingClientRect(),vh=Math.min(r0.height,window.innerHeight-r0.top)-80;
+      var y0=Math.min.apply(null,ys)*zoom+panY,y1=Math.max.apply(null,ys)*zoom+panY;
+      if(y0<20||y1>vh)panY-=((y0+y1)/2-vh/2);
+    }
+    render();
+  }
+  function doResSearch(){
+    var q=resInput.value.trim();if(!q)return;
+    var r=resources.filter(function(x){return x.name===q})[0]||resources.filter(function(x){return x.name.indexOf(q)>=0})[0];
+    if(!r){focusRes=null;resResult.style.display='block';resResult.innerHTML='<span style="color:#c72c2a;">未找到资源「'+q+'」</span>';render();return}
+    findResource(r);
+  }
+  document.getElementById('resSearchBtn').addEventListener('click',doResSearch);
+  resInput.addEventListener('keydown',function(e){if(e.key==='Enter')doResSearch()});
+  document.getElementById('resClearBtn').addEventListener('click',function(){resInput.value='';resResult.style.display='none';resultCount.innerHTML='';focusRes=null;render()});
+
+  function clearFilters(){
+    svg.querySelectorAll('.graph-node').forEach(function(n){n.classList.remove('dimmed','highlighted')});
+    svg.querySelectorAll('.graph-link').forEach(function(l){l.classList.remove('dimmed','highlighted')});
+    applyFocus();
   }
 
   // 供子图 / 数据权限过滤使用：只显示 ids 内的节点，重新布局
@@ -531,7 +902,8 @@
       act=ids?nodes.filter(function(n){return ids[n.id]}):nodes;
       actLinks=ids?links.filter(function(l){return ids[l.source]&&ids[l.target]}):links;
       act.forEach(function(n){n.x=W/2+(Math.random()-0.5)*400;n.y=H/2+(Math.random()-0.5)*400;n.vx=0;n.vy=0});
-      detailPanel.classList.remove('show');
+      detailPanel.classList.remove('show');selectedId=null;
+      if(focusRes!=null){focusRes=null;resResult.style.display='none'}
       animate();
     }
   };

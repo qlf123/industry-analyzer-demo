@@ -193,6 +193,16 @@ const MOCK_FILES = [
       {t:'夜审时间一般为每日 0:00 至 3:00，夜审员需核对当日所有入住、退房及在住房间的房价与账务。'},
       {t:'完成核对后执行日结，生成营业日报，并将系统营业日期滚动至次日。'}
     ]},
+  { id:'t3', kind:'text', name:'前厅服务礼仪培训.pptx', size:'7.9 MB', ext:'pptx',
+    segs:[
+      {t:'封面：前厅服务礼仪培训，主讲人：张明，酒店管理学院。'},
+      {t:'第一节 仪容仪表：员工须着统一工装、佩戴工牌，发型整洁，女员工淡妆上岗，不得佩戴夸张首饰。'},
+      {t:'仪容自检要点：工装平整无污渍、工牌佩戴端正、双手清洁、指甲修剪整齐。'},
+      {t:'第二节 站姿与坐姿：站立时挺胸收腹、双手交叠置于身前，坐姿只坐椅面三分之二，忌跷腿、抖腿。'},
+      {t:'第三节 微笑与问候：做到「三米微笑、一米问候」，主动使用「您好、欢迎光临」等规范用语。'},
+      {t:'第四节 手势与递物：指引方向五指并拢、掌心向上，递物时双手奉上，房卡正面朝向客人。'},
+      {t:'第五节 电话礼仪：铃响三声内接听，先报部门与姓名，记录要点并复述确认，挂机前道谢。'}
+    ]},
   /* ---- 图文 ---- */
   { id:'i1', kind:'image', name:'房态表板书.jpg', size:'2.4 MB', ext:'jpg', svg:IMG_BOARD,
     ocr:'房态表（8F）\n801 VC 空房已清洁\n802 OC 住客房\n803 VD 空房未清洁\n804 OOO 维修房\n805 VC 空房已清洁\n备注：VD 清洁完 → 客房部通知前台改 VC',
@@ -233,7 +243,7 @@ const MOCK_FILES = [
 ];
 
 const EXT = {
-  text:['html','mdx','txt','markdown','md','docx','pdf','xls','xlsx','csv','htm','properties','vtt'],
+  text:['html','mdx','txt','markdown','md','docx','pdf','ppt','pptx','xls','xlsx','csv','htm','properties','vtt'],
   image:['jpg','jpeg','png','webp','bmp'],
   av:['mp3','wav','m4a','aac','flac','mp4','mov','mkv','webm']
 };
@@ -247,7 +257,7 @@ const KB_ID = QS.get('kb') || 'KB004';
 const KB_NAME = QS.get('name') || '旅游管理专业教学资源库';
 const DETAIL_URL = 'knowledge-base-detail.html?id='+encodeURIComponent(KB_ID);
 // 添加模式下示例文件改名，避免与知识库中已有文件重名
-const ADD_MOCK_NAMES = { t1:'前厅服务规范（2026 修订）.docx', t2:'夜审交接记录（扫描件）.pdf', i1:'9 楼房态表板书.jpg', i2:'行李寄存处照片.jpg',
+const ADD_MOCK_NAMES = { t1:'前厅服务规范（2026 修订）.docx', t2:'夜审交接记录（扫描件）.pdf', t3:'前厅服务礼仪培训（2026 修订）.pptx', i1:'9 楼房态表板书.jpg', i2:'行李寄存处照片.jpg',
   a:'VIP 入住接待实训录像.mp4', b:'导游讲解示范_天坛.m4a', c:'企业师傅访谈-客房主管.mp3', d:'研学活动全程记录（第二期）.mov' };
 
 /* ======================================================================
@@ -392,7 +402,7 @@ function uploadBody(){
            <b>图文</b>：${EXT.image.map(x=>x.toUpperCase()).join('、')}，单张不超过 20 MB<br>
            <b>音视频</b>：${EXT.av.map(x=>x.toUpperCase()).join('、')}，单个不超过 2 GB、时长不超过 1 小时<br>
            每批最多 ${LIMIT.perBatch} 个文件，系统按文件类型自动识别并分别处理。</p>
-        <div class="row g8 wrapflex"><span class="muted">没有素材？</span><button class="btn mini" data-act="mock">载入示例文件（文本 2 · 图文 2 · 音视频 3 · 超限 1）</button></div>
+        <div class="row g8 wrapflex"><span class="muted">没有素材？</span><button class="btn mini" data-act="mock">载入示例文件（文本 3 · 图文 2 · 音视频 3 · 超限 1）</button></div>
       </div>
       ${S.files.length?`<div class="row g8 wrapflex"><span class="muted">已识别：</span>${counts.map(c=>`<span class="chip k-${c.k}">${KIND_LABEL[c.k]} ${c.n}</span>`).join('')}</div><ul class="col g8">${rows}</ul>`:''}
       ${errCount?`<p class="muted" style="margin:0;color:#B42318">有 ${errCount} 个文件不符合要求，移除后才能继续。</p>`:''}

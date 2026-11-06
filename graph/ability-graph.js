@@ -633,7 +633,7 @@ function renderList(){
       bottomBtn = `<div class="graph-card-actions" onclick="event.stopPropagation()"><button onclick="enterTree('${g.id}')" class="enter-btn">进入图谱</button></div>`;
     }
     const cardClick = (isBuilding || isFailed) ? '' : ` onclick="enterTree('${g.id}')"`;
-    const meta = `<div class="graph-card-meta"><span>${permText(g)} · 节点数 ${nodeCountText}</span><span>${graphTimeText(g)}</span></div>`;
+    const meta = `<div class="graph-card-meta"><span>创建人：${g.creator||CURRENT_USER.name} · ${permText(g)} · 节点数 ${nodeCountText}</span><span>${graphTimeText(g)}</span></div>`;
     return `<div class="graph-card" data-graph="${g.id}"${cardClick}>
       ${cardActions}
       <div class="graph-card-name">${g.name}</div>

@@ -2173,7 +2173,8 @@ function vNode(key, type, name, kind, chain, siblings, depth, aiDepth, manual, d
   const more = `<button type="button" class="vop vmore" data-vop="more" aria-label="更多操作" aria-haspopup="menu"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="3.5" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12.5" cy="8" r="1.3"/></svg></button>`;
   ops = ops ? ops.replace(/<\/span>$/, more + '</span>') : `<span class="vops">${regenBtn}${more}</span>`;
   let pick = '';
-  if(vPickMode){
+  // 多选备课：行业、子行业、岗位不能勾选（范围太大），能力项及以下可选
+  if(vPickMode && !PREP_BIG[type]){
     const anc = vStack.some((_, i)=>vPick.has(vStack.slice(0, i + 1).join('|')));
     pick = `<input type="checkbox" class="vpick" data-vpick aria-label="选择「${esc(name)}」"${anc || vPick.has(vpath) ? ' checked' : ''}${anc ? ' disabled title="上级已选，已包含在内"' : ''}>`;
   }
