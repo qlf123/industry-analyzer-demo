@@ -519,6 +519,13 @@ body.fs-on{overflow:hidden}
     <div class="acts"><button class="btn-s" value="cancel" formnovalidate>取消</button><button class="btn-p" value="save">保存</button></div>
   </form>
 </dialog>
+<dialog class="aidlg" id="leaveDlg">
+  <form method="dialog">
+    <h2>是否保存调整？</h2>
+    <div class="note">能力地图里有还没保存的调整（AI 生成、编辑、删除的节点等）。不保存的话，离开后这些调整会丢失。</div>
+    <div class="acts"><button class="btn-s" value="cancel" formnovalidate>取消</button><button class="btn-s" value="discard">不保存</button><button class="btn-p" value="save">保存并离开</button></div>
+  </form>
+</dialog>
 <div class="toast" id="toast" role="status" hidden></div>
 <dialog class="aidlg wide" id="scReport" aria-labelledby="rptTitle">
   <div class="rpt">
@@ -1096,7 +1103,36 @@ function saveAiNodes(){
 }
 $('#saveBtn').addEventListener('click', saveAiNodes);
 $('#vSaveBtn').addEventListener('click', saveAiNodes);
-window.addEventListener('beforeunload', e=>{ if(isDirty()){ e.preventDefault(); e.returnValue = ''; } });
+// 离开页面：有未保存的调整时询问是否保存。站内跳转（左侧菜单、退出登录、带入备课）弹出本页的确认框；
+// 关闭标签页 / 刷新时浏览器只允许显示它自带的离开确认
+let leaving = false;
+window.addEventListener('beforeunload', e=>{ if(!leaving && isDirty()){ e.preventDefault(); e.returnValue = ''; } });
+function confirmLeave(go){
+  if(!isDirty()){ leaving = true; go(); return; }
+  const dlg = $('#leaveDlg');
+  dlg.returnValue = '';
+  dlg.onclose = ()=>{
+    const v = dlg.returnValue;
+    if(v === 'save'){ saveAiNodes(); if(isDirty()) return; leaving = true; go(); }
+    else if(v === 'discard'){ leaving = true; go(); }
+  };
+  dlg.showModal();
+}
+document.addEventListener('click', e=>{
+  if(leaving || !isDirty()) return;
+  const out = e.target.closest('[data-logout]');
+  if(out){
+    e.preventDefault(); e.stopImmediatePropagation();
+    confirmLeave(()=>{ location.href = 'login.html'; });
+    return;
+  }
+  const a = e.target.closest('a[href]');
+  if(!a || a.target === '_blank' || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  const href = a.getAttribute('href');
+  if(!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+  e.preventDefault();
+  confirmLeave(()=>{ location.href = a.href; });
+}, true);
 
 // 重新生成一列：保留人工新增 / 人工编辑过的节点，其余由 AI 重新生成；下面已展开的列收起；可撤销
 function regenerateLevel(i){
@@ -1964,7 +2000,8 @@ function goPrep(payload){
   catch(e){ showToast('带入失败：浏览器不允许本地存储'); return; }
   // 当前在教师端：用当前身份进入工作台；否则用演示教师身份
   const curPortal = window.UI ? UI.currentIdentity(DEMO.getState()).currentPortal : '';
-  location.href = curPortal === 'teacher' ? UI.link('workbench.html') : 'workbench.html?u=ACC-LI';
+  const to = curPortal === 'teacher' ? UI.link('workbench.html') : 'workbench.html?u=ACC-LI';
+  confirmLeave(()=>{ location.href = to; });
 }
 $('#lessonBtn').addEventListener('click', ()=>goPrep(prepPayload()));
 
