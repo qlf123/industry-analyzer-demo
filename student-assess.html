@@ -24,13 +24,8 @@
 .sec-h{font-size:12.5px;font-weight:700;margin:18px 0 8px;display:flex;align-items:center;gap:8px}
 .sec-h .no{font-family:var(--mono);font-size:11px;color:var(--brand);font-weight:600}
 
-/* 雷达图卡片 */
-.radar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
-.radar-card{border:1px solid var(--rule);border-radius:12px;background:var(--card);padding:14px 16px}
-.radar-card .rc-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
-.radar-card .rc-t{font-size:14px;font-weight:700}
-.radar-card .rc-note{font-size:11.5px;color:var(--muted)}
-.radar-card svg{width:100%;height:auto;max-width:420px;display:block;margin:0 auto}
+/* 雷达图 */
+.sa-side svg{width:100%;height:auto;max-width:440px;display:block;margin:0 auto}
 .radar-leg{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11.5px;color:var(--muted);justify-content:center;margin-top:6px}
 .radar-leg i{display:inline-block;width:16px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 
@@ -67,6 +62,53 @@
 .abl-def .lv{display:grid;grid-template-columns:34px 1fr;gap:6px 10px;padding:5px 0;font-size:12px;color:var(--ink-2)}
 .abl-def .lv .lvk{font-family:var(--mono);font-size:11px;color:var(--brand-ink);font-weight:600;align-self:start;padding-top:1px}
 .abl-def .lv .lvv{line-height:1.6}
+.sa-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:start}
+.sa-side{position:sticky;top:92px;max-height:calc(100vh - 108px);overflow:auto;border:1px solid var(--rule);border-radius:12px;background:var(--card);padding:12px 14px}
+.side-tabs{display:flex;gap:16px;border-bottom:1px solid var(--rule);margin:-2px 0 10px}
+.side-tabs button{font:inherit;font-size:13px;padding:6px 0 8px;border:0;background:none;color:var(--ink-2);border-bottom:2px solid transparent;cursor:pointer}
+.side-tabs button[aria-selected="true"]{color:var(--brand-ink);border-bottom-color:var(--brand);font-weight:600}
+.pos-steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.pos-step{font:inherit;text-align:left;border:1px solid var(--rule);background:var(--card);border-radius:10px;padding:8px 12px;cursor:pointer;min-width:150px}
+.pos-step .pn{display:block;font-size:13px;font-weight:600;color:var(--ink)}
+.pos-step .pp{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.pos-step .bar{display:block;height:4px;border-radius:3px;background:var(--rule-2);margin-top:6px;overflow:hidden}
+.pos-step .bar i{display:block;height:100%;background:var(--brand)}
+.pos-step[aria-current="true"]{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset;background:var(--brand-soft)}
+.pos-step.done .pp{color:var(--good)}
+.pos-next{display:flex;align-items:center;gap:10px;justify-content:flex-end;margin:6px 0 20px;font-size:12.5px;color:var(--muted)}
+.tch{font-size:11.5px;margin-top:6px;color:var(--ink-2)}
+.tch .tv{font-family:var(--mono);font-weight:600;color:var(--good)}
+.tch .tn{color:var(--muted)}
+.shared{font-size:11px;color:var(--muted);margin-left:6px}
+.pos-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.pos-chips button{font:inherit;font-size:12px;padding:3px 10px;border-radius:14px;border:1px solid var(--rule);background:var(--card);color:var(--ink-2);cursor:pointer}
+.pos-chips button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.side-note{font-size:11.5px;color:var(--muted);text-align:center;margin-top:4px}
+.focus-tip{font-size:12px;background:var(--brand-soft);color:var(--brand-ink);border-radius:8px;padding:6px 10px;margin:6px 0 2px}
+.sa-side svg text[data-axis]{cursor:pointer}
+.abl-item.flash{box-shadow:0 0 0 2px var(--brand)}
+.abl-item.cur{border-color:var(--brand)}
+/* 窄屏：上下排列，图谱固定在顶部（限高），往下自评时仍能看到图谱变化 */
+@media (max-width:900px){.sa-grid{grid-template-columns:1fr}.sa-side{top:0;max-height:52vh;z-index:5;order:-1;box-shadow:0 6px 16px -10px rgba(0,0,0,.25)}}
+.adv{border:1px solid var(--rule);border-radius:12px;background:var(--card);padding:14px 16px;margin-bottom:14px}
+.adv-sum{font-size:13px;line-height:1.85}
+.adv-sum b{font-weight:600}
+.adv-sum .note{font-size:11.5px;color:var(--muted)}
+.adv-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.adv-cols>div{background:var(--card-2);border-radius:9px;padding:10px 12px;font-size:12.5px;line-height:1.75}
+.adv-cols .k{font-size:11.5px;color:var(--muted);margin-bottom:2px}
+.sug{border:1px solid var(--rule);border-radius:12px;background:var(--card);padding:12px 14px;margin-bottom:10px}
+.sug-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sug-h b{font-size:13.5px;font-weight:600}
+.sug-h .lvup{font-family:var(--mono);font-size:11px;color:var(--crit);background:var(--crit-bg);border-radius:6px;padding:2px 7px}
+.sug-h .pos{font-size:11px;color:var(--ink-2);background:var(--card-2);border:1px solid var(--rule);border-radius:6px;padding:2px 7px}
+.sug-b{font-size:12.5px;color:var(--ink-2);line-height:1.75;margin-top:8px}
+.sug-b .k{color:var(--ink);font-weight:600}
+.sug-b ul{margin:4px 0 0;padding-left:18px}
+.skc{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:10px;background:var(--card-2);border:1px solid var(--rule);margin:2px 4px 2px 0}
+.skc.on{background:var(--good-bg);border-color:transparent;color:var(--good)}
+.sug-more{font:inherit;font-size:12.5px;color:var(--brand-ink);background:none;border:none;cursor:pointer;padding:4px 0}
+@media (max-width:720px){.adv-cols{grid-template-columns:1fr}}
 .empty-note{padding:30px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.8}
 .empty-note b{color:var(--ink)}
 </style>
@@ -79,7 +121,7 @@
       <div class="ptop-r">
         <div class="pt-l">
           <h1 class="pt-t">能力测评</h1>
-          <div class="pt-d">对照专业对口岗位的能力要求，逐项自评本人能力达成度</div>
+          <div class="pt-d">对照专业对口岗位的能力要求，逐项自评本人能力达成度。这是自评，仅供自己参考，不计入学习证据和能力测评；老师确认的技能达成见「学生成长中心」。</div>
         </div>
       </div>
     </div>
@@ -92,6 +134,8 @@
 <script src="js/permission.js"></script>
 <script src="js/common.js"></script>
 <script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script src="js/student-kit.js"></script>
 <script>
 (function () {
   'use strict';
@@ -193,7 +237,8 @@
   }
 
   /* ── 雷达图：轴 = 岗位要求的能力项，虚线 = 岗位要求，实线 = 本人自评，红点 = 未达标 ── */
-  function radar(rows, posName) {
+  function radar(rows, posName, focus) {
+    rows.forEach(function (r) { var t = teacherLv(r.abl); r.tch = t && t.lv ? t.lv : 0; });
     var n = rows.length;
     if (n < 3) return '';
     var W = 460, H = 400, cx = W / 2, cy = H / 2 + 4, Rr = 128;
@@ -221,6 +266,10 @@
     h += '<polygon points="' + poly(rows.map(function (r) { return r.need; })) + '" fill="none" stroke="' + ink + '" stroke-width="1.4" stroke-dasharray="4 3"/>';
     // 本人自评（实线品牌色）
     h += '<polygon points="' + poly(rows.map(function (r) { return r.got; })) + '" fill="' + brand + '" fill-opacity=".22" stroke="' + brand + '" stroke-width="2"/>';
+    // 老师评价（绿色方点，只画有证据换算出等级的能力）
+    var tpts = rows.map(function (r, i) { return r.tch ? pt(i, r.tch) : null; });
+    if (tpts.filter(Boolean).length > 1) h += '<polyline points="' + tpts.filter(Boolean).map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '" fill="none" stroke="var(--good)" stroke-width="1.2" stroke-dasharray="2 3"/>';
+    tpts.forEach(function (p, i) { if (p) h += '<rect x="' + (p[0] - 4).toFixed(1) + '" y="' + (p[1] - 4).toFixed(1) + '" width="8" height="8" fill="var(--good)"><title>老师评价 L' + rows[i].tch + '</title></rect>'; });
     rows.forEach(function (r, i) {
       var gap = r.got < r.need, p = pt(i, r.got);
       h += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (gap ? 4 : 2.4) + '" fill="' + (gap ? crit : brand) + '"/>';
@@ -229,9 +278,10 @@
       if (name.length > 7) lines.push(name.length > 14 ? name.slice(7, 13) + '…' : name.slice(7));
       var ang = -Math.PI / 2 + i * 2 * Math.PI / n, cos = Math.cos(ang), sin = Math.sin(ang), lp = pt(i, 3.3);
       var anchor = cos > 0.08 ? 'start' : cos < -0.08 ? 'end' : 'middle';
-      var col = gap ? crit : ink2;
+      var on = r.abl === focus, col = on ? brand : gap ? crit : ink2;
+      if (on) { var fp = pt(i, Math.max(r.got, 0.15)); h += '<circle cx="' + fp[0].toFixed(1) + '" cy="' + fp[1].toFixed(1) + '" r="8" fill="none" stroke="' + brand + '" stroke-width="2"/>'; }
       var y0 = sin > 0.6 ? lp[1] + 9 : sin < -0.6 ? lp[1] - (lines.length - 1) * 12 - 3 : lp[1] - (lines.length - 1) * 6 + 4;
-      h += '<text x="' + lp[0].toFixed(1) + '" y="' + y0.toFixed(1) + '" font-size="11" text-anchor="' + anchor + '" fill="' + col + '"' + (gap ? ' font-weight="600"' : '') + '>' +
+      h += '<text data-axis="' + esc(r.abl) + '" x="' + lp[0].toFixed(1) + '" y="' + y0.toFixed(1) + '" font-size="11" text-anchor="' + anchor + '" fill="' + col + '"' + (gap || on ? ' font-weight="600"' : '') + '><title>' + esc(a ? a.name : r.abl) + '：点击定位到自评</title>' +
         lines.map(function (l, k) { return '<tspan x="' + lp[0].toFixed(1) + '" dy="' + (k ? 12 : 0) + '">' + esc(l) + '</tspan>'; }).join('') + '</text>';
     });
     return h + '</svg>';
@@ -241,7 +291,9 @@
     return '<div class="radar-leg">' +
       '<span><i style="border:1.4px dashed var(--ink)"></i>岗位要求（L1–L3）</span>' +
       '<span><i style="background:var(--brand);opacity:.5;border:2px solid var(--brand)"></i>本人自评（L0–L3）</span>' +
-      '<span><i style="width:8px;height:8px;border-radius:50%;background:var(--crit)"></i>未达标（红字）</span></div>';
+      '<span><i style="width:8px;height:8px;border-radius:50%;background:var(--crit)"></i>未达标（红字）</span>' +
+      '<span><i style="width:8px;height:8px;background:var(--good)"></i>老师评价（由老师确认的技能换算）</span>' +
+      '<span><i style="width:9px;height:9px;border-radius:50%;border:2px solid var(--brand)"></i>刚自评的能力</span></div>';
   }
 
   /* ── 渲染 ── */
@@ -276,55 +328,64 @@
       '</div>' +
       '<button class="btn ghost" id="sa-reset">重新测评</button></div>';
 
-    // 雷达图：核心对口岗位各一张
-    var corePos = model.mapping.core.filter(function (p) { return POS[p]; });
-    var radarCards = corePos.map(function (pid) {
-      var rows = G.require.filter(function (r) { return r.pos === pid; }).map(function (r) {
-        return { abl: r.abl, need: parseInt(r.level.slice(1), 10), got: scores[r.abl] == null ? 0 : scores[r.abl] };
-      });
-      var needCount = rows.length, okCount = rows.filter(function (r) { return r.got >= r.need; }).length;
-      return '<div class="radar-card"><div class="rc-h">' +
-        '<div class="rc-t">' + esc(POS[pid].name) + ' <span class="pill core">核心对口</span></div>' +
-        '<div class="rc-note">要求 ' + needCount + ' 项 · 达标 ' + okCount + '</div></div>' +
-        (radar(rows, POS[pid].name) || '<div class="empty-note">要求能力少于 3 项，不绘制雷达图。</div>') +
-        radarLegend() + '</div>';
-    }).join('');
-    html += '<div class="sec-h"><span class="no">01</span>核心岗位能力雷达</div>' +
-      '<div class="radar-grid">' + (radarCards || '<div class="empty-note">暂无核心对口岗位</div>') + '</div>';
-
-    // 自评列表（按领域分组）
-    html += '<div class="sec-h"><span class="no">02</span>能力自评（对照定义逐项自评）</div>';
-    html += '<div id="sa-list">' + renderList(model, scores) + '</div>';
+    // 左：逐项自评；右：能力图谱（随自评实时变化）/ 结论与建议
+    if (!curPos || model.posIds.indexOf(curPos) < 0) curPos = model.mapping.core[0];
+    html += '<div class="sec-h" style="margin-top:4px"><span class="no">01</span>选择岗位，逐个测评<span style="font-weight:400;color:var(--muted);margin-left:6px">核心岗位排在前面；同一项能力在不同岗位里只需评一次</span></div>' +
+      '<div class="pos-steps" id="sa-steps">' + stepsHTML(model, scores) + '</div>';
+    html += '<div class="sa-grid"><div class="sa-main"><div class="sec-h" id="sa-self" style="margin-top:0"><span class="no">02</span><span id="sa-ptitle">' + esc(POS[curPos].name) + '</span>的能力自评（右侧图谱实时变化）</div>' +
+      '<div id="sa-list">' + renderList(model, scores) + '</div></div>' +
+      '<div class="sa-side" id="sa-side">' + sideHTML(model, scores) + '</div></div>';
 
     $('#pane').innerHTML = html;
   }
 
+  function posNeed(pid, ablId) { var r = G.require.find(function (x) { return x.pos === pid && x.abl === ablId; }); return r ? parseInt(r.level.slice(1), 10) : 0; }
+  function posStat(pid, scores) {
+    var rq = G.require.filter(function (r) { return r.pos === pid; });
+    return { n: rq.length, done: rq.filter(function (r) { return scores[r.abl] != null; }).length, ok: rq.filter(function (r) { var g = scores[r.abl]; return g != null && g >= parseInt(r.level.slice(1), 10); }).length };
+  }
+  function orderedPos(model) { return model.posIds.filter(function (p) { return POS[p]; }); }   // 核心岗位在前
+  function stepsHTML(model, scores) {
+    return orderedPos(model).map(function (p) {
+      var st = posStat(p, scores), done = st.done === st.n;
+      return '<button class="pos-step' + (done ? ' done' : '') + '" data-pos="' + p + '" aria-current="' + (p === curPos) + '"><span class="pn">' + esc(POS[p].name) + (model.mapping.core.indexOf(p) >= 0 ? ' · 核心' : '') + '</span>' +
+        '<span class="pp">' + (done ? '✓ 已测完 · 达标 ' + st.ok + '/' + st.n : '已评 ' + st.done + '/' + st.n) + '</span><span class="bar"><i style="width:' + Math.round(st.done / st.n * 100) + '%"></i></span></button>';
+    }).join('');
+  }
   function renderList(model, scores) {
-    var html = '';
+    var html = '', mine = G.require.filter(function (r) { return r.pos === curPos; }).map(function (r) { return r.abl; });
     model.domains.forEach(function (dm) {
-      html += '<div class="abl-group"><div class="abl-g-h">' + esc(dm.name || '其他') +
-        '<span class="cnt">' + dm.abls.length + ' 项</span></div>';
-      dm.abls.forEach(function (ablId) {
-        html += ablRow(model, scores, ablId);
-      });
+      var list = dm.abls.filter(function (id) { return mine.indexOf(id) >= 0; });
+      if (!list.length) return;
+      html += '<div class="abl-group"><div class="abl-g-h">' + esc(dm.name || '其他') + '<span class="cnt">' + list.length + ' 项</span></div>';
+      list.forEach(function (ablId) { html += ablRow(model, scores, ablId); });
       html += '</div>';
     });
+    // 本岗位测完后进入下一个岗位
+    var ps = orderedPos(model), i = ps.indexOf(curPos), st = posStat(curPos, scores), nx = ps[i + 1];
+    html += '<div class="pos-next" id="sa-next">' + nextHTML(st, nx) + '</div>';
     return html || '<div class="empty-note">暂无能力项</div>';
+  }
+  function nextHTML(st, nx) {
+    return (st.done < st.n ? '本岗位还有 ' + (st.n - st.done) + ' 项未自评' : '本岗位已测完') +
+      (nx ? '<button class="btn" data-pos="' + nx + '" style="height:32px">下一个岗位：' + esc(POS[nx].name) + ' →</button>' : '<button class="btn" data-side="advice" style="height:32px">查看测评结论与建议 →</button>');
   }
 
   function ablRow(model, scores, ablId) {
     var a = ABL[ablId];
     if (!a) return '';
     var rec = model.abilities.find(function (x) { return x.abl === ablId; });
-    var got = scores[ablId];
+    var got = scores[ablId], need = posNeed(curPos, ablId);
     var gapHtml;
     if (got == null) gapHtml = '<span class="gap-pill wait">待自评</span>';
-    else if (got >= rec.need) gapHtml = '<span class="gap-pill good">已达标</span>';
+    else if (got >= need) gapHtml = '<span class="gap-pill good">已达标</span>';
     else gapHtml = '<span class="gap-pill crit">未达标</span>';
 
-    var reqHtml = '<span class="tgt">目标 L' + rec.need + '</span>' + rec.reqs.map(function (r) {
+    // 目标取当前岗位的要求；其他岗位也要求这项时一并列出（评一次，各岗位共用）
+    var others = rec.reqs.filter(function (r) { return r.pos !== curPos; });
+    var reqHtml = '<span class="tgt">' + esc(POS[curPos].name) + '要求 L' + need + '</span>' + (others.length ? '<span class="shared">也是</span>' + others.map(function (r) {
       return '<span class="pos ' + (r.kind === 'core' ? 'core' : '') + '">' + esc(POS[r.pos].name) + ' L' + r.lv + '</span>';
-    }).join('');
+    }).join('') + '<span class="shared">的要求，评一次即可</span>' : '');
 
     var btn = function (lv) {
       return '<button data-abl="' + esc(ablId) + '" data-lv="' + lv + '" class="' + (got === lv ? 'on' : '') + '">L' + lv + '</button>';
@@ -334,7 +395,7 @@
       '<div class="abl-top">' +
       '<div class="abl-name"><b>' + (a.core ? '<span class="star">★</span>' : '') + esc(a.name) + '</b>' +
       '<span class="dm">' + esc(a.domain || '') + '</span>' +
-      '<div class="abl-req">' + reqHtml + '</div></div>' +
+      '<div class="abl-req">' + reqHtml + '</div>' + tchHTML(ablId) + '</div>' +
       '<div class="abl-act"><div class="self">' + [0, 1, 2, 3].map(btn).join('') + '</div>' + gapHtml + '</div></div>' +
       '<div class="abl-def" data-def="' + esc(ablId) + '">' +
       '<button class="def-toggle" data-toggle="' + esc(ablId) + '">查看能力定义（L1 / L2 / L3）</button>' +
@@ -345,6 +406,121 @@
     return ['L1', 'L2', 'L3'].map(function (lv) {
       return '<div class="lv"><div class="lvk">' + lv + '</div><div class="lvv">' + esc(a.levels && a.levels[lv] ? a.levels[lv] : '—') + '</div></div>';
     }).join('');
+  }
+
+  /* ── 老师评价（由老师确认的技能证据换算到能力，只作对照，不改变自评） ──
+     规则：取已达成（优秀 / 合格）的「直接支撑」技能里映射等级最高的那个；只有「部分支撑」技能达成的记为部分覆盖 */
+  var LC = null;
+  function lctx() { return LC || (LC = learnCtx()); }
+  function teacherLv(ablId) {
+    var L = lctx(), best = 0, by = null, partial = [];
+    (L.bySkill[ablId] || []).forEach(function (x) {
+      var e = L.ev[x.sid]; if (!e || !e.ok) return;
+      var m = (L.K.map[x.sid] || []).find(function (y) { return y.abl === ablId; }) || {}, lv = parseInt(String(m.level || 'L0').slice(1), 10) || 0;
+      if (x.type === '直接支撑') { if (lv > best) { best = lv; by = e; } }
+      else partial.push(e);
+    });
+    return best ? { lv: best, by: by } : partial.length ? { partial: true, by: partial[0] } : null;
+  }
+  function tchHTML(ablId) {
+    var t = teacherLv(ablId);
+    if (!t) return '<div class="tch"><span class="tn">老师评价：暂无</span></div>';
+    if (t.partial) return '<div class="tch">老师评价：<span class="tn">部分覆盖（「' + esc(t.by.name) + '」' + t.by.grade + '，只部分支撑这项能力）</span></div>';
+    return '<div class="tch">老师评价：<span class="tv">L' + t.lv + '</span> <span class="tn">依据「' + esc(t.by.name) + '」' + t.by.grade + '（' + esc(t.by.session) + '）</span></div>';
+  }
+
+  /* ── 右侧面板：能力图谱（按对口岗位切换）/ 结论与建议 ── */
+  var sideTab = 'radar', curPos = '', focusAbl = '';
+  function sideHTML(model, scores) {
+    var h = '<div class="side-tabs"><button data-side="radar" aria-selected="' + (sideTab === 'radar') + '">能力图谱</button><button data-side="advice" aria-selected="' + (sideTab === 'advice') + '">结论与建议</button></div>';
+    if (sideTab === 'advice') return h + adviceHTML(model, scores);
+    var rows = G.require.filter(function (r) { return r.pos === curPos; }).map(function (r) {
+      return { abl: r.abl, need: parseInt(r.level.slice(1), 10), got: scores[r.abl] == null ? 0 : scores[r.abl] };
+    });
+    var okCount = rows.filter(function (r) { return r.got >= r.need; }).length, done = rows.filter(function (r) { return scores[r.abl] != null; }).length;
+    h += '<div style="font-size:13px;font-weight:600;margin-bottom:4px">' + esc(POS[curPos].name) + (model.mapping.core.indexOf(curPos) >= 0 ? ' <span class="pill core">核心对口</span>' : '') + '</div>';
+    if (focusAbl && ABL[focusAbl]) {
+      var fr = rows.find(function (r) { return r.abl === focusAbl; });
+      var ft = teacherLv(focusAbl);
+      if (fr) h += '<div class="focus-tip">刚自评：' + esc(ABL[focusAbl].name) + ' L' + fr.got + '（' + esc(POS[curPos].name) + '要求 L' + fr.need + '，' + (fr.got >= fr.need ? '已达标' : '未达标') + '）' +
+        (ft && ft.lv ? '；老师评价 L' + ft.lv + (ft.lv < fr.got ? '，低于自评' : ft.lv > fr.got ? '，高于自评' : '，与自评一致') : '') + '</div>';
+    }
+    h += (radar(rows, POS[curPos].name, focusAbl) || '<div class="empty-note">该岗位要求的能力少于 3 项，不绘制雷达图。</div>') + radarLegend() +
+      '<div class="side-note">' + esc(POS[curPos].name) + '：要求 ' + rows.length + ' 项 · 已自评 ' + done + ' · 达标 ' + okCount + '　点击图上的能力名可定位到左侧自评</div>';
+    return h;
+  }
+
+  /* ── 测评结论与学习建议 ──
+     规则生成：自评对照岗位要求找出差距；差距能力经已确认的能力—技能映射找到知识体系里的课程技能；
+     再参考老师已确认的技能评价和本人待完成的任务给出建议。结论基于自评，仅供参考 */
+  var showAllSug = false;
+  function learnCtx() {
+    var K = TK.kn(), sv = SK.view(), TS = TK.load();
+    var k = TS.classes.find(function (c) { return c.students.indexOf(sv.name) >= 0; }) || {};
+    var opened = TS.plans.filter(function (p) { return p.classId === k.id; }).map(function (p) { return p.courseId; });
+    var ev = {}; sv.skills.list.forEach(function (x) { ev[x.sid] = x; });
+    var bySkill = {};   // 能力 → 支撑技能（已确认映射，直接 / 部分支撑）
+    Object.keys(K.map).forEach(function (sid) { K.map[sid].forEach(function (m) { (bySkill[m.abl] = bySkill[m.abl] || []).push({ sid: sid, type: m.type }); }); });
+    return { K: K, sv: sv, opened: opened, ev: ev, bySkill: bySkill };
+  }
+  function skillInfo(L, sid) {
+    var x = L.K.skill[sid] || {}, t = L.K.task[x.taskId] || {}, c = L.K.course[t.courseId] || {};
+    return { sid: sid, name: x.name || sid, task: t.name || '', course: c.name || '', open: L.opened.indexOf(t.courseId) >= 0 };
+  }
+  function adviceHTML(model, scores) {
+    var total = model.abilities.length, scored = model.abilities.filter(function (a) { return scores[a.abl] != null; });
+    if (!scored.length) return '<div class="adv"><div class="empty-note" style="padding:14px">还没有自评。在下方<a href="#sa-self">「能力自评」</a>里对照能力定义逐项选择 L0–L3，这里会给出测评结论和学习建议。</div></div>';
+    var L = lctx();
+    var cmp = scored.map(function (a) { var t = teacherLv(a.abl); return t && t.lv ? { a: a, t: t.lv, s: scores[a.abl] } : null; }).filter(Boolean);
+    var hi = cmp.filter(function (x) { return x.s > x.t; }), lo = cmp.filter(function (x) { return x.s < x.t; });
+    var gaps = scored.filter(function (a) { return scores[a.abl] < a.need; }), oks = scored.filter(function (a) { return scores[a.abl] >= a.need; });
+    var isCore = function (a) { return a.reqs.some(function (r) { return r.kind === 'core'; }); };
+    // 差距排序：核心岗位要求的优先，其次差距大的，再次被更多岗位要求的
+    gaps.sort(function (x, y) { return (isCore(y) - isCore(x)) || ((y.need - scores[y.abl]) - (x.need - scores[x.abl])) || (y.reqs.length - x.reqs.length); });
+    // 各对口岗位按自评的达标情况
+    var pos = model.posIds.filter(function (p) { return POS[p]; }).map(function (pid) {
+      var rq = G.require.filter(function (r) { return r.pos === pid; });
+      var ok = rq.filter(function (r) { var g = scores[r.abl]; return g != null && g >= parseInt(r.level.slice(1), 10); }).length;
+      return { pid: pid, name: POS[pid].name, n: rq.length, ok: ok, core: model.mapping.core.indexOf(pid) >= 0 };
+    });
+    var best = pos.slice().sort(function (a, b) { return b.ok / b.n - a.ok / a.n; })[0];
+    var coreGap = gaps.filter(isCore).length;
+    var h = '<div class="adv"><div class="adv-sum">' +
+      '对照 <b>' + model.posIds.length + '</b> 个对口岗位的 <b>' + total + '</b> 项能力，已自评 <b>' + scored.length + '</b> 项：达标 <b style="color:var(--good)">' + oks.length + '</b> 项，未达标 <b style="color:var(--crit)">' + gaps.length + '</b> 项' + (gaps.length ? '（其中核心岗位要求的 ' + coreGap + ' 项）' : '') + '。' +
+      (best && best.ok ? '按自评，你目前最接近「<b>' + esc(best.name) + '</b>」岗位的要求（达标 ' + best.ok + '/' + best.n + ' 项）。' : '') +
+      (scored.length < total ? '<br><span class="note">还有 ' + (total - scored.length) + ' 项未自评，完成全部自评后结论更完整。</span>' : '') +
+      (cmp.length ? '<br>已自评的能力中有 <b>' + cmp.length + '</b> 项有老师评价：' + (hi.length || lo.length ? (hi.length ? '自评高于老师评价 ' + hi.length + ' 项（' + hi.map(function (x) { return esc(ABL[x.a.abl].name) + ' 自评 L' + x.s + ' / 老师 L' + x.t; }).join('；') + '）' : '') + (hi.length && lo.length ? '，' : '') + (lo.length ? '自评低于老师评价 ' + lo.length + ' 项（' + lo.map(function (x) { return esc(ABL[x.a.abl].name) + ' 自评 L' + x.s + ' / 老师 L' + x.t; }).join('；') + '）' : '') + '。' : '与自评一致。') : '') +
+      '<br><span class="note">结论基于你的自评，仅供参考；老师评价由老师确认通过的技能换算到能力，只作对照。</span></div>' +
+      '<div class="adv-cols"><div><div class="k">各对口岗位（按自评达标）</div>' + pos.map(function (p) { return esc(p.name) + (p.core ? '（核心）' : '') + '：达标 ' + p.ok + '/' + p.n; }).join('<br>') + '</div>' +
+      '<div><div class="k">相对强项</div>' + (oks.length ? oks.filter(isCore).concat(oks.filter(function (a) { return !isCore(a); })).slice(0, 5).map(function (a) { return esc(ABL[a.abl].name) + ' L' + scores[a.abl]; }).join('<br>') : '暂无达标的能力') + '</div></div></div>';
+    if (!gaps.length) return h + '<div class="adv" style="font-size:12.5px;color:var(--ink-2)">已自评的能力都达到了岗位要求。可以对照 L3 的描述继续提升，或在学生成长中心查看老师确认的技能达成。</div>';
+    var list = showAllSug ? gaps : gaps.slice(0, 5);
+    h += list.map(function (a) { return sugHTML(L, a, scores[a.abl]); }).join('');
+    if (gaps.length > 5) h += '<button class="sug-more" data-sugmore>' + (showAllSug ? '收起' : '查看全部 ' + gaps.length + ' 项学习建议') + '</button>';
+    return h;
+  }
+  // 本学期在学的技能全部列出，其余最多列 3 个
+  function shownSk(sk) { return sk.filter(function (x) { return x.open; }).concat(sk.filter(function (x) { return !x.open; }).slice(0, 3)); }
+  function sugHTML(L, a, got) {
+    var ab = ABL[a.abl], sk = (L.bySkill[a.abl] || []).map(function (x) { var i = skillInfo(L, x.sid); i.type = x.type; return i; });
+    sk.sort(function (x, y) { return (y.open - x.open) || ((y.type === '直接支撑') - (x.type === '直接支撑')); });
+    var tips = [];
+    sk.forEach(function (x) {
+      var e = L.ev[x.sid];
+      if (e && e.ok) tips.push('老师已确认你在「' + esc(x.name) + '」上达成（' + e.grade + '），可以对照 L' + a.need + ' 的描述重新评估自己。');
+      if (e && !e.ok) tips.push('「' + esc(x.name) + '」最近一次老师评价为需改进，先按老师评语补练：<a href="' + UI.link('student-tasks.html') + '&open=' + e.tid + '">查看《' + esc(e.session) + '》</a>。');
+    });
+    var todo = L.sv.tasks.filter(function (t) { return SK.canSubmit(t) && (t.task.criteria || []).some(function (c) { return sk.some(function (x) { return x.sid === c.sid; }); }); });
+    todo.forEach(function (t) { tips.push('完成任务「' + esc(t.task.name) + '」' + (t.due ? '（截止 ' + esc(t.due) + '）' : '') + '：<a href="' + UI.link('student-tasks.html') + '&open=' + t.id + '">去提交</a>。'); });
+    var openSk = sk.filter(function (x) { return x.open && !L.ev[x.sid]; });
+    if (openSk.length) tips.push('本学期在学的' + openSk.map(function (x) { return '《' + esc(x.course) + '》「' + esc(x.task) + '」'; }).filter(function (v, i, arr) { return arr.indexOf(v) === i; }).join('、') + '会练到这项能力，认真完成相关课次的任务。');
+    if (sk.length && !sk.some(function (x) { return x.open; })) tips.push('本学期课程暂未覆盖，可以自学' + sk.slice(0, 2).map(function (x) { return '《' + esc(x.course) + '》「' + esc(x.task) + '」'; }).join('、') + '的内容。');
+    if (!sk.length) tips.push('知识体系里暂时没有对应的课程技能，可以向老师了解相关的实训或实习机会。');
+    return '<div class="sug"><div class="sug-h">' + (ab.core ? '<span style="color:var(--brand)">★</span>' : '') + '<b>' + esc(ab.name) + '</b><span class="lvup">自评 L' + got + ' → 目标 L' + a.need + '</span>' +
+      a.reqs.map(function (r) { return '<span class="pos">' + esc(POS[r.pos].name) + ' L' + r.lv + '</span>'; }).join('') + '</div>' +
+      '<div class="sug-b"><div><span class="k">要达到的水平（L' + a.need + '）：</span>' + esc((ab.levels || {})['L' + a.need] || '—') + '</div>' +
+      (sk.length ? '<div style="margin-top:4px"><span class="k">对应的课程技能：</span>' + shownSk(sk).map(function (x) { var e = L.ev[x.sid]; return '<span class="skc' + (x.open ? ' on' : '') + '" title="' + esc(x.type) + '">' + esc(x.name) + '《' + esc(x.course) + '》' + (x.open ? ' · 本学期在学' : '') + (e ? ' · 老师评价 ' + e.grade : '') + '</span>'; }).join('') + (sk.length > shownSk(sk).length ? '<span style="font-size:11.5px;color:var(--muted)">等 ' + sk.length + ' 个技能</span>' : '') + '</div>' : '') +
+      '<div style="margin-top:4px"><span class="k">学习建议：</span><ul>' + tips.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul></div></div></div>';
   }
 
   /* ── 局部刷新 ── */
@@ -362,25 +538,13 @@
     if (stats[1]) stats[1].textContent = scored;
     if (stats[2]) stats[2].textContent = ok;
     if (stats[3]) { stats[3].textContent = rate + '%'; stats[3].className = rateCls; }
-    // 刷新雷达
-    refreshRadar(model, scores);
-  }
-
-  function refreshRadar(model, scores) {
-    var cards = document.querySelectorAll('.radar-card');
-    model.mapping.core.forEach(function (pid, i) {
-      var el = cards[i];
-      if (!el || !POS[pid]) return;
-      var rows = G.require.filter(function (r) { return r.pos === pid; }).map(function (r) {
-        return { abl: r.abl, need: parseInt(r.level.slice(1), 10), got: scores[r.abl] == null ? 0 : scores[r.abl] };
-      });
-      var okCount = rows.filter(function (r) { return r.got >= r.need; }).length;
-      var note = el.querySelector('.rc-note');
-      if (note) note.textContent = '要求 ' + rows.length + ' 项 · 达标 ' + okCount;
-      var svg = radar(rows, POS[pid].name);
-      var old = el.querySelector('svg');
-      if (old && svg) old.outerHTML = svg;
-    });
+    // 刷新岗位进度与「下一个岗位」
+    var steps = document.getElementById('sa-steps'); if (steps) steps.innerHTML = stepsHTML(model, scores);
+    var nx = document.getElementById('sa-next');
+    if (nx) { var ps = orderedPos(model); nx.innerHTML = nextHTML(posStat(curPos, scores), ps[ps.indexOf(curPos) + 1]); }
+    // 刷新右侧面板（保持面板滚动位置）
+    var side = document.getElementById('sa-side');
+    if (side) { var top = side.scrollTop; side.innerHTML = sideHTML(model, scores); side.scrollTop = sideTab === 'radar' ? 0 : top; }
   }
 
   function refreshRow(ablId, got, need) {
@@ -415,8 +579,30 @@
         if (model.err) return;
         var rec = model.abilities.find(function (x) { return x.abl === ablId; });
         saveScore(model.student.id, ablId, lv);
-        refreshRow(ablId, lv, rec.need);
+        refreshRow(ablId, lv, posNeed(curPos, ablId));
+        focusAbl = ablId;
+        document.querySelectorAll('.abl-item.cur').forEach(function (x) { x.classList.remove('cur'); });
+        b.closest('.abl-item').classList.add('cur');
         refreshAll();
+        return;
+      }
+      var sd = e.target.closest('[data-side]'), ps = e.target.closest('[data-pos]'), ax = e.target.closest('[data-axis]');
+      if (ps) {   // 切换岗位：左侧列表、右侧图谱都换成该岗位
+        curPos = ps.getAttribute('data-pos'); focusAbl = ''; sideTab = 'radar';
+        render();
+        var top0 = document.getElementById('sa-steps'); if (top0) top0.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      if (sd || e.target.closest('[data-sugmore]')) {
+        if (sd) sideTab = sd.getAttribute('data-side');
+        else showAllSug = !showAllSug;
+        refreshAll();
+        if (sd && sd.closest('#sa-next')) document.getElementById('sa-side').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      if (ax) {
+        var row = document.querySelector('[data-row="' + ax.getAttribute('data-axis') + '"]');
+        if (row) { row.scrollIntoView({ behavior: 'smooth', block: 'center' }); row.classList.add('flash'); setTimeout(function () { row.classList.remove('flash'); }, 1400); }
         return;
       }
       var reset = e.target.closest('#sa-reset');
@@ -424,6 +610,7 @@
         var m = buildModel();
         if (m.err) return;
         resetScores(m.student.id);
+        focusAbl = '';
         render();
         toast('已清空自评结果');
         return;

@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>知识体系｜专业图谱平台</title>
+    <link rel="stylesheet" href="mapping-review.css" />
+    <link rel="stylesheet" href="mapping-polish.css" />
+    <link rel="stylesheet" href="mapping-compact.css" />
+    <link rel="stylesheet" href="mapping-reference.css" />
+    <style>
+      .ks-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+      .ks-toolbar select,.ks-toolbar input{height:32px;padding:0 10px;border:1px solid #dfe6ef;border-radius:6px;font-size:13px;}
+      .ks-toolbar input{min-width:200px;}
+      .ks-toolbar select{min-width:120px;}
+      .ks-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+      .ks-create-card{border:2px dashed #dfe6ef;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;cursor:pointer;transition:all .2s;background:#fafafa;}
+      .ks-create-card:hover{border-color:#5149e9;background:#f5f3fa;}
+      .ks-create-card .plus{font-size:36px;color:#b6c1d2;font-weight:300;line-height:1;}
+      .ks-create-card .label{font-size:14px;color:#8b99ac;margin-top:8px;}
+      .ks-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px;box-shadow:0 2px 8px rgba(30,49,82,.06);cursor:pointer;transition:.2s;position:relative;min-height:180px;display:flex;flex-direction:column;}
+      .ks-card:hover{box-shadow:0 6px 20px rgba(30,49,82,.1);border-color:#c7d2fe;transform:translateY(-1px);}
+      .ks-card-name{font-size:16px;font-weight:600;color:#31425e;margin-bottom:4px;word-break:break-all;padding-right:44px;}
+      .ks-card-statuses{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+      .ks-card-status{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;width:max-content;}
+      .ks-card-status.building{background:#fff8e6;color:#b7791f;}
+      .ks-card-status.built{background:#edf9f5;color:#12946f;}
+      .ks-card-status.failed{background:#fff0f0;color:#c72c2a;}
+      .ks-card-status.synced{background:#edeaff;color:#5149e9;}
+      .ks-card-status.syncing{background:#eaf3ff;color:#2a6eb0;}
+      .ks-card-scope{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;margin:0 0 12px 6px;background:#eef0ff;color:#5149e9;}
+      .ks-card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+      .ks-card-tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;width:max-content;background:#eef1f6;color:#60718a;}
+      .ks-card-tag-range{background:#eef0ff;color:#5149e9;}
+      .ks-card-desc{font-size:12px;color:#60718a;line-height:1.7;margin-bottom:14px;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+      .ks-card-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:#8b99ac;flex-wrap:wrap;}
+      .ks-card-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #dfe6ef;}
+      .ks-card-actions button{flex:1;height:30px;border:1px solid #dfe6ef;border-radius:7px;background:#fff;color:#60718a;font-size:12px;cursor:pointer;transition:.15s;}
+      .ks-card-actions button:hover{background:#f5f7fa;border-color:#5149e9;color:#5149e9;}
+      .ks-card-actions .enter-btn{background:#5149e9;color:#fff;border-color:#5149e9;}
+      .ks-card-actions .enter-btn:hover{background:#463bc9;}
+      .ks-card-corner{position:absolute;top:12px;right:12px;display:flex;gap:4px;z-index:3;}
+      .ks-corner-btn{height:24px;padding:0 10px;border:1px solid #dfe6ef;border-radius:6px;background:#fff;color:#60718a;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s;box-shadow:0 1px 4px rgba(30,49,82,.06);}
+      .ks-corner-btn:hover{background:#f5f7fa;border-color:#5149e9;color:#5149e9;}
+      .ks-corner-btn.danger:hover{border-color:#c72c2a;color:#c72c2a;}
+      .ks-corner-btn.ks-corner-more{font-size:14px;letter-spacing:0;line-height:1;}
+      .ks-action-menu{position:fixed;z-index:80;min-width:112px;background:#fff;border:1px solid #dfe6ef;border-radius:8px;box-shadow:0 10px 30px rgba(30,49,82,.18);padding:4px 0;}
+      .ks-action-item{padding:7px 14px;font-size:12px;color:#60718a;cursor:pointer;white-space:nowrap;}
+      .ks-action-item:hover{background:#f5f7fa;color:#5149e9;}
+      .ks-action-item.danger:hover{background:#fff1f0;color:#c72c2a;}
+      .ks-action-divider{height:1px;background:#dfe6ef;margin:4px 0;}
+      .ks-modal{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;}
+      .ks-modal.open{display:flex;}
+      .ks-modal-backdrop{position:absolute;inset:0;background:rgba(31,45,70,.28);}
+      .ks-dialog{position:relative;width:min(420px,92%);background:#fff;border-radius:14px;box-shadow:0 18px 60px rgba(30,49,82,.2);overflow:hidden;}
+      .ks-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 24px 16px;border-bottom:1px solid #edf1f5;}
+      .ks-dialog-head h2{margin:0;font-size:17px;color:#31425e;}
+      .ks-dialog-head p{margin:6px 0 0;font-size:12px;color:#8b99ac;}
+      .ks-close{border:0;background:transparent;color:#8b99ac;font-size:24px;line-height:1;cursor:pointer;}
+      .ks-dialog-body{padding:20px 24px;}
+      .ks-dialog-body label{display:block;font-size:12px;font-weight:600;color:#60718a;margin-bottom:14px;}
+      .ks-dialog-body input,.ks-dialog-body select{display:block;width:100%;height:36px;margin-top:7px;border:1px solid #dfe6ef;border-radius:8px;padding:0 10px;font-size:13px;color:#31425e;background:#fff;}
+      .ks-dialog-body textarea{display:block;width:100%;margin-top:7px;border:1px solid #dfe6ef;border-radius:8px;padding:8px 10px;font-size:13px;color:#31425e;background:#fff;resize:vertical;font-family:inherit;box-sizing:border-box;}
+      .ks-dialog-body .req{color:#c72c2a;}
+      .ks-create-row{display:flex;gap:12px;}
+      .ks-create-row label{flex:1;margin-bottom:0;}
+      .ks-field-label{font-size:12px;font-weight:600;color:#60718a;margin-bottom:7px;}
+      .ks-type-seg{display:flex;gap:8px;margin-bottom:18px;}
+      .ks-type-btn{flex:1;height:34px;border:1px solid #dfe6ef;border-radius:8px;background:#fff;color:#60718a;font-size:12px;font-weight:600;cursor:pointer;transition:.12s;}
+      .ks-type-btn:hover{border-color:#c7d2fe;color:#5149e9;}
+      .ks-type-btn.active{background:#eef0ff;border-color:#5149e9;color:#5149e9;}
+      .ks-file-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px 14px;border:1px dashed #c7d2fe;border-radius:10px;background:#fafbff;cursor:pointer;text-align:center;margin-bottom:16px;transition:.12s;}
+      .ks-file-drop:hover{border-color:#5149e9;background:#f5f6ff;}
+      .ks-file-icon{font-size:22px;color:#5149e9;line-height:1;}
+      .ks-file-main{font-size:12px;color:#60718a;}
+      .ks-file-formats{font-size:11px;color:#8b99ac;word-break:break-all;}
+      .ks-scope-empty{font-size:12px;color:#c72c2a;margin:-8px 0 12px;}
+      .ks-user-switcher{height:28px;border:1px solid #dfe6ef;border-radius:6px;font-size:12px;color:#31425e;background:#fff;padding:0 4px;flex:1;min-width:0;max-width:150px;}
+      .ks-rel-major{font-size:12px;color:#60718a;background:#f5f7fa;border-radius:6px;padding:6px 10px;margin-top:7px;}
+      .ks-rel-major strong{color:#31425e;font-weight:600;}
+      .ks-rel-hint{font-size:11px;color:#8b99ac;margin-top:7px;}
+      .ks-rel-entry{display:flex;align-items:center;gap:6px;width:100%;padding:8px 10px;border:1px dashed #dfe6ef;border-radius:8px;background:#fbfcfe;color:#8b99ac;font-size:12px;cursor:pointer;transition:.15s;margin-bottom:14px;text-align:left;box-sizing:border-box;}
+      .ks-rel-entry:hover{border-color:#c7d2fe;color:#5149e9;}
+      .ks-rel-entry.open{border-color:#5149e9;color:#5149e9;background:#fafbff;}
+      .ks-rel-entry-plus{color:#5149e9;font-weight:600;}
+      .ks-rel-entry-caret{margin-left:auto;color:#8b99ac;font-size:11px;transition:transform .15s;}
+      .ks-rel-entry.open .ks-rel-entry-caret{transform:rotate(180deg);}
+      .ks-rel-panel{padding:12px;border:1px solid #dfe6ef;border-radius:8px;background:#fbfcfe;margin-bottom:14px;}
+      .ks-rel-grid{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+      .ks-dialog-body .ks-rel-field{flex:1;min-width:180px;display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#60718a;margin-bottom:0;}
+      .ks-dialog-body .ks-rel-field select{height:36px;margin-top:0;padding:0 10px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;color:#31425e;background:#fff;box-sizing:border-box;}
+      .ks-card-unlinked{display:inline-block;font-size:10px;font-weight:500;color:#8b99ac;background:#eef1f6;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;}
+      .ks-range-readonly{background:#f5f7fa!important;color:#60718a!important;cursor:not-allowed;}
+      .ks-dialog-actions{display:flex;justify-content:flex-end;gap:9px;padding:14px 24px;border-top:1px solid #edf1f5;background:#fbfcfe;}
+      .ks-dialog-actions button{height:34px;padding:0 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;}
+      .ks-perm-label{font-size:12px;font-weight:600;color:#60718a;margin-bottom:7px;}
+      .ks-perm-tip{display:block;font-size:11px;font-weight:400;color:#8b99ac;margin-top:3px;}
+      .ks-perm-layout{display:flex;gap:16px;align-items:flex-start;}
+      .ks-perm-pane{flex:1;min-width:0;}
+      .ks-org-tree{border:1px solid #dfe6ef;border-radius:8px;background:#fbfcfe;padding:6px 10px;max-height:300px;overflow-y:auto;}
+      .ks-perm-echo{background:#fbfcfe;border:1px solid #dfe6ef;border-radius:8px;padding:12px;min-height:200px;display:flex;flex-direction:column;}
+      .ks-perm-echo-list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;flex:1;}
+      .ks-perm-echo-group-title{font-size:11px;font-weight:600;color:#8b99ac;margin:4px 0 2px;}
+      .ks-perm-echo-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:#fff;border:1px solid #eef0ff;border-radius:6px;font-size:12px;color:#31425e;}
+      .ks-perm-echo-remove{margin-left:auto;width:18px;height:18px;border:none;background:#eef1f6;color:#8b99ac;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;transition:.12s;}
+      .ks-perm-echo-remove:hover{background:#fff1f0;color:#c72c2a;}
+      .ks-perm-echo-empty{font-size:12px;color:#8b99ac;text-align:center;padding:28px 0;}
+      .ks-org-node{margin:1px 0;}
+      .ks-org-row{display:flex;align-items:center;gap:6px;padding:3px 0;}
+      .ks-org-toggle{width:18px;height:18px;border:none;background:none;color:#8b99ac;cursor:pointer;font-size:10px;line-height:1;flex:none;padding:0;transition:transform .12s;}
+      .ks-org-toggle.empty{visibility:hidden;}
+      .ks-org-check{display:flex;align-items:center;gap:6px;font-size:13px;color:#31425e;font-weight:600;cursor:pointer;}
+      .ks-org-type{font-size:10px;font-weight:500;color:#8b99ac;background:#eef1f6;padding:1px 6px;border-radius:4px;margin-left:2px;}
+      .ks-org-check input[type=checkbox],.ks-org-member input[type=checkbox]{width:15px;height:15px;accent-color:#5149e9;}
+      .ks-org-body{margin-left:20px;border-left:1px dashed #dfe6ef;padding-left:8px;}
+      .ks-org-members{display:flex;flex-direction:column;gap:2px;padding:2px 0;}
+      .ks-org-member{display:flex;align-items:center;gap:6px;font-size:12px;color:#60718a;cursor:pointer;padding:3px 0;}
+      .ks-org-member-title{font-size:11px;color:#8b99ac;}
+      .ks-org-node.collapsed > .ks-org-body{display:none;}
+      .ks-org-node.collapsed > .ks-org-row .ks-org-toggle{transform:rotate(-90deg);}
+      .ks-empty{text-align:center;color:#8b99ac;padding:40px 0;font-size:14px;}
+    </style>
+    <link rel="stylesheet" href="design-tokens.css" />
+  <link rel="stylesheet" href="gc-shell.css" />
+</head>
+  <body>
+    <aside class="lnav gc-lnav" id="lnav"></aside>
+<!-- 左侧菜单与其它页面共用 ../js/common.js -->
+<script src="../js/mock-data.js"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js"></script>
+<script src="gc-shell.js"></script>
+<script src="../js/assess-data.js"></script>
+<script src="../js/teacher-kit.js"></script>
+<script>GC.boot('gc-ks');</script>
+    <div class="platform-page">
+    <main class="app-shell">
+      <section class="page-heading">
+        <div><h1>知识体系</h1></div>
+      </section>
+      <div class="ks-toolbar">
+        <select id="ksOwnerFilter"><option value="all">全部可见</option><option value="mine">我创建的</option><option value="shared">与我共享</option></select>
+        <select id="ksCatFilter"><option value="all">全部分类</option><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select>
+        <select id="ksScopeFilter"><option value="all">全部范围</option><option value="专业大类">专业大类</option><option value="专业">专业</option><option value="课程">课程</option></select>
+        <select id="ksStatusFilter"><option value="all">全部状态</option><option value="building">构建中</option><option value="built">构建完成</option><option value="build_failed">构建失败</option><option value="syncing">同步中</option><option value="synced">同步完成</option><option value="sync_failed">同步失败</option></select>
+        <input type="text" id="ksSearchInput" placeholder="搜索知识体系名称、描述..." />
+        <button class="primary-button" id="ksSearchBtn" type="button">搜索</button>
+      </div>
+      <div class="ks-card-grid" id="ksCardGrid"></div>
+      <div id="ksEmpty" class="ks-empty" style="display:none;">没有匹配的知识体系</div>
+      <div id="toast" class="toast" role="status"></div>
+    </main>
+    </div>
+
+    <div class="ks-modal" id="ksSettingsModal" aria-hidden="true">
+      <div class="ks-modal-backdrop" onclick="closeKsSettings()"></div>
+      <div class="ks-dialog" style="width:min(720px,96%);">
+        <div class="ks-dialog-head">
+          <div><h2>知识体系设置</h2><p>设置名称与访问权限</p></div>
+          <button class="ks-close" onclick="closeKsSettings()" aria-label="关闭">×</button>
+        </div>
+        <div class="ks-dialog-body">
+          <div class="ks-perm-layout">
+            <div class="ks-perm-pane">
+              <div class="ks-perm-label">选择组织与成员<span class="ks-perm-tip">勾选可访问该知识体系的组织与用户</span></div>
+              <div class="ks-org-tree" id="ksOrgTree"></div>
+            </div>
+            <div class="ks-perm-pane ks-perm-echo">
+              <div class="ks-perm-label">已选<span class="ks-perm-tip" id="ksPermEchoCount">当前勾选的组织与用户</span></div>
+              <div class="ks-perm-echo-list" id="ksPermEcho"></div>
+            </div>
+          </div>
+        </div>
+        <div class="ks-dialog-actions">
+          <button class="ghost-button" onclick="closeKsSettings()">取消</button>
+          <button class="primary-button" onclick="saveKsSettings()">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ks-modal" id="createKsModal" aria-hidden="true">
+      <div class="ks-modal-backdrop" onclick="closeCreateKs()"></div>
+      <div class="ks-dialog" style="width:min(500px,92%);">
+        <div class="ks-dialog-head">
+          <div><h2>创建知识体系</h2></div>
+          <button class="ks-close" onclick="closeCreateKs()" aria-label="关闭">×</button>
+        </div>
+        <div class="ks-dialog-body">
+          <div class="ks-field-label">类型</div>
+          <div class="ks-type-seg" id="ksTypeSeg">
+            <button type="button" class="ks-type-btn active" data-type="standard" onclick="setKsType('standard')">标准创建</button>
+            <button type="button" class="ks-type-btn" data-type="file" onclick="setKsType('file')">参考文件创建</button>
+          </div>
+          <label>范围 <span class="req">*</span><select id="newKsRange" onchange="onKsRangeChange()"><option value="专业大类">专业大类</option><option value="专业">专业</option><option value="课程">课程</option></select></label>
+          <div id="ksStandardFields">
+            <label>名称 <span class="req">*</span><input id="newKsName" type="text" placeholder="请输入名称" maxlength="40" oninput="ksNameAutoFilled=false" /></label>
+            <label>分类<select id="newKsSort"><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select></label>
+          </div>
+          <div id="ksFileFields" style="display:none;">
+            <div class="ks-field-label">参考文件 <span class="req">*</span></div>
+            <div class="ks-file-drop" id="ksFileDrop" onclick="document.getElementById('ksFileInput').click()" ondragover="event.preventDefault()" ondrop="ksFileDrop(event)">
+              <input type="file" id="ksFileInput" accept=".html,.htm,.pdf,.markdown,.xls,.mdx,.properties,.xlsx,.txt,.vtt,.csv,.md,.docx" style="display:none;" onchange="onKsFileChange(this)" />
+              <span class="ks-file-icon">⇧</span>
+              <span class="ks-file-main" id="ksFileMain">点击或拖拽上传参考文件</span>
+              <span class="ks-file-formats" id="ksFileFormats">支持 html / pdf / markdown / xls / xlsx / txt / csv / md / docx</span>
+            </div>
+          </div>
+          <label>描述（可选）<textarea id="newKsDesc" rows="3" placeholder="请输入知识体系描述（可选）"></textarea></label>
+          <button type="button" class="ks-rel-entry" id="ksRelEntry" onclick="toggleKsRelPanel()">
+            <span class="ks-rel-entry-plus">＋</span><span id="ksRelEntryText">关联课程 / 专业（选填）</span><span class="ks-rel-entry-caret">▾</span>
+          </button>
+          <div class="ks-rel-panel" id="ksRelPanel" style="display:none;">
+            <div class="ks-rel-grid">
+              <label class="ks-rel-field" id="ksRelCatField" style="display:none;">关联专业大类<select id="newKsRelCat" onchange="onKsRelCatChange()"></select></label>
+              <label class="ks-rel-field" id="ksRelMajorField" style="display:none;">关联专业<select id="newKsRelMajor" onchange="onKsRelMajorChange()"></select></label>
+              <label class="ks-rel-field" id="ksRelCourseField" style="display:none;">关联课程<select id="newKsRelCourse" onchange="onKsRelCourseChange()"></select></label>
+            </div>
+            <div id="ksRelHint" class="ks-rel-hint">未关联，可在编辑中补充关联</div>
+          </div>
+        </div>
+        <div class="ks-dialog-actions">
+          <button class="ghost-button" onclick="closeCreateKs()">取消</button>
+          <button class="ghost-button" id="ksManualBtn" onclick="manualCreateKs()" style="border-color:#5149e9;color:#5149e9;">手动创建</button>
+          <button class="primary-button" onclick="submitCreateKs()">AI生成知识体系</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ks-modal" id="editKsModal" aria-hidden="true">
+      <div class="ks-modal-backdrop" onclick="closeEditKs()"></div>
+      <div class="ks-dialog" style="width:min(500px,92%);">
+        <div class="ks-dialog-head">
+          <div><h2>编辑知识体系</h2><p>范围创建后不可修改，可补充或调整关联对象。</p></div>
+          <button class="ks-close" onclick="closeEditKs()" aria-label="关闭">×</button>
+        </div>
+        <div class="ks-dialog-body">
+          <label>范围<select id="editKsRange" class="ks-range-readonly" disabled><option value="专业大类">专业大类</option><option value="专业">专业</option><option value="课程">课程</option></select></label>
+          <div class="ks-field-label">关联对象（选填）</div>
+          <div class="ks-rel-grid">
+            <label class="ks-rel-field" id="editKsRelCatField" style="display:none;">关联专业大类<select id="editKsRelCat" onchange="onEditKsRelCatChange()"></select></label>
+            <label class="ks-rel-field" id="editKsRelMajorField" style="display:none;">关联专业<select id="editKsRelMajor" onchange="onEditKsRelMajorChange()"></select></label>
+            <label class="ks-rel-field" id="editKsRelCourseField" style="display:none;">关联课程<select id="editKsRelCourse" onchange="onEditKsRelCourseChange()"></select></label>
+          </div>
+          <div id="editKsRelHint" class="ks-rel-hint">未关联，可在编辑中补充关联</div>
+          <label>名称 <span class="req">*</span><input id="editKsName" type="text" maxlength="40" /></label>
+          <label>分类<select id="editKsSort"><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select></label>
+          <label>描述（可选）<textarea id="editKsDesc" rows="3" placeholder="请输入知识体系描述（可选）"></textarea></label>
+        </div>
+        <div class="ks-dialog-actions">
+          <button class="ghost-button" onclick="closeEditKs()">取消</button>
+          <button class="primary-button" onclick="saveEditKs()">保存</button>
+        </div>
+      </div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+      function toast(text){var t=document.getElementById('toast');t.textContent=text;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(function(){t.classList.remove('show')},2200)}
+
+      var ksSystems = [
+        {id:'KS001',name:'旅游类-休闲服务与管理',desc:'休闲服务与管理专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'synced',nodes:2186,createdAt:'2026-08-12',updatedAt:'2026-09-20'},
+        {id:'KS002',name:'旅游类-智慧景区开发与管理',desc:'智慧景区开发与管理专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'',nodes:1640,createdAt:'2026-08-15',updatedAt:'2026-09-18'},
+        {id:'KS003',name:'旅游类-智慧旅游技术应用',desc:'智慧旅游技术应用专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'',nodes:1280,createdAt:'2026-08-18',updatedAt:'2026-09-17'},
+        {id:'KS004',name:'旅游类-研学旅行管理与服务',desc:'研学旅行管理与服务专业',level:'高职',category:'tourism',creator:'平台管理员',sharedTo:['张明'],privacy:'仅自己',buildStatus:'built',syncStatus:'syncing',nodes:960,createdAt:'2026-08-20',updatedAt:'2026-09-16'},
+        {id:'KS005',name:'旅游类-葡萄酒文化与营销',desc:'葡萄酒文化与营销专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'',nodes:720,createdAt:'2026-08-22',updatedAt:'2026-09-15'},
+        {id:'KS006',name:'旅游类-会展策划与管理',desc:'会展策划与管理专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'',nodes:880,createdAt:'2026-08-25',updatedAt:'2026-09-14'},
+        {id:'KS007',name:'旅游类-民宿管理与运营',desc:'民宿管理与运营专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'',nodes:650,createdAt:'2026-08-28',updatedAt:'2026-09-13'},
+        {id:'KS008',name:'旅游类-酒店管理与数字化运营',desc:'酒店管理与数字化运营专业',level:'高职',category:'tourism',creator:'平台管理员',sharedTo:['李四'],privacy:'仅自己',buildStatus:'built',syncStatus:'sync_failed',nodes:1540,createdAt:'2026-09-01',updatedAt:'2026-09-12'},
+        {id:'KS009',name:'旅游类-定制旅行管理与服务',desc:'定制旅行管理与服务专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'',nodes:820,createdAt:'2026-09-03',updatedAt:'2026-09-11'},
+        {id:'KS010',name:'旅游类-旅游管理',desc:'旅游管理专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'',nodes:2186,createdAt:'2026-09-05',updatedAt:'2026-09-10'},
+        {id:'KS011',name:'旅游类-旅行社经营与管理',desc:'旅行社经营与管理专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'',nodes:980,createdAt:'2026-09-06',updatedAt:'2026-09-09'},
+        {id:'KS012',name:'旅游类-茶艺与茶文化',desc:'茶艺与茶文化专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'',nodes:560,createdAt:'2026-09-07',updatedAt:'2026-09-08'},
+        {id:'KS013',name:'旅游类-导游',desc:'导游专业',level:'高职',category:'tourism',privacy:'仅自己',buildStatus:'built',syncStatus:'synced',nodes:1240,createdAt:'2026-09-08',updatedAt:'2026-09-07'},
+        {id:'KS014',name:'军事类',desc:'军事类知识体系（构建中）',level:'',category:'military',privacy:'仅自己',buildStatus:'building',syncStatus:'',nodes:0,createdAt:'2026-09-20',updatedAt:'2026-09-20'},
+        {id:'KS015',name:'公安与司法大类',desc:'暂无描述',level:'',category:'other',privacy:'仅自己',buildStatus:'build_failed',syncStatus:'',nodes:0,createdAt:'2026-09-22',updatedAt:'2026-09-22'},
+        {id:'KS016',name:'模块化教学课程开发实施方案',desc:'暂无描述',level:'',category:'other',privacy:'仅自己',buildStatus:'building',syncStatus:'',nodes:0,createdAt:'2026-09-24',updatedAt:'2026-09-24'},
+        {id:'KS017',name:'美食制作虚拟仿真设计与实践',desc:'暂无描述',level:'',category:'other',privacy:'仅自己',buildStatus:'building',syncStatus:'',nodes:0,createdAt:'2026-09-25',updatedAt:'2026-09-25'},
+        {id:'KS018',name:'电子信息类',desc:'电子信息类知识体系（构建中）',level:'',category:'elec',privacy:'仅自己',buildStatus:'building',syncStatus:'',nodes:0,createdAt:'2026-09-26',updatedAt:'2026-09-26'},
+        {id:'KS019',name:'导游业务',desc:'导游业务课程知识体系',level:'高职',range:'课程',relObject:'导游业务',relMajor:'导游专业',category:'tourism',creator:'张明',sharedTo:['平台管理员'],privacy:'仅自己',buildStatus:'built',syncStatus:'synced',nodes:120,createdAt:'2026-09-28',updatedAt:'2026-09-28'}
+      ];
+
+      // 本地持久化（创建的知识体系跨页面保留）
+      var KS_KEY='ks_systems_v2';
+      try{var _stored=JSON.parse(sessionStorage.getItem(KS_KEY)||'null');if(_stored&&_stored.length)ksSystems=_stored;}catch(e){}
+      ksSystems.forEach(function(s){
+        if(!s.creator) s.creator='平台管理员';
+        if(!s.sharedTo) s.sharedTo=[];
+        // 兼容旧的单一 status 字段，迁移为「构建状态 + 同步状态」两维
+        if(s.status){
+          var _st=s.status;
+          if(_st==='published') _st='built';
+          else if(_st==='draft') _st='building';
+          if(['building','built','build_failed'].indexOf(_st)>=0){
+            s.buildStatus=_st; s.syncStatus='';
+          }else{
+            s.buildStatus='built'; s.syncStatus=_st;
+          }
+          delete s.status;
+        }
+        if(!s.buildStatus) s.buildStatus='built';
+        if(s.syncStatus===undefined) s.syncStatus='';
+      });
+      function saveKsSystems(){try{sessionStorage.setItem(KS_KEY,JSON.stringify(ksSystems));}catch(e){}}
+
+      // 组织树（院校 → 校区 → 学院/部门 → 系 → 教研室，叶子节点挂成员）
+      var ORG_TREE = [
+        {id:'root', name:'某职业技术学院', type:'院校', children:[
+          {id:'east', name:'东校区', type:'校区', children:[
+            {id:'east-tourism', name:'旅游学院', type:'学院', children:[
+              {id:'east-tourism-mgmt', name:'旅游管理系', type:'系', children:[
+                {id:'east-tourism-guide', name:'导游教研室', type:'教研室', members:[
+                  {id:'m01', name:'张伟', title:'教研室主任'},
+                  {id:'m02', name:'李娜', title:'专任教师'},
+                  {id:'m03', name:'王强', title:'专任教师'},
+                  {id:'m04', name:'刘敏', title:'专任教师'}
+                ]}
+              ]}
+            ]},
+            {id:'east-hotel', name:'酒店学院', type:'学院', members:[
+              {id:'m05', name:'赵磊', title:'副院长'},
+              {id:'m06', name:'孙悦', title:'专任教师'},
+              {id:'m07', name:'周明', title:'专任教师'}
+            ]}
+          ]},
+          {id:'west', name:'西校区', type:'校区', children:[
+            {id:'west-voc', name:'中职部', type:'部门', children:[
+              {id:'west-voc-tourism', name:'旅游专业部', type:'专业部', members:[
+                {id:'m08', name:'吴婷', title:'专业部长'},
+                {id:'m09', name:'郑浩', title:'专任教师'},
+                {id:'m10', name:'冯雪', title:'专任教师'}
+              ]}
+            ]},
+            {id:'west-cont', name:'继续教育部', type:'部门', members:[
+              {id:'m11', name:'陈晨', title:'主任'},
+              {id:'m12', name:'杨帆', title:'教务员'}
+            ]}
+          ]},
+          {id:'public-basic', name:'公共基础部', type:'部门', members:[
+            {id:'m13', name:'黄娟', title:'副主任'},
+            {id:'m14', name:'林涛', title:'专任教师'},
+            {id:'m15', name:'罗静', title:'专任教师'}
+          ]}
+        ]}
+      ];
+      function ksCollectMemberIds(node){
+        var ids=(node.members||[]).map(function(m){return m.id;});
+        (node.children||[]).forEach(function(c){ ids=ids.concat(ksCollectMemberIds(c)); });
+        return ids;
+      }
+      var ORG_MAP={};
+      (function build(nodes){ nodes.forEach(function(n){ ORG_MAP[n.id]=n; if(n.children) build(n.children); }); })(ORG_TREE);
+      var ORG_TOTAL_MEMBERS = ORG_TREE.reduce(function(n,o){return n+ksCollectMemberIds(o).length},0);
+      var ORG_PARENT={};
+      (function buildParent(nodes, pid){ nodes.forEach(function(n){ ORG_PARENT[n.id]=pid||null; if(n.children) buildParent(n.children, n.id); }); })(ORG_TREE, null);
+      var KS_MEMBER_MAP={};
+      (function collectMembers(nodes){ nodes.forEach(function(n){ (n.members||[]).forEach(function(m){ KS_MEMBER_MAP[m.id]=m; }); if(n.children) collectMembers(n.children); }); })(ORG_TREE);
+
+      function ksMembers(s){ return (s.permissions && s.permissions.members) || []; }
+      function ksIsShared(s){ return !!(s.creator && s.creator!==CURRENT_USER.name && ((s.sharedTo||[]).indexOf(CURRENT_USER.name)>=0 || (window.GC && GC.teacher()))); }
+      // 权限覆盖的成员总数（组织展开 + 单独成员）
+      function ksCoveredCount(s){
+        var orgs=(s.permissions && s.permissions.orgs)||[];
+        var members=ksMembers(s);
+        var covered={};
+        orgs.forEach(function(oid){ var n=ORG_MAP[oid]; if(n) ksCollectMemberIds(n).forEach(function(id){covered[id]=1;}); });
+        members.forEach(function(id){covered[id]=1;});
+        return Object.keys(covered).length;
+      }
+      function ksPermText(s){
+        if(ksIsShared(s)) return (s.sharedTo||[]).indexOf(CURRENT_USER.name)>=0 ? '分享给我' : '仅查看 · 创建人 '+s.creator;
+        var orgs=(s.permissions && s.permissions.orgs)||[];
+        var members=ksMembers(s);
+        if(!orgs.length && !members.length) return '权限：仅自己';
+        if(ksCoveredCount(s)>=ORG_TOTAL_MEMBERS) return '权限：公开';
+        var parts=[];
+        if(orgs.length) parts.push(orgs.length+'个组织');
+        if(members.length) parts.push(members.length+'个成员');
+        return '权限：'+parts.join('、');
+      }
+      function ksFmtTime(d){
+        if(!d) return '';
+        if(d.indexOf(':')>-1) return d;
+        var h=0,m=0,s=0;
+        for(var i=0;i<d.length;i++){var c=d.charCodeAt(i);h=(h*31+c)%24;m=(m*37+c)%60;s=(s*41+c)%60;}
+        var p=function(n){return (n<10?'0':'')+n;};
+        return d+' '+p(h)+':'+p(m)+':'+p(s);
+      }
+
+      // 卡片右下角时间：更新过显示「更新于」，否则「创建于」
+      function ksTimeText(s){
+        if(s.updatedAt && s.updatedAt !== s.createdAt) return '更新于 '+ksFmtTime(s.updatedAt);
+        return s.createdAt ? ('创建于 '+ksFmtTime(s.createdAt)) : '';
+      }
+
+      // 卡片标签：范围分类 + 范围标签在前，构建/同步状态在后
+      function ksCardTags(s){
+        var buildMap={building:'构建中',built:'构建完成',build_failed:'构建失败'};
+        var buildCls=(s.buildStatus==='build_failed')?'failed':(s.buildStatus||'built');
+        var syncMap={syncing:'同步中',synced:'同步完成',sync_failed:'同步失败'};
+        var html='';
+        if(s.level) html+='<span class="ks-card-tag">'+s.level+'</span>';
+        html+='<span class="ks-card-tag ks-card-tag-range">'+ksRange(s)+'</span>';
+        html+='<span class="ks-card-status '+buildCls+'">'+(buildMap[s.buildStatus]||'构建完成')+'</span>';
+        if(s.syncStatus){
+          var syncCls=(s.syncStatus==='sync_failed')?'failed':s.syncStatus;
+          html+='<span class="ks-card-status '+syncCls+'">'+(syncMap[s.syncStatus]||'')+'</span>';
+        }
+        return '<div class="ks-card-tags">'+html+'</div>';
+      }
+
+      // 提醒：已有课程计划、但还没关联知识体系的专业课（教师端只看自己课程计划里的课）
+      function renderNeedLink(grid){
+        if(!window.TK) return;
+        var S=TK.load(), teacher=CURRENT_USER.role!=='admin';
+        var need=S.edu.courses.filter(function(c){ return c.type!=='公共基础课' && !c.ks && S.plans.some(function(p){ return p.eduCourseId===c.id && (!teacher || p.teacher===CURRENT_USER.name); }); });
+        var b=document.getElementById('gcNeedLink');
+        if(!b){ b=document.createElement('div'); b.id='gcNeedLink'; b.style.cssText='margin:0 0 14px;padding:10px 14px;border:1px solid #f5d9a8;background:#fff8ec;border-radius:10px;font-size:13px;color:#8a5a00;line-height:1.6'; grid.parentNode.insertBefore(b, grid); }
+        b.style.display=need.length?'':'none';
+        b.innerHTML=need.length?('<b>'+need.length+' 门专业课还没关联知识体系：</b>'+need.map(function(c){ return '《'+c.name+'》'; }).join('')+'。为它们创建「课程」范围的知识体系并在「关联课程」中选择，老师建课次时就能选到任务和技能，学情也能统计课程技能覆盖。'):'';
+      }
+      function renderKsCards(){
+        var query=document.getElementById('ksSearchInput').value.trim().toLowerCase();
+        var cat=document.getElementById('ksCatFilter').value;
+        var scope=document.getElementById('ksScopeFilter').value;
+        var owner=document.getElementById('ksOwnerFilter').value;
+        var status=document.getElementById('ksStatusFilter').value;
+        var filtered=ksSystems.filter(function(s){
+          var matchQuery=!query||s.name.toLowerCase().includes(query)||s.desc.toLowerCase().includes(query);
+          var matchCat=cat==='all'||s.level===cat;
+          var matchScope=scope==='all'||ksRange(s)===scope;
+          var matchOwner=owner==='all'||(owner==='mine' ? s.creator===CURRENT_USER.name : (s.creator!==CURRENT_USER.name && (s.sharedTo||[]).indexOf(CURRENT_USER.name)>=0));
+          var matchStatus=status==='all'||(['building','built','build_failed'].indexOf(status)>=0 ? s.buildStatus===status : s.syncStatus===status);
+          return matchQuery&&matchCat&&matchScope&&matchOwner&&matchStatus;
+        });
+        var grid=document.getElementById('ksCardGrid');
+        var empty=document.getElementById('ksEmpty');
+        renderNeedLink(grid);
+        if(!filtered.length){
+          grid.innerHTML='';
+          empty.style.display='block';
+          return;
+        }
+        empty.style.display='none';
+        var html='<div class="ks-create-card" onclick="createKs()"><div class="plus">+</div><div class="label">创建知识体系</div></div>';
+        html+=filtered.map(function(s){
+          var shared=ksIsShared(s);
+          var actions=[];
+          if(shared){
+            // 他人分享给我的：仅可查看，不可编辑/删除/分享/重建/重同步
+            if(s.buildStatus==='built'){
+              actions.push('<button class="enter-btn" onclick="viewKs(\''+s.id+'\')">进入体系</button>');
+            }
+          }else{
+            if(s.buildStatus==='build_failed'){
+              actions.push('<button class="enter-btn" onclick="rebuildKs(\''+s.id+'\')">重新构建</button>');
+            }
+            if(s.syncStatus==='sync_failed'){
+              actions.push('<button onclick="resyncKs(\''+s.id+'\')">重新同步</button>');
+            }
+            if(s.buildStatus==='built'){
+              actions.push('<button class="enter-btn" onclick="viewKs(\''+s.id+'\')">进入体系</button>');
+            }
+          }
+          var bottom=actions.join('');
+          var corner=shared ? '' : '<div class="ks-card-corner" onclick="event.stopPropagation()">'
+              +'<button class="ks-corner-btn ks-corner-more" onclick="toggleKsMenu(event, \''+s.id+'\')" aria-label="操作">⋮</button>'
+            +'</div>';
+          return '<div class="ks-card" onclick="viewKs(\''+s.id+'\')">'
+            +corner
+            +'<div class="ks-card-name">'+s.name+'</div>'
+            +ksCardTags(s)
+            +'<div class="ks-card-desc">'+(s.desc||'暂无描述')+'</div>'
+            +'<div class="ks-card-meta"><span>'+ksPermText(s)+' · 节点数 '+s.nodes+'</span><span>'+ksTimeText(s)+'</span></div>'
+            +'<div class="ks-card-actions" onclick="event.stopPropagation()">'+bottom+'</div>'
+          +'</div>';
+        }).join('');
+        grid.innerHTML=html;
+      }
+
+      function createKs(){
+        document.getElementById('newKsName').value='';
+        document.getElementById('newKsDesc').value='';
+        document.getElementById('newKsSort').value='高职';
+        ksNameAutoFilled=false;
+        ksFile=null;
+        var fi=document.getElementById('ksFileInput');
+        if(fi)fi.value='';
+        document.getElementById('ksFileMain').textContent='点击或拖拽上传参考文件';
+        document.getElementById('ksFileFormats').textContent='支持 html / pdf / markdown / xls / xlsx / txt / csv / md / docx';
+        setKsType('standard');
+        document.getElementById('newKsRange').value=defaultKsRange();
+        onKsRangeChange();
+        var relPanel=document.getElementById('ksRelPanel'); if(relPanel) relPanel.style.display='none';
+        var relEntry=document.getElementById('ksRelEntry'); if(relEntry) relEntry.classList.remove('open');
+        document.getElementById('createKsModal').classList.add('open');
+        document.getElementById('createKsModal').setAttribute('aria-hidden','false');
+        setTimeout(function(){document.getElementById('newKsName').focus()},100);
+      }
+      function closeCreateKs(){
+        document.getElementById('createKsModal').classList.remove('open');
+        document.getElementById('createKsModal').setAttribute('aria-hidden','true');
+      }
+      function viewKs(id){location.href=GC.url('knowledge-system-detail.html?id='+encodeURIComponent(id));}
+      function editKs(id){ openEditKs(id); }
+      function deleteKs(id){if(confirm('确认删除该知识体系？此操作不可撤销。')){toast('已删除知识体系');}}
+
+      // ===== 编辑知识体系（补/改/解除关联，范围只读）=====
+      var editKsId=null;
+      function openEditKs(id){
+        var s=ksSystems.find(function(x){return x.id===id;});
+        if(!s) return;
+        editKsId=id;
+        var range=ksRange(s);
+        if(!s.range) s.range=range; // 存量数据固化范围
+        document.getElementById('editKsRange').value=range;
+        document.getElementById('editKsName').value=s.name||'';
+        document.getElementById('editKsSort').value=s.level||'高职';
+        document.getElementById('editKsDesc').value=s.desc||'';
+        document.getElementById('editKsRelCat').value='';
+        document.getElementById('editKsRelMajor').value='';
+        document.getElementById('editKsRelCourse').value='';
+        renderEditRelOptions();
+        if(range==='专业大类') document.getElementById('editKsRelCat').value=ksRelObject(s);
+        else if(range==='专业') document.getElementById('editKsRelMajor').value=ksRelObject(s);
+        else {
+          document.getElementById('editKsRelMajor').value=ksRelMajor(s);
+          document.getElementById('editKsRelCourse').value=ksRelObject(s);
+          renderEditCourseOptions();
+        }
+        showEditRelMeta();
+        document.getElementById('editKsModal').classList.add('open');
+        document.getElementById('editKsModal').setAttribute('aria-hidden','false');
+      }
+      function closeEditKs(){
+        document.getElementById('editKsModal').classList.remove('open');
+        document.getElementById('editKsModal').setAttribute('aria-hidden','true');
+      }
+      function renderEditRelOptions(){
+        var range=document.getElementById('editKsRange').value;
+        document.getElementById('editKsRelCatField').style.display=(range==='专业大类')?'':'none';
+        document.getElementById('editKsRelMajorField').style.display=(range==='专业'||range==='课程')?'':'none';
+        document.getElementById('editKsRelCourseField').style.display=(range==='课程')?'':'none';
+        if(range==='专业大类') fillSelect('editKsRelCat', categoryOptionHtml());
+        if(range==='专业'||range==='课程') fillSelect('editKsRelMajor', majorOptionHtml());
+        if(range==='课程') fillSelect('editKsRelCourse', courseOptionHtml(''));
+        showEditRelMeta();
+      }
+      function renderEditCourseOptions(){
+        var majorVal=document.getElementById('editKsRelMajor').value;
+        fillSelect('editKsRelCourse', courseOptionHtml(majorVal));
+      }
+      function showEditRelMeta(){
+        var range=document.getElementById('editKsRange').value;
+        var hasRel;
+        if(range==='专业大类') hasRel=document.getElementById('editKsRelCat').value!=='';
+        else if(range==='专业') hasRel=document.getElementById('editKsRelMajor').value!=='';
+        else hasRel=document.getElementById('editKsRelCourse').value!=='' || document.getElementById('editKsRelMajor').value!=='';
+        document.getElementById('editKsRelHint').style.display=hasRel?'none':'';
+      }
+      function onEditKsRelCatChange(){ showEditRelMeta(); }
+      function onEditKsRelMajorChange(){
+        if(document.getElementById('editKsRange').value==='课程') renderEditCourseOptions();
+        showEditRelMeta();
+      }
+      function onEditKsRelCourseChange(){
+        var course=document.getElementById('editKsRelCourse').value;
+        if(course){
+          var major=document.getElementById('editKsRelMajor');
+          var m=majorOfCourse(course);
+          if(major.value!==m){ major.value=m; renderEditCourseOptions(); }
+        }
+        showEditRelMeta();
+      }
+      function saveEditKs(){
+        var s=ksSystems.find(function(x){return x.id===editKsId;});
+        if(!s) return;
+        var name=document.getElementById('editKsName').value.trim();
+        if(!name) return toast('请输入名称');
+        var range=ksRange(s);
+        var rel='', relMajor='';
+        if(range==='专业大类'){ rel=document.getElementById('editKsRelCat').value; }
+        else if(range==='专业'){ rel=document.getElementById('editKsRelMajor').value; }
+        else {
+          rel=document.getElementById('editKsRelCourse').value;
+          relMajor=document.getElementById('editKsRelMajor').value || (rel?majorOfCourse(rel):'');
+        }
+        if(range==='课程' && rel){
+          var linked=findLinkedKs(rel, s.id);
+          if(linked) return toast('该课程已关联《'+linked+'》');
+        }
+        s.name=name;
+        if(range==='课程') gcLinkCourse(s.id, name, rel);   // 改关联课程或改名都同步到课程上
+        s.relObject=rel;
+        s.relMajor=relMajor;
+        s.level=document.getElementById('editKsSort').value;
+        s.desc=document.getElementById('editKsDesc').value.trim();
+        saveKsSystems();
+        closeEditKs();
+        renderKsCards();
+        toast('已保存');
+      }
+
+      // ===== 创建知识体系 =====
+      function newKsId(){
+        var max=0;
+        ksSystems.forEach(function(s){var m=(s.id||'').match(/KS(\d+)/);if(m)max=Math.max(max,+m[1]);});
+        return 'KS'+String(max+1).padStart(3,'0');
+      }
+      function ksToday(){var d=new Date();var p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
+      var ksType='standard';
+      var ksFile=null;
+      function setKsType(type){
+        ksType=type;
+        [].slice.call(document.querySelectorAll('#ksTypeSeg .ks-type-btn')).forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-type')===type); });
+        document.getElementById('ksStandardFields').style.display = type==='standard' ? '' : 'none';
+        document.getElementById('ksFileFields').style.display = type==='file' ? '' : 'none';
+        document.getElementById('ksManualBtn').style.display = type==='standard' ? '' : 'none';
+      }
+      function setKsFile(f){
+        if(!f)return;
+        var ext=(f.name.split('.').pop()||'').toLowerCase();
+        var allow=['html','htm','pdf','markdown','xls','mdx','properties','xlsx','txt','vtt','csv','md','docx'];
+        if(allow.indexOf(ext)<0){ toast('只支持 '+allow.join(' / ')+' 格式的文件'); return; }
+        ksFile=f;
+        document.getElementById('ksFileMain').textContent=f.name;
+        document.getElementById('ksFileFormats').textContent='已选择参考文件';
+      }
+      function onKsFileChange(input){
+        var f=input.files&&input.files[0];
+        if(f)setKsFile(f); else ksFile=null;
+        input.value='';
+      }
+      function ksFileDrop(e){
+        e.preventDefault();
+        var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+        if(f)setKsFile(f);
+      }
+      // ===== 范围 / 关联对象 / 名称（创建与编辑共用）=====
+      var ksNameAutoFilled=false; // 名称是否为「关联对象自动带出」（决定修改关联对象时是否跟随）
+      function currentRange(){ return document.getElementById('newKsRange').value; }
+      function ksRootType(range){ return range==='课程'?'course':range==='专业'?'major':'major_category'; }
+
+      // 范围切换：清空关联对象与名称，重建关联对象下拉
+      function onKsRangeChange(){
+        var range=currentRange();
+        var nameInput=document.getElementById('newKsName');
+        if(nameInput){
+          nameInput.value='';
+          nameInput.placeholder=range==='专业大类'?'请输入专业大类名称':range==='专业'?'请输入专业名称':'请输入课程名称';
+        }
+        ksNameAutoFilled=false;
+        document.getElementById('newKsRelCat').value='';
+        document.getElementById('newKsRelMajor').value='';
+        document.getElementById('newKsRelCourse').value='';
+        renderRelOptions();
+      }
+
+      // 关联对象下拉选项（关联专业大类 / 关联专业 / 关联课程，均单选、可清空）
+      function fillSelect(id, html){
+        var sel=document.getElementById(id);
+        var prev=sel.value;
+        sel.innerHTML=html;
+        if(prev && [].some.call(sel.options,function(o){return o.value===prev;})) sel.value=prev;
+      }
+      function categoryOptionHtml(){
+        var html='<option value="">不关联</option>';
+        html+=allCategories().map(function(n){ return '<option value="'+n+'">'+n+'</option>'; }).join('');
+        return html;
+      }
+      function majorOptionHtml(){
+        var html='<option value="">不关联</option>';
+        html+=allMajors().map(function(m){ return '<option value="'+m.name+'">'+(m.path||(m.name+(m.category?'（'+m.category+'）':'')))+'</option>'; }).join('');
+        return html;
+      }
+      function courseOptionHtml(majorVal){
+        var html='<option value="">不关联</option>';
+        var courses=selectableRelCourses();
+        if(majorVal) courses=courses.filter(function(c){ return courseInMajor(c.major, majorVal); });
+        if(selectableRelCourses().length===0){
+          html+='<option value="" disabled>暂无可授课程</option>';
+        }
+        html+=courses.map(function(c){ return '<option value="'+c.name+'">'+c.name+(c.major?'（'+c.major+'）':'')+'</option>'; }).join('');
+        return html;
+      }
+
+      // 新建弹窗：渲染关联对象（专业大类→大类；专业→专业；课程→专业+课程）
+      function renderRelOptions(){
+        var range=currentRange();
+        document.getElementById('ksRelCatField').style.display=(range==='专业大类')?'':'none';
+        document.getElementById('ksRelMajorField').style.display=(range==='专业'||range==='课程')?'':'none';
+        document.getElementById('ksRelCourseField').style.display=(range==='课程')?'':'none';
+        if(range==='专业大类') fillSelect('newKsRelCat', categoryOptionHtml());
+        if(range==='专业'||range==='课程') fillSelect('newKsRelMajor', majorOptionHtml());
+        if(range==='课程') renderCourseOptions();
+        showRelMeta();
+      }
+      function renderCourseOptions(){
+        var majorVal=document.getElementById('newKsRelMajor').value;
+        fillSelect('newKsRelCourse', courseOptionHtml(majorVal));
+      }
+
+      // 未关联提示 / 入口文案
+      function showRelMeta(){
+        var range=currentRange();
+        var hasRel;
+        if(range==='专业大类') hasRel=document.getElementById('newKsRelCat').value!=='';
+        else if(range==='专业') hasRel=document.getElementById('newKsRelMajor').value!=='';
+        else hasRel=document.getElementById('newKsRelCourse').value!=='' || document.getElementById('newKsRelMajor').value!=='';
+        document.getElementById('ksRelHint').style.display=hasRel?'none':'';
+        updateRelEntryText();
+      }
+      function updateRelEntryText(){
+        var range=currentRange();
+        var parts=[];
+        if(range==='专业大类'){ var c=document.getElementById('newKsRelCat').value; if(c) parts.push(c); }
+        else {
+          var m=document.getElementById('newKsRelMajor').value; if(m) parts.push(m);
+          if(range==='课程'){ var co=document.getElementById('newKsRelCourse').value; if(co) parts.push(co); }
+        }
+        var textEl=document.getElementById('ksRelEntryText');
+        if(textEl) textEl.textContent=parts.length?('关联对象：'+parts.join(' · ')):'关联课程 / 专业（选填）';
+      }
+      function toggleKsRelPanel(){
+        var panel=document.getElementById('ksRelPanel');
+        var entry=document.getElementById('ksRelEntry');
+        var show=panel.style.display==='none';
+        panel.style.display=show?'block':'none';
+        entry.classList.toggle('open', show);
+        if(show) renderRelOptions();
+      }
+
+      // 关联选择联动 + 名称自动带出
+      function primaryRelValue(){
+        var range=currentRange();
+        if(range==='专业大类') return document.getElementById('newKsRelCat').value;
+        if(range==='专业') return document.getElementById('newKsRelMajor').value;
+        return document.getElementById('newKsRelCourse').value || document.getElementById('newKsRelMajor').value;
+      }
+      function autoFillNameFromRel(){
+        var rel=primaryRelValue();
+        var nameInput=document.getElementById('newKsName');
+        if(ksType==='standard' && nameInput){
+          if(rel){
+            if(!nameInput.value || ksNameAutoFilled){ nameInput.value=rel; ksNameAutoFilled=true; }
+          } else if(ksNameAutoFilled){
+            nameInput.value=''; ksNameAutoFilled=false;
+          }
+        }
+      }
+      function onKsRelCatChange(){ autoFillNameFromRel(); showRelMeta(); }
+      function onKsRelMajorChange(){
+        if(currentRange()==='课程') renderCourseOptions();
+        autoFillNameFromRel();
+        showRelMeta();
+      }
+      function onKsRelCourseChange(){
+        var course=document.getElementById('newKsRelCourse').value;
+        if(course){
+          var major=document.getElementById('newKsRelMajor');
+          var m=majorOfCourse(course);
+          if(major.value!==m){ major.value=m; renderCourseOptions(); }
+        }
+        autoFillNameFromRel();
+        showRelMeta();
+      }
+
+      // ===== 列表卡片：范围 / 关联状态 / 所属专业 =====
+      function ksRange(s){
+        if(s.range) return s.range;
+        if(/大类$|^(旅游类|军事类|电子信息类|其他)$/.test(s.name)) return '专业大类';
+        if(/^(旅游类|军事类|电子信息类|其他)-/.test(s.name)) return '专业';
+        return '专业';
+      }
+      function ksRelObject(s){ return s.relObject || s.scopeObject || ''; }
+      function ksRelMajor(s){ return s.relMajor || ''; }
+      function ksLinked(s){ return !!ksRelObject(s); }
+      function ksScopeLabel(s){
+        var rel=ksRelObject(s);
+        return ksRange(s)+' · '+(rel||s.name||'');
+      }
+      function ksScopeLevel(s){ return ksRange(s); } // 兼容旧引用
+      function ksMajorOf(s){
+        var r=ksRange(s);
+        if(r==='课程') return ksRelMajor(s);
+        if(r==='专业'){
+          if(ksRelObject(s)) return ksRelObject(s);
+          var m=(s.name||'').match(/^(旅游类|军事类|电子信息类|其他)-(.+)$/);
+          return m?m[2]:(s.name||'');
+        }
+        return '';
+      }
+      // 课程唯一性：一门课只关联一份（前端演示查重，真实版本需后端校验）
+      // 课程与知识体系的关联记在管理端课程上（一门课程只关联一个知识体系）：建 / 改课程级知识体系时写回
+      function eduCourseByName(name){ if(!window.TK) return null; var S=TK.load(); return {S:S, c:S.edu.courses.filter(function(x){return x.name===name;})[0]}; }
+      function gcLinkCourse(ksId, ksName, courseName){
+        if(!window.TK) return;
+        var S=TK.load(), key='GKS-'+ksId;
+        S.edu.courses.forEach(function(c){ if(c.ks===key && c.name!==courseName){ c.ks=''; c.ksName=''; c.ksVia=''; } });
+        var c=S.edu.courses.filter(function(x){return x.name===courseName;})[0];
+        if(c){ c.ks=key; c.ksName=ksName; c.ksVia='图谱中心'; c.ksBy=CURRENT_USER.name; c.ksAt=ksToday(); }
+        TK.save(S);
+      }
+      function findLinkedKs(courseName, excludeId){
+        var ec=eduCourseByName(courseName);
+        if(ec && ec.c && ec.c.ks && ec.c.ks!=='GKS-'+excludeId){
+          var K=TK.kn(), pre=K.course[ec.c.ks];
+          return ec.c.ksName || (pre ? '导游（540102）· '+pre.name : ec.c.ks);
+        }
+        if(ec && ec.c) return '';
+        if(PRE_LINKED_COURSE && PRE_LINKED_COURSE.name===courseName) return PRE_LINKED_COURSE.linkedKs;
+        var found=ksSystems.find(function(s){ return s.id!==excludeId && s.range==='课程' && ksRelObject(s)===courseName; });
+        return found?found.name:'';
+      }
+      // 关联对象父链（AI 用）：课程→所属专业，专业→所属大类，大类→无
+      function ksParentPath(range, relObject){
+        if(!relObject) return '';
+        if(range==='课程') return majorOfCourse(relObject);
+        if(range==='专业') return categoryOfMajor(relObject);
+        return '';
+      }
+
+      function readKsMeta(){
+        var range=document.getElementById('newKsRange').value;
+        var rel='', relMajor='';
+        if(range==='专业大类'){ rel=document.getElementById('newKsRelCat').value; }
+        else if(range==='专业'){ rel=document.getElementById('newKsRelMajor').value; }
+        else {
+          rel=document.getElementById('newKsRelCourse').value;
+          relMajor=document.getElementById('newKsRelMajor').value || (rel?majorOfCourse(rel):'');
+        }
+        return {
+          range:range,
+          rel:rel,
+          relMajor:relMajor,
+          sort:document.getElementById('newKsSort').value,
+          desc:document.getElementById('newKsDesc').value.trim()
+        };
+      }
+      function manualCreateKs(){
+        var name=document.getElementById('newKsName').value.trim();
+        if(!name)return toast('请输入名称');
+        var m=readKsMeta();
+        if(m.range==='课程' && m.rel){
+          var linked=findLinkedKs(m.rel, null);
+          if(linked)return toast('该课程已关联《'+linked+'》');
+        }
+        closeCreateKs();
+        ksSystems.unshift({id:newKsId(),name:name,desc:m.desc,level:m.sort,range:m.range,relObject:m.rel,relMajor:m.relMajor,rootType:ksRootType(m.range),category:'other',creator:CURRENT_USER.name,sharedTo:[],privacy:'仅自己',buildStatus:'building',syncStatus:'',nodes:0,createdAt:ksToday(),updatedAt:ksToday(),permissions:{members:[]}});
+        if(m.range==='课程' && m.rel) gcLinkCourse(ksSystems[0].id, name, m.rel);
+        saveKsSystems();
+        renderKsCards();
+        toast('创建成功');
+      }
+      function submitCreateKs(){
+        var m=readKsMeta();
+        var name, id;
+        if(ksType==='file'){
+          if(!ksFile)return toast('请上传参考文件');
+          name=ksFile.name.replace(/\.[^.]+$/,'');
+        }else{
+          name=document.getElementById('newKsName').value.trim();
+          if(!name)return toast('请输入名称');
+        }
+        if(m.range==='课程' && m.rel){
+          var linked=findLinkedKs(m.rel, null);
+          if(linked)return toast('该课程已关联《'+linked+'》');
+        }
+        closeCreateKs();
+        id=newKsId();
+        var relObject=m.rel, relMajor=m.relMajor;
+        var rootName=relObject||name;
+        var rootPath=ksParentPath(m.range, relObject);
+        ksSystems.unshift({id:id,name:name,desc:m.desc,level:ksType==='file'?'':m.sort,range:m.range,relObject:relObject,relMajor:relMajor,rootType:ksRootType(m.range),category:'other',creator:CURRENT_USER.name,sharedTo:[],privacy:'仅自己',buildStatus:'building',syncStatus:'',nodes:0,createdAt:ksToday(),updatedAt:ksToday(),permissions:{members:[]}});
+        if(m.range==='课程' && relObject) gcLinkCourse(id, name, relObject);
+        saveKsSystems();
+        renderKsCards();
+        toast('AI生成任务已提交');
+        setTimeout(function(){
+          var s=ksSystems.find(function(x){return x.id===id;});
+          if(!s)return;
+          // TODO 真实 AI：替换为调用后端 / Dify 工作流。
+          //   有关联对象：入参 {range, name, relObject, relMajor, desc}；未关联：{range, name, desc}
+          var tree=mockKsTree(m.range, rootName, rootPath);
+          s.tree=tree;
+          s.nodes=countTreeNodes(tree);
+          s.buildStatus='built';
+          s.updatedAt=ksToday();
+          saveKsSystems();
+          renderKsCards();
+          toast('AI已构建完成「'+s.name+'」，根节点为「'+rootName+'」');
+        },3000);
+      }
+
+      // 构建失败 → 重新构建
+      function rebuildKs(id){
+        var s=ksSystems.find(function(x){return x.id===id;});
+        if(!s)return;
+        s.buildStatus='building';
+        s.syncStatus='';
+        saveKsSystems();
+        renderKsCards();
+        toast('已重新提交构建');
+        setTimeout(function(){
+          var cur=ksSystems.find(function(x){return x.id===id;});
+          if(!cur)return;
+          var range=ksRange(cur);
+          var rootName=ksRelObject(cur)||cur.name;
+          var rootPath=ksParentPath(range, ksRelObject(cur));
+          var tree=mockKsTree(range, rootName, rootPath);
+          cur.tree=tree;
+          cur.nodes=countTreeNodes(tree);
+          cur.buildStatus='built';
+          cur.updatedAt=ksToday();
+          saveKsSystems();
+          renderKsCards();
+          toast('已重新构建完成「'+cur.name+'」');
+        },3000);
+      }
+      // 同步失败 → 重新同步
+      function resyncKs(id){
+        var s=ksSystems.find(function(x){return x.id===id;});
+        if(!s)return;
+        s.syncStatus='syncing';
+        saveKsSystems();
+        renderKsCards();
+        toast('已重新提交同步');
+        setTimeout(function(){
+          var cur=ksSystems.find(function(x){return x.id===id;});
+          if(!cur)return;
+          cur.syncStatus='synced';
+          cur.updatedAt=ksToday();
+          saveKsSystems();
+          renderKsCards();
+          toast('已重新同步完成「'+cur.name+'」');
+        },3000);
+      }
+
+      // 卡片操作菜单（··· 编辑 / 删除 / 分享）
+      var ksMenuEl=null, ksMenuId=null;
+      function toggleKsMenu(e, id){
+        e.stopPropagation();
+        if(ksMenuEl && ksMenuId===id){ hideKsMenu(); return; }
+        hideKsMenu();
+        ksMenuId=id;
+        ksMenuEl=document.createElement('div');
+        ksMenuEl.className='ks-action-menu';
+        var menuSystem=ksSystems.find(function(x){return x.id===id;});
+        var menuBuilding=menuSystem && menuSystem.buildStatus==='building';
+        ksMenuEl.innerHTML=''
+          +(menuBuilding?'':'<div class="ks-action-item" data-act="edit">编辑</div>')
+          +'<div class="ks-action-item danger" data-act="delete">删除</div>'
+          +'<div class="ks-action-item" data-act="settings">分享</div>';
+        document.body.appendChild(ksMenuEl);
+        var rect=e.currentTarget.getBoundingClientRect();
+        ksMenuEl.style.top=(rect.bottom+4)+'px';
+        ksMenuEl.style.left=Math.min(rect.right-ksMenuEl.offsetWidth, window.innerWidth-ksMenuEl.offsetWidth-8)+'px';
+        ksMenuEl.addEventListener('click', function(ev){
+          ev.stopPropagation();
+          var it=ev.target.closest('.ks-action-item');
+          var act=it?it.getAttribute('data-act'):null;
+          hideKsMenu();
+          if(act==='edit') editKs(id);
+          else if(act==='settings') openKsSettings(id);
+          else if(act==='delete') deleteKs(id);
+        });
+      }
+      function hideKsMenu(){
+        if(ksMenuEl){ ksMenuEl.remove(); ksMenuEl=null; }
+        ksMenuId=null;
+      }
+      document.addEventListener('click', function(e){
+        if(!e.target.closest('.ks-action-menu') && !e.target.closest('.ks-corner-more')) hideKsMenu();
+      });
+
+      // 设置弹窗（权限）
+      var ksSettingsId=null;
+      function renderKsOrgNode(node, selected){
+        var memberIds=ksCollectMemberIds(node);
+        var allChecked=memberIds.length>0 && memberIds.every(function(id){return selected.indexOf(id)>-1;});
+        var kids=node.children||[];
+        var members=node.members||[];
+        var typeTag=node.type?'<span class="ks-org-type">'+node.type+'</span>':'';
+        var html='<div class="ks-org-node" data-org="'+node.id+'">';
+        html+='<div class="ks-org-row">';
+        html+=(kids.length||members.length)
+          ?'<button type="button" class="ks-org-toggle" onclick="toggleKsOrg(event)">▾</button>'
+          :'<span class="ks-org-toggle empty"></span>';
+        html+='<label class="ks-org-check"><input type="checkbox" class="ks-org-select" value="'+node.id+'"'+(allChecked?' checked':'')+'> <span class="ks-org-name">'+node.name+'</span>'+typeTag+'</label>';
+        html+='</div>';
+        if(kids.length||members.length){
+          html+='<div class="ks-org-body">';
+          if(members.length){
+            html+='<div class="ks-org-members">';
+            members.forEach(function(m){
+              html+='<label class="ks-org-member"><input type="checkbox" class="ks-perm-member" value="'+m.id+'"'+(selected.indexOf(m.id)>-1?' checked':'')+'> <span class="ks-org-member-name">'+m.name+'</span>'+(m.title?'<span class="ks-org-member-title">'+m.title+'</span>':'')+'</label>';
+            });
+            html+='</div>';
+          }
+          if(kids.length){
+            html+='<div class="ks-org-children">';
+            kids.forEach(function(c){ html+=renderKsOrgNode(c, selected); });
+            html+='</div>';
+          }
+          html+='</div>';
+        }
+        html+='</div>';
+        return html;
+      }
+      function renderKsOrgTree(selected){
+        return ORG_TREE.map(function(n){return renderKsOrgNode(n, selected);}).join('');
+      }
+      function ksOrgMembers(treeEl){
+        return [].slice.call(treeEl.querySelectorAll('.ks-perm-member:checked')).map(function(c){return c.value;});
+      }
+      // 汇总勾选：顶层组织 + 未被组织覆盖的单独成员
+      function ksSelectedPerm(treeEl){
+        var allOrgIds=[].slice.call(treeEl.querySelectorAll('.ks-org-select:checked')).map(function(cb){return cb.value;});
+        var checkedOrg={};
+        allOrgIds.forEach(function(oid){checkedOrg[oid]=1;});
+        var orgs=allOrgIds.filter(function(oid){ return !ORG_PARENT[oid] || !checkedOrg[ORG_PARENT[oid]]; });
+        var covered={};
+        allOrgIds.forEach(function(oid){ var n=ORG_MAP[oid]; if(!n) return; ksCollectMemberIds(n).forEach(function(id){covered[id]=1;}); });
+        var members=ksOrgMembers(treeEl).filter(function(id){ return !covered[id]; });
+        return {orgs:orgs, members:members};
+      }
+      // 还原为扁平成员列表（用于回显组织树勾选）
+      function ksFlatMembers(s){
+        var orgs=(s.permissions && s.permissions.orgs)||[];
+        var members=ksMembers(s);
+        var ids=[];
+        orgs.forEach(function(oid){ var n=ORG_MAP[oid]; if(n) ids=ids.concat(ksCollectMemberIds(n)); });
+        return ids.concat(members);
+      }
+      function refreshKsOrgTree(treeEl){
+        var checkedMap={};
+        ksOrgMembers(treeEl).forEach(function(id){checkedMap[id]=1;});
+        [].slice.call(treeEl.querySelectorAll('.ks-org-select')).forEach(function(cb){
+          var node=ORG_MAP[cb.value];
+          if(!node){ cb.checked=false; cb.indeterminate=false; return; }
+          var ids=ksCollectMemberIds(node);
+          var sel=ids.filter(function(id){return checkedMap[id];}).length;
+          cb.checked=ids.length>0 && sel===ids.length;
+          cb.indeterminate=sel>0 && sel<ids.length;
+        });
+        refreshKsPermEcho(treeEl);
+      }
+      function refreshKsPermEcho(treeEl){
+        var echoEl=document.getElementById('ksPermEcho');
+        var countEl=document.getElementById('ksPermEchoCount');
+        var sel=ksSelectedPerm(treeEl);
+        var orgIds=sel.orgs, memberIds=sel.members;
+        var total=orgIds.length+memberIds.length;
+        if(countEl) countEl.textContent=total ? ('已选 '+total+' 项') : '当前勾选的组织与用户';
+        if(!total){
+          echoEl.innerHTML='<div class="ks-perm-echo-empty">未选择任何组织或成员，仅自己可见</div>';
+          return;
+        }
+        var html='';
+        if(orgIds.length){
+          html+='<div class="ks-perm-echo-group-title">组织（'+orgIds.length+'）</div>';
+          orgIds.forEach(function(oid){
+            var node=ORG_MAP[oid];
+            var name=node?node.name:oid;
+            var typeTag=node&&node.type?'<span class="ks-org-type">'+node.type+'</span>':'';
+            html+='<div class="ks-perm-echo-item">'+name+typeTag+'<button type="button" class="ks-perm-echo-remove" onclick="ksRemoveEchoItem(\'org\',\''+oid+'\')" aria-label="移除">×</button></div>';
+          });
+        }
+        if(memberIds.length){
+          html+='<div class="ks-perm-echo-group-title">成员（'+memberIds.length+'）</div>';
+          memberIds.forEach(function(mid){
+            var m=KS_MEMBER_MAP[mid];
+            var name=m?m.name:mid;
+            var title=m&&m.title?'<span class="ks-org-member-title">'+m.title+'</span>':'';
+            html+='<div class="ks-perm-echo-item">'+name+title+'<button type="button" class="ks-perm-echo-remove" onclick="ksRemoveEchoItem(\'user\',\''+mid+'\')" aria-label="移除">×</button></div>';
+          });
+        }
+        echoEl.innerHTML=html;
+      }
+      function ksRemoveEchoItem(kind, id){
+        var treeEl=document.getElementById('ksOrgTree');
+        if(kind==='org'){
+          var cb=treeEl.querySelector('.ks-org-select[value="'+id+'"]');
+          if(cb) cb.checked=false;
+          var node=ORG_MAP[id];
+          var ids=node?ksCollectMemberIds(node):[];
+          [].slice.call(treeEl.querySelectorAll('.ks-perm-member')).forEach(function(mc){ if(ids.indexOf(mc.value)>-1) mc.checked=false; });
+        } else {
+          var mc=treeEl.querySelector('.ks-perm-member[value="'+id+'"]');
+          if(mc) mc.checked=false;
+        }
+        refreshKsOrgTree(treeEl);
+      }
+      function toggleKsOrg(e){
+        e.stopPropagation();
+        e.currentTarget.closest('.ks-org-node').classList.toggle('collapsed');
+      }
+      function bindKsOrgTree(treeEl){
+        [].slice.call(treeEl.querySelectorAll('.ks-org-select')).forEach(function(cb){
+          cb.onchange=function(){
+            var node=ORG_MAP[cb.value];
+            var ids=node?ksCollectMemberIds(node):[];
+            var check=cb.checked;
+            [].slice.call(treeEl.querySelectorAll('.ks-perm-member')).forEach(function(mc){ if(ids.indexOf(mc.value)>-1) mc.checked=check; });
+            refreshKsOrgTree(treeEl);
+          };
+        });
+        [].slice.call(treeEl.querySelectorAll('.ks-perm-member')).forEach(function(cb){ cb.onchange=function(){refreshKsOrgTree(treeEl);}; });
+        refreshKsOrgTree(treeEl);
+      }
+      function openKsSettings(id){
+        ksSettingsId=id;
+        var s=ksSystems.find(function(x){return x.id===id;});
+        if(!s) return;
+        var treeEl=document.getElementById('ksOrgTree');
+        treeEl.innerHTML=renderKsOrgTree(ksFlatMembers(s));
+        bindKsOrgTree(treeEl);
+        document.getElementById('ksSettingsModal').classList.add('open');
+        document.getElementById('ksSettingsModal').setAttribute('aria-hidden','false');
+      }
+      function closeKsSettings(){
+        document.getElementById('ksSettingsModal').classList.remove('open');
+        document.getElementById('ksSettingsModal').setAttribute('aria-hidden','true');
+      }
+      function saveKsSettings(){
+        var s=ksSystems.find(function(x){return x.id===ksSettingsId;});
+        if(s){
+          s.permissions=ksSelectedPerm(document.getElementById('ksOrgTree'));
+          renderKsCards();
+        }
+        closeKsSettings();
+        toast('设置已保存');
+      }
+
+      // ===== 身份切换 =====
+      function onSwitchUser(key){
+        switchUser(key);
+        renderKsCards();
+      }
+
+      document.getElementById('ksSearchInput').onkeydown=function(e){if(e.key==='Enter')renderKsCards();};
+      document.getElementById('ksSearchBtn').onclick=renderKsCards;
+      document.getElementById('ksOwnerFilter').onchange=renderKsCards;
+      document.getElementById('ksCatFilter').onchange=renderKsCards;
+      document.getElementById('ksScopeFilter').onchange=renderKsCards;
+      document.getElementById('ksStatusFilter').onchange=renderKsCards;
+
+      renderKsCards();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1213 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>知识体系详情｜专业图谱平台</title>
+    <link rel="stylesheet" href="mapping-review.css" />
+    <link rel="stylesheet" href="mapping-polish.css" />
+    <link rel="stylesheet" href="mapping-compact.css" />
+    <link rel="stylesheet" href="mapping-reference.css" />
+    <style>
+      *{box-sizing:border-box;}
+      .ksd-wrap{display:flex;height:calc(100vh - 0px);overflow:hidden;}
+      .ksd-side{width:220px;flex-shrink:0;background:#fff;border-right:1px solid #e2e8f0;padding:16px;overflow-y:auto;}
+      .ksd-side h3{font-size:13px;font-weight:600;color:#31425e;margin:0 0 12px 0;}
+      .ksd-legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#60718a;padding:4px 0;cursor:pointer;}
+      .ksd-legend-item:hover{color:#5149e9;}
+      .ksd-legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+      .ksd-legend-count{margin-left:auto;color:#aaa;font-size:11px;}
+      .ksd-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+      .ksd-header{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid #e2e8f0;background:#fff;flex-shrink:0;}
+      .ksd-header a{color:#5149e9;text-decoration:none;font-size:14px;}
+      .ksd-header select{height:32px;padding:0 10px;border:1px solid #dfe6ef;border-radius:6px;font-size:13px;min-width:200px;}
+      .ksd-check-btn{margin-left:auto;height:32px;padding:0 14px;border:1px solid #dfe6ef;border-radius:6px;background:#fff;color:#2f405d;font-size:13px;cursor:pointer;}
+      .ksd-check-btn:hover{border-color:#5149e9;color:#5149e9;}
+      .ksd-check-btn:disabled{opacity:.6;cursor:default;}
+      .ksd-header input{height:32px;padding:0 10px;border:1px solid #dfe6ef;border-radius:6px;font-size:13px;width:180px;}
+      .ksd-canvas-wrap{flex:1;position:relative;overflow:hidden;background:#f5f3fa;}
+      .ksd-canvas-wrap svg{width:100%;height:100%;display:block;}
+      .ksd-zoom{position:absolute;bottom:12px;right:12px;display:flex;gap:4px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+      .ksd-zoom button{width:32px;height:28px;border:none;background:none;cursor:pointer;font-size:16px;color:#60718a;border-radius:4px;}
+      .ksd-zoom button:hover{background:#f5f3fa;color:#5149e9;}
+      .ksd-zoom-info{display:flex;align-items:center;padding:0 8px;font-size:12px;color:#aaa;}
+      .ksd-node-rect{fill:#fff;stroke:#dfe6ef;stroke-width:1.5;rx:6;ry:6;cursor:pointer;transition:all .15s;}
+      .ksd-node-rect:hover{stroke:#5149e9;}
+      .ksd-node-rect.root{fill:#5149e9;stroke:#5149e9;}
+      .ksd-node-rect.expanded{fill:#fff;stroke:#5149e9;}
+      .ksd-node-text{font-size:12px;pointer-events:none;user-select:none;}
+      .ksd-node-text.root{fill:#fff;font-weight:600;}
+      .ksd-node-text.normal{fill:#31425e;}
+      .ksd-link{fill:none;stroke:#c4b5fd;stroke-width:1.5;opacity:.6;}
+      .ksd-expand-icon{font-size:14px;fill:#5149e9;cursor:pointer;}
+      .ksd-edit-icon{font-size:12px;fill:#aaa;cursor:pointer;}
+      .ksd-edit-icon:hover{fill:#5149e9;}
+
+      .ksd-context-menu{position:fixed;z-index:50;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:4px 0;min-width:160px;display:none;}
+      .ksd-context-menu.show{display:block;}
+      .ksd-context-menu-item{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:13px;color:#31425e;cursor:pointer;white-space:nowrap;}
+      .ksd-context-menu-item:hover{background:#f5f3fa;color:#5149e9;}
+      .ksd-context-menu-divider{height:1px;background:#f0f0f0;margin:4px 0;}
+      .ksd-context-menu-item.danger{color:#c72c2a;}
+      .ksd-context-menu-item.danger:hover{background:#fff1f0;}
+      .ksd-context-menu-item .icon{width:16px;text-align:center;font-size:14px;}
+
+      .ksd-modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;}
+      .ksd-modal.show{display:flex;}
+      .ksd-modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.45);}
+      .ksd-dialog{position:relative;width:min(460px,calc(100vw - 32px));background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(16,24,40,.24);overflow:hidden;z-index:1;}
+      .ksd-dialog-head{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 22px 0;}
+      .ksd-dialog-head h2{margin:0;font-size:17px;color:#2f405d;}
+      .ksd-dialog-head p{margin:4px 0 0;font-size:12px;color:#8190a6;}
+      .ksd-close{border:0;background:none;font-size:22px;color:#9aa7ba;cursor:pointer;line-height:1;}
+      .ksd-close:hover{color:#5149e9;}
+      .ksd-dialog-body{padding:16px 22px 4px;display:flex;flex-direction:column;gap:14px;}
+      .ksd-field{display:flex;flex-direction:column;gap:6px;}
+      .ksd-label{font-size:13px;color:#31425e;font-weight:600;}
+      .ksd-label em{color:#e2302f;font-style:normal;}
+      .ksd-field input,.ksd-field select{height:38px;border:1px solid #dfe6ef;border-radius:8px;padding:0 12px;font-size:14px;color:#2f405d;font-family:inherit;width:100%;background:#fff;}
+      .ksd-field input:focus,.ksd-field select:focus{outline:none;border-color:#5149e9;}
+      .ksd-dialog-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px 20px;}
+      .ksd-btn{height:36px;padding:0 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+      .ksd-btn.ghost{border:1px solid #dfe6ef;background:#fff;color:#546681;}
+      .ksd-btn.ghost:hover{border-color:#5149e9;color:#5149e9;}
+      .ksd-btn.pri{border:1px solid #5149e9;background:#5149e9;color:#fff;}
+      .ksd-btn.pri:hover{background:#4038c0;border-color:#4038c0;}
+      .ksd-btn.pri:disabled{background:#c7c2f5;border-color:#c7c2f5;cursor:default;}
+      .ksd-btn.ai{border:1px solid #5149e9;background:linear-gradient(135deg,#5149e9,#7c5ce0);color:#fff;}
+      .ksd-btn.ai:hover{background:linear-gradient(135deg,#4038c0,#6a4fd0);border-color:#4038c0;}
+      .ksd-btn.sm{height:28px;padding:0 12px;font-size:12px;}
+
+      .ksd-tr-btn{position:relative;margin-left:auto;}
+      #checkUpdateBtn{margin-left:8px;}
+      .ksd-tr-badge{position:absolute;top:-7px;right:-7px;min-width:17px;height:17px;padding:0 5px;background:#e2302f;color:#fff;font-size:11px;line-height:17px;border-radius:9px;text-align:center;font-weight:600;display:none;}
+      .ksd-tr-badge.show{display:block;}
+
+      .ksd-drawer-backdrop{position:fixed;inset:0;z-index:90;background:rgba(15,23,42,.28);display:none;}
+      .ksd-drawer-backdrop.show{display:block;}
+      .ksd-drawer{position:fixed;top:0;right:0;bottom:0;width:560px;max-width:94vw;background:#fff;z-index:91;box-shadow:-8px 0 32px rgba(0,0,0,.16);transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;}
+      .ksd-drawer.show{transform:translateX(0);}
+      .ksd-drawer-head{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 22px 14px;border-bottom:1px solid #eef1f6;}
+      .ksd-drawer-head h2{margin:0;font-size:17px;color:#2f405d;}
+      .ksd-drawer-head p{margin:4px 0 0;font-size:12px;color:#8190a6;}
+      .ksd-drawer-head p b{color:#e2302f;font-weight:600;}
+      .ksd-drawer-tabs{display:flex;gap:2px;padding:12px 22px 0;border-bottom:1px solid #eef1f6;}
+      .ksd-tab{height:36px;padding:0 18px;border:none;background:none;font-size:14px;color:#60718a;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;}
+      .ksd-tab:hover{color:#5149e9;}
+      .ksd-tab.active{color:#5149e9;border-bottom-color:#5149e9;font-weight:600;}
+      .ksd-drawer-filters{display:flex;gap:10px;padding:14px 22px;border-bottom:1px solid #eef1f6;}
+      .ksd-drawer-filters select,.ksd-drawer-filters input{height:34px;padding:0 10px;border:1px solid #dfe6ef;border-radius:7px;font-size:13px;color:#2f405d;font-family:inherit;background:#fff;}
+      .ksd-drawer-filters select{flex-shrink:0;min-width:118px;}
+      .ksd-drawer-filters input{flex:1;min-width:0;}
+      .ksd-drawer-body{flex:1;overflow-y:auto;padding:16px 22px 24px;background:#f8f9fc;}
+
+      .ksd-tr-card{background:#fff;border:1px solid #e8ecf3;border-radius:10px;margin-bottom:12px;overflow:hidden;}
+      .ksd-tr-card-head{display:flex;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;}
+      .ksd-tr-card-head:hover{background:#faf9ff;}
+      .ksd-tr-card-head .arrow{color:#9aa7ba;font-size:12px;flex-shrink:0;transition:transform .15s;}
+      .ksd-tr-card.open .arrow{transform:rotate(90deg);}
+      .ksd-tr-card-name{font-size:14px;font-weight:600;color:#2f405d;}
+      .ksd-tr-card-meta{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end;}
+      .ksd-tr-card-meta .stat{font-size:12px;color:#8190a6;}
+      .ksd-tr-card-meta .progress{font-size:12px;color:#60718a;font-weight:600;}
+      .ksd-tr-card-body{display:none;border-top:1px solid #eef1f6;padding:2px 14px 10px;}
+      .ksd-tr-card.open .ksd-tr-card-body{display:block;}
+
+      .ksd-tag{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;flex-shrink:0;}
+      .ksd-tag.cat{background:#eef2ff;color:#5149e9;}
+      .ksd-tag.lvl-need{background:#f0eefc;color:#5149e9;}
+      .ksd-tag.lvl-sug{background:#f1f3f6;color:#60718a;}
+      .ksd-tag.src-ai{background:#f0eefc;color:#7c5ce0;}
+      .ksd-tag.src-manual{background:#e8f5fb;color:#0e7ea8;}
+      .ksd-tag.st-pending{background:#fff3e8;color:#f79009;}
+      .ksd-tag.st-ok{background:#e7f7ee;color:#12b76a;}
+      .ksd-tag.st-adj{background:#e8f0fe;color:#2563eb;}
+      .ksd-tag.st-reject{background:#f1f3f6;color:#98a2b3;text-decoration:line-through;}
+
+      .ksd-tr-row{padding:9px 0;border-bottom:1px solid #f0f2f6;}
+      .ksd-tr-row:last-child{border-bottom:none;}
+      .ksd-tr-row-main{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+      .ksd-tr-row-name{font-size:13px;font-weight:600;color:#2f405d;flex-shrink:0;line-height:20px;}
+      .ksd-tr-row-tags{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;}
+      .ksd-tr-row-actions{display:flex;gap:6px;margin-left:auto;flex-shrink:0;}
+      .ksd-tr-row-actions button{height:24px;padding:0 10px;border:1px solid #dfe6ef;background:#fff;border-radius:5px;font-size:12px;color:#546681;cursor:pointer;font-family:inherit;}
+      .ksd-tr-row-actions button:hover{border-color:#5149e9;color:#5149e9;}
+      .ksd-tr-row-actions button.danger{color:#c72c2a;}
+      .ksd-tr-row-actions button.danger:hover{border-color:#c72c2a;color:#c72c2a;}
+      .ksd-tr-row-basis{font-size:12px;color:#8190a6;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+      .ksd-tr-row-reject{font-size:12px;color:#c72c2a;margin-top:3px;}
+
+      .ksd-tr-course-h{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#3b82f6;margin:14px 0 6px;}
+      .ksd-tr-task-h{font-size:12px;color:#8b5cf6;margin:10px 0 4px;padding-left:10px;}
+      .ksd-tr-skill-h{display:flex;align-items:center;gap:8px;margin:6px 0 4px;padding:8px 10px;background:#f3f1fc;border-radius:8px;}
+      .ksd-tr-skill-name{font-size:13px;font-weight:600;color:#2f405d;}
+      .ksd-tr-locate{color:#5149e9;cursor:pointer;font-size:12px;}
+      .ksd-tr-locate:hover{text-decoration:underline;}
+      .ksd-tr-add{height:26px;padding:0 10px;border:1px dashed #5149e9;background:#fff;color:#5149e9;border-radius:6px;font-size:12px;cursor:pointer;margin-left:auto;font-family:inherit;white-space:nowrap;}
+      .ksd-tr-add:hover{background:#f3f1fc;}
+
+      .ksd-tr-empty{text-align:center;color:#98a2b3;font-size:13px;padding:40px 0;}
+      .ksd-tr-edit{background:#faf9ff;border:1px solid #e2e0f5;border-radius:8px;padding:10px 12px;margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+      .ksd-tr-edit select{height:30px;border:1px solid #dfe6ef;border-radius:6px;font-size:13px;font-family:inherit;padding:0 8px;color:#2f405d;}
+
+      .ksd-field textarea{min-height:70px;border:1px solid #dfe6ef;border-radius:8px;padding:8px 12px;font-size:13px;color:#2f405d;font-family:inherit;resize:vertical;width:100%;}
+      .ksd-field textarea:focus{outline:none;border-color:#5149e9;}
+      .ksd-hint{font-size:12px;color:#8190a6;line-height:1.5;}
+        </style>
+    <link rel="stylesheet" href="design-tokens.css" />
+  <link rel="stylesheet" href="graph-update.css" />
+  <link rel="stylesheet" href="pano-version.css" />
+  <link rel="stylesheet" href="gc-shell.css" />
+</head>
+  <body>
+    <aside class="lnav gc-lnav" id="lnav"></aside>
+<!-- 左侧菜单与其它页面共用 ../js/common.js -->
+<script src="../js/mock-data.js"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js"></script>
+<script src="gc-shell.js"></script>
+<script>GC.boot('gc-ks');</script>
+    <div class="platform-page">
+    <main class="app-shell" style="padding:0;">
+      <div class="ksd-wrap">
+        <div class="ksd-side">
+          <h3>图例</h3>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#f59e0b"></span>专业大类<span class="ksd-legend-count">1</span></div>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#f59e0b"></span>专业<span class="ksd-legend-count">1</span></div>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#22c55e"></span>课程分类<span class="ksd-legend-count">3</span></div>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#3b82f6"></span>课程<span class="ksd-legend-count">9</span></div>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#8b5cf6"></span>任务<span class="ksd-legend-count">0/9</span></div>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#06b6d4"></span>操作流程<span class="ksd-legend-count">0/9</span></div>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#14b8a6"></span>技能规范<span class="ksd-legend-count">0/9</span></div>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#8b5cf6"></span>知识点<span class="ksd-legend-count">3/17</span></div>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#3b82f6"></span>操作步骤<span class="ksd-legend-count">0/9</span></div>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#8b5cf6"></span>标准<span class="ksd-legend-count">0/2</span></div>
+          <div class="ksd-legend-item"><span class="ksd-legend-dot" style="background:#8b5cf6"></span>案例<span class="ksd-legend-count">0/3</span></div>
+        </div>
+        <div class="ksd-main">
+          <div class="ksd-header">
+            <a href="knowledge-system.html">← 知识体系</a>
+            <select id="ksSelect">
+              <option value="wine">旅游类-葡萄酒文化与营销</option>
+              <option value="tourism">旅游类-旅游管理</option>
+              <option value="hotel">旅游类-酒店管理与数字化运营</option>
+              <option value="guide">旅游类-导游</option>
+            </select>
+            <input type="text" id="ksSearchInput" placeholder="搜索节点..." />
+            <button type="button" class="ksd-check-btn ksd-tr-btn" id="trResourceBtn" onclick="trOpenFromBtn()">实训资源<span class="ksd-tr-badge" id="trBadge"></span></button>
+            <button type="button" class="ksd-check-btn" id="checkUpdateBtn">检查更新</button>
+          </div>
+          <div class="ksd-canvas-wrap" id="canvasWrap">
+            <svg id="ksSvg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet"></svg>
+            <div class="ksd-zoom">
+              <button onclick="zoomOut()">−</button>
+              <span class="ksd-zoom-info" id="zoomInfo">100%</span>
+              <button onclick="zoomIn()">+</button>
+              <button onclick="resetZoom()" title="重置">⟳</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="toast" class="toast" role="status"></div>
+    </main>
+    </div>
+
+    <div class="ksd-context-menu" id="ctxMenu">
+      <div class="ksd-context-menu-item" id="ctxAddChild" onclick="ctxAction('add')"><span class="icon">+</span>新增子级节点</div>
+      <div class="ksd-context-menu-item" id="ctxAddSibling" onclick="ctxAction('addSibling')"><span class="icon">⇄</span>新增同级节点</div>
+      <div class="ksd-context-menu-divider"></div>
+      <div class="ksd-context-menu-item" onclick="ctxAction('addKp')"><span class="icon">✎</span>新增知识点</div>
+      <div class="ksd-context-menu-divider" id="ctxStateDivider"></div>
+      <div class="ksd-context-menu-item danger" id="ctxRetire" onclick="ctxAction('retire')"><span class="icon">⊘</span>停用节点</div>
+      <div class="ksd-context-menu-item danger" id="ctxDelete" onclick="ctxAction('delete')"><span class="icon">✕</span>删除节点</div>
+      <div class="ksd-context-menu-item" id="ctxRestore" onclick="ctxAction('restore')"><span class="icon">↺</span>恢复启用</div>
+    </div>
+
+    <div class="ksd-modal" id="addNodeModal" aria-hidden="true">
+      <div class="ksd-modal-backdrop" onclick="closeAddNode()"></div>
+      <div class="ksd-dialog" role="dialog" aria-modal="true">
+        <div class="ksd-dialog-head">
+          <div><h2 id="addNodeTitle">新增子级节点</h2><p id="addParentPath">父节点：</p></div>
+          <button class="ksd-close" onclick="closeAddNode()" aria-label="关闭">×</button>
+        </div>
+        <div class="ksd-dialog-body">
+          <label class="ksd-field">
+            <span class="ksd-label">节点名称 <em>*</em></span>
+            <input type="text" id="addNodeName" placeholder="请输入节点名称" maxlength="40" autocomplete="off" />
+          </label>
+          <label class="ksd-field">
+            <span class="ksd-label">节点类型</span>
+            <select id="addNodeType"></select>
+          </label>
+        </div>
+        <div class="ksd-dialog-actions">
+          <button class="ksd-btn ghost" onclick="closeAddNode()">取消</button>
+          <button class="ksd-btn pri" id="addNodeConfirm" onclick="confirmAddNode()" disabled>确认新增</button>
+          <button class="ksd-btn ai" id="addNodeAuto" onclick="aiAutoBuild()">✦ AI自动构建</button>
+        </div>
+      </div>
+    </div>
+    <div class="ksd-modal" id="addKpModal" aria-hidden="true">
+      <div class="ksd-modal-backdrop" onclick="closeAddKp()"></div>
+      <div class="ksd-dialog" role="dialog" aria-modal="true">
+        <div class="ksd-dialog-head">
+          <div><h2>新增知识点</h2><p id="addKpParentPath">所属节点：</p></div>
+          <button class="ksd-close" onclick="closeAddKp()" aria-label="关闭">×</button>
+        </div>
+        <div class="ksd-dialog-body">
+          <label class="ksd-field">
+            <span class="ksd-label">知识点名称 <em>*</em></span>
+            <input type="text" id="addKpName" placeholder="请输入知识点名称" maxlength="40" autocomplete="off" />
+          </label>
+        </div>
+        <div class="ksd-dialog-actions">
+          <button class="ksd-btn ghost" onclick="closeAddKp()">取消</button>
+          <button class="ksd-btn pri" id="addKpConfirm" onclick="confirmAddKp()" disabled>确认新增</button>
+          <button class="ksd-btn ai" onclick="aiBuildKp()">✦ AI构建</button>
+        </div>
+      </div>
+    </div>
+    <div class="ksd-drawer-backdrop" id="trBackdrop" onclick="trCloseDrawer()"></div>
+    <aside class="ksd-drawer" id="trDrawer" aria-label="实训资源审核">
+      <div class="ksd-drawer-head">
+        <div>
+          <h2>实训资源审核</h2>
+          <p id="trDrawerSub">旅游类-葡萄酒文化与营销</p>
+        </div>
+        <button class="ksd-close" onclick="trCloseDrawer()" aria-label="关闭">×</button>
+      </div>
+      <div class="ksd-drawer-tabs" id="trTabs">
+        <button class="ksd-tab active" data-tab="cond" onclick="trTab('cond')">按条件</button>
+        <button class="ksd-tab" data-tab="skill" onclick="trTab('skill')">按技能</button>
+      </div>
+      <div class="ksd-drawer-filters" id="trFilters">
+        <select id="trFStatus" onchange="trRender()">
+          <option value="all">状态：全部</option>
+          <option value="pending">状态：待审核</option>
+          <option value="confirmed">状态：已确认</option>
+          <option value="rejected">状态：已驳回</option>
+        </select>
+        <select id="trFLevel" onchange="trRender()">
+          <option value="all">级别：全部</option>
+          <option value="必需">级别：必需</option>
+          <option value="建议">级别：建议</option>
+        </select>
+        <input id="trFSearch" placeholder="搜索条件 / 技能" oninput="trRender()" />
+      </div>
+      <div class="ksd-drawer-body" id="trBody"></div>
+    </aside>
+
+    <div class="ksd-modal" id="trRejectModal">
+      <div class="ksd-modal-backdrop" onclick="trCloseReject()"></div>
+      <div class="ksd-dialog">
+        <div class="ksd-dialog-head">
+          <div><h2>驳回实训条件</h2><p>请填写驳回理由（至少 5 个字）</p></div>
+          <button class="ksd-close" onclick="trCloseReject()">×</button>
+        </div>
+        <div class="ksd-dialog-body">
+          <label class="ksd-field">
+            <span class="ksd-label">理由 <em>*</em></span>
+            <textarea id="trRejectReason" rows="3" placeholder="请说明驳回原因"></textarea>
+          </label>
+        </div>
+        <div class="ksd-dialog-actions">
+          <button class="ksd-btn ghost" onclick="trCloseReject()">取消</button>
+          <button class="ksd-btn pri" id="trRejectConfirm" onclick="trSaveReject()" disabled>确认驳回</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ksd-modal" id="trAddModal">
+      <div class="ksd-modal-backdrop" onclick="trCloseAdd()"></div>
+      <div class="ksd-dialog">
+        <div class="ksd-dialog-head">
+          <div><h2>添加实训条件</h2><p id="trAddTarget">挂载对象：</p></div>
+          <button class="ksd-close" onclick="trCloseAdd()">×</button>
+        </div>
+        <div class="ksd-dialog-body">
+          <label class="ksd-field">
+            <span class="ksd-label">条件 <em>*</em></span>
+            <select id="trAddCond"></select>
+            <span class="ksd-hint" id="trAddCondHint"></span>
+          </label>
+          <label class="ksd-field">
+            <span class="ksd-label">级别 <em>*</em></span>
+            <select id="trAddLevel"><option value="必需">必需</option><option value="建议">建议</option></select>
+          </label>
+          <label class="ksd-field">
+            <span class="ksd-label">理由 <em>*</em></span>
+            <textarea id="trAddReason" rows="3" placeholder="至少 5 个字"></textarea>
+          </label>
+        </div>
+        <div class="ksd-dialog-actions">
+          <button class="ksd-btn ghost" onclick="trCloseAdd()">取消</button>
+          <button class="ksd-btn pri" id="trAddConfirm" onclick="trSaveAdd()" disabled>保存</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="graph-update.js"></script>
+    <script src="node-retire.js"></script>
+    <script>
+      function toast(text){var t=document.getElementById('toast');t.textContent=text;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(function(){t.classList.remove('show')},2200)}
+
+      // Knowledge tree data
+      var treeData = {
+        name:'旅游类-葡萄酒文化与营销',type:'root',color:'#5149e9',expanded:true,children:[
+          {name:'葡萄酒文化与营销 (540108)',type:'major',color:'#f59e0b',expanded:true,children:[
+            {name:'专业基础课程',type:'category',color:'#22c55e',expanded:true,children:[
+              {name:'管理学基础',type:'course',color:'#3b82f6',expanded:true,children:[
+                {name:'运用管理职能分析组织管理活动',type:'task',color:'#8b5cf6',expanded:true,children:[
+                  {name:'情境拆解',type:'process',color:'#06b6d4'},
+                  {name:'职能归类',type:'process',color:'#06b6d4'},
+                  {name:'逻辑构建',type:'process',color:'#06b6d4'},
+                  {name:'职能界定准确性标准',type:'standard',color:'#8b5cf6'},
+                  {name:'某初创科技公司的混乱一周',type:'case',color:'#8b5cf6'}
+                ]},
+                {name:'应用经典管理理论解读现代管理现象',type:'task',color:'#8b5cf6',expanded:false},
+                {name:'诊断组织环境并制定应对策略',type:'task',color:'#8b5cf6',expanded:false},
+                {name:'组织管理实训',type:'task',color:'#8b5cf6',expanded:true,children:[
+                  {name:'组织管理情境分析',type:'skill',color:'#14b8a6'},
+                  {name:'管理职能应用',type:'skill',color:'#14b8a6'},
+                  {name:'组织环境诊断',type:'skill',color:'#14b8a6'}
+                ]}
+              ]},
+              {name:'旅游概论',type:'course',color:'#3b82f6',expanded:false},
+              {name:'数字化营销',type:'course',color:'#3b82f6',expanded:true,children:[
+                {name:'新媒体营销实训',type:'task',color:'#8b5cf6',expanded:true,children:[
+                  {name:'短视频制作',type:'skill',color:'#14b8a6'},
+                  {name:'直播讲解',type:'skill',color:'#14b8a6'}
+                ]}
+              ]},
+              {name:'休闲文化概论',type:'course',color:'#3b82f6',expanded:false},
+              {name:'消费心理学',type:'course',color:'#3b82f6',expanded:false},
+              {name:'葡萄酒基础',type:'course',color:'#3b82f6',expanded:true,children:[
+                {name:'葡萄酒服务实训',type:'task',color:'#8b5cf6',expanded:true,children:[
+                  {name:'葡萄酒品鉴',type:'skill',color:'#14b8a6'},
+                  {name:'酒标识读',type:'skill',color:'#14b8a6'},
+                  {name:'侍酒服务',type:'skill',color:'#14b8a6'}
+                ]}
+              ]}
+            ]},
+            {name:'专业核心课程',type:'category',color:'#22c55e',expanded:false},
+            {name:'专业拓展课程',type:'category',color:'#22c55e',expanded:false}
+          ]}
+        ]
+      };
+
+      // 图谱中心：打开的是新建的知识体系时显示它自己的树（下拉也可切换到新建的体系），节点编辑保存回该体系
+      var GC_KS=null, GC_KS_LIST=[];
+      (function(){
+        try{GC_KS_LIST=JSON.parse(sessionStorage.getItem('ks_systems_v2')||'[]');}catch(e){}
+        var id=new URLSearchParams(location.search).get('id');
+        var sel=document.getElementById('ksSelect');
+        GC_KS_LIST.filter(function(x){return x.tree&&x.buildStatus==='built';}).forEach(function(x){sel.insertBefore(new Option(x.name,x.id),sel.firstChild);});
+        var s=GC_KS_LIST.find(function(x){return x.id===id;});
+        if(!s||!s.tree){sel.value='wine';return;}
+        GC_KS=s; sel.value=s.id;
+        // 实训资源、检查更新的数据属于预置体系，新建体系暂不显示
+        ['trResourceBtn','checkUpdateBtn'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='none';});
+        var COLOR={root:'#5149e9',major:'#f59e0b',category:'#22c55e',course:'#3b82f6',task:'#8b5cf6',skill:'#14b8a6',process:'#06b6d4',standard:'#8b5cf6',case:'#8b5cf6',step:'#3b82f6',knowledge:'#8b5cf6'};
+        (function conv(n){
+          if(n.type==='major_category')n.type='root';
+          if(n.type==='criterion')n.type='standard';
+          if(!n.color)n.color=COLOR[n.type]||'#8b5cf6';
+          if(n.expanded===undefined)n.expanded=true;
+          (n.children||[]).forEach(conv);
+        })(s.tree);
+        treeData=s.tree;
+      })();
+      function gcSaveKs(){
+        if(!GC_KS)return;
+        var n=0;(function c(x){n++;(x.children||[]).forEach(c);})(treeData);
+        GC_KS.tree=treeData;GC_KS.nodes=n;
+        try{sessionStorage.setItem('ks_systems_v2',JSON.stringify(GC_KS_LIST));}catch(e){}
+        // 图例按本体系实际节点计数
+        var cnt={};(function c(x){cnt[x.type]=(cnt[x.type]||0)+1;(x.children||[]).forEach(c);})(treeData);
+        var MAP={'专业大类':'root','专业':'major','课程分类':'category','课程':'course','任务':'task','操作流程':'process','技能规范':'skill','知识点':'knowledge','操作步骤':'step','标准':'standard','案例':'case'};
+        document.querySelectorAll('.ksd-legend-item').forEach(function(it){
+          var label=it.childNodes[1]&&it.childNodes[1].textContent.trim(), t=MAP[label], b=it.querySelector('.ksd-legend-count');
+          if(t&&b)b.textContent=cnt[t]||0;
+        });
+      }
+
+      var svg=document.getElementById('ksSvg');
+      var zoomLevel=1;
+
+      var NS='http://www.w3.org/2000/svg';
+      function el(tag,attrs){
+        var e=document.createElementNS(NS,tag);
+        for(var k in attrs)e.setAttribute(k,attrs[k]);
+        return e;
+      }
+
+      function renderTree(){
+        while(svg.firstChild)svg.removeChild(svg.firstChild);
+        var nodes=[],links=[];
+        function calc(node,depth){
+          node._depth=depth;
+          node._x=40+depth*200;
+          if(!node.children||!node.expanded){node._height=30;return 1;}
+          var childCount=0;
+          node.children.forEach(function(c){childCount+=calc(c,depth+1);});
+          node._height=childCount*32;
+          return childCount;
+        }
+        function layout(node,depth,startY){
+          node._y=startY+node._height/2;
+          if(node.children&&node.expanded){
+            var y=startY;
+            node.children.forEach(function(c){layout(c,depth+1,y);y+=c._height;});
+          }
+        }
+        calc(treeData,0,0);
+        layout(treeData,0,20);
+        function collect(node){
+          nodes.push(node);
+          if(node.children&&node.expanded){
+            node.children.forEach(function(c){links.push({from:node,to:c});collect(c);});
+          }
+        }
+        collect(treeData);
+        var maxX=0,maxY=0;
+        nodes.forEach(function(n){if(n._x>maxX)maxX=n._x;if(n._y>maxY)maxY=n._y;});
+        var svgW=Math.max(1200,maxX+220);
+        var svgH=Math.max(800,maxY+80);
+        svg.setAttribute('viewBox','0 0 '+svgW+' '+svgH);
+        links.forEach(function(l){
+          var x1=l.from._x+160,y1=l.from._y;
+          var x2=l.to._x,y2=l.to._y;
+          var cx=(x1+x2)/2;
+          svg.appendChild(el('path',{class:'ksd-link',d:'M'+x1+','+y1+' C'+cx+','+y1+' '+cx+','+y2+' '+x2+','+y2}));
+        });
+        nodes.forEach(function(n){
+          var isRoot=n.type==='root';
+          var tag=trNodeTag(n);
+          var w=isRoot?180:(tag?188:160),h=28;
+          var x=n._x,y=n._y-h/2;
+          var rect=el('rect',{
+            class:isRoot?'ksd-node-rect root':(n.expanded?'ksd-node-rect expanded':'ksd-node-rect'),
+            x:x,y:y,width:w,height:h,rx:6,ry:6,
+            fill:isRoot?'#5149e9':(n.disabled?'#f2f4f7':'#fff'),
+            stroke:isRoot?'#5149e9':(n._hl?'#f79009':(n.isNew?'#12b76a':(n.retire?'#f79009':(n.expanded?'#5149e9':'#dfe6ef')))),
+            'stroke-width':n._hl?3:1.5,
+            'stroke-dasharray':(n.retire||n.disabled)?'4 3':'none',
+            opacity:n.disabled?.6:1
+          });
+          rect.addEventListener('click',function(){toggleNode(n._id);});
+          (function(ref){rect.addEventListener('contextmenu',function(e){showContextMenu(e,n._id,ref);});})(n);
+          svg.appendChild(rect);
+          var text=n.name;
+          if(!tag&&text.length>12&&!isRoot)text=text.substring(0,11)+'...';
+          if(n.disabled)text=(text.length>8?text.substring(0,7)+'…':text)+'（已停用）';
+          var txt=el('text',{class:isRoot?'ksd-node-text root':'ksd-node-text normal',x:tag?(x+10):(x+w/2),y:n._y+4,'text-anchor':tag?'start':'middle'});
+          txt.textContent=text;if(n.disabled)txt.setAttribute('style','fill:#98a2b3');
+          svg.appendChild(txt);
+          if(n.children&&n.children.length){
+            var icon=el('text',{class:'ksd-expand-icon',x:x+w+4,y:n._y+4});
+            icon.textContent=n.expanded?'−':'+';
+            icon.addEventListener('click',function(){toggleNode(n._id);});
+            svg.appendChild(icon);
+          }
+          if((!n.children||!n.children.length)&&!tag){
+            var edit=el('text',{class:'ksd-edit-icon',x:x+w-16,y:n._y+4});
+            edit.textContent='✎';
+            svg.appendChild(edit);
+          }
+          if(tag){
+            var tw=46,th=16,tx=x+w-tw-6,ty=y+(h-th)/2;
+            var tg=el('g',{cursor:'pointer'});
+            var trr=el('rect',{x:tx,y:ty,width:tw,height:th,rx:8,fill:tag.pending?'#f79009':'#9aa7ba'});
+            var trt=el('text',{x:tx+tw/2,y:ty+12,'text-anchor':'middle',fill:'#fff','font-size':11,'font-weight':600});
+            trt.textContent='实训 '+tag.count;
+            (function(ref){trr.addEventListener('click',function(){trOpenByTag(ref);});trt.addEventListener('click',function(){trOpenByTag(ref);});})(n);
+            tg.appendChild(trr);tg.appendChild(trt);
+            svg.appendChild(tg);
+          }
+        });
+        document.getElementById('zoomInfo').textContent=Math.round(zoomLevel*100)+'%';
+      }
+
+      // Assign IDs
+      var nodeId=0;
+      function assignIds(node){
+        node._id='n'+(nodeId++);
+        if(node.children)node.children.forEach(assignIds);
+      }
+      assignIds(treeData);
+      if(GC_KS){var gcRenderTree=renderTree;renderTree=function(){gcRenderTree();gcSaveKs();};}
+
+      function toggleNode(idStr){
+        function find(node){
+          if(node._id===idStr)return node;
+          if(node.children)for(var i=0;i<node.children.length;i++){
+            var r=find(node.children[i]);if(r)return r;
+          }
+        }
+        var n=find(treeData);
+        if(n&&n.children){n.expanded=!n.expanded;renderTree();}
+      }
+
+      function zoomIn(){zoomLevel=Math.min(3,zoomLevel+0.1);applyZoom();}
+      function zoomOut(){zoomLevel=Math.max(0.3,zoomLevel-0.1);applyZoom();}
+      function resetZoom(){zoomLevel=1;applyZoom();}
+      function applyZoom(){
+        svg.style.transform='scale('+zoomLevel+')';
+        svg.style.transformOrigin='center center';
+        document.getElementById('zoomInfo').textContent=Math.round(zoomLevel*100)+'%';
+      }
+
+      document.getElementById('ksSelect').onchange=function(){var v=this.value;if(GC_KS_LIST.some(function(x){return x.id===v;})){location.href=GC.url('knowledge-system-detail.html?id='+encodeURIComponent(v));return;}toast('切换知识体系');};
+      // ===== 检查更新：标准与课程信号（mock）=====
+      var ksVersion='v2.1';
+      function findNode(name,node){node=node||treeData;if(node.name===name)return node;if(node.children)for(var i=0;i<node.children.length;i++){var r=findNode(name,node.children[i]);if(r)return r;}return null;}
+      function hasChild(parent,name){return !!(parent&&parent.children&&parent.children.some(function(c){return c.name===name;}));}
+      function ksUpdateItems(){
+        var items=[];
+        var base=findNode('葡萄酒基础');
+        if(!hasChild(base,'葡萄酒标签与标识规范'))items.push({id:'ks-std',kind:'add',title:'新增标准「葡萄酒标签与标识规范」',
+          path:'专业基础课程 › 葡萄酒基础',editName:'葡萄酒标签与标识规范',
+          desc:'相关行业标准发布修订版，对酒标信息、年份与产区标注提出新要求，课程中尚无对应的达标依据。',
+          metrics:[{v:'1 项',label:'标准修订'},{v:'3 条',label:'涉及条款'}],
+          links:['行业标准修订公告：发布机构、发布日期、条款 4.2–4.4'],
+          conf:.82,impact:'1 门课程新增 1 个标准节点'});
+        var leisure=findNode('休闲文化概论');
+        if(leisure&&!leisure.retire)items.push({id:'ks-retire',kind:'retire',title:'课程「休闲文化概论」不再列入教学标准',
+          path:'专业基础课程 › 休闲文化概论',
+          desc:'专业教学标准修订后，该课程不再列入专业基础课程。',
+          metrics:[{v:'1 项',label:'教学标准修订'},{v:'0 门',label:'修订后对应课程'}],
+          note:'采纳后只标记「建议下线」，课程和关联内容保留，需教研组评审后再手动处理。',
+          links:['专业教学标准修订稿：课程设置章节'],
+          conf:.73,impact:'1 门课程（不自动删除）'});
+        return items;
+      }
+      function addChild(parent,node){if(!parent.children)parent.children=[];parent.children.push(node);parent.expanded=true;}
+      function applyKsUpdates(acc){
+        acc.forEach(function(x){
+          if(x.id==='ks-std')addChild(findNode('葡萄酒基础'),{name:x.name,type:'standard',color:'#8b5cf6',isNew:true});
+          if(x.id==='ks-retire')findNode('休闲文化概论').retire=true;
+        });
+        findNode('专业基础课程').expanded=true;
+        assignIds(treeData);renderTree();
+        var m=/^v(\d+)\.(\d+)$/.exec(ksVersion);ksVersion='v'+m[1]+'.'+(+m[2]+1);
+        return '已更新到 '+ksVersion+'：采纳 '+acc.length+' 项（新增节点绿框，建议下线橙色虚框）';
+      }
+      GraphUpdate.mount({
+        btn:'#checkUpdateBtn',title:'知识体系更新报告',toast:toast,
+        scope:'旅游类-葡萄酒文化与营销',
+        sources:['教育侧：教学标准、行业标准'],
+        lastChecked:'2026-10-13（每月自动检查）',
+        steps:['获取教学标准与行业标准','比对教学标准与行业标准','生成更新建议'],
+        storeKey:'gu-ignored-ks-wine',
+        version:function(){return ksVersion;},
+        getItems:ksUpdateItems,
+        onApply:applyKsUpdates,
+        seedHist:[
+          { time:'2026-07-06 10:15', from:'v1.5', version:'v1.6', scope:'旅游类-葡萄酒文化与营销', acc:1, ign:1, total:2,
+            items:[{kind:'add', name:'葡萄酒分类与品鉴基础'}] },
+          { time:'2026-07-20 14:32', from:'v1.6', version:'v1.7', scope:'旅游类-葡萄酒文化与营销', acc:2, ign:0, total:2,
+            items:[{kind:'add', name:'葡萄酒产区与风土'},{kind:'add', name:'葡萄品种识别'}] },
+          { time:'2026-08-05 09:48', from:'v1.7', version:'v1.8', scope:'旅游类-葡萄酒文化与营销', acc:1, ign:1, total:2,
+            items:[{kind:'modify', name:'「葡萄品种与酿造工艺」内容更新'}] },
+          { time:'2026-08-28 16:05', from:'v1.8', version:'v1.9', scope:'旅游类-葡萄酒文化与营销', acc:2, ign:1, total:3,
+            items:[{kind:'add', name:'餐酒搭配原则'},{kind:'retire', name:'「葡萄酒营销案例」不再列入教学标准'}] },
+          { time:'2026-09-15 11:20', from:'v1.9', version:'v2.0', scope:'旅游类-葡萄酒文化与营销', acc:2, ign:1, total:3,
+            items:[{kind:'add', name:'侍酒服务流程'},{kind:'add', name:'葡萄酒储存与温度控制'}] },
+          { time:'2026-10-06 09:12', from:'v2.0', version:'v2.1', scope:'旅游类-葡萄酒文化与营销', acc:1, ign:1, total:2,
+            items:[{kind:'modify', name:'「葡萄酒营销策略」内容更新'}] }
+        ]
+      });
+      document.getElementById('ksSearchInput').onkeydown=function(e){if(e.key==='Enter'){toast('搜索：'+e.target.value);}};
+
+
+      var ctxNodeId=null,ctxNodeRef=null;
+      var ctxMenu=document.getElementById('ctxMenu');
+
+      function showContextMenu(e,nodeId,nodeRef){
+        e.preventDefault();
+        ctxNodeId=nodeId;
+        ctxNodeRef=nodeRef;
+        document.getElementById('ctxAddSibling').style.display=(nodeRef===treeData)?'none':'';
+        // 被全景图谱引用的节点只能停用；本次新增、未被引用的节点可删除；根节点两者都不提供
+        var isRoot=nodeRef===treeData;
+        document.getElementById('ctxStateDivider').style.display=isRoot?'none':'';
+        document.getElementById('ctxRestore').style.display=!isRoot&&nodeRef.disabled?'':'none';
+        document.getElementById('ctxRetire').style.display=!isRoot&&!nodeRef.disabled&&!nodeRef.isNew?'':'none';
+        document.getElementById('ctxDelete').style.display=!isRoot&&!nodeRef.disabled&&nodeRef.isNew?'':'none';
+        ctxMenu.style.left=Math.min(e.clientX,window.innerWidth-180)+'px';
+        ctxMenu.style.top=Math.min(e.clientY,window.innerHeight-240)+'px';
+        ctxMenu.classList.add('show');
+      }
+
+      function hideCtxMenu(){ctxMenu.classList.remove('show');}
+
+      function ctxAction(action){
+        if(!ctxNodeRef)return;
+        if(action==='add')ctxAddChild();
+        else if(action==='addSibling')ctxAddSibling();
+        else if(action==='addKp')ctxAddKp();
+        else if(action==='retire')ctxRetire();
+        else if(action==='delete')ctxDelete();
+        else if(action==='restore')ctxRestore();
+        hideCtxMenu();
+      }
+
+      document.addEventListener('click',hideCtxMenu);
+      document.addEventListener('contextmenu',function(e){
+        if(!e.target.closest('.ksd-node-rect')&&!e.target.closest('rect')) {
+          if(e.target.closest('.ksd-canvas-wrap'))e.preventDefault();
+        }
+      });
+
+      // ===== 停用 / 删除 / 恢复节点 =====
+      function walkKs(n,fn){fn(n);(n.children||[]).forEach(function(c){walkKs(c,fn);});}
+      function ctxRetire(){
+        var n=ctxNodeRef,sub=-1;walkKs(n,function(){sub++;});
+        NodeRetire.open({name:n.name,typeLabel:(TYPE_META[n.type]||{}).label||'节点',subCount:sub,graph:treeData.name,majors:[treeData.name],
+          onConfirm:function(){walkKs(n,function(x){x.disabled=true;});renderTree();toast('已停用「'+n.name+'」，已生成影响分析记录');}});
+      }
+      function ctxDelete(){
+        var n=ctxNodeRef,parent=findParent(n,treeData);if(!parent)return;
+        if(!confirm('「'+n.name+'」尚未被全景图谱引用，删除后不可恢复。确认删除？'))return;
+        parent.children.splice(parent.children.indexOf(n),1);
+        assignIds(treeData);renderTree();toast('已删除「'+n.name+'」');
+      }
+      function ctxRestore(){var n=ctxNodeRef;walkKs(n,function(x){delete x.disabled;});renderTree();toast('已恢复启用「'+n.name+'」');}
+
+      // ===== 新增节点（支持 AI 构建后续节点）=====
+      var TYPE_META={
+        root:{label:'专业大类',next:'major'},
+        major:{label:'专业',next:'category'},
+        category:{label:'课程分类',next:'course'},
+        course:{label:'课程',next:'task'},
+        task:{label:'任务',next:['skill','process','standard','case']},
+        skill:{label:'技能规范',next:['step','standard','case']},
+        process:{label:'操作流程',next:['step']},
+        standard:{label:'标准',next:['step']},
+        case:{label:'案例',next:['step']},
+        step:{label:'操作步骤',next:[]},
+        knowledge:{label:'知识点',next:[]}
+      };
+      var TYPE_COLOR={root:'#5149e9',major:'#f59e0b',category:'#22c55e',course:'#3b82f6',task:'#8b5cf6',skill:'#14b8a6',process:'#06b6d4',standard:'#8b5cf6',case:'#8b5cf6',step:'#3b82f6',knowledge:'#8b5cf6'};
+      function childTypes(parentType){
+        var meta=TYPE_META[parentType];
+        if(!meta||!meta.next)return [];
+        return Array.isArray(meta.next)?meta.next:[meta.next];
+      }
+      function aiBuildChildren(node,depth){
+        depth=depth||0;
+        if(depth>=2)return [];
+        var kids=[];
+        if(node.type==='root')kids=[{name:'新增专业',type:'major'}];
+        else if(node.type==='major')kids=[{name:'专业基础课程',type:'category'},{name:'专业核心课程',type:'category'},{name:'专业拓展课程',type:'category'}];
+        else if(node.type==='category')kids=[{name:node.name+'导论',type:'course'},{name:node.name+'实务',type:'course'}];
+        else if(node.type==='course')kids=[{name:'掌握'+node.name+'核心知识',type:'task'},{name:'运用'+node.name+'完成典型任务',type:'task'},{name:'制定'+node.name+'实施方案',type:'task'}];
+        else if(node.type==='task')kids=[{name:'情境拆解',type:'process'},{name:'步骤梳理',type:'process'},{name:'评价标准',type:'standard'},{name:'典型案例',type:'case'}];
+        else if(node.type==='process')kids=[{name:'步骤一',type:'step'},{name:'步骤二',type:'step'},{name:'操作要点',type:'knowledge'}];
+        else if(node.type==='standard')kids=[{name:'操作步骤',type:'step'},{name:'评价要点',type:'knowledge'}];
+        else if(node.type==='case')kids=[{name:'案例步骤',type:'step'},{name:'案例要点',type:'knowledge'}];
+        else if(node.type==='step')kids=[{name:'要点说明',type:'knowledge'}];
+        else if(node.type==='knowledge')kids=[{name:'子知识点',type:'knowledge'}];
+        var out=[];
+        kids.forEach(function(k){
+          k.color=TYPE_COLOR[k.type];k.isNew=true;k.expanded=false;
+          var sub=aiBuildChildren(k,depth+1);
+          if(sub.length)k.children=sub;
+          out.push(k);
+        });
+        return out;
+      }
+      function countDesc(nodes){var n=nodes.length;nodes.forEach(function(c){if(c.children)n+=countDesc(c.children);});return n;}
+      function findParent(child,node){
+        if(!node||!node.children)return null;
+        for(var i=0;i<node.children.length;i++){
+          if(node.children[i]===child)return node;
+          var p=findParent(child,node.children[i]);
+          if(p)return p;
+        }
+        return null;
+      }
+      function uniqueName(parent,base){
+        var name=base,n=2;
+        while(hasChild(parent,name)){name=base+' '+n;n++;}
+        return name;
+      }
+      var addParentRef=null;
+      function openAddNode(parent,presetType,title,path){
+        if(!parent)return;
+        var types=childTypes(parent.type);
+        if(!types.length){toast('该节点不支持新增子节点');return;}
+        addParentRef=parent;
+        document.getElementById('addNodeTitle').textContent=title;
+        document.getElementById('addParentPath').textContent=path;
+        document.getElementById('addNodeType').innerHTML=types.map(function(t){return '<option value="'+t+'">'+TYPE_META[t].label+'</option>';}).join('');
+        if(presetType&&types.indexOf(presetType)>=0)document.getElementById('addNodeType').value=presetType;
+        document.getElementById('addNodeName').value='';
+        document.getElementById('addNodeConfirm').disabled=true;
+        document.getElementById('addNodeModal').classList.add('show');
+        setTimeout(function(){document.getElementById('addNodeName').focus();},30);
+      }
+      function closeAddNode(){document.getElementById('addNodeModal').classList.remove('show');addParentRef=null;}
+      function confirmAddNode(){
+        if(!addParentRef)return;
+        var name=document.getElementById('addNodeName').value.trim();
+        if(!name)return;
+        var type=document.getElementById('addNodeType').value;
+        var node={name:name,type:type,color:TYPE_COLOR[type],isNew:true,expanded:false};
+        addChild(addParentRef,node);
+        closeAddNode();
+        assignIds(treeData);renderTree();
+        toast('已新增子节点「'+name+'」');
+      }
+      function aiAutoBuild(){
+        if(!addParentRef)return;
+        var type=document.getElementById('addNodeType').value;
+        var name=uniqueName(addParentRef,'新建'+TYPE_META[type].label);
+        var node={name:name,type:type,color:TYPE_COLOR[type],isNew:true,expanded:false};
+        addChild(addParentRef,node);
+        closeAddNode();
+        assignIds(treeData);renderTree();
+        toast('AI 正在自动构建「'+name+'」…');
+        setTimeout(function(){
+          var kids=aiBuildChildren(node);
+          if(kids.length){
+            node.children=kids;node.expanded=true;
+            assignIds(treeData);renderTree();
+            toast('AI 已构建「'+name+'」及 '+countDesc(kids)+' 个后续节点');
+          }else{
+            toast('AI 已构建「'+name+'」');
+          }
+        },900);
+      }
+      function ctxAddChild(){var p=ctxNodeRef;openAddNode(p,null,'新增子级节点','父节点：'+p.name+'（'+TYPE_META[p.type].label+'）');}
+      function ctxAddSibling(){
+        var sib=ctxNodeRef;
+        var parent=findParent(sib,treeData);
+        if(!parent){toast('「'+sib.name+'」为顶层节点，无同级节点');return;}
+        openAddNode(parent,sib.type,'新增同级节点','同级于：'+sib.name+'（'+TYPE_META[sib.type].label+'）');
+      }
+      document.getElementById('addNodeName').oninput=function(){document.getElementById('addNodeConfirm').disabled=!this.value.trim();};
+      document.getElementById('addNodeName').onkeydown=function(e){if(e.key==='Enter')confirmAddNode();};
+      // ===== 新增知识点（右键菜单 + AI 构建）=====
+      var kpParentRef=null;
+      function ctxAddKp(){
+        var p=ctxNodeRef;if(!p)return;
+        kpParentRef=p;
+        document.getElementById('addKpParentPath').textContent='所属节点：'+p.name+'（'+TYPE_META[p.type].label+'）';
+        document.getElementById('addKpName').value='';
+        document.getElementById('addKpConfirm').disabled=true;
+        document.getElementById('addKpModal').classList.add('show');
+        setTimeout(function(){document.getElementById('addKpName').focus();},30);
+      }
+      function closeAddKp(){document.getElementById('addKpModal').classList.remove('show');kpParentRef=null;}
+      function confirmAddKp(){
+        if(!kpParentRef)return;
+        var name=document.getElementById('addKpName').value.trim();
+        if(!name)return;
+        addChild(kpParentRef,{name:name,type:'knowledge',color:TYPE_COLOR.knowledge,isNew:true,expanded:false});
+        closeAddKp();
+        assignIds(treeData);renderTree();
+        toast('已新增知识点「'+name+'」');
+      }
+      function aiBuildKp(){
+        if(!kpParentRef)return;
+        var name=document.getElementById('addKpName').value.trim()||uniqueName(kpParentRef,'新建知识点');
+        var node={name:name,type:'knowledge',color:TYPE_COLOR.knowledge,isNew:true,expanded:false};
+        addChild(kpParentRef,node);
+        closeAddKp();
+        assignIds(treeData);renderTree();
+        toast('AI 正在构建知识点「'+name+'」…');
+        setTimeout(function(){
+          var kids=aiBuildChildren(node);
+          if(kids.length){
+            node.children=kids;node.expanded=true;
+            assignIds(treeData);renderTree();
+            toast('AI 已构建「'+name+'」及 '+countDesc(kids)+' 个知识点');
+          }else{
+            toast('AI 已构建「'+name+'」');
+          }
+        },900);
+      }
+      document.getElementById('addKpName').oninput=function(){document.getElementById('addKpConfirm').disabled=!this.value.trim();};
+      document.getElementById('addKpName').onkeydown=function(e){if(e.key==='Enter')confirmAddKp();};
+      document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeAddNode();closeAddKp();}});
+      // ===== 实训资源 =====
+      var TR_CAN_EDIT=true; // mock：当前用户为该知识体系创建者
+      function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+      var TR_DICT=[
+        {id:'LAB-GUIDE',name:'导游服务综合实训室',category:'场地',spec:'可开展导游讲解、服务流程等实训',status:'启用'},
+        {id:'LAB-WINE',name:'葡萄酒品鉴实训室',category:'场地',spec:'含品酒杯、醒酒器、酒柜等',status:'启用'},
+        {id:'LAB-MEDIA',name:'新媒体直播实训室',category:'场地',spec:'含绿幕、灯光、直播设备',status:'启用'},
+        {id:'SCENE-TOUR',name:'景区实景讲解场景',category:'场景',spec:'在景区开展实地讲解',status:'启用'},
+        {id:'EQ-GLASSWARE',name:'酒具耗材套装',category:'设备耗材',spec:'品酒杯、醒酒器、冰桶等',status:'启用'},
+        {id:'EQ-CAMERA',name:'拍摄与收音设备',category:'设备耗材',spec:'相机、稳定器、麦克风',status:'启用'},
+        {id:'SW-LIVE',name:'直播推流软件',category:'软件',spec:'推流、连麦、互动',status:'启用'},
+        {id:'BASE-HOTEL',name:'校企合作酒店基地',category:'校外基地',spec:'酒店实训合作基地',status:'启用'}
+      ];
+      var TR_COURSES=[{id:'C1',name:'管理学基础'},{id:'C2',name:'葡萄酒基础'},{id:'C3',name:'数字化营销'}];
+      var TR_SKILLS=[
+        {id:'S1',name:'组织管理情境分析',course_id:'C1',course:'管理学基础',task:'组织管理实训'},
+        {id:'S2',name:'管理职能应用',course_id:'C1',course:'管理学基础',task:'组织管理实训'},
+        {id:'S3',name:'组织环境诊断',course_id:'C1',course:'管理学基础',task:'组织管理实训'},
+        {id:'S4',name:'葡萄酒品鉴',course_id:'C2',course:'葡萄酒基础',task:'葡萄酒服务实训'},
+        {id:'S5',name:'酒标识读',course_id:'C2',course:'葡萄酒基础',task:'葡萄酒服务实训'},
+        {id:'S6',name:'侍酒服务',course_id:'C2',course:'葡萄酒基础',task:'葡萄酒服务实训'},
+        {id:'S7',name:'短视频制作',course_id:'C3',course:'数字化营销',task:'新媒体营销实训'},
+        {id:'S8',name:'直播讲解',course_id:'C3',course:'数字化营销',task:'新媒体营销实训'}
+      ];
+      function trDict(id){for(var i=0;i<TR_DICT.length;i++)if(TR_DICT[i].id===id)return TR_DICT[i];return {name:id,category:'',spec:''};}
+      function trSkill(name){for(var i=0;i<TR_SKILLS.length;i++)if(TR_SKILLS[i].name===name)return TR_SKILLS[i];return null;}
+      function trReq(id){for(var i=0;i<TR_REQS.length;i++)if(TR_REQS[i].id===id)return TR_REQS[i];return null;}
+      function trValid(r){return r.status!=='驳回';}
+      function trConfirmed(r){return r.status==='已审核'||r.status==='已调整';}
+      function trStatusClass(s){return s==='待审核'?'st-pending':(s==='已审核'?'st-ok':(s==='已调整'?'st-adj':'st-reject'));}
+      var TR_REQS=[
+        {id:'R1',target_type:'skill',target_id:'S1',target_name:'组织管理情境分析',course_id:'C1',course_name:'管理学基础',task_name:'组织管理实训',condition_id:'SCENE-TOUR',level:'必需',basis:'技能侧：情境拆解需在真实景区中观察服务流程｜需要：景区实景讲解场景',source:'auto',status:'待审核'},
+        {id:'R2',target_type:'skill',target_id:'S1',target_name:'组织管理情境分析',course_id:'C1',course_name:'管理学基础',task_name:'组织管理实训',condition_id:'LAB-GUIDE',level:'建议',basis:'技能侧：组织情境可在实训室内模拟演练｜需要：导游服务综合实训室',source:'auto',status:'已审核'},
+        {id:'R3',target_type:'skill',target_id:'S2',target_name:'管理职能应用',course_id:'C1',course_name:'管理学基础',task_name:'组织管理实训',condition_id:'LAB-GUIDE',level:'必需',basis:'技能侧：管理职能应用需模拟带团与对客服务｜需要：导游服务综合实训室',source:'auto',status:'已审核'},
+        {id:'R4',target_type:'skill',target_id:'S3',target_name:'组织环境诊断',course_id:'C1',course_name:'管理学基础',task_name:'组织管理实训',condition_id:'BASE-HOTEL',level:'建议',basis:'技能侧：组织环境诊断需结合企业真实案例｜需要：校企合作酒店基地',source:'manual',status:'已审核'},
+        {id:'R5',target_type:'skill',target_id:'S4',target_name:'葡萄酒品鉴',course_id:'C2',course_name:'葡萄酒基础',task_name:'葡萄酒服务实训',condition_id:'LAB-WINE',level:'必需',basis:'技能侧：品鉴方法需标准环境反复演练｜需要：葡萄酒品鉴实训室',source:'auto',status:'待审核'},
+        {id:'R6',target_type:'skill',target_id:'S4',target_name:'葡萄酒品鉴',course_id:'C2',course_name:'葡萄酒基础',task_name:'葡萄酒服务实训',condition_id:'EQ-GLASSWARE',level:'必需',basis:'技能侧：品鉴需区分器型对风味的影响｜需要：酒具耗材套装',source:'auto',status:'待审核'},
+        {id:'R7',target_type:'skill',target_id:'S5',target_name:'酒标识读',course_id:'C2',course_name:'葡萄酒基础',task_name:'葡萄酒服务实训',condition_id:'EQ-GLASSWARE',level:'建议',basis:'技能侧：酒标识读可结合实物讲解｜需要：酒具耗材套装',source:'auto',status:'已审核'},
+        {id:'R8',target_type:'skill',target_id:'S6',target_name:'侍酒服务',course_id:'C2',course_name:'葡萄酒基础',task_name:'葡萄酒服务实训',condition_id:'LAB-WINE',level:'必需',basis:'技能侧：侍酒服务需实景操作与标准流程｜需要：葡萄酒品鉴实训室',source:'auto',status:'已审核'},
+        {id:'R9',target_type:'skill',target_id:'S6',target_name:'侍酒服务',course_id:'C2',course_name:'葡萄酒基础',task_name:'葡萄酒服务实训',condition_id:'EQ-GLASSWARE',level:'必需',basis:'技能侧：侍酒需使用专业酒具演示｜需要：酒具耗材套装',source:'manual',status:'已调整'},
+        {id:'R10',target_type:'skill',target_id:'S7',target_name:'短视频制作',course_id:'C3',course_name:'数字化营销',task_name:'新媒体营销实训',condition_id:'LAB-MEDIA',level:'必需',basis:'技能侧：短视频拍摄需固定场景与灯光｜需要：新媒体直播实训室',source:'auto',status:'待审核'},
+        {id:'R11',target_type:'skill',target_id:'S7',target_name:'短视频制作',course_id:'C3',course_name:'数字化营销',task_name:'新媒体营销实训',condition_id:'EQ-CAMERA',level:'必需',basis:'技能侧：短视频需高质量画面与收音｜需要：拍摄与收音设备',source:'auto',status:'已审核'},
+        {id:'R12',target_type:'skill',target_id:'S7',target_name:'短视频制作',course_id:'C3',course_name:'数字化营销',task_name:'新媒体营销实训',condition_id:'SW-LIVE',level:'建议',basis:'技能侧：短视频可选用推流软件辅助｜需要：直播推流软件',source:'auto',status:'驳回',reject_reason:'直播推流软件非短视频必要工具，可后续按需补充'},
+        {id:'R13',target_type:'skill',target_id:'S8',target_name:'直播讲解',course_id:'C3',course_name:'数字化营销',task_name:'新媒体营销实训',condition_id:'LAB-MEDIA',level:'必需',basis:'技能侧：直播讲解需绿幕与灯光环境｜需要：新媒体直播实训室',source:'auto',status:'待审核'},
+        {id:'R14',target_type:'skill',target_id:'S8',target_name:'直播讲解',course_id:'C3',course_name:'数字化营销',task_name:'新媒体营销实训',condition_id:'SW-LIVE',level:'必需',basis:'技能侧：直播需推流与实时互动｜需要：直播推流软件',source:'auto',status:'已审核'},
+        {id:'R15',target_type:'skill',target_id:'S8',target_name:'直播讲解',course_id:'C3',course_name:'数字化营销',task_name:'新媒体营销实训',condition_id:'SCENE-TOUR',level:'建议',basis:'技能侧：可结合景区实地直播讲解｜需要：景区实景讲解场景',source:'manual',status:'待审核'}
+      ];
+      // 导图节点标签
+      function trNodeTag(n){
+        if(n.type==='skill')return trSkillTag(n.name);
+        if(n.type==='course')return trCourseTag(n.name);
+        return null;
+      }
+      function trSkillTag(name){
+        var rs=TR_REQS.filter(function(r){return r.target_type==='skill'&&r.target_name===name&&trValid(r);});
+        if(!rs.length)return null;
+        return {count:rs.length,pending:rs.some(function(r){return r.status==='待审核';})};
+      }
+      function trCourseTag(name){
+        var rs=TR_REQS.filter(function(r){return r.course_name===name&&trValid(r);});
+        if(!rs.length)return null;
+        var c={};rs.forEach(function(r){c[r.condition_id]=1;});
+        return {count:Object.keys(c).length,pending:rs.some(function(r){return r.status==='待审核';})};
+      }
+      function trOpenByTag(n){
+        if(n.type==='skill'){trAnchor={type:'skill',name:n.name};trScrollTo='trSkill-'+(trSkill(n.name)?trSkill(n.name).id:'');}
+        else if(n.type==='course'){trAnchor={type:'course',name:n.name};trScrollTo='trCourse-'+n.name;}
+        trTab('skill');trOpenDrawer();
+      }
+      // 抽屉状态
+      var trCurTab='cond';
+      var trAnchor=null;
+      var trOpenCards={};
+      var trScrollTo=null;
+      var trEditId=null;
+      var trRejectId=null;
+      var trAddTarget=null;
+      function trOpenFromBtn(){trAnchor=null;trScrollTo=null;trOpenDrawer();}
+      function trOpenDrawer(){
+        document.getElementById('trBackdrop').classList.add('show');
+        document.getElementById('trDrawer').classList.add('show');
+        trRender();
+      }
+      function trCloseDrawer(){
+        document.getElementById('trBackdrop').classList.remove('show');
+        document.getElementById('trDrawer').classList.remove('show');
+        trAnchor=null;trEditId=null;
+      }
+      function trTab(tab){
+        trCurTab=tab;
+        var tabs=document.querySelectorAll('#trTabs .ksd-tab');
+        for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle('active',tabs[i].getAttribute('data-tab')===tab);
+        trRender();
+      }
+      function trUpdateBadge(){
+        var pending=TR_REQS.filter(function(r){return r.status==='待审核';}).length;
+        var b=document.getElementById('trBadge');
+        b.textContent=pending;
+        b.classList.toggle('show',pending>0);
+        document.getElementById('trDrawerSub').innerHTML='旅游类-葡萄酒文化与营销 · 待审核 <b>'+pending+'</b> 条';
+      }
+      function trRefresh(msg){
+        trUpdateBadge();renderTree();trRender();
+        if(msg)toast(msg);
+      }
+      function trRender(){
+        var body=document.getElementById('trBody');
+        if(trCurTab==='cond')body.innerHTML=trRenderCond();
+        else body.innerHTML=trRenderSkill();
+        if(trScrollTo){
+          var tgt=trScrollTo;trScrollTo=null;
+          setTimeout(function(){var el=document.getElementById(tgt);if(el)el.scrollIntoView({block:'start'});},50);
+        }
+      }
+      function trGetFilters(){
+        return {status:document.getElementById('trFStatus').value,level:document.getElementById('trFLevel').value,q:(document.getElementById('trFSearch').value||'').trim().toLowerCase()};
+      }
+      function trMatch(r,f){
+        if(f.status==='pending'&&r.status!=='待审核')return false;
+        if(f.status==='confirmed'&&!trConfirmed(r))return false;
+        if(f.status==='rejected'&&r.status!=='驳回')return false;
+        if(f.level!=='all'&&r.level!==f.level)return false;
+        if(f.q){
+          var c=trDict(r.condition_id).name.toLowerCase();
+          if(c.indexOf(f.q)<0&&r.target_name.toLowerCase().indexOf(f.q)<0&&r.course_name.toLowerCase().indexOf(f.q)<0)return false;
+        }
+        return true;
+      }
+      function trTag(cls,txt){return '<span class="ksd-tag '+cls+'">'+esc(txt)+'</span>';}
+      function trBtn(label,onclick,cls){return '<button class="'+(cls||'')+'" onclick="'+onclick+'">'+label+'</button>';}
+      function trLevelTag(l){return trTag(l==='必需'?'lvl-need':'lvl-sug',l);}
+      function trSrcTag(s){return trTag(s==='auto'?'src-ai':'src-manual',s==='auto'?'AI':'人工');}
+      function trStatusTag(s){return trTag(trStatusClass(s),s);}
+      function trTargetLine(r){return r.target_type==='course'?'课程级':r.target_name+' · '+r.task_name;}
+      function trRecordActions(r){
+        if(!TR_CAN_EDIT)return '';
+        var b=[];
+        if(r.status==='待审核'){b.push(trBtn('通过',"trApprove('"+r.id+"')"));b.push(trBtn('修改',"trEdit('"+r.id+"')"));b.push(trBtn('驳回',"trReject('"+r.id+"')",'danger'));}
+        else if(r.status==='已审核'||r.status==='已调整'){b.push(trBtn('修改',"trEdit('"+r.id+"')"));b.push(trBtn('驳回',"trReject('"+r.id+"')",'danger'));}
+        else if(r.status==='驳回'){b.push(trBtn('恢复',"trRestore('"+r.id+"')"));}
+        if(r.source==='manual'&&trValid(r))b.push(trBtn('删除',"trDelete('"+r.id+"')",'danger'));
+        return b.join('');
+      }
+      function trRecordRow(r){
+        var c=trDict(r.condition_id);
+        var editing=(trEditId===r.id);
+        return '<div class="ksd-tr-row" id="trRow-'+r.id+'">'+
+          '<div class="ksd-tr-row-main">'+
+            '<span class="ksd-tr-row-name">'+esc(c.name)+'</span>'+
+            '<span class="ksd-tr-row-tags">'+trLevelTag(r.level)+trSrcTag(r.source)+trStatusTag(r.status)+'</span>'+
+            '<div class="ksd-tr-row-actions">'+trRecordActions(r)+'</div>'+
+          '</div>'+
+          '<div class="ksd-tr-row-basis" title="'+esc(r.basis)+'">原因：'+esc(r.basis)+'</div>'+
+          '<div class="ksd-tr-row-basis" style="color:#b0b9c8">节点：'+esc(trTargetLine(r))+'</div>'+
+          (r.reject_reason?'<div class="ksd-tr-row-reject">驳回理由：'+esc(r.reject_reason)+'</div>':'')+
+          (editing?trRecordEdit(r):'')+
+        '</div>';
+      }
+      function trRecordEdit(r){
+        var opts=TR_DICT.filter(function(c){return c.status==='启用';}).map(function(c){
+          return '<option value="'+c.id+'"'+(c.id===r.condition_id?' selected':'')+'>'+esc(c.name)+'（'+esc(c.category)+'）</option>';
+        }).join('');
+        return '<div class="ksd-tr-edit">'+
+          '<select id="trEditCond">'+opts+'</select>'+
+          '<select id="trEditLevel"><option value="必需"'+(r.level==='必需'?' selected':'')+'>必需</option><option value="建议"'+(r.level==='建议'?' selected':'')+'>建议</option></select>'+
+          trBtn('保存',"trSaveEdit('"+r.id+"')",'ksd-btn pri sm')+
+          trBtn('取消',"trCancelEdit()",'ksd-btn ghost sm')+
+        '</div>';
+      }
+      // 按条件
+      function trRenderCond(){
+        var f=trGetFilters();
+        var ids={};TR_REQS.forEach(function(r){ids[r.condition_id]=1;});
+        var cards=Object.keys(ids).map(function(cid){
+          var c=trDict(cid);
+          var rs=TR_REQS.filter(function(r){return r.condition_id===cid;});
+          var valid=rs.filter(trValid);
+          var courses={},skills={};
+          valid.forEach(function(r){courses[r.course_name]=1;skills[r.target_id]=1;});
+          var level=valid.some(function(r){return r.level==='必需';})?'必需':'建议';
+          var confirmed=rs.filter(trConfirmed).length;
+          return {c:c,rs:rs,courseCount:Object.keys(courses).length,skillCount:Object.keys(skills).length,level:level,confirmed:confirmed,total:rs.length};
+        }).filter(function(card){
+          if(f.q){
+            var nameHit=card.c.name.toLowerCase().indexOf(f.q)>=0;
+            var recHit=card.rs.some(function(r){return trMatch(r,f);});
+            return nameHit||recHit;
+          }
+          if(f.status==='all'&&f.level==='all')return true;
+          return card.rs.some(function(r){return trMatch(r,f);});
+        });
+        if(!Object.keys(ids).length)return '<div class="ksd-tr-empty">该专业暂无实训条件，可在技能上手动添加</div>';
+        if(!cards.length)return '<div class="ksd-tr-empty">无匹配记录</div>';
+        return cards.map(function(card){return trCondCard(card,f);}).join('');
+      }
+      function trCondCard(card,f){
+        var open=trOpenCards[card.c.id];
+        var rows=card.rs.filter(function(r){return trMatch(r,f);});
+        var pend=card.rs.filter(function(r){return r.status==='待审核';}).length;
+        return '<div class="ksd-tr-card'+(open?' open':'')+'" id="trCond-'+card.c.id+'">'+
+          '<div class="ksd-tr-card-head" onclick="trToggleCard(\''+card.c.id+'\')">'+
+            '<span class="arrow">▶</span>'+
+            '<span class="ksd-tr-card-name">'+esc(card.c.name)+'</span>'+
+            trTag('cat',card.c.category)+
+            trLevelTag(card.level)+
+            '<div class="ksd-tr-card-meta">'+
+              '<span class="stat">需要它的课程 '+card.courseCount+' 门 · 技能 '+card.skillCount+' 个</span>'+
+              '<span class="progress">已确认 '+card.confirmed+' / 共 '+card.total+'</span>'+
+              (TR_CAN_EDIT&&pend>0?'<button class="ksd-btn pri sm" onclick="event.stopPropagation();trApproveAll(\''+card.c.id+'\')">全部通过</button>':'')+
+            '</div>'+
+          '</div>'+
+          '<div class="ksd-tr-card-body">'+trGroupByCourse(rows)+'</div>'+
+        '</div>';
+      }
+      function trGroupByCourse(rows){
+        var m={};
+        rows.forEach(function(r){if(!m[r.course_name])m[r.course_name]=[];m[r.course_name].push(r);});
+        var html='';
+        Object.keys(m).forEach(function(cn){
+          html+='<div class="ksd-tr-course-h">'+esc(cn)+'</div>';
+          m[cn].forEach(function(r){html+=trRecordRow(r);});
+        });
+        if(!html)html='<div class="ksd-tr-empty">无匹配记录</div>';
+        return html;
+      }
+      // 按技能
+      function trRenderSkill(){
+        var f=trGetFilters();
+        var groups=[];
+        TR_COURSES.forEach(function(c){
+          var courseRecords=TR_REQS.filter(function(r){return r.target_type==='course'&&r.course_name===c.name&&trMatch(r,f);});
+          var skills=TR_SKILLS.filter(function(s){return s.course===c.name;}).map(function(s){
+            var records=TR_REQS.filter(function(r){return r.target_type==='skill'&&r.target_name===s.name&&trMatch(r,f);});
+            return {s:s,records:records};
+          }).filter(function(x){return x.records.length>0;});
+          if(courseRecords.length||skills.length)groups.push({course:c.name,courseRecords:courseRecords,skills:skills});
+        });
+        if(trAnchor&&trAnchor.type==='course')groups=groups.filter(function(g){return g.course===trAnchor.name;});
+        if(!groups.length)return '<div class="ksd-tr-empty">该专业暂无实训条件，可在技能上手动添加</div>';
+        var html='';
+        groups.forEach(function(g){
+          html+='<div class="ksd-tr-course-h" id="trCourse-'+g.course+'">'+esc(g.course)+
+            (TR_CAN_EDIT&&trAnchor&&trAnchor.type==='course'&&trAnchor.name===g.course?'<button class="ksd-tr-add" onclick="trOpenAdd(\'course\',\''+esc(g.course)+'\')">＋ 添加实训条件</button>':'')+
+          '</div>';
+          g.courseRecords.forEach(function(r){html+=trRecordRow(r);});
+          var byTask={};
+          g.skills.forEach(function(x){if(!byTask[x.s.task])byTask[x.s.task]=[];byTask[x.s.task].push(x);});
+          Object.keys(byTask).forEach(function(tn){
+            html+='<div class="ksd-tr-task-h">'+esc(tn)+'</div>';
+            byTask[tn].forEach(function(x){
+              var hl=(trAnchor&&trAnchor.type==='skill'&&trAnchor.name===x.s.name)?' style="outline:2px solid #5149e9;outline-offset:2px"':'';
+              html+='<div class="ksd-tr-skill-h" id="trSkill-'+x.s.id+'"'+hl+'>'+
+                '<span class="ksd-tr-skill-name">'+esc(x.s.name)+'</span>'+
+                '<span class="ksd-tr-locate" onclick="trLocate(\''+esc(x.s.name)+'\')">定位</span>'+
+                (TR_CAN_EDIT?'<button class="ksd-tr-add" onclick="trOpenAdd(\'skill\',\''+esc(x.s.name)+'\')">＋ 添加实训条件</button>':'')+
+              '</div>';
+              x.records.forEach(function(r){html+=trRecordRow(r);});
+            });
+          });
+        });
+        return html;
+      }
+      // 记录操作
+      function trApprove(id){
+        var r=trReq(id);if(!r)return;
+        r.status='已审核';delete r.reject_reason; // TODO(接口)
+        trRefresh('已通过');
+      }
+      function trRestore(id){
+        var r=trReq(id);if(!r)return;
+        r.status=(r.source==='auto')?'待审核':'已审核';delete r.reject_reason; // TODO(接口)
+        trRefresh(r.source==='auto'?'已恢复为待审核':'已恢复');
+      }
+      function trDelete(id){
+        var r=trReq(id);if(!r)return;
+        if(!confirm('确认删除该条实训条件？此操作不可撤销。'))return;
+        TR_REQS=TR_REQS.filter(function(x){return x.id!==r.id;}); // TODO(接口)
+        trRefresh('已删除');
+      }
+      function trApproveAll(cid){
+        var rs=TR_REQS.filter(function(r){return r.condition_id===cid&&r.status==='待审核';});
+        if(!rs.length){toast('该条件下暂无待审核记录');return;}
+        if(!confirm('确认通过该条件下 '+rs.length+' 条待审核记录？'))return;
+        rs.forEach(function(r){r.status='已审核';}); // TODO(接口)
+        trRefresh('已通过 '+rs.length+' 条');
+      }
+      function trToggleCard(cid){
+        if(trOpenCards[cid])delete trOpenCards[cid];else trOpenCards[cid]=true;
+        trRender();
+      }
+      function trEdit(id){trEditId=id;trRender();}
+      function trCancelEdit(){trEditId=null;trRender();}
+      function trSaveEdit(id){
+        var r=trReq(id);if(!r)return;
+        var nc=document.getElementById('trEditCond').value;
+        var nl=document.getElementById('trEditLevel').value;
+        if(nc===r.condition_id&&nl===r.level){trEditId=null;trRender();return;}
+        r.origin=r.origin||{condition_id:r.condition_id,level:r.level};
+        r.condition_id=nc;r.level=nl;r.status='已调整';delete r.reject_reason; // TODO(接口)
+        trEditId=null;
+        trRefresh('已调整');
+      }
+      function trReject(id){
+        trRejectId=id;
+        document.getElementById('trRejectReason').value='';
+        document.getElementById('trRejectConfirm').disabled=true;
+        document.getElementById('trRejectModal').classList.add('show');
+        setTimeout(function(){document.getElementById('trRejectReason').focus();},30);
+      }
+      function trCloseReject(){document.getElementById('trRejectModal').classList.remove('show');trRejectId=null;}
+      function trSaveReject(){
+        var v=document.getElementById('trRejectReason').value.trim();
+        if(v.length<5){toast('请至少填写 5 个字');return;}
+        var r=trReq(trRejectId);if(!r)return;
+        r.status='驳回';r.reject_reason=v; // TODO(接口)
+        trCloseReject();
+        trRefresh('已驳回');
+      }
+      // 添加实训条件
+      function trOpenAdd(type,name){
+        trAddTarget={type:type,name:name};
+        document.getElementById('trAddTarget').textContent='挂载对象：'+name+(type==='skill'?'（技能）':'（课程）');
+        var sel=document.getElementById('trAddCond');
+        sel.innerHTML=TR_DICT.filter(function(c){return c.status==='启用';}).map(function(c){
+          return '<option value="'+c.id+'">'+esc(c.name)+'（'+esc(c.category)+'）</option>';
+        }).join('');
+        document.getElementById('trAddLevel').value='必需';
+        document.getElementById('trAddReason').value='';
+        document.getElementById('trAddConfirm').disabled=true;
+        document.getElementById('trAddCondHint').textContent='';
+        document.getElementById('trAddModal').classList.add('show');
+        sel.onchange=function(){document.getElementById('trAddCondHint').textContent='功能要点：'+trDict(sel.value).spec;};
+        sel.onchange();
+      }
+      function trCloseAdd(){document.getElementById('trAddModal').classList.remove('show');trAddTarget=null;}
+      function trSaveAdd(){
+        if(!trAddTarget)return;
+        var cid=document.getElementById('trAddCond').value;
+        var level=document.getElementById('trAddLevel').value;
+        var reason=document.getElementById('trAddReason').value.trim();
+        if(reason.length<5){toast('请至少填写 5 个字理由');return;}
+        var dup=TR_REQS.some(function(r){return trValid(r)&&r.condition_id===cid&&r.target_type===trAddTarget.type&&r.target_name===trAddTarget.name;});
+        if(dup){toast('该条件已存在');return;}
+        var courseName,taskName,courseId,targetId;
+        if(trAddTarget.type==='skill'){
+          var s=trSkill(trAddTarget.name);courseName=s.course;taskName=s.task;courseId=s.course_id;targetId=s.id;
+        }else{
+          var c=null;for(var i=0;i<TR_COURSES.length;i++)if(TR_COURSES[i].name===trAddTarget.name)c=TR_COURSES[i];
+          courseName=trAddTarget.name;taskName='';courseId=c?c.id:'';targetId=courseId;
+        }
+        var r={id:'R-NEW-'+Date.now(),target_type:trAddTarget.type,target_id:targetId,target_name:trAddTarget.name,course_id:courseId,course_name:courseName,task_name:taskName,condition_id:cid,level:level,basis:'技能侧：'+reason+'｜需要：'+trDict(cid).name,source:'manual',status:'已审核'}; // TODO(接口)
+        TR_REQS.push(r);
+        trCloseAdd();
+        trRefresh('已添加实训条件');
+      }
+      // 定位导图节点
+      function trLocate(name){
+        var n=findNode(name);
+        if(!n){toast('未找到节点');return;}
+        var p=n,chain=[];
+        while(p){chain.push(p);p=findParent(p,treeData);}
+        chain.forEach(function(c){if(c.children&&c.children.length)c.expanded=true;});
+        n._hl=true;
+        assignIds(treeData);renderTree();
+        setTimeout(function(){n._hl=false;renderTree();},1800);
+      }
+      document.getElementById('trRejectReason').oninput=function(){document.getElementById('trRejectConfirm').disabled=this.value.trim().length<5;};
+      document.getElementById('trAddReason').oninput=function(){document.getElementById('trAddConfirm').disabled=this.value.trim().length<5;};
+      document.addEventListener('keydown',function(e){
+        if(e.key==='Escape'){
+          if(document.getElementById('trRejectModal').classList.contains('show'))trCloseReject();
+          else if(document.getElementById('trAddModal').classList.contains('show'))trCloseAdd();
+          else if(document.getElementById('trDrawer').classList.contains('show'))trCloseDrawer();
+        }
+      });
+      trUpdateBadge();
+      renderTree();
+    </script>
+  </body>
+</html>

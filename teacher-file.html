@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>教师档案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+.ftabs{display:flex;gap:4px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:6px 10px;margin-bottom:14px}
+.ftabs button{font:inherit;font-size:13.5px;padding:7px 12px;border:0;background:none;color:var(--ink-2);cursor:pointer;border-bottom:2px solid transparent}
+.ftabs button[aria-selected="true"]{color:var(--brand-ink);border-bottom-color:var(--brand);font-weight:600}
+.ftabs button i{font-style:normal;font-size:11px;background:var(--rule-2);border-radius:9px;padding:0 6px;margin-left:4px}
+.ftabs .sp{flex:1}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;background:linear-gradient(135deg,var(--brand-soft),var(--card));border:1px solid var(--rule);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+@media(max-width:1000px){.hero{grid-template-columns:1fr}}
+.hero .me{display:flex;align-items:center;gap:14px}
+.hero .av{width:56px;height:56px;border-radius:50%;border:2px solid var(--brand);display:grid;place-items:center;font-size:20px;color:var(--brand-ink);background:var(--card)}
+.hero .me b{font-size:17px}
+.hero .me div div{font-size:12px;color:var(--muted);margin-top:3px}
+.kp{display:flex;gap:8px;flex-wrap:wrap}
+.kp>div{background:var(--card);border-radius:10px;padding:8px 14px;text-align:center;min-width:86px}
+.kp b{display:block;font-size:20px;color:var(--brand-ink);font-family:var(--mono)}
+.kp span{font-size:11px;color:var(--muted)}
+.hero .ai{grid-column:1/-1}
+.atags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.dim5{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media(max-width:1000px){.dim5{grid-template-columns:1fr}}
+.dcard{background:var(--card);border:1px solid var(--rule);border-radius:13px;padding:14px 16px}
+.dcard .dh{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.dcard .dh .nm{background:linear-gradient(90deg,#7f63d8,#a78bfa);color:#fff;font-size:13px;font-weight:600;padding:4px 12px;border-radius:8px}
+.dcard .dh .sc{font-size:12px;color:var(--ink-2)}
+.dcard .dh .sc b{font-size:22px;font-family:var(--mono);color:var(--ink);margin:0 3px}
+.dcard .dh .sp{flex:1}
+.ind{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12.5px;margin-bottom:10px}
+.ind .t{font-weight:600;margin-bottom:4px}
+.ind .t.g{color:var(--good)} .ind .t.w{color:var(--warn-ink)}
+.ind ul{margin:0;padding-left:16px;color:var(--ink-2);line-height:1.7}
+.dsrc{font-size:11.5px;color:var(--muted);margin-top:8px}
+.dsrc a{color:var(--brand-ink);margin-right:8px;text-decoration:none}
+.radar5 svg{width:100%;max-width:420px;height:auto;display:block;margin:0 auto}
+.tstats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+@media(max-width:1000px){.tstats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tstat{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px 14px;border-top:3px solid var(--brand)}
+.tstat .k{font-size:12px;color:var(--ink-2)}
+.tstat .v{font-size:24px;font-weight:700;font-family:var(--mono)}
+.tstat .s{font-size:11px;color:var(--muted)}
+.plan .row{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule-2);font-size:13px}
+.plan .row span{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel"><div class="body" id="body"></div></div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+  var esc = TK.esc, S = TK.load();
+  function save() { TK.save(S); }
+  function teacherName() { try { return UI.currentIdentity(DEMO.getState()).account.name; } catch (e) { return '教师'; } }
+  var L = { lv4: ['国家级', '省级', '市级', '校级'], lv: ['国家级', '省级', '校级', '无'], role2: ['主持', '参与'], files: '支持 pdf / png / jpg / doc / docx，最多 5 个' };
+
+  /* ── 档案分组与字段配置 ── */
+  var SEC = [
+    { k: 'hr', label: '人事档案', subs: [
+      { k: 'base', label: '基本信息', special: 'base' },
+      { k: 'work', label: '工作经历', title: '工作单位', cols: [['unit', '工作单位'], ['kind', '经历类型'], ['post', '任职岗位 / 职务'], ['@range', '起止时间']], fields: [
+        { k: 'unit', label: '工作单位', req: true }, { k: 'kind', label: '经历类型', type: 'select', options: ['校内任职', '其他院校任教', '企业工作', '企业实践', '挂职锻炼'], req: true },
+        { k: 'dept', label: '所在部门' }, { k: 'post', label: '任职岗位 / 职务', req: true }, { k: 'start', label: '开始时间', type: 'date', req: true }, { k: 'end', label: '结束时间（不填为至今）', type: 'date' },
+        { k: 'duty', label: '岗位职责', type: 'textarea', ai: true }, { k: 'perf', label: '工作业绩', type: 'textarea', ai: true }, { k: 'files', label: '证明材料（聘书、离职证明、在职证明、工作证明）', type: 'files', ph: L.files }] },
+      { k: 'title', label: '职称评定', cols: [['name', '职称名称'], ['level', '职称级别'], ['got', '取得时间'], ['@cur', '是否当前职称']], fields: [
+        { k: 'series', label: '职称系列', type: 'select', options: ['高等学校教师', '中等职业学校教师', '工程技术', '经济', '实验技术'], req: true }, { k: 'name', label: '职称名称', req: true, ph: '例如：讲师' },
+        { k: 'level', label: '职称级别', type: 'select', options: ['正高级', '副高级', '中级', '初级'], req: true }, { k: 'way', label: '取得方式', type: 'select', options: ['评审', '考试', '认定', '考核'], req: true },
+        { k: 'got', label: '取得时间', type: 'date', req: true }, { k: 'hire', label: '聘任时间', type: 'date' }, { k: 'cur', label: '是否当前职称', type: 'switch' },
+        { k: 'org', label: '评审 / 发证单位', req: true }, { k: 'no', label: '证书编号' }, { k: 'note', label: '评审情况说明', type: 'textarea', ai: true },
+        { k: 'files', label: '证明材料（职称证书、评审通过文件、聘任文件）', type: 'files', ph: L.files }] },
+      { k: 'edu', label: '学历学位', cols: [['edu', '学历'], ['degree', '学位'], ['school', '毕业院校'], ['major', '所学专业'], ['end', '毕业时间']], fields: [
+        { k: 'edu', label: '学历', type: 'select', options: ['博士研究生', '硕士研究生', '大学本科', '大学专科'], req: true }, { k: 'degree', label: '学位', type: 'select', options: ['博士', '硕士', '学士', '无'], req: true },
+        { k: 'school', label: '毕业院校', req: true }, { k: 'major', label: '所学专业', req: true }, { k: 'start', label: '入学时间', type: 'date', req: true }, { k: 'end', label: '毕业时间', type: 'date', req: true },
+        { k: 'form', label: '学习形式', type: 'select', options: ['全日制', '非全日制'] }, { k: 'certNo', label: '毕业证书编号' }, { k: 'degNo', label: '学位证书编号' },
+        { k: 'topEdu', label: '是否最高学历', type: 'switch' }, { k: 'topDeg', label: '是否最高学位', type: 'switch' }, { k: 'verify', label: '学位网验证状态', type: 'select', options: ['已验证', '未验证'] },
+        { k: 'thesis', label: '导师 / 论文题目', type: 'textarea' }, { k: 'files', label: '证明材料（毕业证、学位证、学信网报告）', type: 'files', ph: L.files }] }
+    ] },
+    { k: 'teach', label: '教学档案', stats: true, subs: [
+      { k: 'doc', label: '课程开发文档', filter: ['type', '文档类型'], cols: [['name', '文档名称'], ['type', '文档类型'], ['course', '关联课程'], ['done', '完成时间']], fields: [
+        { k: 'name', label: '文档名称', req: true, full: true, ph: '例如：《旅行社经营与管理》课程标准' }, { k: 'type', label: '文档类型', type: 'select', options: ['课程标准', '授课计划', '教案', '实训指导书', '讲义 / 校本教材'], req: true },
+        { k: 'course', label: '关联课程', type: 'select', options: function () { return S.courses.map(function (c) { return c.name; }); }, req: true }, { k: 'term', label: '适用学期', type: 'select', options: function () { return S.terms; } },
+        { k: 'role', label: '参与角色', type: 'select', options: ['主持', '参与'], req: true }, { k: 'source', label: '文档来源', type: 'select', options: ['自主开发', '合作开发', '引进改编'], req: true }, { k: 'done', label: '完成时间', type: 'date' },
+        { k: 'use', label: '建设用途', type: 'select', options: ['日常教学', '课程建设', '专业建设', '教学比赛'] }, { k: 'reform', label: '关联教学改革项目', type: 'select', options: function () { return list('teach', 'reform').map(function (x) { return x.name; }); } },
+        { k: 'level', label: '认定级别', type: 'select', options: L.lv }, { k: 'org', label: '认定单位' }, { k: 'at', label: '认定时间', type: 'date' },
+        { k: 'desc', label: '文档说明', type: 'textarea', ai: true }, { k: 'files', label: '附件材料', type: 'files', ph: L.files, req: true }] },
+      { k: 'reform', label: '教学改革项目', filter: ['status', '项目状态'], cols: [['name', '项目名称'], ['level', '项目级别'], ['role', '承担角色'], ['status', '项目状态'], ['@range', '起止时间']], fields: [
+        { k: 'name', label: '项目名称', req: true, full: true }, { k: 'type', label: '项目类型', type: 'select', options: ['教学改革', '课程建设', '专业建设', '教材建设'], req: true },
+        { k: 'level', label: '项目级别', type: 'select', options: L.lv4, req: true }, { k: 'role', label: '承担角色', type: 'select', options: L.role2, req: true }, { k: 'rank', label: '本人排名', ph: '例如：1/5' },
+        { k: 'status', label: '项目状态', type: 'select', options: ['在研', '已结项', '已中止'], req: true }, { k: 'org', label: '立项单位', req: true },
+        { k: 'start', label: '开始时间', type: 'date', req: true }, { k: 'end', label: '结束时间', type: 'date', req: true }, { k: 'src', label: '项目来源', type: 'select', options: ['纵向', '横向', '校级自设'] },
+        { k: 'result', label: '结项结果', type: 'select', options: ['优秀', '良好', '合格', '未结项'] }, { k: 'no', label: '立项编号' }, { k: 'dir', label: '专业方向' }, { k: 'fund', label: '经费（万元）', type: 'number' },
+        { k: 'intro', label: '项目简介', type: 'textarea', ai: true }, { k: 'stage', label: '阶段成果', type: 'textarea', ai: true }, { k: 'files', label: '附件（立项书、中期检查、结项材料、证明文件）', type: 'files', ph: L.files }] }
+    ] },
+    { k: 'train', label: '培训档案', subs: [
+      { k: 'record', label: '培训记录', filter: ['level', '培训级别'], cols: [['name', '培训名称'], ['level', '培训级别'], ['hours', '培训学时'], ['@range', '起止时间'], ['result', '考核结果']], fields: [
+        { k: 'name', label: '培训名称', req: true, full: true }, { k: 'cat', label: '培训类别', type: 'select', options: ['师德师风', '专业技能', '信息化教学', '企业实践', '学历提升'], req: true },
+        { k: 'level', label: '培训级别', type: 'select', options: L.lv4, req: true }, { k: 'form', label: '培训形式', type: 'select', options: ['线上', '线下', '线上线下结合'], req: true }, { k: 'host', label: '主办单位', req: true },
+        { k: 'start', label: '开始时间', type: 'date', req: true }, { k: 'end', label: '结束时间', type: 'date', req: true }, { k: 'hours', label: '培训学时', type: 'number', req: true }, { k: 'result', label: '考核结果', type: 'select', options: ['优秀', '合格', '未考核'] },
+        { k: 'content', label: '培训内容', type: 'textarea', ai: true }, { k: 'reflect', label: '收获与反思', type: 'textarea', ai: true }, { k: 'files', label: '证明材料（培训通知、结业证书、成绩单）', type: 'files', ph: L.files }] },
+      { k: 'study', label: '进修经历', filter: ['type', '进修类别'], cols: [['name', '进修项目名称'], ['type', '进修类型'], ['unit', '接收单位 / 院校'], ['@range', '起止时间'], ['state', '当前状态']], fields: [
+        { k: 'name', label: '进修项目名称', req: true, full: true }, { k: 'type', label: '进修类型', type: 'select', options: ['国内访问学者', '国内进修', '企业挂职', '海外研修'], req: true },
+        { k: 'unit', label: '接收单位 / 院校', req: true }, { k: 'dir', label: '进修方向 / 专业' }, { k: 'public', label: '是否学校公派', type: 'switch' }, { k: 'sender', label: '派出单位' },
+        { k: 'start', label: '开始时间', type: 'date', req: true }, { k: 'end', label: '结束时间', type: 'date', req: true }, { k: 'state', label: '当前状态', type: 'select', options: ['进修中', '已完成'], req: true },
+        { k: 'result', label: '进修成果', type: 'textarea', ai: true }, { k: 'desc', label: '进修描述', type: 'textarea', ai: true }, { k: 'files', label: '证明材料（进修证明、结业证书、派出文件）', type: 'files', ph: L.files }] },
+      { k: 'cert', label: '证书管理', filter: ['@status', '证书状态', ['有效', '即将过期', '已过期']], cols: [['name', '证书名称'], ['cat', '证书类别'], ['org', '发证机构'], ['@valid', '有效期'], ['@status', '状态']], fields: [
+        { k: 'name', label: '证书名称', req: true, full: true }, { k: 'cat', label: '证书类别', type: 'select', options: ['职业资格证书', '职业技能等级证书', '教师资格证书', '其他'], req: true },
+        { k: 'grade', label: '证书等级', type: 'select', options: ['高级', '中级', '初级', '无等级'] }, { k: 'no', label: '证书编号' }, { k: 'org', label: '发证机构', req: true },
+        { k: 'got', label: '取得日期', type: 'date', req: true }, { k: 'valid', label: '有效期至', type: 'date' }, { k: 'long', label: '长期有效', type: 'switch' },
+        { k: 'dual', label: '可作为双师型认定材料', type: 'select', options: ['是', '否'] }, { k: 'training', label: '关联培训记录', type: 'select', options: function () { return list('train', 'record').map(function (x) { return x.name; }); } },
+        { k: 'note', label: '备注 / 续期说明', type: 'textarea', ai: true }, { k: 'files', label: '证书扫描件', type: 'files', ph: '支持 pdf / png / jpg，最多 3 个' }] },
+      { k: 'plan', label: '专业发展规划', special: 'plan' }
+    ] },
+    { k: 'research', label: '科研档案', subs: [
+      { k: 'proj', label: '科研项目', filter: ['status', '项目状态'], cols: [['name', '项目名称'], ['level', '项目级别'], ['role', '承担角色'], ['status', '项目状态'], ['@range', '起止时间']], fields: [
+        { k: 'name', label: '项目名称', req: true, full: true }, { k: 'type', label: '项目类型', type: 'select', options: ['纵向课题', '横向课题', '校级课题'], req: true }, { k: 'level', label: '项目级别', type: 'select', options: L.lv4, req: true },
+        { k: 'no', label: '项目编号' }, { k: 'org', label: '项目来源 / 立项单位', req: true }, { k: 'role', label: '承担角色', type: 'select', options: L.role2, req: true }, { k: 'rank', label: '本人排名' },
+        { k: 'start', label: '开始时间', type: 'date', req: true }, { k: 'end', label: '结束时间', type: 'date' }, { k: 'status', label: '项目状态', type: 'select', options: ['在研', '已结题', '已中止'], req: true },
+        { k: 'result', label: '结题结果', type: 'select', options: ['优秀', '良好', '合格', '未结题'] }, { k: 'fund', label: '总经费（万元）', type: 'number' }, { k: 'dir', label: '研究方向' },
+        { k: 'intro', label: '项目简介', type: 'textarea', ai: true }, { k: 'achv', label: '主要成果', type: 'textarea', ai: true }, { k: 'files', label: '附件材料（立项书、任务书、结题证书、验收材料）', type: 'files', ph: L.files }] },
+      { k: 'paper', label: '论文发表', filter: ['state', '发表状态'], cols: [['name', '论文题目'], ['journal', '期刊 / 会议名称'], ['kind', '发表类型'], ['at', '发表时间'], ['index', '收录情况']], fields: [
+        { k: 'name', label: '论文题目', req: true, full: true }, { k: 'journal', label: '期刊 / 会议名称', req: true }, { k: 'kind', label: '发表类型', type: 'select', options: ['期刊论文', '会议论文'], req: true },
+        { k: 'state', label: '发表状态', type: 'select', options: ['已发表', '已录用'], req: true }, { k: 'at', label: '发表时间', type: 'date', req: true }, { k: 'vol', label: '卷' }, { k: 'issue', label: '期' }, { k: 'pages', label: '页码' },
+        { k: 'role', label: '作者角色', type: 'select', options: ['第一作者', '通讯作者', '其他作者'], req: true }, { k: 'jlevel', label: '论文级别 / 期刊级别' }, { k: 'index', label: '收录 / 检索情况', type: 'select', options: ['北大核心', 'CSSCI', '普通期刊', 'EI', 'SCI', '无'] },
+        { k: 'doi', label: 'DOI / CN 号' }, { k: 'issn', label: 'ISSN / ISBN' }, { k: 'proj', label: '关联科研项目', type: 'select', options: function () { return list('research', 'proj').map(function (x) { return x.name; }); } },
+        { k: 'abs', label: '论文摘要', type: 'textarea', ai: true }, { k: 'files', label: '附件材料（论文 PDF、录用通知、检索证明）', type: 'files', ph: L.files }] },
+      { k: 'ip', label: '专利 / 软著', filter: ['state', '当前状态'], cols: [['name', '名称'], ['kind', '知识产权类型'], ['state', '当前状态'], ['authAt', '授权 / 登记日期']], fields: [
+        { k: 'name', label: '专利 / 软著名称', req: true, full: true }, { k: 'kind', label: '知识产权类型', type: 'select', options: ['发明专利', '实用新型专利', '外观设计专利', '软件著作权'], req: true },
+        { k: 'state', label: '当前状态', type: 'select', options: ['已受理', '已授权', '已登记'], req: true }, { k: 'appNo', label: '申请号 / 受理号' }, { k: 'authNo', label: '授权号 / 登记号' },
+        { k: 'appAt', label: '申请日期', type: 'date', req: true }, { k: 'authAt', label: '授权 / 登记日期', type: 'date' }, { k: 'rank', label: '发明人 / 开发人员排名' }, { k: 'owner', label: '专利权人 / 著作权人' },
+        { k: 'field', label: '技术领域 / 应用方向' }, { k: 'abs', label: '摘要 / 主要技术内容', type: 'textarea', ai: true }, { k: 'trans', label: '转化情况', type: 'textarea' },
+        { k: 'files', label: '附件材料（证书、受理通知书、授权公告文本、软著登记证书）', type: 'files', ph: L.files }] },
+      { k: 'activity', label: '学术活动', filter: ['type', '活动类型'], cols: [['name', '活动名称'], ['type', '活动类型'], ['level', '活动级别'], ['role', '参与角色'], ['@range', '时间']], fields: [
+        { k: 'name', label: '活动名称', req: true, full: true }, { k: 'type', label: '活动类型', type: 'select', options: ['学术会议', '专题讲座', '教研活动', '学术交流'], req: true },
+        { k: 'level', label: '活动级别', type: 'select', options: L.lv4, req: true }, { k: 'role', label: '参与角色', type: 'select', options: ['主讲 / 报告人', '主持人', '参会', '组织者'], req: true },
+        { k: 'host', label: '主办单位', req: true }, { k: 'form', label: '活动形式', type: 'select', options: ['线下', '线上'] }, { k: 'start', label: '开始时间', type: 'date', req: true }, { k: 'end', label: '结束时间', type: 'date' },
+        { k: 'topic', label: '报告题目' }, { k: 'desc', label: '活动描述', type: 'textarea', ai: true }, { k: 'files', label: '证明材料（邀请函、会议通知、报告 PPT、议程截图、聘书、合影）', type: 'files', ph: L.files }] }
+    ] },
+    { k: 'achieve', label: '成果档案', subs: [
+      { k: 'award', label: '获奖情况', filter: ['type', '奖项类型'], cols: [['name', '奖项名称'], ['type', '奖项类型'], ['level', '奖项级别'], ['grade', '获奖等级'], ['at', '获奖时间']], fields: [
+        { k: 'name', label: '奖项名称', req: true, full: true }, { k: 'type', label: '奖项类型', type: 'select', options: ['教学能力比赛', '指导学生竞赛', '教学成果奖', '科研成果奖', '其他'], req: true },
+        { k: 'subject', label: '奖项主体', type: 'select', options: ['个人', '团队'] }, { k: 'level', label: '奖项级别', type: 'select', options: L.lv4, req: true }, { k: 'grade', label: '获奖等级', type: 'select', options: ['特等奖', '一等奖', '二等奖', '三等奖', '优秀奖'], req: true },
+        { k: 'role', label: '本人角色', type: 'select', options: ['负责人', '成员', '指导教师'] }, { k: 'rank', label: '本人排名' }, { k: 'org', label: '颁奖单位', req: true }, { k: 'at', label: '获奖时间', type: 'date', req: true },
+        { k: 'no', label: '证书编号' }, { k: 'work', label: '获奖作品 / 成果' }, { k: 'desc', label: '获奖描述', type: 'textarea', ai: true }, { k: 'files', label: '证书 / 证明材料（证书、通知、公示截图）', type: 'files', ph: L.files }] },
+      { k: 'honor', label: '荣誉称号', filter: ['type', '荣誉类型'], cols: [['name', '荣誉称号'], ['type', '荣誉类型'], ['level', '授予级别'], ['at', '获得时间']], fields: [
+        { k: 'name', label: '荣誉称号名称', req: true, full: true }, { k: 'type', label: '荣誉类型', type: 'select', options: ['师德荣誉', '教学荣誉', '人才称号', '其他'], req: true },
+        { k: 'level', label: '授予级别', type: 'select', options: L.lv4, req: true }, { k: 'org', label: '授予单位', req: true }, { k: 'at', label: '获得时间', type: 'date', req: true },
+        { k: 'valid', label: '有效期至', type: 'date' }, { k: 'long', label: '长期有效', type: 'switch' }, { k: 'no', label: '证书 / 文件编号' }, { k: 'note', label: '备注', type: 'textarea' },
+        { k: 'files', label: '证明材料（荣誉证书 / 红头文件）', type: 'files', ph: L.files }] },
+      { k: 'service', label: '社会服务', filter: ['type', '服务类型'], cols: [['name', '服务项目名称'], ['type', '服务类型'], ['level', '服务级别'], ['@range', '起止时间'], ['hours', '服务学时']], fields: [
+        { k: 'name', label: '服务项目名称', req: true, full: true }, { k: 'type', label: '服务类型', type: 'select', options: ['技术服务', '社会培训', '咨询服务', '志愿服务'], req: true },
+        { k: 'target', label: '服务对象', type: 'select', options: ['企业', '政府部门', '社区', '院校'] }, { k: 'org', label: '服务单位 / 委托单位', req: true }, { k: 'role', label: '本人角色', type: 'select', options: ['负责人', '成员'] },
+        { k: 'level', label: '服务级别', type: 'select', options: L.lv4 }, { k: 'start', label: '开始时间', type: 'date', req: true }, { k: 'end', label: '结束时间', type: 'date' }, { k: 'hours', label: '服务学时', type: 'number' }, { k: 'days', label: '服务天数', type: 'number' },
+        { k: 'result', label: '服务成果', type: 'textarea', ai: true }, { k: 'desc', label: '服务描述', type: 'textarea', ai: true }, { k: 'files', label: '证明材料（聘书、服务合同、感谢信、照片）', type: 'files', ph: L.files }] },
+      { k: 'contrib', label: '突出贡献', filter: ['type', '贡献类型'], cols: [['name', '贡献事迹标题'], ['type', '贡献类型'], ['level', '贡献级别'], ['state', '当前状态']], fields: [
+        { k: 'name', label: '贡献事迹标题', req: true, full: true }, { k: 'type', label: '贡献类型', type: 'select', options: ['专业建设', '团队建设', '校企合作', '抗疫 / 应急服务', '其他'], req: true },
+        { k: 'level', label: '贡献级别', type: 'select', options: L.lv4, req: true }, { k: 'state', label: '当前状态', type: 'select', options: ['进行中', '已完成'], req: true }, { k: 'role', label: '本人角色', type: 'select', options: ['牵头人', '主要参与', '参与'] },
+        { k: 'rel', label: '关联项目 / 成果' }, { k: 'start', label: '开始时间', type: 'date', req: true }, { k: 'end', label: '结束时间', type: 'date' },
+        { k: 'kpi', label: '关键指标', type: 'textarea', ai: true }, { k: 'desc', label: '事迹详细描述', type: 'textarea', ai: true }, { k: 'files', label: '证明材料（文件、报道截图、批示、照片）', type: 'files', ph: L.files }] }
+    ] }
+  ];
+  var BASE_F = [
+    { k: 'name', label: '姓名', req: true }, { k: 'no', label: '工号', req: true }, { k: 'gender', label: '性别', type: 'select', options: ['男', '女'] }, { k: 'birth', label: '出生日期', type: 'date' },
+    { k: 'nation', label: '民族' }, { k: 'party', label: '政治面貌', type: 'select', options: ['中共党员', '中共预备党员', '共青团员', '民主党派', '群众'] }, { k: 'origin', label: '籍贯' }, { k: 'idno', label: '身份证号' },
+    { k: 'phone', label: '联系电话' }, { k: 'email', label: '电子邮箱' }, { k: 'college', label: '所属院系' }, { k: 'group', label: '所属教学组织' },
+    { k: 'duty', label: '现任职务' }, { k: 'dir', label: '任教专业方向' }, { k: 'major', label: '主授专业' }, { k: 'join', label: '入职日期', type: 'date' },
+    { k: 'teachFrom', label: '从教开始时间', type: 'date' }, { k: 'years', label: '本校任职年限' }, { k: 'age', label: '教龄' }, { k: 'cat', label: '人员类别', type: 'select', options: ['专任教师', '兼职教师', '行政兼课'] },
+    { k: 'ttype', label: '教师类型', type: 'select', options: ['双师型教师', '普通教师'] }, { k: 'intro', label: '个人简介', type: 'textarea', ai: true }
+  ];
+  var PLAN_F = [{ k: 'stage', label: '当前发展阶段', type: 'select', options: ['新手期', '成长期', '成熟期', '专家期'], req: true }, { k: 'cycle', label: '规划周期', req: true, ph: '例如：2026–2028' },
+    { k: 'direction', label: '发展方向', type: 'textarea', req: true, ai: true }, { k: 'support', label: '所需支持 / 资源', type: 'textarea', ai: true }];
+
+  /* ── 首次打开：填入档案 mock 数据 ── */
+  if (!S.base) {
+    var nm = teacherName();
+    S.base = { name: nm, no: 'T20180312', gender: '女', birth: '1988-05-16', nation: '汉族', party: '中共党员', origin: '浙江杭州', idno: '330106********2846', phone: '138****6621', email: 'teacher@school.edu.cn',
+      college: '旅游学院', group: '导游教研室', duty: '专业教师', dir: '旅行社经营管理', major: '导游', join: '2018-03-12', teachFrom: '2014-09-01', years: '8 年', age: '12 年', cat: '专任教师', ttype: '双师型教师',
+      intro: '主讲《旅行策划》《旅行社经营与管理》等课程，曾在旅行社从事计调与产品工作 4 年。' };
+    S.archives = {
+      'hr.work': [{ id: TK.uid('A'), unit: '某某职业技术学院', kind: '校内任职', dept: '旅游学院', post: '专业教师', start: '2018-03-12', end: '', duty: '承担旅行社方向专业课教学与实训指导。', perf: '主持校级课程建设 1 项。' },
+        { id: TK.uid('A'), unit: '某某国际旅行社', kind: '企业工作', dept: '计调中心', post: '计调主管', start: '2014-07-01', end: '2018-02-28', duty: '负责国内线路计调与供应商管理。', perf: '' }],
+      'hr.title': [{ id: TK.uid('A'), series: '高等学校教师', name: '讲师', level: '中级', way: '评审', got: '2020-12-01', hire: '2021-01-01', cur: true, org: '省教育厅', no: 'GJ2020-1186' }],
+      'hr.edu': [{ id: TK.uid('A'), edu: '硕士研究生', degree: '硕士', school: '某某大学', major: '旅游管理', start: '2011-09-01', end: '2014-06-30', form: '全日制', topEdu: true, topDeg: true, verify: '已验证' },
+        { id: TK.uid('A'), edu: '大学本科', degree: '学士', school: '某某师范大学', major: '旅游管理', start: '2007-09-01', end: '2011-06-30', form: '全日制', topEdu: false, topDeg: false, verify: '已验证' }],
+      'teach.doc': [{ id: TK.uid('A'), name: '《旅行社经营与管理》课程标准', type: '课程标准', course: '旅行社经营与管理', term: TK.TERM, role: '主持', source: '自主开发', done: '2026-09-05', use: '课程建设', level: '校级', files: [{ name: '旅行社经营与管理课程标准.docx', size: '86 KB' }] }],
+      'teach.reform': [],
+      'train.record': [{ id: TK.uid('A'), name: '职业院校教师信息化教学能力提升培训', cat: '信息化教学', level: '省级', form: '线上线下结合', host: '省教育厅', start: '2026-07-10', end: '2026-07-16', hours: '40', result: '优秀' },
+        { id: TK.uid('A'), name: '旅行社企业实践（暑期）', cat: '企业实践', level: '校级', form: '线下', host: '旅游学院', start: '2026-08-01', end: '2026-08-20', hours: '96', result: '合格' }],
+      'train.study': [],
+      'train.cert': [{ id: TK.uid('A'), name: '全国导游资格证', cat: '职业资格证书', grade: '无等级', org: '文化和旅游部', got: '2013-12-01', valid: '', long: true, dual: '是' },
+        { id: TK.uid('A'), name: '旅游计调师（中级）', cat: '职业技能等级证书', grade: '中级', org: '某某职业技能评价机构', got: '2023-11-15', valid: '2026-11-15', long: false, dual: '是' }],
+      'research.paper': [{ id: TK.uid('A'), name: '数字化背景下高职旅行社专业实训教学改革研究', journal: '职业技术教育', kind: '期刊论文', state: '已发表', at: '2025-12-10', role: '第一作者', index: '北大核心' }],
+      'achieve.award': [{ id: TK.uid('A'), name: '省职业院校技能大赛教学能力比赛', type: '教学能力比赛', subject: '团队', level: '省级', grade: '二等奖', role: '成员', rank: '2/4', org: '省教育厅', at: '2025-11-20' }]
+    };
+    save();
+  }
+
+  /* ── 数据读写 ── */
+  function list(sec, sub) { return S.archives[sec + '.' + sub] = S.archives[sec + '.' + sub] || []; }
+  function secCount(sec) { return sec.subs.reduce(function (s, x) { return s + (x.special ? 0 : list(sec.k, x.k).length); }, 0); }
+  function opts(f) { return typeof f.options === 'function' ? Object.assign({}, f, { options: f.options() }) : f; }
+  function certStatus(x) {
+    if (x.long || !x.valid) return '有效';
+    var d = (new Date(x.valid) - new Date()) / 864e5;
+    return d < 0 ? '已过期' : d <= 60 ? '即将过期' : '有效';
+  }
+  function cell(x, k) {
+    if (k === '@range') return esc((x.start || '—') + ' ~ ' + (x.end || '至今'));
+    if (k === '@cur') return x.cur ? '<span class="tag g">当前</span>' : '—';
+    if (k === '@valid') return x.long ? '长期有效' : esc(x.valid || '—');
+    if (k === '@status') { var s = certStatus(x); return '<span class="tag ' + (s === '有效' ? 'g' : s === '即将过期' ? 'w' : 'r') + '">' + s + '</span>'; }
+    var v = x[k]; return esc(Array.isArray(v) ? v.join('、') : v == null || v === '' ? '—' : v === true ? '是' : v === false ? '否' : v);
+  }
+  function expiredCount() { return list('train', 'cert').filter(function (x) { return certStatus(x) === '已过期'; }).length + list('achieve', 'honor').filter(function (x) { return !x.long && x.valid && new Date(x.valid) < new Date(); }).length; }
+
+  /* ── 画像：五维评分（按档案与教学数据推算，演示口径） ── */
+  var SCHOOL = [62.4, 55.1, 48.7, 44.2, 40.9, 37.5, 33.8, 30.2, 27.6, 24.3, 21.9, 18.4, 15.0];
+  function dims() {
+    var pubN = S.courses.filter(function (c) { return c.publish; }).length, resN = S.resources.filter(function (r) { return r.status === '已完成'; }).length;
+    var evN = S.courses.reduce(function (s, c) { return s + c.submissions.filter(function (x) { return x.teacher; }).length; }, 0);
+    var fb = []; S.courses.forEach(function (c) { fb = fb.concat(c.feedbacks); });
+    var fbAvg = fb.length ? fb.reduce(function (s, f) { return s + (f.scores['讲授内容'] + f.scores['教学方式'] + f.scores['互动体验'] + f.scores['学习收获']) / 4; }, 0) / fb.length : 0;
+    var n = function (a, b) { return list(a, b).length; }, cap = function (v) { return Math.round(Math.min(100, v) * 100) / 100; };
+    return [
+      { k: '教学评价', score: cap(fbAvg / 5 * 100), items: [['学生课程反馈均分', fb.length ? fbAvg.toFixed(2) + ' 分（' + fb.length + ' 条）' : '暂无', fbAvg >= 3.5]], src: [['学生课程反馈', 'teacher-growth.html#feedback']] },
+      { k: '教学建设与实施', score: cap(resN * 6 + pubN * 8 + evN * 2 + n('teach', 'doc') * 10 + n('teach', 'reform') * 15), items: [['备课资源', resN + ' 个', resN >= 3], ['发布学习内容', pubN + ' 次', pubN >= 2], ['评价学生任务', evN + ' 份', evN >= 5], ['课程开发文档', n('teach', 'doc') + ' 份', n('teach', 'doc') >= 1], ['教学改革项目', n('teach', 'reform') + ' 项', n('teach', 'reform') >= 1]], src: [['备课资源', 'teacher-tasks.html'], ['发布学习内容', 'teacher-tasks.html'], ['评价学生任务', 'teacher-tasks.html']] },
+      { k: '专业发展', score: cap(n('train', 'record') * 12 + n('train', 'study') * 20 + n('train', 'cert') * 10 + (S.plan.stage ? 10 : 0)), items: [['培训记录', n('train', 'record') + ' 条', n('train', 'record') >= 2], ['进修经历', n('train', 'study') + ' 条', n('train', 'study') >= 1], ['证书', n('train', 'cert') + ' 本', n('train', 'cert') >= 1], ['专业发展规划', S.plan.stage ? '已填写' : '未填写', !!S.plan.stage]], src: [['培训档案', '#train']] },
+      { k: '科研教研', score: cap(n('research', 'proj') * 25 + n('research', 'paper') * 15 + n('research', 'ip') * 15 + n('research', 'activity') * 8), items: [['科研项目', n('research', 'proj') + ' 项', n('research', 'proj') >= 1], ['论文发表', n('research', 'paper') + ' 篇', n('research', 'paper') >= 1], ['专利 / 软著', n('research', 'ip') + ' 项', n('research', 'ip') >= 1], ['学术活动', n('research', 'activity') + ' 次', n('research', 'activity') >= 1]], src: [['科研档案', '#research']] },
+      { k: '成果贡献', score: cap(n('achieve', 'award') * 20 + n('achieve', 'honor') * 15 + n('achieve', 'service') * 10 + n('achieve', 'contrib') * 20), items: [['获奖情况', n('achieve', 'award') + ' 项', n('achieve', 'award') >= 1], ['荣誉称号', n('achieve', 'honor') + ' 项', n('achieve', 'honor') >= 1], ['社会服务', n('achieve', 'service') + ' 项', n('achieve', 'service') >= 1], ['突出贡献', n('achieve', 'contrib') + ' 项', n('achieve', 'contrib') >= 1]], src: [['成果档案', '#achieve']] }
+    ];
+  }
+  function radar(ds) {
+    var N = ds.length, R = 110, cx = 210, cy = 150, pt = function (i, v) { var a = -Math.PI / 2 + i * 2 * Math.PI / N; return [cx + Math.cos(a) * R * v, cy + Math.sin(a) * R * v]; };
+    var g = '';
+    [0.25, 0.5, 0.75, 1].forEach(function (l) { g += '<polygon points="' + ds.map(function (_, i) { return pt(i, l).join(','); }).join(' ') + '" fill="none" stroke="var(--rule)"/>'; });
+    ds.forEach(function (d, i) { var p = pt(i, 1), q = pt(i, 1.24); g += '<line x1="' + cx + '" y1="' + cy + '" x2="' + p[0] + '" y2="' + p[1] + '" stroke="var(--rule)"/><text x="' + q[0] + '" y="' + (q[1] - 6) + '" text-anchor="middle" font-size="12" fill="var(--brand-ink)" font-weight="600">' + d.score + '分</text><text x="' + q[0] + '" y="' + (q[1] + 9) + '" text-anchor="middle" font-size="11.5" fill="var(--ink-2)">' + d.k + '</text>'; });
+    g += '<polygon points="' + ds.map(function (d, i) { return pt(i, Math.max(0.02, d.score / 100)).join(','); }).join(' ') + '" fill="var(--brand)" fill-opacity=".22" stroke="var(--brand)" stroke-width="2"/>';
+    return '<svg viewBox="0 0 420 300" role="img" aria-label="五维能力画像">' + g + '</svg>';
+  }
+  function viewPortrait() {
+    var ds = dims(), total = Math.round(ds.reduce(function (s, d) { return s + d.score; }, 0) / ds.length * 100) / 100;
+    var avg = Math.round(SCHOOL.reduce(function (a, b) { return a + b; }, 0) / SCHOOL.length * 100) / 100;
+    var all = SCHOOL.concat([total]).sort(function (a, b) { return b - a; }), rank = all.indexOf(total) + 1, beat = Math.round(SCHOOL.filter(function (x) { return x < total; }).length / SCHOOL.length * 10000) / 100;
+    var level = total >= 80 ? '优秀' : total >= 60 ? '良好' : total >= 40 ? '合格' : '重点关注';
+    var best = ds.slice().sort(function (a, b) { return b.score - a.score; })[0], zero = ds.filter(function (d) { return !d.score; });
+    var tags = ds.map(function (d) { return d.k + (d.score >= 60 ? '表现突出' : d.score >= 30 ? '稳步推进' : d.score ? '有待加强' : '待补充'); });
+    var b = S.base;
+    var h = '<div class="hero"><div class="me"><span class="av">' + esc(b.name.slice(0, 1)) + '</span><div><b>' + esc(b.name) + '</b> <span class="tag">' + esc(b.duty) + '</span> <span class="tag k">' + esc(b.ttype) + '</span><div>所属院系：' + esc(b.college) + '　专业：' + esc(b.major) + '</div></div></div>' +
+      '<div class="kp"><div><b>' + total + '</b><span>总体评分</span></div><div><b style="font-size:16px;padding:3px 0">' + level + '</b><span>等级</span></div><div><b>' + beat + '%</b><span>超过全校教师</span></div><div><b>' + rank + '/' + all.length + '</b><span>全校参考排名</span></div><div><b style="color:' + (expiredCount() ? 'var(--crit)' : 'inherit') + '">' + expiredCount() + '</b><span>已过期材料</span></div></div>' +
+      '<div class="ai"><div class="ai-box"><div class="atags">' + tags.map(function (t) { return '<span class="tag">' + t + '</span>'; }).join('') + '</div>' +
+      '<b>AI 分析</b>　' + esc(b.name) + ' ' + esc(TK.TERM) + '综合参考分 ' + total + ' 分，参考等级为「' + level + '」，超过全校 ' + beat + '% 的教师。「' + best.k + '」得分 ' + best.score + ' 分，' + (best.score > avg ? '高于全校均值 ' + avg + ' 分，表现相对较好' : '与全校均值 ' + avg + ' 分相比仍有差距') + '。' +
+      (zero.length ? '「' + zero.map(function (d) { return d.k; }).join('」「') + '」暂无数据，建议补充对应档案材料。' : '各维度均有数据，建议持续积累。') + '</div></div></div>';
+    h += '<div class="blk-t" style="font-size:14px">五维能力综合分析</div><div class="dim5"><div class="dcard"><div class="dh"><span class="nm">我的能力画像</span></div><div class="radar5">' + radar(ds) + '</div></div>' +
+      ds.map(function (d) {
+        var good = d.items.filter(function (x) { return x[2]; }), weak = d.items.filter(function (x) { return !x[2]; });
+        return '<div class="dcard"><div class="dh"><span class="nm">' + d.k + '</span><span class="sc">总体评分<b>' + d.score + '</b>分</span><span class="sp"></span>' + (d.score > avg ? '<span class="tag g">↗ 高于全校均值 ' + Math.round((d.score - avg) * 100) / 100 + ' 分</span>' : '') + '</div>' +
+          '<div class="ind"><div><div class="t g">🏆 优势指标</div><ul>' + (good.map(function (x) { return '<li>' + x[0] + '：' + x[1] + '</li>'; }).join('') || '<li>暂无优势指标</li>') + '</ul></div>' +
+          '<div><div class="t w">📈 待提升指标</div><ul>' + (weak.map(function (x) { return '<li>' + x[0] + '：' + x[1] + '</li>'; }).join('') || '<li>暂无待提升指标</li>') + '</ul></div></div>' +
+          '<div class="ai-box"><b>AI 分析</b>　' + (d.score ? '当前得分 ' + d.score + ' 分，' + (d.score > avg ? '高于全校均值 ' + avg + ' 分。' : '低于全校均值 ' + avg + ' 分。') + (weak.length ? '可优先补充：' + weak.map(function (x) { return x[0]; }).join('、') + '。' : '继续保持。') : '暂无数据，补充' + weak.map(function (x) { return x[0]; }).join('、') + '后生成分析。') + '</div>' +
+          '<div class="dsrc">数据来源：' + d.src.map(function (s) { return s[1].charAt(0) === '#' ? '<a href="#" data-goto="' + s[1].slice(1) + '">' + s[0] + '</a>' : '<a href="' + UI.link(s[1].split('#')[0]) + (s[1].indexOf('#') > 0 ? '#' + s[1].split('#')[1] : '') + '">' + s[0] + '</a>'; }).join('') + '</div></div>';
+      }).join('') + '</div>';
+    return h;
+  }
+
+  /* ── 列表 / 特殊页 ── */
+  var curSec = 'portrait', curSub = {}, Q = {}, FV = {};
+  function viewBase() {
+    var b = S.base;
+    return '<div class="card pad"><div class="blk-t" style="font-size:15px"><span class="av" style="width:42px;height:42px;border-radius:50%;background:var(--brand-soft);display:grid;place-items:center;color:var(--brand-ink)">' + esc(b.name.slice(0, 1)) + '</span>' + esc(b.name) + ' <span class="tag g">在职</span><span class="sp"></span><button class="btn" data-editbase style="height:32px">编辑基本信息</button></div>' +
+      '<div class="blk-t">基础信息 <span style="font-size:11.5px;color:var(--muted);font-weight:400">共 ' + (BASE_F.length - 1) + ' 项</span></div><div class="kvg">' +
+      BASE_F.filter(function (f) { return f.k !== 'intro'; }).map(function (f) { return '<div><div class="k">' + f.label + '</div><div class="v">' + esc(b[f.k] || '—') + '</div></div>'; }).join('') + '</div>' +
+      '<div class="blk-t" style="margin-top:14px">个人简介</div><div class="ai-box" style="background:var(--card-2)">' + esc(b.intro || '暂无个人简介') + '</div></div>';
+  }
+  function viewPlan() {
+    var p = S.plan;
+    return '<div class="card pad plan"><div class="blk-t">当前发展阶段：' + esc(p.stage || '—') + '<span class="sp"></span><button class="btn-s" data-editplan>✎ 编辑</button></div>' +
+      [['规划周期', p.cycle], ['发展方向', p.direction], ['所需支持 / 资源', p.support], ['更新时间', p.updatedAt]].map(function (x) { return '<div class="row"><span>' + x[0] + '</span><div>' + esc(x[1] || '—') + '</div></div>'; }).join('') + '</div>';
+  }
+  function viewList(sec, sub) {
+    var rows = list(sec.k, sub.k), key = sec.k + '.' + sub.k, q = Q[key] || '', fv = FV[key] || '';
+    var fk = sub.filter && sub.filter[0], fopts = sub.filter ? (sub.filter[2] || (opts(sub.fields.find(function (f) { return f.k === fk; })).options || [])) : [];
+    var shown = rows.filter(function (x) { return (!q || String(x.name || x.unit || x.school || '').indexOf(q) >= 0) && (!fv || (fk === '@status' ? certStatus(x) : x[fk]) === fv); });
+    var h = '<div class="card filters"><input class="inp search" data-q="' + key + '" placeholder="搜索' + esc(sub.cols[0][1]) + '" value="' + esc(q) + '">' +
+      (sub.filter ? '<label>' + sub.filter[1] + '<select class="sel" data-fv="' + key + '"><option value="">全部</option>' + fopts.map(function (o) { return '<option' + (o === fv ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></label>' : '') +
+      '<span style="flex:1"></span><button class="btn" data-add style="height:32px">＋ 新增</button></div>';
+    h += '<div class="card pad"><div class="blk-t">' + sub.label + '<span style="font-size:11.5px;color:var(--muted);font-weight:400">共 ' + shown.length + ' 条</span></div>' +
+      (shown.length ? '<table class="tbl2"><thead><tr>' + sub.cols.map(function (c) { return '<th>' + c[1] + '</th>'; }).join('') + '<th>附件</th><th>操作</th></tr></thead><tbody>' + shown.map(function (x) {
+        return '<tr>' + sub.cols.map(function (c, i) { return '<td' + (i ? '' : ' style="font-weight:500"') + '>' + cell(x, c[0]) + '</td>'; }).join('') + '<td>' + ((x.files || []).length || '—') + '</td>' +
+          '<td style="white-space:nowrap"><button class="lk" data-view="' + x.id + '">查看</button>　<button class="lk" data-edit="' + x.id + '">编辑</button>　<button class="lk del" data-del="' + x.id + '">删除</button></td></tr>';
+      }).join('') + '</tbody></table>' : '<div class="empty2">暂无' + sub.label + '，点「新增」添加</div>') + '</div>';
+    return h;
+  }
+  function teachStats() {
+    var fb = []; S.courses.forEach(function (c) { fb = fb.concat(c.feedbacks); });
+    var avg = fb.length ? fb.reduce(function (s, f) { return s + (f.scores['讲授内容'] + f.scores['教学方式'] + f.scores['互动体验'] + f.scores['学习收获']) / 4; }, 0) / fb.length : 0;
+    var st = function (k, v, s, col, href) { return '<a class="tstat" style="border-top-color:' + col + ';text-decoration:none;color:inherit"' + (href ? ' href="' + href + '"' : '') + '><div class="k">' + k + (href ? ' ›' : '') + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></a>'; };
+    return '<div class="tstats">' + st('备课记录', S.resources.length, '来自备课中心', '#3b82f6', UI.link('teacher-tasks.html')) + st('课程发布记录', S.courses.filter(function (c) { return c.publish; }).length, '来自任务中心', '#7f63d8', UI.link('teacher-tasks.html')) +
+      st('课程反馈均分', avg.toFixed(2), '来自学生反馈', '#ec4899', UI.link('teacher-growth.html') + '#feedback') + st('课程开发文档', list('teach', 'doc').length, '手动维护', '#f59e0b') + st('教学改革项目', list('teach', 'reform').length, '手动维护', '#10b981') + '</div>';
+  }
+  function render() {
+    var h = '<div class="ftabs"><button data-sec="portrait" aria-selected="' + (curSec === 'portrait') + '">教师画像</button>' +
+      SEC.map(function (s) { return '<button data-sec="' + s.k + '" aria-selected="' + (curSec === s.k) + '">' + s.label + '<i>' + secCount(s) + '</i></button>'; }).join('') +
+      '<span class="sp"></span><label style="font-size:12.5px;color:var(--ink-2)">学期 <select class="sel">' + S.terms.map(function (t) { return '<option>' + esc(t) + '</option>'; }).join('') + '</select></label></div>';
+    if (curSec === 'portrait') h += viewPortrait();
+    else {
+      var sec = SEC.find(function (s) { return s.k === curSec; }), sub = sec.subs.find(function (x) { return x.k === curSub[sec.k]; }) || sec.subs[0];
+      curSub[sec.k] = sub.k;
+      if (sec.stats) h += teachStats();
+      h += '<div class="subtabs">' + sec.subs.map(function (x) { return '<button data-sub="' + x.k + '" aria-pressed="' + (x === sub) + '">' + x.label + '</button>'; }).join('') + '</div>';
+      h += sub.special === 'base' ? viewBase() : sub.special === 'plan' ? viewPlan() : viewList(sec, sub);
+    }
+    document.getElementById('body').innerHTML = h;
+  }
+  function curPair() { var sec = SEC.find(function (s) { return s.k === curSec; }); return { sec: sec, sub: sec.subs.find(function (x) { return x.k === curSub[sec.k]; }) }; }
+
+  /* ── 表单抽屉 ── */
+  function formDrawer(title, fields, v, onSave) {
+    var fs = fields.map(opts);
+    var d = TK.drawer({ title: title, width: 680, body: TK.formHTML(fs, v || {}), foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">保存</button>' });
+    TK.bindForm(d.body);
+    d.foot.querySelector('[data-c]').onclick = d.close;
+    d.foot.querySelector('[data-o]').onclick = function () {
+      var r = TK.readForm(d.body, fs);
+      if (r.bad.length) { TK.toast('请填写：' + r.bad.join('、')); return; }
+      if (r.v.start && r.v.end && r.v.end < r.v.start) { TK.toast('结束时间不能早于开始时间'); return; }
+      onSave(r.v); save(); d.close(); render(); TK.toast('已保存');
+    };
+  }
+  function viewDrawer(sub, x) {
+    var d = TK.drawer({ title: sub.label + '详情', width: 620, foot: '<button class="btn-s" data-c>关闭</button><button class="btn" data-e style="height:32px">编辑</button>' });
+    d.body.innerHTML = '<div class="blk"><div class="kvg" style="grid-template-columns:1fr 1fr">' + sub.fields.filter(function (f) { return f.type !== 'files' && f.type !== 'textarea'; }).map(function (f) { return '<div><div class="k">' + f.label + '</div><div class="v">' + cell(x, f.k) + '</div></div>'; }).join('') + '</div></div>' +
+      sub.fields.filter(function (f) { return f.type === 'textarea'; }).map(function (f) { return '<div class="blk"><div class="blk-t">' + f.label + '</div><div style="font-size:12.5px;color:var(--ink-2);white-space:pre-wrap">' + esc(x[f.k] || '—') + '</div></div>'; }).join('') +
+      '<div class="blk"><div class="blk-t">附件材料</div>' + ((x.files || []).map(function (f) { return '<div class="fitem"><span class="fi" style="background:#7f63d8">' + esc(f.name.split('.').pop().slice(0, 3).toUpperCase()) + '</span><span class="fn">' + esc(f.name) + '<small>' + esc(f.size) + '</small></span><button class="lk" data-pv>预览</button></div>'; }).join('') || '<div style="font-size:12.5px;color:var(--muted)">未上传</div>') + '</div>';
+    d.foot.querySelector('[data-c]').onclick = d.close;
+    d.foot.querySelector('[data-e]').onclick = function () { d.close(); editRow(x.id); };
+    d.body.addEventListener('click', function (e) { if (e.target.closest('[data-pv]')) TK.toast('预览文件'); });
+  }
+  function editRow(id) {
+    var p = curPair(), rows = list(p.sec.k, p.sub.k), x = rows.find(function (r) { return r.id === id; });
+    formDrawer('编辑' + p.sub.label, p.sub.fields, x, function (v) { Object.assign(x, v); });
+  }
+
+  /* ── 事件 ── */
+  var body = document.getElementById('body');
+  body.addEventListener('click', function (e) {
+    var t, p;
+    if ((t = e.target.closest('[data-sec]'))) { curSec = t.getAttribute('data-sec'); render(); return; }
+    if ((t = e.target.closest('[data-sub]'))) { curSub[curSec] = t.getAttribute('data-sub'); render(); return; }
+    if ((t = e.target.closest('[data-goto]'))) { e.preventDefault(); curSec = t.getAttribute('data-goto'); render(); return; }
+    if (e.target.closest('[data-editbase]')) { formDrawer('编辑基本信息', BASE_F, S.base, function (v) { Object.assign(S.base, v); }); return; }
+    if (e.target.closest('[data-editplan]')) { formDrawer('编辑专业发展规划', PLAN_F, S.plan, function (v) { Object.assign(S.plan, v, { updatedAt: TK.fmt(new Date()) }); }); return; }
+    if (e.target.closest('[data-add]')) { p = curPair(); formDrawer('新增' + p.sub.label, p.sub.fields, {}, function (v) { list(p.sec.k, p.sub.k).unshift(Object.assign({ id: TK.uid('A') }, v)); }); return; }
+    if ((t = e.target.closest('[data-edit]'))) { editRow(t.getAttribute('data-edit')); return; }
+    if ((t = e.target.closest('[data-view]'))) { p = curPair(); viewDrawer(p.sub, list(p.sec.k, p.sub.k).find(function (r) { return r.id === t.getAttribute('data-view'); })); return; }
+    if ((t = e.target.closest('[data-del]'))) {
+      p = curPair(); var rows = list(p.sec.k, p.sub.k), x = rows.find(function (r) { return r.id === t.getAttribute('data-del'); });
+      TK.confirm('确定删除「' + (x.name || x.unit || x.school || '') + '」吗？', function () { rows.splice(rows.indexOf(x), 1); save(); render(); TK.toast('已删除'); });
+    }
+  });
+  body.addEventListener('input', function (e) { var k = e.target.getAttribute('data-q'); if (!k) return; Q[k] = e.target.value.trim(); clearTimeout(body._t); body._t = setTimeout(function () { render(); var s = body.querySelector('.search'); if (s) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); } }, 250); });
+  body.addEventListener('change', function (e) { var k = e.target.getAttribute('data-fv'); if (k) { FV[k] = e.target.value; render(); } });
+
+  UI.boot({ portal: 'teacher', active: 'profile' });
+  render();
+})();
+</script>
+</body>
+</html>

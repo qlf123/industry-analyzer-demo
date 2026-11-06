@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>菜单管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+/* 菜单管理：按端（管理后台 / 教师端 / 学生端）维护侧栏菜单 */
+.mn-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.mn-bar .sp{flex:1}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--rule);border-radius:9px;padding:3px}
+.seg button{border:0;background:none;font:inherit;font-size:12.5px;padding:5px 14px;border-radius:7px;color:var(--ink-2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
+.mn-card{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden}
+.mn-card .tw{overflow-x:auto}
+.tbl2{min-width:980px}
+.tbl2 td{vertical-align:middle;white-space:nowrap}
+.tbl2 .ops .lk{margin-right:10px}
+.tbl2 tr.hid td{color:var(--muted)}
+.tbl2 .c1{padding-left:34px}
+.tg{border:0;background:none;color:var(--muted);cursor:pointer;width:16px;padding:0;font-size:11px}
+.lk{color:var(--brand-ink);cursor:pointer;background:none;border:0;padding:0;font:inherit;font-size:12.5px}
+.lk:hover{text-decoration:underline}
+.lk.dis{color:var(--muted);cursor:not-allowed;text-decoration:none}
+.ic{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;background:var(--card-2);margin-right:6px;font-size:12px}
+.muted{color:var(--muted)}
+.icons{display:flex;flex-wrap:wrap;gap:6px}
+.icons button{width:34px;height:34px;border:1px solid var(--rule);border-radius:8px;background:var(--card);cursor:pointer;font-size:15px}
+.icons button[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft)}
+.kvd{display:grid;grid-template-columns:96px 1fr;gap:9px 12px;font-size:13px}
+.kvd .k{color:var(--muted)}
+.foot2{padding:10px 14px;border-top:1px solid var(--rule-2);font-size:12px;color:var(--muted);display:flex;gap:12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">菜单管理</h1><div class="pt-d">维护三端侧栏菜单的名称、图标、排序和显示；改动立即作用到对应端的侧栏。谁能看到哪个菜单在「角色管理」中配置</div></div></div></div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'admin', active: 'menu' });
+  var esc = TK.esc, ctx = DEMO.getState();
+  var PORTAL = { admin: '管理后台', teacher: '教师端', student: '学生端' };
+  var ICONS = ['▤', '◎', '◇', '◈', '☰', '▦', '◷', '✎', '★', '⚙', '⌂', '☷'];
+  var F = { p: 'admin', fold: {} };
+  function permName(code) { var p = ctx.permissions.filter(function (x) { return x.code === code; })[0]; return p ? p.name : code; }
+  function conf() { var c = UI.menuConf(); c[F.p] = c[F.p] || {}; ['items', 'groups'].forEach(function (k) { c[F.p][k] = c[F.p][k] || {}; }); c[F.p].added = c[F.p].added || []; return c; }
+  function findItem(key) { var r = null; UI.effectiveMenu(F.p, true).groups.forEach(function (g) { g.items.forEach(function (it) { if (it.key === key) r = { it: it, g: g }; }); }); return r; }
+  function findGroup(label) { return UI.effectiveMenu(F.p, true).groups.filter(function (g) { return g.id === label; })[0]; }
+  function pill(h) { return '<span class="pill ' + (h ? 'crit' : 'good') + '">' + (h ? '已停用' : '已启用') + '</span>'; }
+  function whoSees(it) { return it.external ? '公共页面，该端都可见' : it.perms && it.perms.length ? '有「' + it.perms.map(permName).join(' / ') + '」任一权限的角色' : '该端所有角色'; }
+
+  function render() {
+    var M = UI.effectiveMenu(F.p, true), rows = [], n = 0;
+    M.groups.forEach(function (g) {
+      if (g.label) {
+        var gid = 'g:' + g.id, folded = F.fold[gid];
+        rows.push('<tr class="' + (g.hidden ? 'hid' : '') + '"><td><button class="tg" data-fold="' + esc(gid) + '">' + (folded ? '▸' : '▾') + '</button> <b>' + esc(g.name) + '</b></td><td>' + PORTAL[F.p] + '</td><td>目录</td><td class="muted">—</td><td>' + g.order + '</td><td class="muted">—</td><td class="muted">按下级菜单</td><td>' + pill(g.hidden) + '</td><td class="ops">' +
+          '<button class="lk" data-gdetail="' + esc(g.id) + '">详情</button><button class="lk" data-gedit="' + esc(g.id) + '">编辑</button><button class="lk" data-addsub="' + esc(g.id) + '">新增子菜单</button><button class="lk" data-gtoggle="' + esc(g.id) + '">' + (g.hidden ? '启用' : '禁用') + '</button></td></tr>');
+        if (folded) return;
+      }
+      g.items.forEach(function (it) {
+        n++;
+        rows.push('<tr class="' + (it.hidden || g.hidden ? 'hid' : '') + '"><td class="' + (g.label ? 'c1' : '') + '">' + esc(it.label) + (it.builtin ? '' : ' <span class="pill k">新增</span>') + '</td><td>' + PORTAL[F.p] + '</td><td>页面菜单</td><td>' + esc(g.name || '—') + '</td><td>' + it.order + '</td><td><span class="ic">' + esc(it.icon) + '</span></td><td style="white-space:normal;max-width:220px;font-size:12px;color:var(--ink-2)">' + esc(whoSees(it)) + '</td><td>' + pill(it.hidden) + '</td><td class="ops">' +
+          '<button class="lk" data-detail="' + esc(it.key) + '">详情</button><button class="lk" data-edit="' + esc(it.key) + '">编辑</button><button class="lk" data-toggle="' + esc(it.key) + '">' + (it.hidden ? '启用' : '禁用') + '</button>' + (it.builtin ? '' : '<button class="lk" data-del="' + esc(it.key) + '" style="color:var(--crit)">删除</button>') + '</td></tr>');
+      });
+    });
+    document.getElementById('body').innerHTML = '<div class="mn-bar"><span class="seg">' + Object.keys(PORTAL).map(function (k) { return '<button data-p="' + k + '" aria-pressed="' + (F.p === k) + '">' + PORTAL[k] + '</button>'; }).join('') + '</span><span class="sp"></span><button class="btn" style="height:32px" data-add>+ 新增菜单</button></div>' +
+      '<div class="mn-card"><div class="tw"><table class="tbl2"><thead><tr><th>菜单名称</th><th>所属端</th><th>菜单层级</th><th>上级菜单</th><th>排序</th><th>图标</th><th>谁能看到</th><th>状态</th><th>操作</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' +
+      '<div class="foot2"><span>共 ' + n + ' 个页面菜单</span><span>系统自带的菜单不能删除，可改名、排序或禁用（禁用后侧栏隐藏）；新增的菜单在侧栏中先占位，页面上线后再接入</span></div></div>';
+  }
+
+  function itemForm(key, groupLabel) {
+    var cur = key ? findItem(key) : null, it = cur ? cur.it : null, M = UI.effectiveMenu(F.p, true);
+    var gl = cur ? cur.g.id : groupLabel != null ? groupLabel : (M.groups[0] || {}).id;
+    var icon = it ? it.icon : '▤';
+    var m = TK.modal({ title: (it ? '编辑' : '新增') + PORTAL[F.p] + '菜单', width: 520, body: '<div class="fgrid">' +
+      '<div class="ff full"><span class="lh"><span class="req">菜单名称</span></span><input data-k="label" maxlength="12" value="' + esc(it ? it.label : '') + '" placeholder="请输入菜单名称"></div>' +
+      '<div class="ff"><span class="lh"><span>所属端</span></span><input value="' + PORTAL[F.p] + '" disabled></div>' +
+      '<div class="ff"><span class="lh"><span>菜单类型</span></span><input value="页面菜单" disabled></div>' +
+      '<div class="ff"><span class="lh"><span>上级菜单</span></span><select data-k="group"' + (it && it.builtin ? ' disabled' : '') + '>' + M.groups.map(function (g) { return '<option value="' + esc(g.id) + '"' + (g.id === gl ? ' selected' : '') + '>' + esc(g.name || ('（无上级，顶层' + (g.id === 'bottom' ? '·靠下' : '') + '）')) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="ff"><span class="lh"><span class="req">排序</span></span><input data-k="order" type="number" min="1" value="' + (it ? it.order : (findGroup(gl) || { items: [] }).items.length + 1) + '"></div>' +
+      '<div class="ff full"><span class="lh"><span>状态</span></span><span style="display:flex;gap:18px;font-size:12.5px"><label><input type="radio" name="st" value="0"' + (!it || !it.hidden ? ' checked' : '') + '> 显示启用</label><label><input type="radio" name="st" value="1"' + (it && it.hidden ? ' checked' : '') + '> 禁用隐藏</label></span></div>' +
+      '<div class="ff full"><span class="lh"><span>图标</span></span><div class="icons">' + ICONS.map(function (x) { return '<button type="button" data-icon="' + x + '" aria-pressed="' + (x === icon) + '">' + x + '</button>'; }).join('') + '</div></div>' +
+      (it && it.builtin ? '<div class="ff full" style="font-size:11.5px;color:var(--muted)">系统自带菜单，页面地址和上级菜单固定；谁能看到它由所需权限决定：' + esc(whoSees(it)) + '</div>' : '<div class="ff full" style="font-size:11.5px;color:var(--muted)">新增的菜单该端所有角色都能看到，页面上线前在侧栏中占位、不可点击</div>') +
+      '</div>', foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">保存</button>' });
+    m.body.addEventListener('click', function (e) { var b = e.target.closest('[data-icon]'); if (!b) return; icon = b.dataset.icon; m.body.querySelectorAll('[data-icon]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); }); });
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () {
+      var label = m.body.querySelector('[data-k="label"]').value.trim(), order = +m.body.querySelector('[data-k="order"]').value, group = m.body.querySelector('[data-k="group"]').value, hidden = m.body.querySelector('[name="st"]:checked').value === '1';
+      if (!label) return TK.toast('请输入菜单名称');
+      if (!(order >= 1)) return TK.toast('排序需为正整数');
+      var dup = false; UI.effectiveMenu(F.p, true).groups.forEach(function (g) { g.items.forEach(function (x) { if (x.label === label && (!it || x.key !== it.key)) dup = true; }); });
+      if (dup) return TK.toast('该端已有同名菜单');
+      var c = conf(), P = c[F.p];
+      if (it && it.builtin) P.items[it.key] = { label: label, icon: icon, order: order, hidden: hidden };
+      else if (it) { var a = P.added.filter(function (x) { return x.key === it.key; })[0]; a.label = label; a.icon = icon; a.order = order; a.hidden = hidden; a.group = group; }
+      else P.added.push({ key: 'm' + Date.now().toString(36), label: label, icon: icon, order: order, hidden: hidden, group: group });
+      UI.saveMenuConf(c); m.close(); TK.toast('已保存'); refresh();
+    };
+  }
+  function groupForm(label) {
+    var g = findGroup(label);
+    var m = TK.modal({ title: '编辑目录', width: 420, body: '<div class="fgrid"><div class="ff full"><span class="lh"><span class="req">目录名称</span></span><input data-k="label" maxlength="10" value="' + esc(g.name) + '"></div><div class="ff full"><span class="lh"><span class="req">排序</span></span><input data-k="order" type="number" min="1" value="' + g.order + '"></div></div>',
+      foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">保存</button>' });
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () {
+      var name = m.body.querySelector('[data-k="label"]').value.trim(), order = +m.body.querySelector('[data-k="order"]').value;
+      if (!name) return TK.toast('请输入目录名称'); if (!(order >= 1)) return TK.toast('排序需为正整数');
+      var c = conf(), o = c[F.p].groups[label] || {}; o.label = name; o.order = order; c[F.p].groups[label] = o; UI.saveMenuConf(c); m.close(); refresh();
+    };
+  }
+  function detail(key) {
+    var x = findItem(key), it = x.it;
+    var d = TK.drawer({ title: '菜单详情', sub: it.label, width: 520 });
+    d.body.innerHTML = '<div class="kvd"><span class="k">菜单名称</span><span>' + esc(it.label) + '</span><span class="k">所属端</span><span>' + PORTAL[F.p] + '</span><span class="k">菜单层级</span><span>页面菜单</span><span class="k">上级菜单</span><span>' + esc(x.g.name || '—') + '</span>' +
+      '<span class="k">页面地址</span><span style="font-family:var(--mono);font-size:12px">' + esc(it.href || '（占位，未接入页面）') + '</span><span class="k">排序</span><span>' + it.order + '</span><span class="k">图标</span><span>' + esc(it.icon) + '</span><span class="k">状态</span><span>' + (it.hidden ? '已停用' : '已启用') + '</span>' +
+      '<span class="k">谁能看到</span><span>' + esc(whoSees(it)) + '</span><span class="k">来源</span><span>' + (it.builtin ? '系统自带' : '新增') + '</span></div>';
+  }
+  function refresh() { UI.boot({ portal: 'admin', active: 'menu' }); render(); }
+
+  document.addEventListener('click', function (e) {
+    var t, c, k;
+    if ((t = e.target.closest('[data-p]'))) { F.p = t.dataset.p; render(); return; }
+    if ((t = e.target.closest('[data-fold]'))) { k = t.dataset.fold; F.fold[k] = !F.fold[k]; render(); return; }
+    if (e.target.closest('[data-add]')) return itemForm(null);
+    if ((t = e.target.closest('[data-addsub]'))) return itemForm(null, t.dataset.addsub);
+    if ((t = e.target.closest('[data-edit]'))) return itemForm(t.dataset.edit);
+    if ((t = e.target.closest('[data-detail]'))) return detail(t.dataset.detail);
+    if ((t = e.target.closest('[data-gedit]'))) return groupForm(t.dataset.gedit);
+    if ((t = e.target.closest('[data-gdetail]'))) { var g = findGroup(t.dataset.gdetail); var d = TK.drawer({ title: '目录详情', sub: g.name, width: 480 }); d.body.innerHTML = '<div class="kvd"><span class="k">目录名称</span><span>' + esc(g.name) + '</span><span class="k">所属端</span><span>' + PORTAL[F.p] + '</span><span class="k">排序</span><span>' + g.order + '</span><span class="k">状态</span><span>' + (g.hidden ? '已停用' : '已启用') + '</span><span class="k">下级菜单</span><span>' + g.items.map(function (x) { return esc(x.label); }).join('、') + '</span></div>'; return; }
+    if ((t = e.target.closest('[data-gtoggle]'))) {
+      k = t.dataset.gtoggle; var gg = findGroup(k);
+      var go = function () { c = conf(); var o = c[F.p].groups[k] || {}; o.hidden = !gg.hidden; c[F.p].groups[k] = o; UI.saveMenuConf(c); refresh(); };
+      if (!gg.hidden) TK.confirm('禁用后「' + gg.name + '」及其下级菜单在' + PORTAL[F.p] + '侧栏中全部隐藏，确定禁用吗？', go); else go(); return;
+    }
+    if ((t = e.target.closest('[data-toggle]'))) {
+      k = t.dataset.toggle; var x = findItem(k).it;
+      if (F.p === 'admin' && k === 'menu' && !x.hidden) return TK.toast('菜单管理本身不能禁用');
+      var go2 = function () { c = conf(); if (x.builtin) { var o = c[F.p].items[k] || {}; o.hidden = !x.hidden; c[F.p].items[k] = o; } else c[F.p].added.forEach(function (a) { if (a.key === k) a.hidden = !x.hidden; }); UI.saveMenuConf(c); refresh(); };
+      if (!x.hidden) TK.confirm('禁用后「' + x.label + '」在' + PORTAL[F.p] + '侧栏中隐藏，所有角色都看不到，确定禁用吗？', go2); else go2(); return;
+    }
+    if ((t = e.target.closest('[data-del]'))) { k = t.dataset.del; TK.confirm('确定删除该菜单吗？', function () { c = conf(); c[F.p].added = c[F.p].added.filter(function (a) { return a.key !== k; }); UI.saveMenuConf(c); refresh(); }); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

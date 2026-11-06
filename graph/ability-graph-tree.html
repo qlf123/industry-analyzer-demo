@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>能力图谱详情｜专业图谱平台</title>
+<link rel="stylesheet" href="ability-graph.css" />
+  <link rel="stylesheet" href="design-tokens.css" />
+  <link rel="stylesheet" href="graph-update.css" />
+  <link rel="stylesheet" href="pano-version.css" />
+  <link rel="stylesheet" href="gc-shell.css" />
+</head>
+<body>
+<aside class="lnav gc-lnav" id="lnav"></aside>
+<!-- 左侧菜单与其它页面共用 ../js/common.js -->
+<script src="../js/mock-data.js"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js"></script>
+<script src="gc-shell.js"></script>
+<script>GC.boot('gc-ag');</script>
+<div class="platform-page">
+<main class="app-shell" id="treeView">
+  <section class="page-heading">
+    <div style="display:flex;gap:10px;align-items:center">
+      <h1 id="treeTitle">能力图谱详情</h1>
+      <span id="treeStatusBadge" class="tree-status-badge"></span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="task-button" id="confirmGraphBtn" type="button" style="display:none;background:#5149e9;color:#fff;border-color:#5149e9;">✓ 确认图谱</button>
+    </div>
+  </section>
+  <section class="tree-toolbar">
+    <div class="tree-stats" id="treeStats"></div>
+  </section>
+  <div class="tree-corner-actions">
+    <button class="task-button" id="checkUpdateBtn" type="button">检查更新</button>
+    <button class="task-button" id="addNodeBtn" type="button" style="border-color:#5149e9;color:#5149e9;">＋ 新增节点</button>
+    <button class="task-button" id="saveGraphBtn" type="button" style="background:#5149e9;color:#fff;border-color:#5149e9;">保存</button>
+  </div>
+  <section class="tree-container" id="treeContainer"></section>
+</main>
+
+<div class="task-modal" id="editNodeModal" aria-hidden="true">
+  <div class="task-dialog" role="dialog" aria-modal="true">
+    <div class="task-dialog-head">
+      <div><h2 id="editNodeTitle">编辑节点</h2></div>
+      <button class="task-close" id="closeEditNode" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="task-form" id="editNodeForm"></div>
+    <div class="task-dialog-actions">
+      <button class="ghost-button" id="cancelEditNode" type="button">取消</button>
+      <button class="primary-button" id="submitEditNode" type="button">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="task-modal" id="addChildModal" aria-hidden="true">
+  <div class="task-dialog" role="dialog" aria-modal="true">
+    <div class="task-dialog-head">
+      <div><h2 id="addChildTitle">添加子节点</h2></div>
+      <button class="task-close" id="closeAddChild" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="task-form" id="addChildForm"></div>
+    <div class="task-dialog-actions">
+      <button class="ghost-button" id="cancelAddChild" type="button">取消</button>
+      <button class="primary-button" id="submitAddChild" type="button" style="background:#fff;border:1px solid #e2e8f0;color:#60718a;">添加</button>
+      <button class="primary-button" id="addChildAIBuildBtn" type="button" onclick="aiBuildAddChildren()" style="background:#5149e9;border:1px solid #5149e9;color:#fff;">⚡ AI自动构建</button>
+    </div>
+  </div>
+</div>
+
+<div class="task-modal" id="addNodeModal" aria-hidden="true">
+  <div class="task-dialog" role="dialog" aria-modal="true">
+    <div class="task-dialog-head">
+      <div><h2>新增节点</h2></div>
+      <button class="task-close" id="closeAddNode" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="task-form" id="addNodeForm">
+      <label>节点类型<select id="newNodeType"><option value="2">岗位</option><option value="1">子行业</option><option value="3">能力项</option></select></label>
+      <label>节点名称<input id="newNodeName" type="text" placeholder="请输入节点名称" /></label>
+      <label>上层节点<select id="newNodeParent"></select></label>
+      <div id="newNodeChildrenWrap">
+        <span id="newNodeChildrenLabel" style="display:block;color:var(--text2);font-size:12px;font-weight:600;margin-bottom:7px;">下层节点（可多选）</span>
+        <div class="ms-dropdown">
+          <button type="button" class="ms-trigger" id="newNodeMSTrigger" onclick="toggleMS('newNodeChildren','newNodeMSTrigger')">请选择</button>
+          <div id="newNodeChildren" class="checkbox-group ms-panel"></div>
+        </div>
+      </div>
+      <div id="newNodeExtraFields"></div>
+    </div>
+    <div class="task-dialog-actions">
+      <button class="ghost-button" id="cancelAddNode" type="button">取消</button>
+      <button class="primary-button" id="submitAddNode" type="button" style="background:#fff;border:1px solid #e2e8f0;color:#60718a;">添加</button>
+      <button class="primary-button" id="newNodeAIBuildBtn" type="button" onclick="aiBuildNewChildren()" style="background:#5149e9;border:1px solid #5149e9;color:#fff;">⚡ AI自动构建</button>
+    </div>
+  </div>
+</div>
+
+<div id="contextMenu" class="context-menu" role="menu" aria-hidden="true"></div>
+<div id="toast" class="toast" role="status"></div>
+</div>
+<script src="graph-update.js"></script>
+<script src="node-retire.js"></script>
+<script src="ability-graph.js"></script>
+</body>
+</html>

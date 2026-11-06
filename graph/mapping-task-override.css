@@ -1,0 +1,4 @@
+.task-button{order:5}
+.page-heading{display:flex;justify-content:space-between;align-items:center;padding:24px 4px 14px}.page-heading h1{margin:0}.page-heading .task-button{order:initial}
+.task-field{margin-bottom:15px;color:#60718a;font-size:12px;font-weight:600}.knowledge-options{display:grid;grid-template-columns:1fr;gap:8px;margin-top:7px;padding:11px 12px;border:1px solid #dfe6ef;border-radius:8px;background:#fff}.knowledge-options label{display:flex;align-items:center;gap:8px;color:#52647d;font-size:13px;font-weight:400}.knowledge-options input{accent-color:#5149e9}.task-field small{display:block;margin-top:6px;color:#9aa8b9;font-size:11px;font-weight:400}
+@media(max-width:760px){.page-heading{padding:18px 4px 12px}.page-heading .task-button{height:34px;font-size:12px}}

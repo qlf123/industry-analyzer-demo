@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>知识库｜专业图谱平台</title>
+    <link rel="stylesheet" href="mapping-review.css" />
+    <link rel="stylesheet" href="mapping-polish.css" />
+    <link rel="stylesheet" href="mapping-compact.css" />
+    <link rel="stylesheet" href="mapping-reference.css" />
+    <style>
+      .kb-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+      .kb-toolbar select,.kb-toolbar input{height:32px;padding:0 10px;border:1px solid #dfe6ef;border-radius:6px;font-size:13px;}
+      .kb-toolbar input{min-width:200px;}
+      .kb-toolbar select{min-width:120px;}
+      .kb-create-btn{display:flex;align-items:center;gap:6px;height:36px;padding:0 16px;border:1px solid #5149e9;border-radius:8px;background:#fff;color:#5149e9;font-size:14px;cursor:pointer;transition:all .15s;margin-bottom:16px;}
+      .kb-create-btn:hover{background:#5149e9;color:#fff;}
+      .kb-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+      .kb-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px;box-shadow:0 2px 8px rgba(30,49,82,.06);transition:.2s;cursor:pointer;position:relative;min-height:180px;display:flex;flex-direction:column;}
+      .kb-card:hover{box-shadow:0 6px 20px rgba(30,49,82,.1);border-color:#c7d2fe;transform:translateY(-1px);}
+      .kb-card-head{display:flex;gap:12px;margin-bottom:12px;}
+      .kb-card-icon{width:40px;height:40px;border-radius:8px;background:#eef0ff;display:flex;align-items:center;justify-content:center;font-size:20px;color:#5149e9;flex-shrink:0;overflow:hidden;}
+      .kb-card-icon img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+      .kb-card-info{flex:1;min-width:0;}
+      .kb-card-title{font-size:16px;font-weight:600;color:#31425e;line-height:1.4;word-break:break-all;margin-bottom:4px;padding-right:44px;}
+      .kb-card-owner{font-size:12px;color:#8b99ac;}
+      .kb-card-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:#8b99ac;flex-wrap:wrap;}
+      .kb-card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+      .kb-tag{padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;background:#eef0ff;color:#5149e9;}
+      .kb-card-desc{font-size:12px;color:#60718a;line-height:1.7;flex:1;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+      .kb-card-corner{position:absolute;top:12px;right:12px;display:flex;gap:4px;z-index:3;}
+      .kb-corner-btn{height:24px;padding:0 10px;border:1px solid #dfe6ef;border-radius:6px;background:#fff;color:#60718a;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s;box-shadow:0 1px 4px rgba(30,49,82,.06);}
+      .kb-corner-btn:hover{background:#f5f7fa;border-color:#5149e9;color:#5149e9;}
+      .kb-corner-btn.danger:hover{border-color:#c72c2a;color:#c72c2a;}
+      .kb-corner-btn.kb-corner-more{font-size:14px;letter-spacing:0;line-height:1;}
+      .kb-action-menu{position:fixed;z-index:80;min-width:112px;background:#fff;border:1px solid #dfe6ef;border-radius:8px;box-shadow:0 10px 30px rgba(30,49,82,.18);padding:4px 0;}
+      .kb-action-item{padding:7px 14px;font-size:12px;color:#60718a;cursor:pointer;white-space:nowrap;}
+      .kb-action-item:hover{background:#f5f7fa;color:#5149e9;}
+      .kb-action-item.danger:hover{background:#fff1f0;color:#c72c2a;}
+      .kb-action-divider{height:1px;background:#dfe6ef;margin:4px 0;}
+      .kb-empty{text-align:center;color:#8b99ac;padding:40px 0;font-size:14px;}
+      .kb-modal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;}
+      .kb-modal.open{display:flex;}
+      .kb-modal-backdrop{position:absolute;inset:0;background:rgba(31,45,70,.28);}
+      .kb-dialog{position:relative;width:min(720px,96%);background:#fff;border-radius:14px;box-shadow:0 18px 60px rgba(30,49,82,.2);overflow:hidden;}
+      .kb-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 24px 16px;border-bottom:1px solid #edf1f5;}
+      .kb-dialog-head h2{margin:0;font-size:17px;color:#31425e;}
+      .kb-dialog-head p{margin:6px 0 0;font-size:12px;color:#8b99ac;}
+      .kb-close{border:0;background:transparent;color:#8b99ac;font-size:24px;line-height:1;cursor:pointer;}
+      .kb-dialog-body{padding:20px 24px;}
+      .kb-dialog-actions{display:flex;justify-content:flex-end;gap:9px;padding:14px 24px;border-top:1px solid #edf1f5;background:#fbfcfe;}
+      .kb-dialog-actions button{height:34px;padding:0 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;}
+      .kb-perm-layout{display:flex;gap:16px;align-items:flex-start;}
+      .kb-perm-pane{flex:1;min-width:0;}
+      .kb-perm-label{font-size:12px;font-weight:600;color:#60718a;margin-bottom:6px;}
+      .kb-perm-tip{font-size:11px;font-weight:400;color:#8b99ac;}
+      .kb-org-tree{border:1px solid #dfe6ef;border-radius:8px;background:#fbfcfe;padding:6px 10px;max-height:300px;overflow-y:auto;}
+      .kb-perm-echo{background:#fbfcfe;border:1px solid #dfe6ef;border-radius:8px;padding:12px;min-height:200px;display:flex;flex-direction:column;}
+      .kb-perm-echo-list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;flex:1;}
+      .kb-perm-echo-group-title{font-size:11px;font-weight:600;color:#8b99ac;margin:4px 0 2px;}
+      .kb-perm-echo-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:#fff;border:1px solid #eef0ff;border-radius:6px;font-size:12px;color:#31425e;}
+      .kb-perm-echo-remove{margin-left:auto;width:18px;height:18px;border:none;background:#eef1f6;color:#8b99ac;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;transition:.12s;}
+      .kb-perm-echo-remove:hover{background:#fff1f0;color:#c72c2a;}
+      .kb-perm-echo-empty{font-size:12px;color:#8b99ac;text-align:center;padding:28px 0;}
+      .kb-org-node{margin:1px 0;}
+      .kb-org-row{display:flex;align-items:center;gap:6px;padding:3px 0;}
+      .kb-org-toggle{width:18px;height:18px;border:none;background:none;color:#8b99ac;cursor:pointer;font-size:10px;line-height:1;flex:none;padding:0;transition:transform .12s;}
+      .kb-org-toggle.empty{visibility:hidden;}
+      .kb-org-check{display:flex;align-items:center;gap:6px;font-size:13px;color:#31425e;font-weight:600;cursor:pointer;}
+      .kb-org-type{font-size:10px;font-weight:500;color:#8b99ac;background:#eef1f6;padding:1px 6px;border-radius:4px;margin-left:2px;}
+      .kb-org-check input[type=checkbox],.kb-org-member input[type=checkbox]{width:15px;height:15px;accent-color:#5149e9;}
+      .kb-org-body{margin-left:20px;border-left:1px dashed #dfe6ef;padding-left:8px;}
+      .kb-org-members{display:flex;flex-direction:column;gap:2px;padding:2px 0;}
+      .kb-org-member{display:flex;align-items:center;gap:6px;font-size:12px;color:#60718a;cursor:pointer;padding:3px 0;}
+      .kb-org-member-title{font-size:11px;color:#8b99ac;}
+      .kb-org-node.collapsed > .kb-org-body{display:none;}
+      .kb-org-node.collapsed > .kb-org-row .kb-org-toggle{transform:rotate(-90deg);}
+    </style>
+    <link rel="stylesheet" href="design-tokens.css" />
+  <link rel="stylesheet" href="gc-shell.css" />
+</head>
+  <body>
+    <aside class="lnav gc-lnav" id="lnav"></aside>
+<!-- 左侧菜单与其它页面共用 ../js/common.js -->
+<script src="../js/mock-data.js"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js"></script>
+<script src="gc-shell.js"></script>
+<script>GC.boot('gc-kb');</script>
+    <div class="platform-page">
+    <main class="app-shell">
+      <section class="page-heading">
+        <div><h1>知识库</h1></div>
+      </section>
+      <button class="kb-create-btn" onclick="createKb()">+ 创建知识库</button>
+      <div class="kb-toolbar">
+        <select id="kbOwnerFilter"><option value="all">全部可见</option><option value="mine">我创建的</option><option value="shared">与我共享</option></select>
+        <select id="kbBaseFilter"><option value="all">所有知识库</option><option value="tourism">旅游类</option><option value="hotel">酒店类</option><option value="test">测试</option></select>
+        <select id="kbTagFilter"><option value="all">全部标签</option><option value="semantic">语义</option><option value="quality">高质量</option><option value="vector">向量检索</option><option value="hybrid">混合检索</option><option value="multimodal">多模态</option></select>
+        <input type="text" id="kbSearchInput" placeholder="搜索知识库名称" />
+        <button class="primary-button" id="kbSearchBtn" type="button">搜索</button>
+      </div>
+      <div class="kb-card-grid" id="kbCardGrid"></div>
+      <div id="kbEmpty" class="kb-empty" style="display:none;">没有匹配的知识库</div>
+      <div id="toast" class="toast" role="status"></div>
+    </main>
+    </div>
+
+    <div class="kb-modal" id="kbShareModal" aria-hidden="true">
+      <div class="kb-modal-backdrop" onclick="closeKbShare()"></div>
+      <div class="kb-dialog">
+        <div class="kb-dialog-head">
+          <div><h2>分享知识库</h2><p>设置可访问该知识库的组织与成员</p></div>
+          <button class="kb-close" onclick="closeKbShare()" aria-label="关闭">×</button>
+        </div>
+        <div class="kb-dialog-body">
+          <div class="kb-perm-layout">
+            <div class="kb-perm-pane">
+              <div class="kb-perm-label">选择组织与成员<span class="kb-perm-tip"> 勾选可访问该知识库的组织与用户</span></div>
+              <div class="kb-org-tree" id="kbOrgTree"></div>
+            </div>
+            <div class="kb-perm-pane kb-perm-echo">
+              <div class="kb-perm-label">已选<span class="kb-perm-tip" id="kbPermEchoCount"> 当前勾选的组织与用户</span></div>
+              <div class="kb-perm-echo-list" id="kbPermEcho"></div>
+            </div>
+          </div>
+        </div>
+        <div class="kb-dialog-actions">
+          <button class="ghost-button" onclick="closeKbShare()">取消</button>
+          <button class="primary-button" onclick="saveKbShare()">保存</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      function toast(text){var t=document.getElementById('toast');t.textContent=text;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(function(){t.classList.remove('show')},2200)}
+
+      function createKb(){location.href=GC.url('knowledge-base-create.html');}
+
+      var KB_CURRENT_USER = GC.me();
+
+      var kbList = [
+        {id:'KB001',name:'xhf_test_09_14',desc:'',icon:'doc',creator:'张明',sharedTo:['平台管理员'],createdAt:'2026-09-14',editTime:'25 天前',updateTime:'2026-09-14',docs:0,views:0,tags:[],category:'test'},
+        {id:'KB002',name:'知识工程与知识体系详解.docx',desc:'useful for when you want to answer queries about the 知识工程与知识体系详解.docx',icon:'docx',creator:'张明',sharedTo:['平台管理员'],createdAt:'2026-08-01',editTime:'2 个月前',updateTime:'2026-08-14',docs:1,views:0,tags:['semantic','quality','vector','multimodal'],category:'tourism'},
+        {id:'KB003',name:'现代酒店管理',desc:'酒店管理专业知识库，涵盖前厅、客房、餐饮等模块',icon:'img',creator:'李四',sharedTo:['平台管理员'],createdAt:'2026-08-20',editTime:'1 个月前',updateTime:'2026-09-14',docs:1,views:0,tags:['semantic','quality','hybrid'],category:'hotel'},
+        {id:'KB004',name:'旅游管理专业教学资源库',desc:'旅游管理专业核心课程教学资源，包含教案、课件、案例',icon:'doc',creator:'平台管理员',createdAt:'2026-07-01',editTime:'3 周前',updateTime:'2026-09-23',docs:128,views:56,tags:['semantic','quality','vector'],category:'tourism'},
+        {id:'KB005',name:'导游实务案例集',desc:'导游实务课程配套案例库，含投诉处理、应急处置等场景',icon:'doc',creator:'平台管理员',createdAt:'2026-09-20',editTime:'1 周前',updateTime:'2026-10-07',docs:45,views:23,tags:['semantic','hybrid'],category:'tourism'},
+        {id:'KB006',name:'景区开发与管理规范',desc:'景区开发与管理专业标准文件库',icon:'docx',creator:'平台管理员',createdAt:'2026-09-30',editTime:'2 周前',updateTime:'2026-09-30',docs:32,views:12,tags:['quality','vector'],category:'tourism'}
+      ];
+      // 图谱中心：本次新建的知识库排在前面
+      try{ kbList=JSON.parse(sessionStorage.getItem('gc_kbs_new')||'[]').concat(kbList); }catch(e){}
+
+      var tagMap={semantic:'语义',quality:'高质量',vector:'向量检索',hybrid:'混合检索',multimodal:'多模态'};
+
+      // ===== 组织树（分享/权限用）=====
+      var KB_ORG_TREE = [
+        {id:'root', name:'某职业技术学院', type:'院校', children:[
+          {id:'east', name:'东校区', type:'校区', children:[
+            {id:'east-tourism', name:'旅游学院', type:'学院', children:[
+              {id:'east-tourism-mgmt', name:'旅游管理系', type:'系', children:[
+                {id:'east-tourism-guide', name:'导游教研室', type:'教研室', members:[
+                  {id:'m01', name:'张伟', title:'教研室主任'},
+                  {id:'m02', name:'李娜', title:'专任教师'},
+                  {id:'m03', name:'王强', title:'专任教师'},
+                  {id:'m04', name:'刘敏', title:'专任教师'}
+                ]}
+              ]}
+            ]},
+            {id:'east-hotel', name:'酒店学院', type:'学院', members:[
+              {id:'m05', name:'赵磊', title:'副院长'},
+              {id:'m06', name:'孙悦', title:'专任教师'},
+              {id:'m07', name:'周明', title:'专任教师'}
+            ]}
+          ]},
+          {id:'west', name:'西校区', type:'校区', children:[
+            {id:'west-voc', name:'中职部', type:'部门', children:[
+              {id:'west-voc-tourism', name:'旅游专业部', type:'专业部', members:[
+                {id:'m08', name:'吴婷', title:'专业部长'},
+                {id:'m09', name:'郑浩', title:'专任教师'},
+                {id:'m10', name:'冯雪', title:'专任教师'}
+              ]}
+            ]},
+            {id:'west-cont', name:'继续教育部', type:'部门', members:[
+              {id:'m11', name:'陈晨', title:'主任'},
+              {id:'m12', name:'杨帆', title:'教务员'}
+            ]}
+          ]},
+          {id:'public-basic', name:'公共基础部', type:'部门', members:[
+            {id:'m13', name:'黄娟', title:'副主任'},
+            {id:'m14', name:'林涛', title:'专任教师'},
+            {id:'m15', name:'罗静', title:'专任教师'}
+          ]}
+        ]}
+      ];
+      function kbCollectMemberIds(node){
+        var ids=(node.members||[]).map(function(m){return m.id;});
+        (node.children||[]).forEach(function(c){ ids=ids.concat(kbCollectMemberIds(c)); });
+        return ids;
+      }
+      var KB_ORG_MAP={};
+      (function build(nodes){ nodes.forEach(function(n){ KB_ORG_MAP[n.id]=n; if(n.children) build(n.children); }); })(KB_ORG_TREE);
+      var KB_MEMBER_MAP={};
+      (function collect(nodes){ nodes.forEach(function(n){ (n.members||[]).forEach(function(m){ KB_MEMBER_MAP[m.id]=m; }); if(n.children) collect(n.children); }); })(KB_ORG_TREE);
+      var KB_ORG_PARENT={};
+      (function buildParent(nodes, pid){ nodes.forEach(function(n){ KB_ORG_PARENT[n.id]=pid||null; if(n.children) buildParent(n.children, n.id); }); })(KB_ORG_TREE, null);
+      var KB_ORG_TOTAL_MEMBERS = KB_ORG_TREE.reduce(function(n,o){return n+kbCollectMemberIds(o).length},0);
+
+      function kbMembers(k){ return (k.permissions && k.permissions.members) || []; }
+      function kbIsShared(k){ return !!(k.creator && k.creator!==KB_CURRENT_USER && ((k.sharedTo||[]).indexOf(KB_CURRENT_USER)>=0 || GC.teacher())); }
+      // 权限覆盖的成员总数（组织展开 + 单独成员）
+      function kbCoveredCount(k){
+        var orgs=(k.permissions && k.permissions.orgs)||[];
+        var members=kbMembers(k);
+        var covered={};
+        orgs.forEach(function(oid){ var n=KB_ORG_MAP[oid]; if(n) kbCollectMemberIds(n).forEach(function(id){covered[id]=1;}); });
+        members.forEach(function(id){covered[id]=1;});
+        return Object.keys(covered).length;
+      }
+      function kbPermText(k){
+        if(kbIsShared(k)) return (k.sharedTo||[]).indexOf(KB_CURRENT_USER)>=0 ? '分享给我' : '仅查看';
+        var orgs=(k.permissions && k.permissions.orgs)||[];
+        var members=kbMembers(k);
+        if(!orgs.length && !members.length) return '权限：仅自己';
+        if(kbCoveredCount(k)>=KB_ORG_TOTAL_MEMBERS) return '权限：公开';
+        var parts=[];
+        if(orgs.length) parts.push(orgs.length+'个组织');
+        if(members.length) parts.push(members.length+'个成员');
+        return '权限：'+parts.join('、');
+      }
+      function kbFmtTime(d){
+        if(!d) return '';
+        if(d.indexOf(':')>-1) return d;
+        var h=0,m=0,s=0;
+        for(var i=0;i<d.length;i++){var c=d.charCodeAt(i);h=(h*31+c)%24;m=(m*37+c)%60;s=(s*41+c)%60;}
+        var p=function(n){return (n<10?'0':'')+n;};
+        return d+' '+p(h)+':'+p(m)+':'+p(s);
+      }
+
+      // 卡片右下角时间：更新过显示「更新于」，否则「创建于」
+      function kbTimeText(k){
+        if(k.updateTime && k.updateTime !== k.createdAt) return '更新于 '+kbFmtTime(k.updateTime);
+        return k.createdAt ? ('创建于 '+kbFmtTime(k.createdAt)) : '';
+      }
+
+      function renderKbCards(){
+        var query=document.getElementById('kbSearchInput').value.trim().toLowerCase();
+        var owner=document.getElementById('kbOwnerFilter').value;
+        var cat=document.getElementById('kbBaseFilter').value;
+        var tag=document.getElementById('kbTagFilter').value;
+        var filtered=kbList.filter(function(k){
+          var matchQuery=!query||k.name.toLowerCase().includes(query)||(k.desc&&k.desc.toLowerCase().includes(query));
+          var matchOwner=owner==='all'||(owner==='mine' ? (!k.creator||k.creator===KB_CURRENT_USER) : kbIsShared(k));
+          var matchCat=cat==='all'||k.category===cat;
+          var matchTag=tag==='all'||k.tags.includes(tag);
+          return matchQuery&&matchOwner&&matchCat&&matchTag;
+        });
+        var grid=document.getElementById('kbCardGrid');
+        var empty=document.getElementById('kbEmpty');
+        if(!filtered.length){grid.innerHTML='';empty.style.display='block';return;}
+        empty.style.display='none';
+        grid.innerHTML=filtered.map(function(k){
+          var iconHtml=k.icon==='img'?'<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 40 40\'%3E%3Crect width=\'40\' height=\'40\' rx=\'8\' fill=\'%23e6f0ff\'/%3E%3Ctext x=\'20\' y=\'26\' text-anchor=\'middle\' font-size=\'16\' fill=\'%235149e9\'%3E酒%3C/text%3E%3C/svg%3E" alt="" />':'<span>'+(k.name.charAt(0)||'?')+'</span>';
+          var tagsHtml=k.tags.map(function(t){return '<span class="kb-tag">'+(tagMap[t]||t)+'</span>';}).join('');
+          return '<div class="kb-card" onclick="viewKb(\''+k.id+'\')">'
+            +(kbIsShared(k)?'':'<div class="kb-card-corner" onclick="event.stopPropagation()">'
+              +'<button class="kb-corner-btn kb-corner-more" onclick="toggleKbMenu(event, \''+k.id+'\')" aria-label="操作">⋮</button>'
+            +'</div>')
+            +'<div class="kb-card-head">'
+              +'<div class="kb-card-icon">'+iconHtml+'</div>'
+              +'<div class="kb-card-info">'
+                +'<div class="kb-card-title">'+k.name+'</div>'
+                +'<div class="kb-card-owner">'+k.creator+'</div>'
+              +'</div>'
+            +'</div>'
+            +(tagsHtml?'<div class="kb-card-tags">'+tagsHtml+'</div>':'')
+            +'<div class="kb-card-desc">'+(k.desc||'暂无描述')+'</div>'
+            +'<div class="kb-card-meta"><span>'+kbPermText(k)+' · 文档 '+k.docs+'</span><span>'+kbTimeText(k)+'</span></div>'
+          +'</div>';
+        }).join('');
+      }
+
+      function viewKb(id){var k=kbList.find(function(x){return x.id===id;});try{sessionStorage.setItem('gc_kb_owner_'+id,(k&&k.creator)||'平台管理员');}catch(e){}location.href=GC.url('knowledge-base-detail.html?id='+id);}
+      function editKb(id){toast('编辑知识库（开发中）');}
+      function shareKb(id){openKbShare(id);}
+      function deleteKb(id){if(confirm('确认删除该知识库？此操作不可撤销。')){toast('已删除知识库');}}
+
+      // ===== 分享弹窗（权限：组织 + 用户，可多选，右侧回显）=====
+      function renderKbOrgNode(node, selected){
+        var memberIds=kbCollectMemberIds(node);
+        var allChecked=memberIds.length>0 && memberIds.every(function(id){return selected.indexOf(id)>-1;});
+        var kids=node.children||[];
+        var members=node.members||[];
+        var typeTag=node.type?'<span class="kb-org-type">'+node.type+'</span>':'';
+        var html='<div class="kb-org-node" data-org="'+node.id+'">';
+        html+='<div class="kb-org-row">';
+        html+=(kids.length||members.length)
+          ?'<button type="button" class="kb-org-toggle" onclick="toggleKbOrg(event)">▾</button>'
+          :'<span class="kb-org-toggle empty"></span>';
+        html+='<label class="kb-org-check"><input type="checkbox" class="kb-org-select" value="'+node.id+'"'+(allChecked?' checked':'')+'> <span class="kb-org-name">'+node.name+'</span>'+typeTag+'</label>';
+        html+='</div>';
+        if(kids.length||members.length){
+          html+='<div class="kb-org-body">';
+          if(members.length){
+            html+='<div class="kb-org-members">';
+            members.forEach(function(m){
+              html+='<label class="kb-org-member"><input type="checkbox" class="kb-perm-member" value="'+m.id+'"'+(selected.indexOf(m.id)>-1?' checked':'')+'> <span class="kb-org-member-name">'+m.name+'</span>'+(m.title?'<span class="kb-org-member-title">'+m.title+'</span>':'')+'</label>';
+            });
+            html+='</div>';
+          }
+          if(kids.length){
+            html+='<div class="kb-org-children">';
+            kids.forEach(function(c){ html+=renderKbOrgNode(c, selected); });
+            html+='</div>';
+          }
+          html+='</div>';
+        }
+        html+='</div>';
+        return html;
+      }
+      function renderKbOrgTree(selected){
+        return KB_ORG_TREE.map(function(n){return renderKbOrgNode(n, selected);}).join('');
+      }
+      function kbOrgMembers(treeEl){
+        return [].slice.call(treeEl.querySelectorAll('.kb-perm-member:checked')).map(function(c){return c.value;});
+      }
+      // 汇总勾选：顶层组织 + 未被组织覆盖的单独成员
+      function kbSelectedPerm(treeEl){
+        var allOrgIds=[].slice.call(treeEl.querySelectorAll('.kb-org-select:checked')).map(function(cb){return cb.value;});
+        var checkedOrg={};
+        allOrgIds.forEach(function(oid){checkedOrg[oid]=1;});
+        var orgs=allOrgIds.filter(function(oid){ return !KB_ORG_PARENT[oid] || !checkedOrg[KB_ORG_PARENT[oid]]; });
+        var covered={};
+        allOrgIds.forEach(function(oid){ var n=KB_ORG_MAP[oid]; if(!n) return; kbCollectMemberIds(n).forEach(function(id){covered[id]=1;}); });
+        var members=kbOrgMembers(treeEl).filter(function(id){ return !covered[id]; });
+        return {orgs:orgs, members:members};
+      }
+      // 还原为扁平成员列表（用于回显组织树勾选）
+      function kbFlatMembers(k){
+        var orgs=(k.permissions && k.permissions.orgs)||[];
+        var members=kbMembers(k);
+        var ids=[];
+        orgs.forEach(function(oid){ var n=KB_ORG_MAP[oid]; if(n) ids=ids.concat(kbCollectMemberIds(n)); });
+        return ids.concat(members);
+      }
+      function refreshKbOrgTree(treeEl){
+        var checkedMap={};
+        kbOrgMembers(treeEl).forEach(function(id){checkedMap[id]=1;});
+        [].slice.call(treeEl.querySelectorAll('.kb-org-select')).forEach(function(cb){
+          var node=KB_ORG_MAP[cb.value];
+          if(!node){ cb.checked=false; cb.indeterminate=false; return; }
+          var ids=kbCollectMemberIds(node);
+          var sel=ids.filter(function(id){return checkedMap[id];}).length;
+          cb.checked=ids.length>0 && sel===ids.length;
+          cb.indeterminate=sel>0 && sel<ids.length;
+        });
+        refreshKbPermEcho(treeEl);
+      }
+      function refreshKbPermEcho(treeEl){
+        var echoEl=document.getElementById('kbPermEcho');
+        var countEl=document.getElementById('kbPermEchoCount');
+        var sel=kbSelectedPerm(treeEl);
+        var orgIds=sel.orgs, memberIds=sel.members;
+        var total=orgIds.length+memberIds.length;
+        if(countEl) countEl.textContent=total ? ('已选 '+total+' 项') : '当前勾选的组织与用户';
+        if(!total){
+          echoEl.innerHTML='<div class="kb-perm-echo-empty">未选择任何组织或成员，仅自己可见</div>';
+          return;
+        }
+        var html='';
+        if(orgIds.length){
+          html+='<div class="kb-perm-echo-group-title">组织（'+orgIds.length+'）</div>';
+          orgIds.forEach(function(oid){
+            var node=KB_ORG_MAP[oid];
+            var name=node?node.name:oid;
+            var typeTag=node&&node.type?'<span class="kb-org-type">'+node.type+'</span>':'';
+            html+='<div class="kb-perm-echo-item">'+name+typeTag+'<button type="button" class="kb-perm-echo-remove" onclick="kbRemoveEchoItem(\'org\',\''+oid+'\')" aria-label="移除">×</button></div>';
+          });
+        }
+        if(memberIds.length){
+          html+='<div class="kb-perm-echo-group-title">成员（'+memberIds.length+'）</div>';
+          memberIds.forEach(function(mid){
+            var m=KB_MEMBER_MAP[mid];
+            var name=m?m.name:mid;
+            var title=m&&m.title?'<span class="kb-org-member-title">'+m.title+'</span>':'';
+            html+='<div class="kb-perm-echo-item">'+name+title+'<button type="button" class="kb-perm-echo-remove" onclick="kbRemoveEchoItem(\'user\',\''+mid+'\')" aria-label="移除">×</button></div>';
+          });
+        }
+        echoEl.innerHTML=html;
+      }
+      function kbRemoveEchoItem(kind, id){
+        var treeEl=document.getElementById('kbOrgTree');
+        if(kind==='org'){
+          var cb=treeEl.querySelector('.kb-org-select[value="'+id+'"]');
+          if(cb) cb.checked=false;
+          var node=KB_ORG_MAP[id];
+          var ids=node?kbCollectMemberIds(node):[];
+          [].slice.call(treeEl.querySelectorAll('.kb-perm-member')).forEach(function(mc){ if(ids.indexOf(mc.value)>-1) mc.checked=false; });
+        } else {
+          var mc=treeEl.querySelector('.kb-perm-member[value="'+id+'"]');
+          if(mc) mc.checked=false;
+        }
+        refreshKbOrgTree(treeEl);
+      }
+      function toggleKbOrg(e){
+        e.stopPropagation();
+        e.currentTarget.closest('.kb-org-node').classList.toggle('collapsed');
+      }
+      function bindKbOrgTree(treeEl){
+        [].slice.call(treeEl.querySelectorAll('.kb-org-select')).forEach(function(cb){
+          cb.onchange=function(){
+            var node=KB_ORG_MAP[cb.value];
+            var ids=node?kbCollectMemberIds(node):[];
+            var check=cb.checked;
+            [].slice.call(treeEl.querySelectorAll('.kb-perm-member')).forEach(function(mc){ if(ids.indexOf(mc.value)>-1) mc.checked=check; });
+            refreshKbOrgTree(treeEl);
+          };
+        });
+        [].slice.call(treeEl.querySelectorAll('.kb-perm-member')).forEach(function(cb){ cb.onchange=function(){refreshKbOrgTree(treeEl);}; });
+        refreshKbOrgTree(treeEl);
+      }
+      var kbShareId=null;
+      function openKbShare(id){
+        kbShareId=id;
+        var k=kbList.find(function(x){return x.id===id;});
+        if(!k) return;
+        var treeEl=document.getElementById('kbOrgTree');
+        treeEl.innerHTML=renderKbOrgTree(kbFlatMembers(k));
+        bindKbOrgTree(treeEl);
+        document.getElementById('kbShareModal').classList.add('open');
+        document.getElementById('kbShareModal').setAttribute('aria-hidden','false');
+      }
+      function closeKbShare(){
+        document.getElementById('kbShareModal').classList.remove('open');
+        document.getElementById('kbShareModal').setAttribute('aria-hidden','true');
+      }
+      function saveKbShare(){
+        var k=kbList.find(function(x){return x.id===kbShareId;});
+        if(k){
+          k.permissions=kbSelectedPerm(document.getElementById('kbOrgTree'));
+          renderKbCards();
+        }
+        closeKbShare();
+        toast('分享设置已保存');
+      }
+
+      // 卡片操作菜单（··· 编辑 / 删除 / 分享）
+      var kbMenuEl=null, kbMenuId=null;
+      function toggleKbMenu(e, id){
+        e.stopPropagation();
+        if(kbMenuEl && kbMenuId===id){ hideKbMenu(); return; }
+        hideKbMenu();
+        kbMenuId=id;
+        kbMenuEl=document.createElement('div');
+        kbMenuEl.className='kb-action-menu';
+        kbMenuEl.innerHTML=''
+          +'<div class="kb-action-item" data-act="edit">编辑</div>'
+          +'<div class="kb-action-item danger" data-act="delete">删除</div>'
+          +'<div class="kb-action-item" data-act="share">分享</div>';
+        document.body.appendChild(kbMenuEl);
+        var rect=e.currentTarget.getBoundingClientRect();
+        kbMenuEl.style.top=(rect.bottom+4)+'px';
+        kbMenuEl.style.left=Math.min(rect.right-kbMenuEl.offsetWidth, window.innerWidth-kbMenuEl.offsetWidth-8)+'px';
+        kbMenuEl.addEventListener('click', function(ev){
+          ev.stopPropagation();
+          var it=ev.target.closest('.kb-action-item');
+          var act=it?it.getAttribute('data-act'):null;
+          hideKbMenu();
+          if(act==='edit') editKb(id);
+          else if(act==='share') shareKb(id);
+          else if(act==='delete') deleteKb(id);
+        });
+      }
+      function hideKbMenu(){
+        if(kbMenuEl){ kbMenuEl.remove(); kbMenuEl=null; }
+        kbMenuId=null;
+      }
+      document.addEventListener('click', function(e){
+        if(!e.target.closest('.kb-action-menu') && !e.target.closest('.kb-corner-more')) hideKbMenu();
+      });
+
+      document.getElementById('kbSearchInput').onkeydown=function(e){if(e.key==='Enter')renderKbCards();};
+      document.getElementById('kbSearchBtn').onclick=renderKbCards;
+      document.getElementById('kbBaseFilter').onchange=renderKbCards;
+      document.getElementById('kbTagFilter').onchange=renderKbCards;
+      document.getElementById('kbOwnerFilter').onchange=renderKbCards;
+
+      renderKbCards();
+    </script>
+  </body>
+</html>

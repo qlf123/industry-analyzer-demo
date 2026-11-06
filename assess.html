@@ -241,6 +241,7 @@
 <script src="js/permission.js"></script>
 <script src="js/common.js"></script>
 <script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
 <script>
 (function () {
   'use strict';
@@ -296,7 +297,6 @@
   function majorVisible(m) { return Perm.check(ctx, identity, PERM_VIEW, m, 'major').allowed; }
   function majorRunnable(m) { return Perm.check(ctx, identity, PERM_RUN, m, 'major').allowed; }
   function visibleMajors() { return ctx.majors.filter(majorVisible); }
-  function orgName(id) { var o = ctx.orgs.find(function (x) { return x.id === id; }); return o ? o.name : ''; }
   function majorById(id) { return ctx.majors.find(function (m) { return m.id === id; }); }
   function hasKnowledge(mid) { return !!(D.knowledge[mid] && D.plans[mid]); }
 
@@ -477,7 +477,7 @@
         '<div class="mcard-h"><span class="mcard-t">' + esc(m.name) + '</span>' +
           (cat.code ? '<span class="mcard-code">' + esc(cat.code) + '</span>' : '') +
           (cat.stage ? '<span class="pill k">' + esc(cat.stage) + '</span>' : '') + '</div>' +
-        '<div class="mcard-meta">' + esc(orgName(m.orgId)) + '<br>' +
+        '<div class="mcard-meta">' +
           (hasK ? '知识体系：' + K.courses.length + ' 门专业课 · ' + nSkill + ' 个技能 · 已确认映射 ' + cc.ok + ' 条' +
               (cc.pending ? '（另有待确认 ' + cc.pending + ' 条，不计入测评）' : '')
             : '<span style="color:var(--muted)">平台尚未收录该专业知识体系，暂不能测评</span>') + '</div>' +
@@ -486,6 +486,7 @@
         '<div class="mcard-acts">' +
           (runOk ? '<a class="btn" href="#new/' + m.id + '" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">新建测评</a>' : '') +
           (last ? '<a class="btn ghost" href="#report/' + last.id + '" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">查看报告</a>' : '') +
+          (m.id === 'MAJOR-GUIDE' ? '<a class="btn ghost" href="#teaching/' + m.id + '" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">课堂教学达成</a>' : '') +
         '</div></div>';
     }).join('') + '</div>';
 
@@ -523,7 +524,7 @@
           var cat = D.catalog[m.id] || {};
           return '<div class="ropt' + (draft.mid === m.id ? ' on' : '') + (ok ? '' : ' dis') + '" data-major="' + (ok ? m.id : '') + '">' +
             '<div><div class="rt">' + esc(m.name) + ' <span class="mcard-code">' + esc(cat.code || '') + '</span></div>' +
-            '<div class="rd">' + esc(orgName(m.orgId)) + (ok ? '' : ' · 平台尚未收录该专业知识体系') + '</div></div></div>';
+            (ok ? '' : '<div class="rd">平台尚未收录该专业知识体系</div>') + '</div></div>';
         }).join('') + '</div>' +
         '<div class="stepacts"><a class="btn ghost" href="#" style="height:36px;display:inline-flex;align-items:center;text-decoration:none">取消</a>' +
         '<button class="btn" data-act="to2"' + (draft.mid ? '' : ' disabled') + '>下一步</button></div></div>';
@@ -1008,7 +1009,7 @@
 
     // ── 封面 ──
     h += '<div class="cover"><h1>' + esc(repName(rep)) + '</h1><div class="meta">' +
-      '专业：' + esc(m.name) + (cat.code ? '（' + esc(cat.code) + '）' : '') + (cat.stage ? ' · ' + esc(cat.stage) : '') + ' · ' + esc(orgName(m.orgId)) + '<br>' +
+      '专业：' + esc(m.name) + (cat.code ? '（' + esc(cat.code) + '）' : '') + (cat.stage ? ' · ' + esc(cat.stage) : '') + '<br>' +
       '测评时间：' + esc(rep.createdAt) + ' · 发起人：' + esc(rep.by) + '<br>' + esc(dataScope(rep)) + '</div></div>';
 
     // ── 一、概览：评估范围 → 主要结论 → 图 1 → 图 2 → 建设重点 ──
@@ -1240,6 +1241,41 @@
     return h;
   }
 
+  /* ═══ 课堂教学达成：读取老师确认通过的学习证据，经已确认的能力—技能映射汇总到能力 ═══
+     单个「学生 × 技能」按最近一次证据判断，需改进为未达成；学生自评不计入 */
+  function viewTeaching(mid) {
+    var TS = TK.load(), K = TK.kn(), last = {};
+    (TS.evidence || []).forEach(function (e) { var k = e.student + '|' + e.sid; if (!last[k] || e.at >= last[k].at) last[k] = e; });   // 同一分钟内取后记的
+    var bySkill = {};
+    Object.keys(last).forEach(function (k) { var e = last[k]; (bySkill[e.sid] = bySkill[e.sid] || []).push(e); });
+    // 支撑技能只算已开课程（有课程计划的课程）里的技能
+    var opened = (TS.plans || []).map(function (pl) { return pl.courseId; });
+    var inOpened = function (sid) { var x = K.skill[sid], t = x && K.task[x.taskId]; return !!t && opened.indexOf(t.courseId) >= 0; };
+    var openedNames = (TS.plans || []).map(function (pl) { return pl.course; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).map(function (n) { return '《' + n + '》'; }).join('');
+    var sup = {};
+    Object.keys(K.map).forEach(function (sid) { if (inOpened(sid)) K.map[sid].forEach(function (m) { (sup[m.abl] = sup[m.abl] || []).push({ sid: sid, type: m.type }); }); });
+    var rows = Object.keys(sup).map(function (id) {
+      var sk = sup[id], withEv = sk.filter(function (x) { return bySkill[x.sid]; });
+      var pairs = withEv.reduce(function (a, x) { return a.concat(bySkill[x.sid]); }, []), no = pairs.filter(function (e) { return e.grade === '需改进'; }).length;
+      return { id: id, a: ABL[id] || K.abl[id], sk: sk, withEv: withEv, pairs: pairs.length, ok: pairs.length - no, no: no };
+    });
+    var shown = rows.filter(function (r) { return r.withEv.length; }).sort(function (a, b) { return b.no - a.no || b.pairs - a.pairs; });
+    var students = Object.keys(last).map(function (k) { return k.split('|')[0]; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+    var h = '<div class="sec-h" style="margin-top:0"><a href="#" style="font-size:13px">‹ 返回</a><h2>课堂教学达成</h2><span class="sub">' + esc((majorById(mid) || {}).name || '') + ' · 来自教师确认通过的学习证据</span></div>' +
+      '<div class="card pad" style="margin-bottom:14px;font-size:13px;line-height:1.8">已有 <b>' + students.length + '</b> 名学生、<b>' + Object.keys(bySkill).length + '</b> 个技能产生课堂证据，对应 <b>' + shown.length + '</b> 项岗位能力。' +
+        '<div class="note">技能经已确认的「能力—技能映射」（直接支撑、部分支撑）汇总到能力，能力不单独打分；每个「学生 × 技能」按最近一次证据判断，需改进为未达成。学生自评不计入。支撑技能只算已开课程' + esc(openedNames) + '里的技能；这些课程还支撑另外 ' + (rows.length - shown.length) + ' 项能力，目前没有课堂证据。</div></div>';
+    h += '<div class="card tbl-wrap"><table class="tbl"><thead><tr><th>能力</th><th>支撑技能</th><th>有课堂证据</th><th>学生 × 技能 评价</th><th>已达成</th><th>未达成</th></tr></thead><tbody>' +
+      (shown.length ? shown.map(function (r) {
+        return '<tr class="abl-row" data-abl="T|' + r.id + '"><td>' + esc(r.a ? r.a.name : r.id) + (r.a && r.a.core ? ' <span class="star" title="核心能力">★</span>' : '') + '</td><td class="mono">' + r.sk.length + ' 个</td><td class="mono">' + r.withEv.length + ' 个</td>' +
+          '<td class="mono">' + r.pairs + '</td><td class="mono" style="color:var(--good)">' + r.ok + '</td><td class="mono"' + (r.no ? ' style="color:var(--crit);font-weight:600"' : '') + '>' + r.no + '</td></tr>' +
+          '<tr class="abl-det" data-det="T|' + r.id + '" hidden><td colspan="6"><div class="note" style="margin-bottom:6px">支撑技能及课堂证据：</div><ul class="cd-l">' + r.sk.map(function (x) {
+            var ev = bySkill[x.sid] || [], bad = ev.filter(function (e) { return e.grade === '需改进'; }).length, kt = K.task[(K.skill[x.sid] || {}).taskId], kc = kt && K.course[kt.courseId];
+            return '<li><b>' + esc(TK.skillName(x.sid)) + '</b><span class="note">《' + esc(kc ? kc.name : '—') + '》· ' + esc(x.type) + '</span> — ' + (ev.length ? '已评价 ' + ev.length + ' 人，达成 ' + (ev.length - bad) + ' 人' + (bad ? '，未达成 ' + bad + ' 人' : '') : '<span class="note">暂无课堂证据</span>') + '</li>';
+          }).join('') + '</ul></td></tr>';
+      }).join('') : '<tr><td colspan="6" class="note">还没有课堂证据。老师在任务中心按评价标准确认通过后，这里会显示。</td></tr>') + '</tbody></table></div>';
+    return h;
+  }
+
   /* ═══ 路由与渲染 ═══ */
   function route() {
     var hsh = location.hash.replace(/^#/, '');
@@ -1258,6 +1294,9 @@
       var rep = store.reports.find(function (x) { return x.id === r.arg; });
       var m = rep && majorById(rep.majorId);
       body.innerHTML = rep && m && majorVisible(m) ? viewReport(rep) : '<div class="card empty">报告不存在或不在当前身份可见范围内。<a href="#">返回</a></div>';
+    } else if (r.name === 'teaching') {
+      var tm = majorById(r.arg);
+      body.innerHTML = tm && majorVisible(tm) && r.arg === 'MAJOR-GUIDE' ? viewTeaching(r.arg) : '<div class="card empty">该专业暂无课堂证据。<a href="#">返回</a></div>';
     } else {
       draft = null;
       body.innerHTML = '<div class="sec-h" style="margin-top:0"><h2>专业</h2><span class="sub">当前身份可见范围内的专业</span><span class="sp"></span>' +

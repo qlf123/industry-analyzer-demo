@@ -734,15 +734,8 @@
       classIds: origTeach.classIds.slice()
     };
 
-    function orgScopeSet() {
-      var s = new Set();
-      editDraft.orgIds.forEach(function (oid) { s.add(oid); Perm.descendants(ctx, oid).forEach(function (d) { s.add(d); }); });
-      return s;
-    }
-    function teachMajorOptions() {
-      var scope = orgScopeSet();
-      return ctx.majors.filter(function (m) { return scope.has(m.orgId); });
-    }
+    // 专业、课程是教务数据，不按所选组织过滤
+    function teachMajorOptions() { return ctx.majors.slice(); }
     function teachCourseOptions() {
       return ctx.courses.filter(function (c) { return editDraft.majorIds.indexOf(c.majorId) >= 0; });
     }
@@ -754,27 +747,12 @@
       });
       return s;
     }
-    function pruneTeaching() {
-      var validMajors = {};
-      teachMajorOptions().forEach(function (m) { validMajors[m.id] = 1; });
-      var m0 = editDraft.majorIds.length;
-      editDraft.majorIds = editDraft.majorIds.filter(function (id) { return validMajors[id]; });
-      var c0 = editDraft.courseIds.length;
-      editDraft.courseIds = editDraft.courseIds.filter(function (cid) {
-        var c = byId('courses', cid);
-        return c && validMajors[c.majorId];
-      });
-      return { majors: m0 - editDraft.majorIds.length, courses: c0 - editDraft.courseIds.length };
-    }
-
     function tryRemoveOrg(oid) {
       if (editDraft.primaryOrgId === oid) {
         err.textContent = editDraft.orgIds.length > 1 ? '请先把主组织设到其他组织' : '请至少选择一个组织';
         return false;
       }
       editDraft.orgIds = editDraft.orgIds.filter(function (x) { return x !== oid; });
-      var pruned = pruneTeaching();
-      if (pruned.majors || pruned.courses) toast('已移除 ' + (pruned.majors + pruned.courses) + ' 个不在所选组织内的专业 / 课程');
       return true;
     }
     function orgSectionHtml() {

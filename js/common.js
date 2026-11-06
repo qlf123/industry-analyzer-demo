@@ -68,34 +68,71 @@
     admin: {
       title: 'AIGC 智慧课堂<br>教学平台 · 管理端',
       groups: [
-        { label: '概览', items: [
-          { key: 'dash', label: '数据概览', icon: '▤', empty: true },
+        // 数据概览、行业分析、能力测评为一级菜单（不分组）；能力地图只在教师端
+        { label: '', items: [
+          { key: 'dash', label: '数据概览', icon: '▤', href: 'dashboard.html' },
           { key: 'panorama', label: '行业分析', icon: '◎', href: 'panorama.html', external: true },
-          { key: 'kmap', label: '能力图谱', icon: '◇', href: 'kmap.html', external: true },
           { key: 'assess', label: '能力测评', icon: '◈', href: 'assess.html',
             perms: ['major:assess:view'], landing: false }
         ] },
-        { label: '教务', items: [
-          { key: 'account', label: '账号管理', icon: '▤', href: 'account-v1.html',
-            perms: ['org:account:view', 'org:member:manage', 'account:account:create', 'org:account:edit'] }
+        // 图谱中心：由原独立的图谱平台迁入（graph/ 目录），管理端可维护
+        { label: '图谱中心', items: [
+          { key: 'gc-kg', label: '知识图谱', icon: '◇', href: 'graph/knowledge-graph.html', external: true },
+          { key: 'gc-ag', label: '能力图谱', icon: '◇', href: 'graph/ability-graph.html', external: true },
+          { key: 'gc-ks', label: '知识体系', icon: '◇', href: 'graph/knowledge-system.html', external: true },
+          { key: 'gc-mr', label: '映射审核', icon: '◇', href: 'graph/mapping-review.html', external: true },
+          { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true }
         ] },
-        { label: '系统', items: [
+        // 账号与角色：和参考系统一致
+        { label: '账号与角色', items: [
+          { key: 'account', label: '账号管理', icon: '▤', href: 'account-v1.html',
+            perms: ['org:account:view', 'org:member:manage', 'account:account:create', 'org:account:edit'] },
+          { key: 'role', label: '角色管理', icon: '▤', href: 'role.html', landing: false, perms: ['org:role:define'] },
+          { key: 'menu', label: '菜单管理', icon: '▤', href: 'menu.html', landing: false, perms: ['org:role:define'] }
+        ] },
+        // 教务基础数据 / 课程计划管理：课程计划与教师端任务中心共用数据（teacher-kit.js）
+        { label: '教务基础数据', items: [
+          { key: 'edu-major', label: '专业管理', icon: '▤', href: 'edu-base.html?t=major', landing: false },
+          { key: 'edu-grade', label: '年级管理', icon: '▤', href: 'edu-base.html?t=grade', landing: false },
+          { key: 'edu-class', label: '班级管理', icon: '▤', href: 'edu-base.html?t=class', landing: false },
+          { key: 'edu-student', label: '学生管理', icon: '▤', href: 'edu-base.html?t=student', landing: false },
+          { key: 'edu-term', label: '学期与学年管理', icon: '▤', href: 'edu-base.html?t=term', landing: false },
+          { key: 'edu-course', label: '课程管理', icon: '▤', href: 'edu-base.html?t=course', landing: false }
+        ] },
+        { label: '课程计划管理', items: [
+          { key: 'plan', label: '课程计划', icon: '▤', href: 'course-plan.html', landing: false }
+        ] },
+        // 系统配置：组织管理、院校基础信息、字典、基础信息配置
+        { label: '系统配置', items: [
           { key: 'system', label: '组织管理', icon: '▤', href: 'system.html',
-            perms: ['org:node:view'] }
+            perms: ['org:node:view'] },
+          { key: 'college', label: '院校基础信息管理', icon: '▤', href: 'college.html', landing: false, perms: ['org:node:edit'] },
+          { key: 'dict', label: '字典管理', icon: '▤', href: 'dict.html', landing: false, perms: ['org:node:edit'] },
+          { key: 'sysconf', label: '基础信息配置', icon: '▤', href: 'sysconf.html', landing: false, perms: ['org:node:edit'] }
         ] }
       ]
     },
     teacher: {
       title: 'AIGC 智慧课堂<br>教学平台 · 教师端',
+      // 顺序：工作台 → 能力地图 → 备课中心 → 任务中心 → 图谱中心 → 教师成长中心 → 教师档案；不分组的一级菜单用 key 区分
       groups: [
-        { label: '', items: [
+        { key: 'top', label: '', items: [
           { key: 'workbench', label: '工作台', icon: '▤', href: 'workbench.html' },
-          { key: 'kmap', label: '能力图谱', icon: '◇', href: 'kmap.html', external: true },
-          // 备课中心、教师档案暂不开放（页面 teacher-resources.html / teacher-profile.html 保留）；我的班级（my-classes.html）不在菜单中显示
+          { key: 'kmap', label: '能力地图', icon: '◇', href: 'kmap.html', external: true },
+          // 备课中心暂不开放（teacher-resources.html 保留）；teacher-profile.html 为权限演示旧页，教师档案改用 teacher-file.html；我的班级不在菜单中显示
           { key: 'resources', label: '备课中心', icon: '▤', empty: true },
-          { key: 'tasks', label: '任务中心', icon: '▤', empty: true },
-          { key: 'growth', label: '教师成长中心', icon: '▤', empty: true },
-          { key: 'profile', label: '教师档案', icon: '▤', empty: true }
+          { key: 'tasks', label: '任务中心', icon: '▤', href: 'teacher-tasks.html' }
+        ] },
+        // 图谱中心：教师端可新建，自己创建的可维护、他人创建的仅查看；不含映射审核
+        { label: '图谱中心', items: [
+          { key: 'gc-kg', label: '知识图谱', icon: '◇', href: 'graph/knowledge-graph.html', external: true },
+          { key: 'gc-ag', label: '能力图谱', icon: '◇', href: 'graph/ability-graph.html', external: true },
+          { key: 'gc-ks', label: '知识体系', icon: '◇', href: 'graph/knowledge-system.html', external: true },
+          { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true }
+        ] },
+        { key: 'bottom', label: '', items: [
+          { key: 'growth', label: '教师成长中心', icon: '▤', href: 'teacher-growth.html' },
+          { key: 'profile', label: '教师档案', icon: '▤', href: 'teacher-file.html' }
         ] }
       ]
     },
@@ -103,12 +140,48 @@
       title: 'AIGC 智慧课堂<br>教学平台 · 学生端',
       groups: [
         { label: '', items: [
+          { key: 'tasks', label: '我的任务', icon: '▤', href: 'student-tasks.html' },
+          { key: 'growth', label: '学生成长中心', icon: '▤', href: 'student-growth.html' },
           { key: 'mine', label: '我的信息', icon: '▤', href: 'student.html' },
           { key: 'assess', label: '能力测评', icon: '◈', href: 'student-assess.html' }
         ] }
       ]
     }
   };
+
+  /* ── 菜单管理的改动（localStorage menuConf.v1）：改名、图标、排序、禁用隐藏，以及新增的占位菜单 ──
+   *   { <portal>: { items: { <key>: {label, icon, order, hidden} }, groups: { <分组名>: {label, order, hidden} }, added: [{key, label, icon, group, order, hidden}] } } */
+  var MENU_CONF_KEY = 'menuConf.v1';
+  function menuConf() { try { return JSON.parse(localStorage.getItem(MENU_CONF_KEY)) || {}; } catch (e) { return {}; } }
+  function saveMenuConf(c) { try { localStorage.setItem(MENU_CONF_KEY, JSON.stringify(c)); } catch (e) {} }
+  // 应用改动后的菜单；withHidden 为 true 时保留已禁用的（菜单管理页用），并带上 base（原始配置）
+  function effectiveMenu(portal, withHidden) {
+    var base = MENUS[portal], c = menuConf()[portal] || {}, io = c.items || {}, go = c.groups || {};
+    var groups = base.groups.map(function (g, gi) {
+      var gid = g.key || g.label, o = go[gid] || {};
+      var items = g.items.map(function (it, ii) {
+        var x = {}, k; for (k in it) x[k] = it[k];
+        var ov = io[it.key] || {};
+        if (ov.label) x.label = ov.label; if (ov.icon) x.icon = ov.icon;
+        x.order = ov.order != null ? ov.order : ii + 1; x.hidden = !!ov.hidden; x.builtin = true; x.group = gid;
+        return x;
+      });
+      (c.added || []).filter(function (a) { return a.group === gid; }).forEach(function (a) {
+        items.push({ key: a.key, label: a.label, icon: a.icon || '▤', empty: true, order: a.order || items.length + 1, hidden: !!a.hidden, builtin: false, group: gid });
+      });
+      items.sort(function (x, y) { return x.order - y.order; });
+      return { id: gid, label: g.label, name: o.label || g.label, order: o.order != null ? o.order : gi + 1, hidden: !!o.hidden,
+        items: withHidden ? items : items.filter(function (it) { return !it.hidden; }) };
+    });
+    groups.sort(function (x, y) { return x.order - y.order; });
+    var title = base.title, sc = sysConfActive();
+    if (sc && portal !== 'admin' && sc[portal] && sc[portal].logoName) title = esc(sc[portal].logoName) + '<br>' + (portal === 'teacher' ? '教师端' : '学生端');
+    return { title: title, groups: withHidden ? groups : groups.filter(function (g) { return !g.hidden; }) };
+  }
+  /* 基础信息配置（localStorage sysConf.v1）里启用的版本：教师端 / 学生端 Logo 名称显示在侧栏顶部 */
+  function sysConfActive() {
+    try { var c = JSON.parse(localStorage.getItem('sysConf.v1')); return c && c.versions ? c.versions[c.active] : null; } catch (e) { return null; }
+  }
 
   /* ── 小工具 ── */
   function esc(s) {
@@ -131,6 +204,8 @@
   }
   function initialAccountId() { return queryParam('u') || 'ACC-SUPER'; }
   /* 站内链接：带上当前身份（和端），跳到别的页面后身份与菜单不变 */
+  /* 子目录页面（如 graph/）以 cfg.base 指回根目录，菜单、退出登录、跳转都加上这个前缀 */
+  function abs(href) { return (_config && _config.base ? _config.base : '') + href; }
   function link(href, portal) {
     if (!href) return href;
     var hash = '', i = href.indexOf('#');
@@ -164,7 +239,7 @@
 
   /* ── 菜单项是否对当前身份可见 ── */
   function itemVisible(ctx, identity, item) {
-    if (item.empty || item.external) return true;
+    if (item.external || (item.empty && !item.perms)) return true;
     if (!item.perms) return true;
     return hasAnyPerm(ctx, identity, item.perms);
   }
@@ -173,7 +248,7 @@
   function firstPage(ctx, identity, portal) {
     var p = portal || portalOf(ctx, identity);
     if (!p) return 'system.html'; // 无可用端（停用身份）兜底，正常不会走到
-    var groups = MENUS[p].groups;
+    var groups = effectiveMenu(p).groups;
     for (var g = 0; g < groups.length; g++) {
       var items = groups[g].items;
       for (var i = 0; i < items.length; i++) {
@@ -184,17 +259,52 @@
     return p === 'student' ? 'student.html' : 'system.html';
   }
 
+  /* 侧栏底部「当前登录人 + 退出登录」的样式：由这里注入，能力图谱、行业分析等自带侧栏样式的页面也能用 */
+  // 一级菜单（分组）可展开 / 收起：#lnav 提高优先级，同时适用于普通页面和图谱中心（.gc-lnav）
+  var FOLD_CSS = '#lnav .lgroup.lg-fold{padding:2px 10px}#lnav .lbrand+.lgroup{padding-top:10px}' +
+    '#lnav .lgt.lfold{display:flex;align-items:center;gap:8px;width:100%;margin:0;padding:8px 10px;border:0;border-radius:8px;background:none;cursor:pointer;' +
+      'font-family:inherit;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);text-align:left;transition:background .12s}' +
+    '#lnav .lgt.lfold:hover{background:var(--rule-2)}' +
+    '#lnav .lgt.lfold .lfn{flex:1;min-width:0}' +
+    '#lnav .lgt.lfold .lfc{font-size:13px;line-height:1;color:var(--muted);transition:transform .15s}' +
+    '#lnav .lg-fold.closed .lfc{transform:rotate(-90deg)}' +
+    '#lnav .lg-fold.has-on>.lgt.lfold{color:var(--brand-ink)}' +
+    '#lnav .lg-fold .lmenu{padding-left:26px}' +
+    '#lnav .lg-fold.closed .litems{display:none}' +
+    '@media (max-width:1000px){#lnav .lgt.lfold{display:none}#lnav .litems{display:contents!important}#lnav .lg-fold .lmenu{padding-left:10px}}';
+  var FOLD_KEY = 'navFold.v1';
+  function foldState() { try { return JSON.parse(localStorage.getItem(FOLD_KEY)) || {}; } catch (e) { return {}; } }
+  function saveFold(s) { try { localStorage.setItem(FOLD_KEY, JSON.stringify(s)); } catch (e) {} }
+  var LUSER_CSS = FOLD_CSS + '.luser{margin-top:auto;display:flex;align-items:center;gap:9px;padding:12px 14px 12px 18px;border-top:1px solid var(--rule-2)}' +
+    '.luser+.lfoot{margin-top:0}' +
+    '.luser .lav{width:28px;height:28px;flex:0 0 28px;border-radius:50%;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-ink);font-size:12.5px;font-weight:600}' +
+    '.luser .lwho{flex:1;min-width:0;font-size:12.5px;line-height:1.35}' +
+    '.luser .lwho b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+    '.luser .lwho span{font-size:11px;color:var(--muted)}' +
+    '.lout{font:inherit;font-size:12px;color:var(--ink-2);background:none;border:1px solid var(--rule);border-radius:7px;padding:4px 9px;cursor:pointer;white-space:nowrap}' +
+    '.lout:hover{color:var(--crit);border-color:var(--crit)}' +
+    '@media (max-width:1000px){.luser{margin-top:0;border-top:none;padding:6px 16px 10px}}';
+  function ensureLuserCss() {
+    if (document.getElementById('luser-css')) return;
+    var st = document.createElement('style'); st.id = 'luser-css'; st.textContent = LUSER_CSS;
+    document.head.appendChild(st);
+  }
+
   /* ── 渲染侧栏 ── */
   function renderSidebar(ctx, identity, portal, active) {
     var nav = $('#lnav');
     if (!nav) return;
-    var menu = MENUS[portal];
+    ensureLuserCss();
+    var menu = effectiveMenu(portal), fold = foldState();
     var html = '<div class="lbrand"><div class="ldot" aria-hidden="true"></div><div class="lname">' + menu.title + '</div></div>';
     menu.groups.forEach(function (group) {
       // 分组里没有对当前身份可见的菜单项时，整组（含分组标题）不显示
       if (!group.items.some(function (it) { return itemVisible(ctx, identity, it); })) return;
-      html += '<div class="lgroup">';
-      if (group.label) html += '<div class="lgt">' + esc(group.label) + '</div>';
+      // 有分组名的作为一级菜单，可展开 / 收起：当前页所在的分组总是展开；其余按上次的选择，默认收起
+      var fk = portal + '|' + group.label, hasOn = group.items.some(function (it) { return it.key === active; });
+      var closed = group.label && !hasOn && fold[fk] !== 'open';
+      html += '<div class="lgroup' + (group.label ? ' lg-fold' : '') + (closed ? ' closed' : '') + (hasOn ? ' has-on' : '') + '">';
+      if (group.label) html += '<button type="button" class="lgt lfold" data-fold="' + esc(fk) + '" aria-expanded="' + !closed + '"><span class="lfn">' + esc(group.name || group.label) + '</span><span class="lfc" aria-hidden="true">▾</span></button><div class="litems">';
       group.items.forEach(function (it) {
         var vis = itemVisible(ctx, identity, it);
         if (!vis) return;
@@ -202,15 +312,28 @@
         var cls = 'lmenu' + (on ? ' on' : '');
         var inner = '<i>' + esc(it.icon) + '</i>' + esc(it.label);
         if (it.href) {
-          html += '<a class="' + cls + '" href="' + esc(link(it.href, it.external ? portal : '')) + '"' + (on ? ' aria-current="page"' : '') + '>' + inner + '</a>';
+          html += '<a class="' + cls + '" href="' + esc(link(abs(it.href), it.external ? portal : '')) + '"' + (on ? ' aria-current="page"' : '') + '>' + inner + '</a>';
         } else {
           html += '<button class="' + cls + '" type="button">' + inner + '</button>';
         }
       });
-      html += '</div>';
+      html += (group.label ? '</div>' : '') + '</div>';
     });
+    // 当前登录人 + 退出登录（回到登录页，地址里不再带身份）
+    var name = identity.account ? identity.account.name : '';
+    html += '<div class="luser"><span class="lav" aria-hidden="true">' + esc(name.slice(0, 1)) + '</span><span class="lwho"><b>' + esc(name) + '</b><span>' + esc(portalName(portal)) + '</span></span>' +
+      '<button type="button" class="lout" data-logout>退出登录</button></div>';
     html += '<div class="lfoot" id="lfoot">权限管理升级 · V2.1</div>';
     nav.innerHTML = html;
+    nav.onclick = function (e) {
+      var b = e.target.closest('[data-fold]'); if (!b) return;
+      var g = b.parentNode, open = g.classList.toggle('closed') === false, s = foldState();
+      b.setAttribute('aria-expanded', String(open));
+      s[b.getAttribute('data-fold')] = open ? 'open' : 'closed'; saveFold(s);
+    };
+    nav.querySelector('[data-logout]').addEventListener('click', function () {
+      if (window.confirm('确定退出登录吗？')) location.href = abs('login.html');
+    });
   }
 
   /* 多端身份切换时弹出「选择进入的端」，选完后跳到该端首页（带 ?u= 保持身份） */
@@ -294,7 +417,7 @@
     }
     // 当前页面的端不在身份可进入的端集合里才跳回；在集合里就把当前端设为该页面的端
     if (enterable.length && enterable.indexOf(_config.portal) < 0) {
-      location.replace(link(firstPage(ctx, identity)));
+      location.replace(link(abs(firstPage(ctx, identity))));
       return;
     }
     renderAll(ctx, _config);
@@ -302,6 +425,7 @@
 
   return {
     boot: boot,
+    portal: function () { return currentConfig().portal; },
     portalOf: portalOf,
     firstPage: firstPage,
     link: link,
@@ -309,6 +433,10 @@
     hasPerm: hasPerm,
     hasAnyPerm: hasAnyPerm,
     MENUS: MENUS,
+    effectiveMenu: effectiveMenu,
+    menuConf: menuConf,
+    saveMenuConf: saveMenuConf,
+    itemVisible: itemVisible,
     onChange: onChange,
     ui: uiSnapshot,
     currentIdentity: currentIdentity

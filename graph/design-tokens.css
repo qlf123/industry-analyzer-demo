@@ -1,0 +1,247 @@
+/* ============================================================
+   设计令牌 & 全局基础样式（统一层）
+   作用：统一全平台配色、字号、间距、圆角、阴影、交互态。
+   加载顺序：放在所有页面样式之后，作为最终一致层。
+   品牌主色：#5149e9
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+:root{
+  /* 品牌 */
+  --brand:#5149e9;
+  --brand-strong:#463bc9;
+  --brand-soft:#eef0ff;
+  --brand-softer:#f5f6ff;
+
+  /* 文字层级 */
+  --text:#31425e;
+  --text-2:#60718a;
+  --text-3:#8b99ac;
+
+  /* 边框 / 背景 */
+  --border:#e2e8f0;
+  --border-2:#dfe6ef;
+  --bg:#f5f7fa;
+  --card:#ffffff;
+
+  /* 语义色 */
+  --success:#12946f;  --success-bg:#edf9f5;
+  --warning:#b7791f;  --warning-bg:#fff8e6;
+  --danger:#c72c2a;   --danger-bg:#fff1f0;
+  --orange:#f8a313;
+
+  /* 圆角 / 阴影 */
+  --radius:10px;
+  --radius-sm:8px;
+  --radius-xs:6px;
+  --shadow-sm:0 1px 3px rgba(30,49,82,.06);
+  --shadow-md:0 6px 20px rgba(30,49,82,.1);
+  --shadow-lg:0 18px 60px rgba(30,49,82,.2);
+
+  /* 兼容旧命名（统一到同一套值） */
+  --blue:#5149e9;  --blue-soft:#eef0ff;
+  --ink:#31425e;   --muted:#8b99ac;  --line:#e2e8f0;
+  --paper:#f5f7fa; --white:#ffffff;
+  --green:#12946f; --red:#c72c2a;    --red-soft:#fff1f0; --tag:#eaf0f8;
+  --platform-bg:#f5f7fa;    --platform-border:#e2e8f0;
+  --platform-text:#31425e;  --platform-muted:#8b99ac;  --platform-purple:#5149e9;
+  --reference-bg:#f5f7fa;   --reference-border:#e2e8f0;
+  --reference-text:#31425e; --reference-muted:#8b99ac; --reference-purple:#5149e9;
+  --sidebar-w:232px;
+}
+
+/* ---------- 基础重置 ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  font-size:14px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+a{text-decoration:none;color:inherit}
+input,select,textarea,button{font-family:inherit}
+img,svg{max-width:100%}
+
+/* 键盘焦点可见性 */
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
+
+/* 滚动条 */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cdd6e2;border-radius:6px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:#b6c1d2;background-clip:content-box}
+
+/* ---------- 侧边栏 ---------- */
+.platform-sidebar{
+  width:232px;
+  background:#fff;
+  border-right:1px solid var(--border);
+  position:fixed;top:0;bottom:0;left:0;
+  display:flex;flex-direction:column;z-index:10;
+}
+.platform-brand{display:flex;align-items:center;gap:10px;padding:20px 18px 16px;border-bottom:1px solid #eef2f6}
+.platform-brand-mark{width:34px;height:34px;border-radius:9px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex:none}
+.platform-brand strong{display:block;font-size:14px;color:var(--text)}
+.platform-brand small{font-size:11px;color:var(--text-3)}
+.platform-nav{flex:1;padding:16px 10px;overflow-y:auto}
+.nav-section-title{font-size:11px;color:var(--text-3);letter-spacing:.5px;padding:14px 12px 6px;text-transform:uppercase}
+.nav-section-spaced{margin-top:6px}
+.platform-nav-item{
+  display:flex;align-items:center;gap:10px;height:40px;padding:0 12px;margin:2px 0;
+  border-radius:8px;font-size:13px;color:var(--text-2);
+  position:relative;cursor:pointer;transition:background .15s,color .15s;
+}
+.platform-nav-item:hover{background:var(--brand-softer);color:var(--brand)}
+.platform-nav-item.active{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.nav-icon{width:24px;height:24px;border-radius:6px;background:#eef1f6;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-2);flex:none}
+.platform-nav-item.active .nav-icon{background:var(--brand);color:#fff}
+.platform-nav-item em{margin-left:auto;background:#ff4d4f;color:#fff;border-radius:10px;font-size:10px;font-style:normal;padding:0 6px;line-height:16px}
+.nav-soon{margin-left:auto;font-size:10px;color:var(--text-3);background:#f0f1f5;padding:2px 6px;border-radius:4px}
+.platform-sidebar-footer{display:flex;align-items:center;gap:8px;padding:14px 18px;border-top:1px solid var(--border)}
+.platform-avatar{width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+.sidebar-more{margin-left:auto;color:var(--text-3);font-size:16px;cursor:pointer}
+.platform-page{margin-left:232px;min-height:100vh}
+.platform-page .topbar{display:none}
+
+/* ---------- 页头 ---------- */
+.page-heading h1{font-size:22px;color:var(--text);letter-spacing:-.02em}
+.page-heading p{color:var(--text-2)}
+.eyebrow{color:var(--text-3);letter-spacing:.1em}
+.heading-meta{border-left:2px solid #d7d9ff}
+.heading-meta strong{color:var(--text)}
+
+/* ---------- 分段状态页签 ---------- */
+.status-tabs{background:#edf2f8}
+.status-tab{color:var(--text-2);transition:all .15s}
+.status-tab:hover{color:var(--text)}
+.status-tab.active{background:#fff;color:var(--text);box-shadow:0 2px 8px rgba(58,77,113,.08)}
+
+/* ---------- 表单控件 ---------- */
+.search,
+select,
+.ghost-button,
+.primary-button,
+.confirm-button,
+.reject-button,
+.corner-btn,
+.task-button{border-radius:8px;transition:all .15s}
+.search input:focus,
+select:focus,
+input[type=text]:focus,
+input[type=search]:focus,
+textarea:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px rgba(81,73,233,.1)}
+.primary-button{background:var(--brand);border-color:var(--brand);color:#fff}
+.primary-button:hover{background:var(--brand-strong);border-color:var(--brand-strong)}
+.confirm-button{background:var(--brand);color:#fff}
+.confirm-button:hover{background:var(--brand-strong)}
+.ghost-button:hover{border-color:var(--brand);color:var(--brand)}
+
+/* ---------- 表格（仅视觉，不动列宽/网格） ---------- */
+.mapping-table{background:#fff}
+.table-head{background:#fafbfd;color:var(--text-2)}
+.mapping-row:hover{background:#fcfdff}
+.source-name,.target-name{color:var(--text)}
+
+/* ---------- 卡片 ---------- */
+.graph-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s,border-color .2s}
+.graph-card:hover{box-shadow:var(--shadow-md)}
+
+/* ---------- 弹层 / 提示 ---------- */
+.toast{background:#273854;border-radius:8px;box-shadow:var(--shadow-md)}
+
+/* ---------- 响应式：窄屏收起侧栏为图标轨 ---------- */
+@media (max-width:760px){
+  .platform-sidebar{width:64px}
+  .platform-page{margin-left:64px}
+  .platform-brand{padding:0;justify-content:center;height:58px}
+  .platform-brand>div,.nav-section-title,.platform-nav-item>span:not(.nav-icon),
+  .platform-nav-item em,.nav-soon,.platform-sidebar-footer>span:not(.platform-avatar){display:none}
+  .platform-nav{padding:14px 8px}
+  .platform-nav-item{justify-content:center;padding:0}
+  .nav-icon{width:30px;height:30px}
+  .platform-sidebar-footer{justify-content:center}
+}
+
+/* ============================================================
+   组件样式统一 —— 按钮 / 卡片 / 标签 / 徽标
+   ============================================================ */
+
+/* --- 主按钮（实心品牌色） --- */
+.primary-button,.confirm-button,.enter-btn,.rebuild-btn,#addMappingButton{
+  background:var(--brand);border:1px solid var(--brand);color:#fff;font-weight:600;
+}
+.primary-button:hover,.confirm-button:hover,.enter-btn:hover,.rebuild-btn:hover,#addMappingButton:hover{
+  background:var(--brand-strong);border-color:var(--brand-strong);
+}
+
+/* --- 次按钮（白底 + 中性边框） --- */
+.ghost-button,.reject-button,.corner-btn,.add-resource-button{
+  background:#fff;border:1px solid var(--border);color:var(--text-2);
+}
+.ghost-button:hover,.reject-button:hover,.corner-btn:hover,.add-resource-button:hover{
+  background:var(--brand-softer);border-color:var(--brand);color:var(--brand);
+}
+
+/* --- 按钮圆角统一 --- */
+.primary-button,.ghost-button,.confirm-button,.reject-button,.corner-btn,.task-button,
+.add-resource-button,.add-mapping-btn,.rebuild-btn,.enter-btn,.confirm-btn,.page-button,.page-number{
+  border-radius:8px;
+}
+
+/* --- 卡片统一 --- */
+.graph-card,.ks-card,.task-card,.kb-card{
+  background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);
+}
+.graph-card:hover,.ks-card:hover,.task-card:hover,.kb-card:hover{
+  box-shadow:var(--shadow-md);border-color:#c7d2fe;transform:translateY(-1px);
+}
+
+/* --- 状态徽标统一 --- */
+.graph-card-status,.tree-status-badge,.ks-card-status,.approved-label{
+  display:inline-flex;align-items:center;font-size:11px;font-weight:600;
+  padding:2px 8px;border-radius:6px;line-height:1.5;
+}
+
+/* --- 小标签 / chip 统一 --- */
+.source-chip,.kb-tag,.dd-tag,.sp-tag{
+  font-size:11px;padding:2px 8px;border-radius:6px;line-height:1.5;
+}
+
+/* --- 微标签（类型 / 组织标记）统一 --- */
+.org-type,.ks-org-type,.search-select-type,.kbd-type-badge{
+  font-size:10px;font-weight:500;color:var(--text-3);background:#eef1f6;
+  padding:1px 6px;border-radius:4px;
+}
+
+/* ============================================================
+   搜索项 / 通用按钮 统一
+   ============================================================ */
+
+/* --- 主/次通用按钮尺寸 --- */
+.primary-button,.ghost-button{
+  height:36px;padding:0 16px;font-size:13px;
+}
+
+/* --- 搜索输入框 & 同排筛选下拉 --- */
+.kb-toolbar select,.kb-toolbar input,
+.ks-toolbar select,.ks-toolbar input,
+.kbd-toolbar select,.kbd-toolbar input,
+.ksd-header select,.ksd-header input,
+.graph-search-row select,.graph-search-row input{
+  height:36px;padding:0 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;
+  background:#fff;color:var(--text);
+}
+.kb-toolbar input::placeholder,.ks-toolbar input::placeholder,
+.kbd-toolbar input::placeholder,.ksd-header input::placeholder,
+.graph-search-row input::placeholder{color:var(--text-3)}
+
+/* --- 映射审核台搜索盒 --- */
+.search{height:36px;border-color:var(--border);border-radius:8px}
+.search input{height:34px;font-size:13px}

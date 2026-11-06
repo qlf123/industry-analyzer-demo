@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>字典管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+/* 字典管理：字典分类列表 → 字典项（可多级） + 导入 / 导出 */
+.dc-card{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden}
+.dc-card .tw{overflow-x:auto}
+.tbl2{min-width:1000px}
+.tbl2 td{vertical-align:middle;white-space:nowrap}
+.tbl2 .ops .lk{margin-right:10px}
+.tbl2 .mono{font-family:var(--mono);font-size:12px}
+.tbl2 .muted{color:var(--muted)}
+.tg{border:0;background:none;color:var(--muted);cursor:pointer;width:16px;padding:0;font-size:11px}
+.lk{color:var(--brand-ink);cursor:pointer;background:none;border:0;padding:0;font:inherit;font-size:12.5px}
+.lk:hover{text-decoration:underline}
+.dc-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--rule-2);font-size:14px;font-weight:600}
+.dc-h .code{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--muted)}
+.dc-h .sp{flex:1}
+.foot2{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-top:1px solid var(--rule-2);font-size:12px;color:var(--muted)}
+.pg button{border:1px solid var(--rule);background:var(--card);border-radius:6px;min-width:26px;height:26px;font:inherit;font-size:12px;cursor:pointer;margin-left:4px}
+.pg button[aria-pressed="true"]{border-color:var(--brand);color:var(--brand-ink)}
+.steps{display:flex;gap:8px;margin-bottom:16px}
+.steps div{flex:1;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.steps i{font-style:normal;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--rule);font-size:12px}
+.steps .on{color:var(--brand-ink);font-weight:500}
+.steps .on i{background:var(--brand);border-color:var(--brand);color:#fff}
+.steps .done i{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink)}
+.drop{border:1.5px dashed var(--rule);border-radius:12px;padding:30px;text-align:center;font-size:13px;color:var(--ink-2);cursor:pointer;background:var(--card-2)}
+.drop:hover,.drop.over{border-color:var(--brand);background:var(--brand-soft)}
+.drop small{display:block;color:var(--muted);margin-top:4px}
+.note2{background:var(--card-2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--ink-2);line-height:1.9;margin-top:12px}
+.sum3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.sum3 div{background:var(--card-2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted)}
+.sum3 b{display:block;font-size:20px;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">字典管理</h1><div class="pt-d">维护各页面下拉选项的取值；停用或已失效的字典项不再出现在新建、编辑的选项里，已使用的数据不受影响</div></div></div></div>
+    <div class="body"><div class="card filters" id="filters"></div><div class="dc-card" id="main"></div></div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script src="js/sys-dict.js"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'admin', active: 'dict' });
+  var esc = TK.esc, KEY = 'sysDict.v1';
+  function me() { try { return UI.currentIdentity(DEMO.getState()).account.name; } catch (e) { return '管理员'; } }
+  function now() { return TK.fmt(new Date()); }
+
+  /* ── 数据（js/sys-dict.js） ── */
+  var D = SysDict.load();
+  function persist() { SysDict.save(D); }
+  function eff(it) { var d = TK.fmt(new Date(), false); return (!it.start || it.start <= d) && (!it.end || it.end > d) ? '已生效' : '已失效'; }
+  function catById(id) { return D.cats.filter(function (c) { return c.id === id; })[0]; }
+  function kids(c, pid) { return c.items.filter(function (x) { return x.parentId === pid; }).sort(function (a, b) { return a.order - b.order; }); }
+  function subIds(c, id) { var o = [id]; kids(c, id).forEach(function (k) { o = o.concat(subIds(c, k.id)); }); return o; }
+  function pill(st) { return '<span class="pill ' + (st === '启用' || st === '已生效' ? 'good' : 'crit') + '">' + (st.indexOf('已') === 0 ? st : '已' + st) + '</span>'; }
+
+  var F = { cat: null, q: '', st: '', ef: '', a: '', b: '', page: 1, fold: {} };
+  function filters() {
+    var h = '<label>' + (F.cat ? '字典项' : '字典分类') + '<input class="inp search" data-f="q" placeholder="' + (F.cat ? '搜索字典项名称 / 字典项编码' : '搜索字典分类名称 / 编码') + '" value="' + esc(F.q) + '"></label>' +
+      '<label>启用状态<select class="sel" data-f="st"><option value="">全部状态</option><option' + (F.st === '启用' ? ' selected' : '') + '>启用</option><option' + (F.st === '停用' ? ' selected' : '') + '>停用</option></select></label>' +
+      (F.cat ? '<label>生效状态<select class="sel" data-f="ef"><option value="">全部状态</option><option' + (F.ef === '已生效' ? ' selected' : '') + '>已生效</option><option' + (F.ef === '已失效' ? ' selected' : '') + '>已失效</option></select></label>' : '') +
+      '<label>创建时间<input class="inp" type="date" data-f="a" value="' + F.a + '" style="width:140px"> 至 <input class="inp" type="date" data-f="b" value="' + F.b + '" style="width:140px"></label><span style="flex:1"></span><button class="btn-s" data-reset>重置</button>' +
+      (F.cat ? '<button class="btn-s" data-back>返回分类列表</button><button class="btn" style="height:32px" data-additem>+ 新增字典项</button>' : '<button class="btn-s" data-import>导入</button><button class="btn-s" data-export>导出</button><button class="btn" style="height:32px" data-addcat>+ 新增字典分类</button>');
+    document.getElementById('filters').innerHTML = h;
+  }
+  function inDate(at) { var d = at.slice(0, 10); return (!F.a || d >= F.a) && (!F.b || d <= F.b); }
+  function render() {
+    filters();
+    var main = document.getElementById('main');
+    if (!F.cat) {
+      var list = D.cats.filter(function (c) { return (!F.q || c.name.indexOf(F.q) >= 0 || c.code.toLowerCase().indexOf(F.q.toLowerCase()) >= 0) && (!F.st || c.status === F.st) && inDate(c.at); });
+      var per = 10, pages = Math.max(1, Math.ceil(list.length / per)); if (F.page > pages) F.page = pages;
+      var rows = list.slice((F.page - 1) * per, F.page * per).map(function (c) {
+        return '<tr><td>' + esc(c.name) + '</td><td>' + esc(c.en || '—') + '</td><td class="mono">' + esc(c.code) + '</td><td>' + pill(c.status) + '</td><td>' + c.items.length + '</td><td>' + esc(c.by) + '</td><td class="muted">' + esc(c.at) + '</td><td class="ops"><button class="lk" data-editcat="' + c.id + '">编辑</button><button class="lk" data-open="' + c.id + '">管理字典项</button><button class="lk" data-togcat="' + c.id + '">' + (c.status === '启用' ? '停用' : '启用') + '</button>' + (c.status === '停用' && !c.items.length ? '<button class="lk" data-delcat="' + c.id + '" style="color:var(--crit)">删除</button>' : '') + '</td></tr>';
+      });
+      main.innerHTML = '<div class="dc-h">字典分类列表</div><div class="tw"><table class="tbl2"><thead><tr><th>字典分类名称</th><th>字典分类英文名称</th><th>字典分类编码</th><th>状态</th><th>字典项数量</th><th>创建人</th><th>创建时间</th><th>操作</th></tr></thead><tbody>' + (rows.join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px">暂无数据</td></tr>') + '</tbody></table></div>' +
+        '<div class="foot2"><span>共 ' + list.length + ' 条</span><span class="pg">' + Array.apply(null, { length: pages }).map(function (_, i) { return '<button data-page="' + (i + 1) + '" aria-pressed="' + (F.page === i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</span></div>';
+      return;
+    }
+    var c = catById(F.cat), filtering = !!(F.q || F.st || F.ef || F.a || F.b);
+    var hit = function (x) { return (!F.q || x.name.indexOf(F.q) >= 0 || x.code.toLowerCase().indexOf(F.q.toLowerCase()) >= 0) && (!F.st || x.status === F.st) && (!F.ef || eff(x) === F.ef) && inDate(x.at); };
+    var rows = [];
+    (function walk(pid, depth) {
+      kids(c, pid).forEach(function (x) {
+        var show = subIds(c, x.id).some(function (id) { return hit(c.items.filter(function (y) { return y.id === id; })[0]); });
+        if (!show) return;
+        var nk = kids(c, x.id).length, folded = F.fold[x.id] && !filtering;
+        rows.push('<tr><td style="padding-left:' + (12 + depth * 22) + 'px">' + (nk ? '<button class="tg" data-fold="' + x.id + '">' + (folded ? '▸' : '▾') + '</button> ' : '<span class="tg" style="display:inline-block"></span> ') + esc(x.name) + '</td><td>' + esc(x.en || '—') + '</td><td class="mono">' + esc(x.code) + '</td><td>' + x.order + '</td><td>' + pill(x.status) + '</td><td>' + pill(eff(x)) + '</td><td class="muted">' + (x.start || '—') + '</td><td class="muted">' + (x.end || '—') + '</td><td>' + esc(x.by) + '</td><td class="muted">' + esc(x.at) + '</td>' +
+          '<td class="ops"><button class="lk" data-addsub="' + x.id + '">添加子字典项</button><button class="lk" data-edititem="' + x.id + '">编辑</button><button class="lk" data-togitem="' + x.id + '">' + (x.status === '启用' ? '停用' : '启用') + '</button>' + (x.status === '停用' && !nk ? '<button class="lk" data-delitem="' + x.id + '" style="color:var(--crit)">删除</button>' : '') + '</td></tr>');
+        if (!folded) walk(x.id, depth + 1);
+      });
+    })('', 0);
+    main.innerHTML = '<div class="dc-h">' + esc(c.name) + ' · 字典项<span class="code">' + esc(c.code) + '</span>' + (c.status === '停用' ? pill('停用') : '') + '</div><div class="tw"><table class="tbl2"><thead><tr><th>字典项名称</th><th>英文名称</th><th>字典项编码</th><th>排序</th><th>启用状态</th><th>生效状态</th><th>生效时间</th><th>失效时间</th><th>创建人</th><th>创建时间</th><th>操作</th></tr></thead><tbody>' + (rows.join('') || '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:30px">暂无字典项</td></tr>') + '</tbody></table></div><div class="foot2"><span>共 ' + c.items.length + ' 条</span><span>停用上级时下级一起停用</span></div>';
+  }
+
+  /* ── 新增 / 编辑 ── */
+  function catForm(c) {
+    var m = TK.modal({ title: c ? '编辑字典分类' : '新增字典分类', width: 480, body: '<div class="fgrid">' +
+      '<div class="ff full"><span class="lh"><span class="req">字典分类名称</span></span><input data-k="name" maxlength="30" value="' + esc(c ? c.name : '') + '" placeholder="请输入"></div>' +
+      '<div class="ff full"><span class="lh"><span>字典分类英文名称</span></span><input data-k="en" maxlength="60" value="' + esc(c ? c.en : '') + '" placeholder="请输入"></div>' +
+      '<div class="ff full"><span class="lh"><span class="req">字典分类编码</span></span><input data-k="code" maxlength="30" value="' + esc(c ? c.code : '') + '" placeholder="字母、数字或下划线"' + (c ? ' disabled' : '') + '>' + (c ? '<span style="font-size:11.5px;color:var(--muted)">编码创建后不能修改</span>' : '') + '</div></div>',
+      foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">保存</button>' });
+    var v = function (k) { return m.body.querySelector('[data-k="' + k + '"]').value.trim(); };
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () {
+      if (!v('name')) return TK.toast('请输入字典分类名称');
+      if (D.cats.some(function (x) { return x !== c && x.name === v('name'); })) return TK.toast('字典分类名称已存在');
+      if (!c) {
+        if (!/^[A-Za-z0-9_]+$/.test(v('code'))) return TK.toast('编码只能包含字母、数字和下划线');
+        if (D.cats.some(function (x) { return x.code.toLowerCase() === v('code').toLowerCase(); })) return TK.toast('字典分类编码已存在');
+        D.cats.unshift({ id: TK.uid('DC'), name: v('name'), en: v('en'), code: v('code'), status: '启用', by: me(), at: now(), items: [] });
+      } else { c.name = v('name'); c.en = v('en'); }
+      persist(); m.close(); TK.toast('已保存'); render();
+    };
+  }
+  function itemForm(x, parentId) {
+    var c = catById(F.cat), par = parentId ? c.items.filter(function (y) { return y.id === parentId; })[0] : x && x.parentId ? c.items.filter(function (y) { return y.id === x.parentId; })[0] : null;
+    var m = TK.modal({ title: x ? '编辑字典项' : '新增字典项', width: 520, body: (par ? '<div class="scbar" style="margin:0 0 10px">上级字典项：<b>' + esc(par.name) + '</b></div>' : '') + '<div class="fgrid">' +
+      '<div class="ff"><span class="lh"><span class="req">字典项名称</span></span><input data-k="name" maxlength="30" value="' + esc(x ? x.name : '') + '" placeholder="请输入"></div>' +
+      '<div class="ff"><span class="lh"><span>英文名称</span></span><input data-k="en" maxlength="60" value="' + esc(x ? x.en : '') + '" placeholder="请输入"></div>' +
+      '<div class="ff"><span class="lh"><span class="req">字典项编码</span></span><input data-k="code" maxlength="30" value="' + esc(x ? x.code : '') + '" placeholder="同一上级下不能重复"' + (x ? ' disabled' : '') + '></div>' +
+      '<div class="ff"><span class="lh"><span class="req">排序</span></span><input data-k="order" type="number" min="1" value="' + (x ? x.order : kids(c, parentId || '').length + 1) + '"></div>' +
+      '<div class="ff"><span class="lh"><span>生效时间</span></span><input data-k="start" type="date" value="' + (x ? x.start : '') + '"></div>' +
+      '<div class="ff"><span class="lh"><span>失效时间</span></span><input data-k="end" type="date" value="' + (x ? x.end : '') + '"></div>' +
+      '<div class="ff full" style="font-size:11.5px;color:var(--muted)">不填生效时间即刻生效，不填失效时间长期有效</div></div>',
+      foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">保存</button>' });
+    var v = function (k) { return m.body.querySelector('[data-k="' + k + '"]').value.trim(); };
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () {
+      var pid = x ? x.parentId : parentId || '';
+      if (!v('name')) return TK.toast('请输入字典项名称');
+      if (!x && !v('code')) return TK.toast('请输入字典项编码');
+      if (!(+v('order') >= 1)) return TK.toast('排序需为正整数');
+      if (v('start') && v('end') && v('end') <= v('start')) return TK.toast('失效时间需晚于生效时间');
+      if (kids(c, pid).some(function (y) { return y !== x && y.name === v('name'); })) return TK.toast('同一上级下已有同名字典项');
+      if (!x && kids(c, pid).some(function (y) { return y.code === v('code'); })) return TK.toast('同一上级下字典项编码已存在');
+      var rec = x || { id: TK.uid(c.id + '-'), code: v('code'), parentId: pid, status: '启用', by: me(), at: now() };
+      rec.name = v('name'); rec.en = v('en'); rec.order = +v('order'); rec.start = v('start'); rec.end = v('end');
+      if (!x) c.items.push(rec);
+      persist(); m.close(); TK.toast('已保存'); render();
+    };
+  }
+
+  /* ── 导入 / 导出（CSV） ── */
+  var HEAD = ['字典分类编码', '字典分类名称', '父级字典项编码', '字典项编码', '字典项名称', '英文名称', '排序'];
+  function csvCell(s) { s = String(s == null ? '' : s); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+  function download(name, rows) {
+    var blob = new Blob(['﻿' + rows.map(function (r) { return r.map(csvCell).join(','); }).join('\n')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
+  function parseCsv(t) {
+    var rows = [], row = [], cell = '', q = false;
+    t = t.replace(/^﻿/, '');
+    for (var i = 0; i < t.length; i++) {
+      var ch = t[i];
+      if (q) { if (ch === '"') { if (t[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+      else if (ch === '"') q = true;
+      else if (ch === ',') { row.push(cell); cell = ''; }
+      else if (ch === '\n' || ch === '\r') { if (ch === '\r' && t[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+      else cell += ch;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(function (r) { return r.some(function (c) { return c.trim(); }); });
+  }
+  function exportAll() {
+    var rows = [HEAD];
+    D.cats.forEach(function (c) { c.items.forEach(function (x) { var p = x.parentId ? c.items.filter(function (y) { return y.id === x.parentId; })[0] : null; rows.push([c.code, c.name, p ? p.code : '', x.code, x.name, x.en, x.order]); }); });
+    download('字典数据_' + TK.fmt(new Date(), false) + '.csv', rows);
+  }
+  function importer() {
+    var step = 1, plan = null;
+    var d = TK.drawer({ title: '导入字典数据', width: 760, foot: true });
+    function stepsHTML() { return '<div class="steps">' + ['上传文件', '校验结果', '导入完成'].map(function (s, i) { return '<div class="' + (step === i + 1 ? 'on' : step > i + 1 ? 'done' : '') + '"><i>' + (step > i + 1 ? '✓' : i + 1) + '</i>' + s + '</div>'; }).join('') + '</div>'; }
+    function draw() {
+      if (step === 1) {
+        d.body.innerHTML = stepsHTML() + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="font-size:13px;font-weight:600">上传文件</span><span style="flex:1"></span><button class="btn-s" data-tpl>下载填写模板</button></div>' +
+          '<label class="drop" data-drop>选择文件上传<small>支持点击上传或将文件拖拽到此处</small><input type="file" accept=".csv" hidden data-file></label>' +
+          '<div class="note2"><b>导入说明</b><br>单次上传 1 个 .csv 文件（可用 Excel 另存为 CSV UTF-8），最多 5,000 条数据。<br>请使用下载的模板填写，不要修改表头名称和顺序。<br>字典项以「字典分类编码 + 父级字典项编码 + 字典项编码」唯一定位：已存在的更新名称、英文名称和排序，不存在的新增。<br>字典分类不存在时按「字典分类名称」新建；父级字典项须已存在或在文件中先出现。</div>';
+        d.foot.innerHTML = '<button class="btn-s" data-x>返回字典分类列表</button>';
+      } else if (step === 2) {
+        var errs = plan.rows.filter(function (r) { return r.err; });
+        d.body.innerHTML = stepsHTML() + '<div class="sum3"><div>新增<b>' + plan.add + '</b></div><div>更新<b>' + plan.upd + '</b></div><div>有问题<b style="color:' + (errs.length ? 'var(--crit)' : 'var(--ink)') + '">' + errs.length + '</b></div></div>' +
+          '<div style="max-height:52vh;overflow:auto"><table class="tbl2" style="min-width:0"><thead><tr><th>行</th><th>字典分类</th><th>父级编码</th><th>字典项编码</th><th>字典项名称</th><th>结果</th></tr></thead><tbody>' +
+          plan.rows.map(function (r) { return '<tr><td>' + r.line + '</td><td>' + esc(r.cat) + '</td><td class="mono">' + esc(r.pc || '—') + '</td><td class="mono">' + esc(r.code) + '</td><td>' + esc(r.name) + '</td><td>' + (r.err ? '<span style="color:var(--crit)">' + esc(r.err) + '</span>' : r.act) + '</td></tr>'; }).join('') + '</tbody></table></div>' +
+          (errs.length ? '<div class="note2" style="color:var(--crit)">有问题的行不会导入，可修改文件后重新上传；也可只导入没有问题的行。</div>' : '');
+        d.foot.innerHTML = '<button class="btn-s" data-re>重新上传</button><button class="btn" style="height:32px" data-go' + (plan.add + plan.upd ? '' : ' disabled') + '>导入 ' + (plan.add + plan.upd) + ' 条</button>';
+      } else {
+        d.body.innerHTML = stepsHTML() + '<div style="text-align:center;padding:40px 0"><div style="font-size:40px">✓</div><div style="font-size:15px;font-weight:600;margin:8px 0">导入完成</div><div style="font-size:12.5px;color:var(--muted)">新增 ' + plan.add + ' 条，更新 ' + plan.upd + ' 条' + (plan.rows.some(function (r) { return r.err; }) ? '，跳过有问题的 ' + plan.rows.filter(function (r) { return r.err; }).length + ' 条' : '') + '</div></div>';
+        d.foot.innerHTML = '<button class="btn" style="height:32px" data-x>返回字典分类列表</button>';
+      }
+    }
+    function check(text) {
+      var rows = parseCsv(text);
+      if (!rows.length || HEAD.some(function (h, i) { return (rows[0][i] || '').trim() !== h; })) { TK.toast('表头和模板不一致，请使用下载的模板'); return; }
+      rows = rows.slice(1);
+      if (!rows.length) { TK.toast('文件里没有数据'); return; }
+      if (rows.length > 5000) { TK.toast('最多支持 5,000 条数据'); return; }
+      var seen = {}, known = {}, out = [], add = 0, upd = 0;
+      D.cats.forEach(function (c) { c.items.forEach(function (x) { known[c.code + '|' + x.code] = 1; }); });
+      rows.forEach(function (r, i) {
+        var v = r.map(function (x) { return (x || '').trim(); }), cc = v[0], cn = v[1], pc = v[2], code = v[3], name = v[4];
+        var o = { line: i + 2, cat: cn || cc, pc: pc, code: code, name: name, raw: v };
+        var c = D.cats.filter(function (x) { return x.code === cc; })[0];
+        if (!cc || !code || !name) o.err = '字典分类编码、字典项编码、字典项名称必填';
+        else if (!c && !cn) o.err = '字典分类不存在，需填写字典分类名称以新建';
+        else if (v[6] && !(+v[6] >= 1)) o.err = '排序需为正整数';
+        else if (seen[cc + '|' + pc + '|' + code]) o.err = '与第 ' + seen[cc + '|' + pc + '|' + code] + ' 行重复';
+        else if (pc && !known[cc + '|' + pc]) o.err = '父级字典项不存在';
+        if (!o.err) {
+          seen[cc + '|' + pc + '|' + code] = o.line; known[cc + '|' + code] = 1;
+          var ex = c && c.items.filter(function (x) { var p = x.parentId ? c.items.filter(function (y) { return y.id === x.parentId; })[0] : null; return x.code === code && (p ? p.code : '') === pc; })[0];
+          o.act = ex ? '更新' : '新增'; ex ? upd++ : add++;
+        }
+        out.push(o);
+      });
+      plan = { rows: out, add: add, upd: upd }; step = 2; draw();
+    }
+    function apply() {
+      plan.rows.filter(function (r) { return !r.err; }).forEach(function (r) {
+        var v = r.raw, c = D.cats.filter(function (x) { return x.code === v[0]; })[0];
+        if (!c) { c = { id: TK.uid('DC'), name: v[1], en: '', code: v[0], status: '启用', by: me(), at: now(), items: [] }; D.cats.unshift(c); }
+        var par = v[2] ? c.items.filter(function (x) { return x.code === v[2]; })[0] : null, pid = par ? par.id : '';
+        var ex = c.items.filter(function (x) { return x.code === v[3] && x.parentId === pid; })[0];
+        if (ex) { ex.name = v[4]; ex.en = v[5]; if (v[6]) ex.order = +v[6]; }
+        else c.items.push({ id: TK.uid(c.id + '-'), name: v[4], en: v[5], code: v[3], order: +v[6] || kids(c, pid).length + 1, status: '启用', start: '', end: '', parentId: pid, by: me(), at: now() });
+      });
+      persist(); step = 3; draw(); render();
+    }
+    d.el.addEventListener('click', function (e) {
+      if (e.target.closest('[data-tpl]')) download('字典数据导入模板.csv', [HEAD, ['DM_DQ', '所在地区', '330000', '330300', '温州市', 'Wenzhou', '3']]);
+      else if (e.target.closest('[data-x]')) d.close();
+      else if (e.target.closest('[data-re]')) { step = 1; draw(); }
+      else if (e.target.closest('[data-go]')) apply();
+    });
+    function readFile(f) {
+      if (!f) return;
+      if (!/\.csv$/i.test(f.name)) { TK.toast('请上传 .csv 文件'); return; }
+      if (f.size > 10 * 1024 * 1024) { TK.toast('文件大小不超过 10MB'); return; }
+      var rd = new FileReader(); rd.onload = function () { check(String(rd.result)); }; rd.readAsText(f, 'utf-8');
+    }
+    d.el.addEventListener('change', function (e) { if (e.target.hasAttribute('data-file')) readFile(e.target.files[0]); });
+    d.el.addEventListener('dragover', function (e) { var z = e.target.closest('[data-drop]'); if (z) { e.preventDefault(); z.classList.add('over'); } });
+    d.el.addEventListener('dragleave', function (e) { var z = e.target.closest('[data-drop]'); if (z) z.classList.remove('over'); });
+    d.el.addEventListener('drop', function (e) { var z = e.target.closest('[data-drop]'); if (z) { e.preventDefault(); z.classList.remove('over'); readFile(e.dataTransfer.files[0]); } });
+    draw();
+  }
+
+  /* ── 事件 ── */
+  document.addEventListener('click', function (e) {
+    var t, c = F.cat ? catById(F.cat) : null, it = function (id) { return c.items.filter(function (x) { return x.id === id; })[0]; };
+    if ((t = e.target.closest('[data-page]'))) { F.page = +t.dataset.page; render(); }
+    else if (e.target.closest('[data-reset]')) { F.q = F.st = F.ef = F.a = F.b = ''; render(); }
+    else if (e.target.closest('[data-addcat]')) catForm(null);
+    else if ((t = e.target.closest('[data-editcat]'))) catForm(catById(t.dataset.editcat));
+    else if ((t = e.target.closest('[data-open]'))) { F.cat = t.dataset.open; F.q = F.st = F.ef = F.a = F.b = ''; render(); }
+    else if (e.target.closest('[data-back]')) { F.cat = null; F.q = F.st = F.ef = F.a = F.b = ''; render(); }
+    else if ((t = e.target.closest('[data-togcat]'))) {
+      var x = catById(t.dataset.togcat), go = function () { x.status = x.status === '启用' ? '停用' : '启用'; persist(); render(); };
+      if (x.status === '启用') TK.confirm('停用后「' + x.name + '」的字典项不再出现在各页面的选项中，确定停用吗？', go); else go();
+    }
+    else if ((t = e.target.closest('[data-delcat]'))) { var y = catById(t.dataset.delcat); TK.confirm('确定删除字典分类「' + y.name + '」吗？', function () { D.cats = D.cats.filter(function (z) { return z !== y; }); persist(); render(); }); }
+    else if (e.target.closest('[data-import]')) importer();
+    else if (e.target.closest('[data-export]')) exportAll();
+    else if (e.target.closest('[data-additem]')) itemForm(null, '');
+    else if ((t = e.target.closest('[data-addsub]'))) itemForm(null, t.dataset.addsub);
+    else if ((t = e.target.closest('[data-edititem]'))) itemForm(it(t.dataset.edititem));
+    else if ((t = e.target.closest('[data-fold]'))) { F.fold[t.dataset.fold] = !F.fold[t.dataset.fold]; render(); }
+    else if ((t = e.target.closest('[data-togitem]'))) {
+      var a = it(t.dataset.togitem);
+      if (a.status === '启用') { var ids = subIds(c, a.id), n = ids.length - 1; TK.confirm('停用「' + a.name + '」' + (n ? '及其 ' + n + ' 个下级字典项' : '') + '后不再出现在选项中，确定停用吗？', function () { c.items.forEach(function (z) { if (ids.indexOf(z.id) >= 0) z.status = '停用'; }); persist(); render(); }); }
+      else { var p = a.parentId && it(a.parentId); if (p && p.status === '停用') return TK.toast('上级字典项已停用，请先启用上级'); a.status = '启用'; persist(); render(); }
+    }
+    else if ((t = e.target.closest('[data-delitem]'))) { var b = it(t.dataset.delitem); TK.confirm('确定删除字典项「' + b.name + '」吗？', function () { c.items = c.items.filter(function (z) { return z !== b; }); persist(); render(); }); }
+  });
+  document.addEventListener('change', function (e) { var k = e.target.getAttribute('data-f'); if (k && k !== 'q') { F[k] = e.target.value; F.page = 1; render(); } });
+  document.addEventListener('input', function (e) { if (e.target.getAttribute('data-f') === 'q') { F.q = e.target.value.trim(); F.page = 1; var pos = e.target.selectionStart; render(); var i = document.querySelector('[data-f="q"]'); i.focus(); i.setSelectionRange(pos, pos); } });
+  render();
+})();
+</script>
+</body>
+</html>

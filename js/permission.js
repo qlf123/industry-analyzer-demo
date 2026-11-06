@@ -95,7 +95,6 @@
   function findById(arr, id) { return arr.find(function (o) { return o.id === id; }); }
 
   /* ── 引用解析 ── */
-  function majorOf(ctx, majorId) { return idx(ctx).majors[majorId]; }
   function klassOf(ctx, klassId) { return idx(ctx).klasses[klassId]; }
   function gradeOf(ctx, gradeId) { return idx(ctx).grades[gradeId]; }
   function roleOf(ctx, roleId) { return idx(ctx).roles[roleId]; }
@@ -160,6 +159,8 @@
       return accountInOrg(ctx, target, scopeOrgId);
     }
     if (dataType === 'teacherProfile') return accountInOrg(ctx, accountOf(ctx, target.accountId), scopeOrgId);
+    // 专业、班级是教务数据，不按组织隔离
+    if (dataType === 'major' || dataType === 'klass') return true;
     var desc = descendants(ctx, scopeOrgId);
     return targetOrgIds(ctx, target, dataType).some(function (t) { return t != null && desc.has(t); });
   }
@@ -169,10 +170,9 @@
     switch (dataType) {
       case 'org': return target.id;
       case 'account': return accountMainOrgId(target);
-      case 'major': return target.orgId;
+      case 'major': case 'klass': return null;   // 教务数据不挂组织
       case 'teacherProfile': return accountMainOrgId(accountOf(ctx, target.accountId));
-      case 'klass': return majorOf(ctx, target.majorId).orgId;
-      case 'student': case 'score': case 'internship': return majorOf(ctx, klassOfStudent(ctx, target).majorId).orgId;
+      case 'student': case 'score': case 'internship': return target.orgId;   // 学生本人的所属组织
       case 'resource': case 'content': case 'audit': return target.orgId;
       default: return target.orgId;
     }
@@ -243,6 +243,14 @@
   function hasPermInAssignment(ctx, assignment, code) { return assignmentPerms(ctx, assignment).has(code); }
 
   /* ── 范围判断 ── */
+  // 教学范围涉及的专业：直接授的专业 + 所授班级、课程的专业
+  function teachingScopeMajorIds(ctx, assignment) {
+    var ts = assignment.teachingScope || {}, set = new Set(ts.majorIds || []);
+    (ts.classIds || []).forEach(function (id) { var k = klassOf(ctx, id); if (k) set.add(k.majorId); });
+    (ts.courseIds || []).forEach(function (id) { var c = findById(ctx.courses, id); if (c) set.add(c.majorId); });
+    return set;
+  }
+
   function teachingScopeContainsClass(ctx, assignment, klassId) {
     var ts = assignment.teachingScope || {};
     if ((ts.classIds || []).indexOf(klassId) >= 0) return true;
@@ -292,21 +300,18 @@
       if (dataType === 'student' || dataType === 'score' || dataType === 'internship') {
         return teachingScopeContainsClass(ctx, assignment, target.klassId);
       }
+      if (dataType === 'major') return teachingScopeMajorIds(ctx, assignment).has(target.id);
       return false;
     }
 
-    // 专业负责人：本专业（演示未启用，但保留逻辑）
+    // 专业负责人：负责专业取教学范围里的专业（演示未启用，但保留逻辑）
     if (key === 'majorLead') {
-      var account = accountOf(ctx, assignment.accountId);
-      var leadMajorId = null;
-      (ctx.majors || []).forEach(function (m) {
-        // 简化：专业负责人默认覆盖其所属组织下的专业
-        if (accountInOrg(ctx, account, m.orgId)) leadMajorId = m.id;
-      });
+      var leadMajors = teachingScopeMajorIds(ctx, assignment);
       if (dataType === 'student' || dataType === 'score' || dataType === 'internship') {
-        return leadMajorId && klassOfStudent(ctx, target).majorId === leadMajorId;
+        return leadMajors.has(klassOfStudent(ctx, target).majorId);
       }
-      if (dataType === 'klass') return leadMajorId && target.majorId === leadMajorId;
+      if (dataType === 'klass') return leadMajors.has(target.majorId);
+      if (dataType === 'major') return leadMajors.has(target.id);
       if (dataType === 'teacherProfile') return target.accountId === assignment.accountId;
       return false;
     }
@@ -545,7 +550,6 @@
     var blockers = [];
     var I = idx(ctx);
     (I.children[orgId] || []).forEach(function (cid) { blockers.push({ type: '下级节点', id: cid, name: I.orgs[cid].name }); });
-    (ctx.majors || []).forEach(function (m) { if (m.orgId === orgId) blockers.push({ type: '专业', id: m.id, name: m.name }); });
     (ctx.accounts || []).forEach(function (ac) {
       if (accountMainOrgId(ac) === orgId || accountPartOrgIds(ac).indexOf(orgId) >= 0) blockers.push({ type: '账号', id: ac.id, name: ac.name });
     });
@@ -619,17 +623,7 @@
       if (!isSuper(ctx, granter) && !activeAssignments(ctx, granter).some(function (a) { return hasPermInAssignment(ctx, a, CODES.teachScopeGrant); })) {
         return { ok: false, reason: '无教学范围授予权限' };
       }
-      if (!isSuper(ctx, granter)) {
-        var classes = assignment.teachingScope.classIds || [];
-        for (var i = 0; i < classes.length; i++) {
-          var klass = klassOf(ctx, classes[i]);
-          var org = majorOf(ctx, klass.majorId).orgId;
-          var ok = activeAssignments(ctx, granter).some(function (a) {
-            return hasPermInAssignment(ctx, a, CODES.teachScopeGrant) && descendants(ctx, a.scopeOrgIds[0]).has(org);
-          });
-          if (!ok) return { ok: false, reason: '无权授予班级 ' + klass.name + ' 的教学范围' };
-        }
-      }
+      // 班级不挂组织：有教学范围授予权限即可授任意班级
       return { ok: true, reason: null };
     }
 
@@ -646,18 +640,7 @@
           return { ok: false, reason: '节点 ' + (o ? o.name : scopeIds[j]) + ' 超出自身授权范围' };
         }
       }
-      var classIds = assignment.scopeClassIds || [];
-      var ownClasses = new Set();
-      activeAssignments(ctx, granter).forEach(function (a) {
-        (a.scopeOrgIds || []).forEach(function (oid) {
-          (ctx.klasses || []).forEach(function (k) {
-            if (descendants(ctx, oid).has(majorOf(ctx, k.majorId).orgId)) ownClasses.add(k.id);
-          });
-        });
-      });
-      for (var k = 0; k < classIds.length; k++) {
-        if (!ownClasses.has(classIds[k])) return { ok: false, reason: '班级超出自身授权范围' };
-      }
+      // 班级不挂组织：指定班级不再按组织限制
     }
     return { ok: true, reason: null };
   }

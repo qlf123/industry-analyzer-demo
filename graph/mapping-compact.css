@@ -1,0 +1,12 @@
+body{font-size:12px}
+.platform-brand strong{font-size:12px}.platform-brand small{font-size:10px}.platform-nav-item{font-size:12px}.nav-section-title{font-size:9px}
+.app-shell{padding-left:20px;padding-right:20px;padding-bottom:18px}.page-heading{padding-top:20px;padding-bottom:13px}.eyebrow{font-size:8px;margin-bottom:5px}.page-heading h1{font-size:21px;margin-bottom:5px}.page-heading p{font-size:11px;line-height:1.5}.heading-meta strong{font-size:13px}.heading-meta small{font-size:9px}
+.status-tabs{margin-bottom:10px;padding:4px;border-radius:8px}.status-tab{padding:7px 14px;font-size:12px}.status-tab b{font-size:10px;padding:2px 5px}
+.table-toolbar{min-height:50px;padding:9px 13px}.toolbar-note{font-size:10px}.toolbar-note strong{font-size:15px}.toolbar-actions{gap:6px}.search{width:200px;height:31px}.search input{height:29px;font-size:11px}select,.ghost-button,.primary-button{height:31px;font-size:11px;padding:0 8px}
+.table-head{min-height:42px;padding:0 13px;font-size:10px}.row-content{padding:10px 13px;min-height:70px}.source-name,.target-name{font-size:12px;line-height:1.35}.source-meta,.target-meta{font-size:10px;margin-top:2px}.relation-select{height:31px;font-size:11px;padding-left:8px}.level-select{height:29px;font-size:11px}.confidence{gap:6px}.confidence-meter{width:68px;height:6px}.confidence strong{font-size:12px}.ai-evidence{font-size:10px;line-height:1.45}.origin{font-size:10px;line-height:1.35}.source-chip{font-size:9px;padding:2px 5px}.confirm-button,.reject-button{padding:7px 9px;font-size:11px}.selected-check{width:13px;height:13px}.select-cell{display:flex;align-items:center;justify-content:center}.head-select{display:flex;align-items:center;justify-content:center}.reject-box{padding:12px}.reject-box h3{font-size:12px}
+.pagination-bar{min-height:48px;padding:0 13px;font-size:10px}.pagination-controls{gap:6px}.pagination-controls select{height:28px}.page-button,.page-number{height:27px;min-width:27px;font-size:11px}
+@media(max-width:1100px){.app-shell{padding-left:14px;padding-right:14px}}
+
+/* 知识体系/能力图谱 列紧凑样式 */
+.ks-name,.ag-name{font-size:10px;line-height:1.35}
+.head-ks,.head-ag{font-size:9px}

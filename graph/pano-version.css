@@ -1,0 +1,118 @@
+/* ===== 全景图谱版本管理（版本栏 / 同步预览 / 草稿 / 版本记录 / 悬挂资源池） ===== */
+.pv-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0 10px;font-size:12px;color:#60718a}
+.pv-chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border:1px solid #e2e8f0;border-radius:13px;background:#fff;color:#41536f;white-space:nowrap}
+.pv-chip b{color:#1f2d46;font-weight:600}
+.pv-chip.ver{border-color:#c9c2ef;background:#eef0ff;color:#5149e9}
+.pv-chip.ver b{color:#5149e9}
+.pv-chip.draft{border-color:#fedf89;background:#fffaeb;color:#b54708;cursor:pointer}
+.pv-chip.orphan{border-color:#fecdca;background:#fef3f2;color:#b42318;cursor:pointer}
+.pv-chip.src{cursor:default}
+.pv-chip .new{color:#dc6803;font-weight:600}
+.pv-chip .ok{color:#16a34a}
+.pv-tip{color:#8b99ac}
+.pv-spacer{flex:1}
+.pv-btn{position:relative;height:30px;padding:0 14px;border:1px solid #dfe6ef;border-radius:6px;background:#fff;color:#41536f;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.pv-btn:hover{border-color:#5149e9;color:#5149e9}
+.pv-btn.pri{background:#5149e9;border-color:#5149e9;color:#fff}
+.pv-btn.pri:hover{color:#fff;opacity:.9}
+.pv-btn.danger:hover{border-color:#c72c2a;color:#c72c2a}
+.pv-btn:disabled{opacity:.45;cursor:not-allowed}
+.pv-dot{position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#f04438;color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center;box-shadow:0 0 0 2px #fff}
+
+.pv-mask{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(31,45,70,.32);padding:20px}
+.pv-mask.show{display:flex}
+.pv-dialog{width:min(860px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 18px 48px rgba(31,45,70,.18);overflow:hidden}
+.pv-dialog.sm{width:min(480px,100%)}
+.pv-head{padding:18px 24px 12px;border-bottom:1px solid #edf1f5}
+.pv-head-top{display:flex;align-items:center;gap:10px}
+.pv-head h2{margin:0;font-size:17px;color:#1f2d46}
+.pv-close{margin-left:auto;border:0;background:none;font-size:22px;color:#8b99ac;cursor:pointer;line-height:1}
+.pv-sub{margin-top:6px;font-size:12px;color:#8b99ac;line-height:1.7}
+.pv-body{flex:1;overflow-y:auto;padding:16px 24px;background:#fafbfd;display:flex;flex-direction:column;gap:14px}
+.pv-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 24px;border-top:1px solid #edf1f5;background:#fff}
+.pv-foot .pv-spacer{flex:1}
+.pv-foot-note{font-size:12px;color:#8b99ac}
+
+.pv-sec{border:1px solid #e2e8f0;border-radius:12px;background:#fff;padding:12px 16px}
+.pv-sec h3{margin:0 0 8px;font-size:14px;color:#1f2d46;display:flex;align-items:center;gap:8px}
+.pv-sec h3 .cnt{font-size:12px;font-weight:400;color:#8b99ac}
+.pv-sec-desc{font-size:12px;color:#8b99ac;margin:-2px 0 8px;line-height:1.6}
+.pv-src-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px dashed #edf1f5;font-size:13px;color:#41536f}
+.pv-src-row:first-of-type{border-top:0}
+.pv-src-row input{accent-color:#5149e9}
+.pv-src-row .layer{font-size:11px;padding:1px 7px;border-radius:5px;background:#f2f4f7;color:#60718a}
+.pv-src-row .arrow{color:#8b99ac}
+.pv-src-row .ver-new{color:#067647;font-weight:600}
+.pv-src-row .latest{margin-left:auto;font-size:12px;color:#8b99ac}
+
+.pv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.pv-stat{border:1px solid #edf1f5;border-radius:8px;padding:8px 10px;background:#fbfcfe}
+.pv-stat b{display:block;font-size:18px;color:#1f2d46;font-variant-numeric:tabular-nums}
+.pv-stat span{font-size:12px;color:#8b99ac}
+.pv-stat.warn b{color:#dc6803}
+.pv-stat.bad b{color:#c72c2a}
+
+.pv-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid #f2f4f7;font-size:13px;color:#41536f;line-height:1.6}
+.pv-item:first-of-type{border-top:0}
+.pv-item .main{flex:1;min-width:0}
+.pv-item .name{color:#1f2d46;font-weight:600}
+.pv-item .meta{font-size:12px;color:#8b99ac}
+.pv-item .acts{display:flex;gap:6px;flex-shrink:0;align-items:center}
+.pv-tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:5px;margin-right:6px;vertical-align:1px}
+.pv-tag.add{color:#067647;background:#ecfdf3}
+.pv-tag.mod{color:#5149e9;background:#eef0ff}
+.pv-tag.del{color:#b42318;background:#fef3f2}
+.pv-tag.lv{color:#b54708;background:#fffaeb}
+.pv-tag.res{color:#6941c6;background:#f4f3ff}
+.pv-act{border:1px solid #dfe6ef;background:#fff;color:#41536f;border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.pv-act:hover{border-color:#5149e9;color:#5149e9}
+.pv-act.on{background:#12b76a;border-color:#12b76a;color:#fff}
+.pv-act.on.gray{background:#f2f4f7;border-color:#d0d5dd;color:#667085}
+.pv-done{font-size:12px;color:#16a34a;white-space:nowrap}
+.pv-sel{height:26px;border:1px solid #c9c2ef;border-radius:6px;font-size:12px;padding:0 6px;font-family:inherit;max-width:200px}
+.pv-empty{padding:16px 0;text-align:center;color:#8b99ac;font-size:13px}
+.pv-note{font-size:12px;color:#b54708;background:#fffaeb;border-radius:6px;padding:8px 10px;line-height:1.7}
+.pv-note.info{color:#41536f;background:#f2f4f7}
+
+.pv-ver{border:1px solid #e2e8f0;border-radius:12px;background:#fff;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.pv-ver.cur{border-color:#c9c2ef;box-shadow:inset 3px 0 0 #5149e9}
+.pv-ver-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pv-ver-no{font-size:15px;font-weight:700;color:#1f2d46}
+.pv-ver-cur{font-size:11px;font-weight:600;color:#5149e9;background:#eef0ff;border-radius:10px;padding:1px 8px}
+.pv-ver-meta{font-size:12px;color:#8b99ac}
+.pv-ver-top .acts{margin-left:auto;display:flex;gap:6px}
+.pv-manifest{display:flex;flex-wrap:wrap;gap:6px}
+.pv-manifest span{font-size:12px;padding:1px 8px;border:1px solid #e2e8f0;border-radius:10px;background:#f7f9fc;color:#41536f}
+.pv-ver-sum{font-size:12px;color:#41536f}
+.pv-ver-sum b{color:#1f2d46}
+.pv-diff{border-top:1px dashed #edf1f5;padding-top:8px;font-size:12px;color:#41536f;line-height:1.9}
+.pv-diff .chg{color:#dc6803;font-weight:600}
+
+/* 专业切换（发布单元） */
+.pv-major{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#60718a}
+.pv-major select{height:26px;border:1px solid #c9c2ef;border-radius:13px;padding:0 8px;font-size:12px;color:#5149e9;background:#fff;font-family:inherit;font-weight:600}
+.pv-chip.off{color:#98a2b3;background:#f9fafb;border-style:dashed}
+/* 发布前校验 */
+.pv-check{border:1px solid #edf1f5;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:13px;color:#41536f}
+.pv-check-top{display:flex;align-items:center;gap:8px}
+.pv-check-top .meta{margin-left:auto;font-size:12px;color:#8b99ac}
+.pv-check-top .meta a{color:#5149e9;text-decoration:none}
+.pv-check-ic{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.pv-check.ok .pv-check-ic{background:#12b76a}
+.pv-check.bad{border-color:#fecdca;background:#fffbfa}
+.pv-check.bad .pv-check-ic{background:#f04438}
+.pv-check.warn .pv-check-ic{background:#f79009}
+.pv-check-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 0 26px;font-size:12px}
+.pv-check-item .meta{color:#8b99ac}
+.pv-input{width:100%;height:32px;border:1px solid #dfe6ef;border-radius:6px;padding:0 10px;font-size:13px;font-family:inherit;box-sizing:border-box}
+
+/* 子图 */
+.sg-ctrl{display:flex;align-items:center;gap:8px;margin-left:16px;flex-wrap:wrap}
+.sg-field{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#60718a;white-space:nowrap}
+.sg-field select{height:30px;border:1px solid #dfe6ef;border-radius:6px;padding:0 8px;font-size:13px;font-family:inherit;color:#1f2d46;background:#fff;max-width:240px}
+.sg-role select{border-style:dashed}
+.sg-note{position:fixed;right:16px;bottom:16px;z-index:30;display:none;max-width:60%;background:rgba(255,255,255,.95);border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:12px;color:#41536f;line-height:1.8;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.sg-note b{color:#c72c2a}
+.sg-note a{color:#5149e9;text-decoration:none;margin-left:4px}
+.page-heading h1#graphTitle{white-space:nowrap;margin-bottom:0}
+.pv-btn.pri.danger{background:#d92d20;border-color:#d92d20}

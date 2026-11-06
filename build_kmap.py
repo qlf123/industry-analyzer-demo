@@ -32,19 +32,30 @@ def from_knowledge_system():
     seen_nodes = set()
     for mid, f in A.KNOWLEDGE_FILES.items():
         wb = openpyxl.load_workbook(os.path.join(HERE, f), read_only=True)
-        level = {}
+        level, attrs = {}, defaultdict(list)   # 路径 → 层级；路径 → 节点属性 [[属性名称, 属性值], …]
+        cur = None
         for r in list(wb["节点属性数据"].iter_rows(values_only=True))[3:]:
-            path, info = (list(r) + [None] * 3)[0], (list(r) + [None] * 3)[2]
-            if not path: continue
-            kv = {}
-            for part in re.split("[；;]", str(info or "")):
-                if re.search("[:：]", part):
-                    k, v = re.split("[:：]", part, 1); kv[k.strip()] = v.strip()
-            level[str(path).strip()] = kv.get("层级") or kv.get("类型")
-        kps = defaultdict(list)   # 技能规范路径 → 知识点名称
+            r = list(r) + [None] * 6
+            path, info = r[0], r[2]
+            if path:
+                cur = str(path).strip()
+                kv = {}
+                for part in re.split("[；;]", str(info or "")):
+                    if re.search("[:：]", part):
+                        k, v = re.split("[:：]", part, 1); kv[k.strip()] = v.strip()
+                level[cur] = kv.get("层级") or kv.get("类型")
+                if kv.get("子类型"): attrs[cur].append(["子类型", kv["子类型"]])
+            # 一个节点有多个属性时向下多行填写（路径列为空的行属于上一个节点）
+            if cur and r[3] and r[4] and not str(r[3]).startswith("company_"): attrs[cur].append([str(r[3]).strip(), str(r[4]).strip()])
+        kps = defaultdict(list)   # 技能规范路径 → [(知识点名称, 属性)]
+        cur = None
         for r in list(wb["知识点数据"].iter_rows(values_only=True))[3:]:
-            path, name = (list(r) + [None] * 2)[:2]
-            if path and name: kps[str(path).strip()].append(str(name).strip())
+            r = list(r) + [None] * 6
+            if r[0] and r[1]:
+                cur = [str(r[1]).strip(), []]; kps[str(r[0]).strip()].append(cur)
+            elif r[1] and cur is not None and not r[0]:
+                cur = None   # 不应出现：知识点必须带路径
+            if cur is not None and r[3] and r[4]: cur[1].append([str(r[3]).strip(), str(r[4]).strip()])
         skill_paths = [p for p, l in level.items() if l == "技能规范"]
         # 映射：只计已确认、直接 / 部分支撑（演示环境按 data_assess 的设置把草稿视为已确认）
         maps = json.load(open(os.path.join(HERE, A.MAPPING_FILES[mid]), encoding="utf-8"))
@@ -73,11 +84,11 @@ def from_knowledge_system():
                 kind = level[cp]
                 if kind not in CHILD_KINDS: continue
                 cid = nid("N", cp)
-                if cid not in seen_nodes: SN.append((cid, kind, cp.split("--")[-1])); seen_nodes.add(cid)
+                if cid not in seen_nodes: SN.append((cid, kind, cp.split("--")[-1], attrs.get(cp, []))); seen_nodes.add(cid)
                 SC.append((kid, cid))
-            for i, name in enumerate(kps.get(sp, [])):
+            for i, (name, kattrs) in enumerate(kps.get(sp, [])):
                 cid = nid("P", sp + "|" + name + "|" + str(i))
-                if cid not in seen_nodes: SN.append((cid, "知识点", name)); seen_nodes.add(cid)
+                if cid not in seen_nodes: SN.append((cid, "知识点", name, kattrs)); seen_nodes.add(cid)
                 SC.append((kid, cid))
     return SK, AS, SN, SC, KS
 
@@ -86,7 +97,8 @@ if getattr(K, "SKILL_SOURCE", "") == "knowledge_system":
 else:
     SKILLS_SRC, ABILITY_SKILL_SRC, SKILL_NODES_SRC, SKILL_CHILD_SRC, SKILL_KS = K.SKILLS, K.ABILITY_SKILL, K.SKILL_NODES, K.SKILL_CHILD, {}
 skills = [{"id": i, "name": n} for i, n in SKILLS_SRC]
-nodes = [{"id": i, "kind": k, "name": n} for i, k, n in SKILL_NODES_SRC]
+# 末级节点（知识点 / 操作步骤 / 标准 / 案例）带上知识体系里的节点属性，详情面板展示
+nodes = [dict({"id": x[0], "kind": x[1], "name": x[2]}, **({"attrs": x[3]} if len(x) > 3 and x[3] else {})) for x in SKILL_NODES_SRC]
 for k in skills:
     if k["id"] in SKILL_KS: k["ks"] = SKILL_KS[k["id"]]
 

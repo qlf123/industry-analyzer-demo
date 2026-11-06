@@ -76,10 +76,10 @@
     setTimeout(function () { t.remove(); }, 2600);
   }
 
-  function homeworkOrgId(h) {
-    var k = klassById(h.klassId);
-    var m = k ? majorById(k.majorId) : null;
-    return m ? m.orgId : null;
+  // 审计记录的组织取学生本人的所属组织
+  function homeworkOrgId() {
+    var s = identity.account.studentId ? byId('students', identity.account.studentId) : null;
+    return s ? s.orgId : null;
   }
 
   function render() {

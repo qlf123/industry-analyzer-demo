@@ -31,6 +31,9 @@
 .wb-hero .sub{font-size:13px;line-height:22px;color:#88859E;max-width:520px;margin-top:12px}
 /* 底部输入区 */
 .wb-input{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding:0 24px 32px}
+.wb-try{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:#99a1af}
+.wb-try button{height:26px;padding:0 10px;border-radius:13px;border:1px solid #e6e4fb;background:#fff;color:#45556c;font-size:12px;cursor:pointer}
+.wb-try button:hover{border-color:#a5a1f5;color:#6366f1}
 .wb-chips{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;justify-content:center}
 .wb-chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:12px;cursor:pointer;user-select:none;
   background:#f6f6fa;color:#62748e;border:1px solid transparent;transition:all .15s}
@@ -74,6 +77,27 @@
 .ht-kids>.ht-node:only-child::after{display:none}
 .wb-prep .kids .k{height:22px;padding:0 9px;border-radius:6px;font-size:11px;background:#fff;border:1px solid #e6e4fb;color:#45556c;display:inline-flex;align-items:center}
 .wb-prep .kids .k em{font-style:normal;color:#b0b5bd;margin-right:3px}
+/* 选择备课范围（从行业 / 子行业 / 岗位等大范围节点带入时） */
+.sc-head{font-size:13px;color:#364153;margin-bottom:8px;line-height:1.6}
+.sc-head b{color:#6366f1;font-weight:600}
+.sc-tools{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sc-tools input{flex:1;height:30px;border:1px solid #e6e4fb;border-radius:8px;padding:0 10px;font-size:12.5px;outline:none;background:#fff}
+.sc-tools input:focus{border-color:#a5a1f5}
+.sc-tools .cnt{font-size:12px;color:#62748e;white-space:nowrap}.sc-tools .cnt b{color:#6366f1}
+.sc-tree{max-height:320px;overflow:auto;background:#fff;border:1px solid #eeecfb;border-radius:8px;padding:6px 0}
+.sc-row{display:flex;align-items:center;gap:6px;min-height:28px;padding:0 10px;font-size:12.5px;color:#364153;cursor:default}
+.sc-row:hover{background:#f7f6ff}
+.sc-row .car{width:16px;color:#8b87d9;cursor:pointer;flex:0 0 auto;text-align:center;font-size:13px;line-height:1}
+.sc-row input{margin:0;flex:0 0 auto;accent-color:#6366f1;cursor:pointer}
+.sc-row em{font-style:normal;font-size:10px;border-radius:3px;padding:0 4px;line-height:16px;color:#fff;flex:0 0 auto}
+.sc-row .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-row .m{font-size:11px;color:#99a1af;flex:0 0 auto}
+.sc-row mark{background:#fff3c4;color:inherit;padding:0}
+.sc-empty{padding:16px;text-align:center;font-size:12px;color:#99a1af}
+.sc-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:10px}
+.sc-foot .tip{flex:1;font-size:11.5px;color:#99a1af}
+.sc-ok{height:30px;padding:0 16px;border-radius:8px;border:none;background:#6366f1;color:#fff;font-size:12.5px;cursor:pointer}
+.sc-ok:disabled{background:#c7c9f9;cursor:not-allowed}
 .wb-box{position:relative;width:100%;max-width:780px;border:1px solid #c9c4f7;background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(99,102,241,.08)}
 .wb-files{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px 0}
 .wb-file{display:flex;align-items:center;gap:6px;background:#f5f3ff;border:1px solid #e0dffc;border-radius:8px;padding:5px 9px}
@@ -88,6 +112,9 @@
 .wb-plus:hover{background:#5458e8}
 .wb-tool{height:26px;padding:0 10px;border-radius:999px;font-size:11px;display:inline-flex;align-items:center;gap:2px;cursor:pointer;background:#fff;border:1px solid #e5e7eb;color:#62748e}
 .wb-tool b{font-weight:500;color:#6366f1}
+select.wb-tool{max-width:220px;outline:none;appearance:auto}
+.sc-skip{height:30px;padding:0 14px;border-radius:8px;border:1px solid #e6e4fb;background:#fff;color:#6366f1;font-size:12.5px;cursor:pointer}
+.sc-skip:hover{border-color:#a5a1f5}
 .wb-tool:hover{border-color:#6366f1}
 .wb-send-btn{width:32px;height:32px;border-radius:50%;background:#6366f1;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .wb-send-btn:disabled{background:#c7c9f0;cursor:not-allowed}
@@ -137,6 +164,8 @@
 .up-f .c{background:#fff;border:1px solid #dcdfe6;color:#364153}.up-f .ok{background:#6366f1;border:1px solid #6366f1;color:#fff}
 /* 任务过程时间线 */
 .flow{width:100%;max-width:640px;margin:0 auto;padding:20px 24px 60px}
+.fq{display:flex;justify-content:flex-end;margin-bottom:16px}
+.fq span{max-width:72%;background:#6366f1;color:#fff;border-radius:12px 12px 2px 12px;padding:9px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap}
 .fs{display:flex;gap:12px;margin-bottom:14px}
 .fs .av{width:22px;height:22px;border-radius:50%;background:#6366f1;color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 22px;margin-top:1px}
 .fs .av svg{width:12px;height:12px}
@@ -211,6 +240,33 @@
 .ps .rw{display:flex;align-items:center;justify-content:space-between;min-height:24px;font-size:12.5px;color:#0A0A0A}
 .ps .sub{font-size:11.5px;color:#6A7282;line-height:19px}
 .ps .sub.f{padding-left:4px}
+/* 左侧菜单下半部分：任务列表 */
+#lnav .ltasks{flex:1 1 auto;min-height:140px;display:flex;flex-direction:column;border-top:1px solid var(--rule-2);margin-top:10px;padding:10px 10px 6px;overflow:hidden}
+#lnav .ltasks .lth{display:flex;align-items:center;gap:6px;padding:0 10px 6px;font-size:12px;font-weight:600;color:var(--muted)}
+#lnav .ltasks .lth .n{font-weight:400}
+#lnav .ltasks .lth .sp{flex:1}
+#lnav .ltasks .lth button{border:0;background:none;color:var(--brand-ink);font:inherit;font-size:12px;cursor:pointer;padding:0}
+#lnav .ltl{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+#lnav .lti{position:relative;display:block;width:100%;text-align:left;border:0;background:none;border-radius:8px;padding:8px 26px 8px 10px;cursor:pointer;font:inherit;color:var(--ink-2)}
+#lnav .lti:hover{background:var(--rule-2)}
+#lnav .lti.on{background:var(--brand-soft);color:var(--brand-ink)}
+#lnav .lti .t{display:flex;align-items:center;gap:7px;font-size:12.5px;min-width:0}
+#lnav .lti .t .tx{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lnav .lti .t input{flex:1;min-width:0;font:inherit;font-size:12.5px;color:var(--ink);background:var(--card);border:1px solid var(--brand);border-radius:6px;padding:2px 6px;outline:none;box-shadow:0 0 0 2px var(--brand-soft)}
+#lnav .lti.editing .x{display:none}
+#lnav .lti .d{width:6px;height:6px;border-radius:50%;flex:none}
+#lnav .lti .x{position:absolute;right:4px;top:50%;margin-top:-10px;width:20px;height:20px;border-radius:5px;display:none;place-items:center;color:var(--muted);font-size:14px;line-height:1;cursor:pointer}
+#lnav .lti .x:hover{background:var(--card);color:var(--ink)}
+#lnav .lti:hover .x,#lnav .lti.menu .x,#lnav .lti.on .x{display:grid}
+#lnav .lti .pin{font-size:10px;color:var(--brand-ink);margin-right:3px}
+.tpop{position:fixed;z-index:600;background:var(--card);border:1px solid var(--rule);border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.12);padding:4px;min-width:150px}
+.tpop button{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;font:inherit;font-size:12.5px;color:var(--ink-2);padding:7px 10px;border-radius:7px;cursor:pointer;text-align:left}
+.tpop button:hover{background:var(--rule-2);color:var(--ink)}
+.tpop button.del{color:var(--crit)}
+.tpop button:disabled{color:var(--muted);cursor:not-allowed;background:none}
+.tpop .sep{height:1px;background:var(--rule-2);margin:4px 2px}
+#lnav .lte{font-size:12px;color:var(--muted);padding:6px 10px;line-height:1.6}
+@media (max-width:1000px){#lnav .ltasks{display:none}}
 </style>
 </head>
 <body>
@@ -236,10 +292,13 @@
           <div class="wb-chips" id="wbChips"></div>
           <div class="wb-prep" id="wbPrep" hidden>
             <div class="ph"><span class="t">带入备课</span><button class="x" id="wbPrepClose" type="button" title="移除带入内容">×</button></div>
+            <div id="wbScope" hidden></div>
+            <div id="wbPrepBody">
             <div class="sum-row"><div class="sum" id="wbPrepSum"></div>
               <button class="tb" data-ht="all" type="button">全部展开</button><button class="tb" data-ht="one" type="button">收起到一级</button></div>
             <div class="htree" id="wbPrepTree"></div>
             <div class="sum" id="wbPrepKs" style="margin:8px 0 0"></div>
+            </div>
           </div>
           <div class="wb-box">
             <div class="wb-files" id="wbFiles" hidden></div>
@@ -249,6 +308,7 @@
                 <button class="wb-plus" id="wbUpload" type="button" title="添加参考文件" aria-label="添加参考文件">+</button>
                 <button class="wb-tool" id="wbLesson" type="button" hidden>教案：<b id="wbLessonVal"></b> ▾</button>
                 <button class="wb-tool" id="wbImgCfg" type="button" hidden>图片：<b id="wbImgVal"></b> ▾</button>
+                <select class="wb-tool" id="wbSess" title="本次备课的课次，可以先不选"></select>
               </div>
               <button class="wb-send-btn" id="wbSend" type="button" disabled title="发送" aria-label="发送">
                 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L7 9M14 2l-4.5 12L7 9l-5-2.5L14 2z"/></svg>
@@ -265,6 +325,7 @@
               <div class="field"><div class="pt">图片比例</div><select id="wbImgRatio"></select></div>
             </div>
           </div>
+          <div class="wb-try" id="wbTry" hidden></div>
         </div>
         <!-- 任务过程 -->
         <div class="flow" id="wbFlow" hidden></div>
@@ -294,6 +355,8 @@
 <script src="js/mock-data.js"></script>
 <script src="js/permission.js"></script>
 <script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
 <script>
 (function () {
   'use strict';
@@ -391,11 +454,49 @@
   function extTag(n) { return '<span class="ext" style="background:' + extStyle(n) + '">' + esc((n.split('.').pop() || '').slice(0, 3).toUpperCase()) + '</span>'; }
 
   /* ═══ 首页：输入区 ═══ */
+  /* ── 本次备课的课次：可以先不选；只列本人负责的课程计划下的课次 ── */
+  var chosenSess = null;
+  function myName() { return currentUserName(); }
+  function renderSess() {
+    var sel = $('#wbSess');
+    if (!window.TK || (prep && prep.session)) { sel.hidden = true; return; }   // 从课次「去备课」带入时课次已定
+    var S = TK.load(), me = myName(), cls = function (id) { return (S.classes.find(function (k) { return k.id === id; }) || {}).name || ''; };
+    var plans = S.plans.filter(function (p) { return p.teacher === me; });
+    sel.hidden = false;
+    sel.innerHTML = '<option value="">课次：暂不关联</option>' + plans.map(function (p) {
+      var cs = S.courses.filter(function (c) { return c.planId === p.id; });
+      return cs.length ? '<optgroup label="' + esc(p.course + ' · ' + cls(p.classId)) + '">' + cs.map(function (c) {
+        return '<option value="' + esc(c.id) + '" data-plan="' + esc(p.course + ' · ' + cls(p.classId)) + '"' + (chosenSess && chosenSess.id === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</optgroup>' : '';
+    }).join('') + '<option value="__new">＋ 去新建课次</option>';
+  }
+  $('#wbSess').addEventListener('change', function () {
+    if (this.value === '__new') { location.href = UI.link('teacher-tasks.html'); return; }
+    var o = this.options[this.selectedIndex];
+    chosenSess = this.value ? { id: this.value, name: o.textContent, plan: o.getAttribute('data-plan') } : null;
+    if (prep) renderPrep(prep);
+  });
+  // 带入内容里的技能（未选课次时，资源包记下这些技能，之后关联课次再用）
+  function prepSkillIds() {
+    var out = [];
+    (function walk(n) { if (!n) return; if (n.type === '技能' && TK.kn().skill[n.id] && out.indexOf(n.id) < 0) out.push(n.id); (n.children || []).forEach(walk); })(prep && prep.ks && prep.ks.tree);
+    return out;
+  }
+  // 输入框下的「试试」：点一下填入需求，演示直接生成和范围过大两种情况
+  var TRY = ['帮我做一个规范化导游讲解与服务流程执行的课件', '帮我做一份导游业务课程的课件', '给我讲讲旅游行业的发展趋势，做个课件'];
+  function renderTry() {
+    $('#wbTry').hidden = !!prep || state.selected.indexOf('课件生成') < 0;
+    $('#wbTry').innerHTML = '试试：' + TRY.map(function (s, i) { return '<button type="button" data-try="' + i + '">' + esc(s) + '</button>'; }).join('');
+  }
+  $('#wbTry').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-try]'); if (!b) return;
+    var ta = $('#wbTa'); ta.value = TRY[+b.getAttribute('data-try')]; ta.dispatchEvent(new Event('input')); ta.focus();
+  });
   function renderChips() {
+    renderTry();
     $('#wbChips').innerHTML = TYPES.map(function (t) {
       return '<span class="wb-chip' + (state.selected.indexOf(t) >= 0 ? ' on' : '') + '" data-t="' + esc(t) + '"><span class="dot"></span>' + esc(t) + '</span>';
     }).join('');
-    $('#wbTa').placeholder = PLACEHOLDER[state.selected[0]] || PLACEHOLDER['课件生成'];
+    $('#wbTa').placeholder = prep && prep.scope ? '请先在上方选择本次备课范围' : (PLACEHOLDER[state.selected[0]] || PLACEHOLDER['课件生成']);
   }
   function renderTools() {
     $('#wbLesson').hidden = state.selected.indexOf('教案生成') < 0;
@@ -403,7 +504,7 @@
     $('#wbLessonVal').textContent = ({ lite: '精简', standard: '标准', full: '完整', custom: '自定义' }[state.lessonMode]) + '（' + state.lesson.length + '项）';
     $('#wbImgVal').textContent = state.imgRatio + '，' + state.imgStyle + '，' + state.imgCount + '张';
   }
-  function renderSend() { $('#wbSend').disabled = !state.text.trim(); }
+  function renderSend() { $('#wbSend').disabled = !state.text.trim() || !!(prep && prep.scope); }
   function renderFiles() {
     var box = $('#wbFiles');
     box.hidden = !state.files.length;
@@ -459,7 +560,7 @@
   var run = null;   // {topic, title, steps:[], skipConfirm, kp:[], outline:[], files:[]}
   var timer = null;
   function topicOf(text) {
-    if (prep && (prep.theme || prep.current)) return prep.theme || prep.current.name;
+    if (prep && !prep.auto && (prep.theme || prep.current)) return prep.theme || prep.current.name;
     var t = text.trim().replace(/^(请|麻烦)?(帮我|给我|为我)?(做|生成|写|制作|设计)?(一份|一个|一节|个|份|节)?/, '')
       .replace(/(的)?(课件|教案|情景互动游戏|游戏|图片素材|图片|视频素材|讲解视频|视频)$/, '').replace(/[。.！!]$/, '');
     return (t || text.trim()).slice(0, 24);
@@ -520,15 +621,25 @@
     return s;
   }
   function send() {
-    var text = state.text.trim(); if (!text) return;
+    var text = state.text.trim(); if (!text || (prep && prep.scope)) return;
+    // 直接输入：生成课件时先按需求匹配知识范围；范围过大先选范围，范围合适直接带上知识体系生成
+    // 从课次带入但课次没挂技能（课程未关联知识体系）时也按需求匹配，匹配结果保留课次关联
+    var bare = prep && prep.session && !prep.ks && !(prep.tree || []).length;
+    if ((!prep || bare) && !skipMatch && state.selected.indexOf('课件生成') >= 0) {
+      var m = matchScope(text), keep = bare ? prep.session : null;
+      if (m && keep) m.session = keep;
+      if (m && m.scope) { prep = m; renderPrep(prep); renderSend(); return; }
+      if (m) { prep = m; renderPrep(prep); }
+    }
     var topic = topicOf(text);
     var res = state.selected.length === 1 ? RES_NAME[state.selected[0]] : '备课资源';
-    run = { topic: topic, title: '《' + topic + '》' + res, text: text, skipConfirm: false, kp: mockKP(topic), outline: mockOutline(topic), steps: [], edit: null };
+    run = { tid: 'WT' + Date.now().toString(36), at: TKfmt(), topic: topic, title: '《' + topic + '》' + res, text: text, skipConfirm: false, kp: mockKP(topic), outline: mockOutline(topic), steps: [], edit: null };
     // 从能力图谱带入了知识体系且要生成课件：调用课件生成接口（发起即调用，流程推进到「课件生成」时等待结果）
     if (prep && prep.ks && state.selected.indexOf('课件生成') >= 0) {
       run.ks = knowledgeSystem(prep); run.theme = prep.theme || (prep.current && prep.current.name) || topic; run.desc = genDesc(text, prep);
       run.ksCount = ksSize(run.ks);
     }
+    run.types = state.selected.slice();
     run.steps = buildSteps(topic);
     if (run.ks) callGenPpt();
     $('#wbHero').hidden = true; $('#wbInput').hidden = true;
@@ -558,7 +669,9 @@
       if (!s.out.length) s.out = [{ name: fileNameOf(run.api.url, run.theme + '.pptx'), url: run.api.url }];
     }
     if (s.shown < s.msgs.length) { s.shown++; render(); timer = setTimeout(advance, 650); return; }
-    s.status = 'done'; s.open = !!(s.pack); render();
+    s.status = 'done'; s.open = !!(s.pack);
+    if (s.pack) linkSession();
+    render();
     timer = setTimeout(advance, 400);
   }
   function confirmStep(skipAll) {
@@ -578,7 +691,7 @@
     return '<span class="tag idle">等待中</span>';
   }
   function render() {
-    var h = '';
+    var h = run.text ? '<div class="fq"><span>' + esc(run.text) + '</span></div>' : '';
     run.steps.forEach(function (s, i) {
       if (s.status === 'idle') return;
       h += '<div class="fs">' + AV + '<div class="bd"><div class="hd">AIGC 智课 <span class="nm">' + esc(s.name) + '</span>' + tagOf(s) + '</div>';
@@ -590,12 +703,12 @@
       h += '</div></div>';
     });
     $('#wbFlow').innerHTML = h;
-    renderProg();
+    renderProg(); if (!run.ro) saveTask();
     var c = $('#wbCenter'); if (!run.edit) c.scrollTop = c.scrollHeight;
   }
   function msgBox(s, msgs, i) {
     if (s.status === 'fail') return '<div class="fbox fmsg"><ul>' + msgs.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join('') +
-      '<li class="err">课件生成失败：' + esc(run.api.err) + '</li></ul><div style="margin-top:8px"><button class="btn-p" data-act="retry" type="button">重新生成</button></div></div>';
+      '<li class="err">' + (run.ro ? esc(run.failMsg) : '课件生成失败：' + esc(run.api.err)) + '</li></ul>' + (run.ro ? '' : '<div style="margin-top:8px"><button class="btn-p" data-act="retry" type="button">重新生成</button></div>') + '</div>';
     var live = s.status === 'run';
     if (!s.open && !live) return '<div class="fbox fmsg"><button class="tog" data-tog="' + i + '" type="button">查看详情 - ' + msgs.length + ' 条消息 ⌄</button></div>';
     return '<div class="fbox fmsg"><ul>' + msgs.map(function (m, k) {
@@ -650,6 +763,29 @@
     var out = []; run.steps.forEach(function (s) { (s.out || []).forEach(function (f) { out.push(typeof f === 'string' ? { name: f, res: s.res } : { name: f.name, url: f.url, res: s.res }); }); });
     return out;
   }
+  /* 从任务中心「去备课」进入时：资源打包完成后，建一个备课资源包，记下来源技能，并关联回该课次 */
+  var RES_TYPE = { '课件生成': '课件', '教案生成': '教案', '情景互动游戏生成': '情景互动游戏', '图片素材生成': '图片', '视频素材生成': '视频' };
+  // 生成完成：资源包存入备课资源；有课次（从课次带入或在工具栏选了课次）时关联到该课次，没有则之后在任务中心关联
+  function linkSession() {
+    if (run.linked || run.saved || !window.TK) return;
+    var ss = session || chosenSess;
+    var S = TK.load(), c = ss ? S.courses.find(function (x) { return x.id === ss.id; }) : null;
+    if (ss && !c) return;
+    var files = outFiles().map(function (f) { return { id: TK.uid('F'), type: RES_TYPE[f.res] || '课件', name: f.name, size: sizeOf(f.name), url: f.url || '' }; });
+    var sk = c && (c.skillIds || []).length ? c.skillIds : prepSkillIds();   // 课次没挂技能（课程未关联知识体系）时，记下备课内容里的技能，发布时由老师确认
+    var r = { id: TK.uid('RES'), name: '《' + (c ? c.name : run.topic) + '》备课资源包', status: '已完成', createdAt: TK.fmt(new Date()), owner: currentUserName(), skillIds: sk.slice(),
+      knowledge: sk.map(TK.skillName).join(' › '), files: files };
+    S.resources.unshift(r);
+    if (!c) {
+      TK.addGrowth(S, { type: '备课', target: r.name, desc: '生成' + files.map(function (f) { return f.type; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join('、'), stars: files.length, ref: { kind: 'res', id: r.id } });
+      TK.save(S); run.saved = { res: r.id }; return;
+    }
+    if (c.resIds.indexOf(r.id) < 0) c.resIds.push(r.id);
+    TK.fillSkillsFromRes(S, c);   // 课次还没有技能时，用资源记下的技能补上
+    TK.addGrowth(S, { type: '备课', target: r.name, desc: '生成' + files.map(function (f) { return f.type; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join('、'), stars: files.length, ref: { kind: 'res', id: r.id } });
+    TK.save(S);
+    run.linked = { id: c.id, name: c.name, res: r.id };
+  }
   function sizeOf(n) { var e = n.split('.').pop(); return { pptx: '8.6 MB', docx: '236 KB', html: '1.2 MB', png: '1.8 MB', mp4: '46.3 MB' }[e] || '120 KB'; }
   function packCard() {
     var fs = outFiles();
@@ -661,19 +797,21 @@
         return '<div class="pk-row">' + extTag(f.name) + '<span class="nm" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="sz">' + sizeOf(f.name) + '</span>' +
           '<button class="a" data-act="preview" data-f="' + esc(f.name) + '" type="button">预览</button><button class="a" data-act="dl" data-f="' + esc(f.name) + '" type="button">下载</button></div>';
       }).join('') + '</div>' +
+      (run.linked ? '<div class="pk-tip" style="color:#2ba954">已关联到课次「' + esc(run.linked.name) + '」，记录了来源技能。<a href="' + esc(UI.link('teacher-tasks.html')) + '&open=course:' + esc(run.linked.id) + '">去任务中心发布 ›</a></div>' : '') +
+      (run.saved ? '<div class="pk-tip" style="color:#2ba954">已存入备课资源，暂未关联课次，可在任务中心的课次里「关联备课资源」。<a href="' + esc(UI.link('teacher-tasks.html')) + '">去任务中心 ›</a></div>' : '') +
       (fs.some(function (f) { return f.url && expiresMin(f.url); }) ? '<div class="pk-tip">课件下载链接 ' + expiresMin(fs.find(function (f) { return f.url; }).url) + ' 分钟内有效</div>' : '') + '</div>';
   }
 
   /* ── 渲染：右侧任务进度 ── */
   function renderProg() {
     var st = function (k) { var s = run.steps.find(function (x) { return x.key === k; }); return s ? s.status : 'idle'; };
-    var all = run.steps.every(function (s) { return s.status === 'done'; });
+    var all = run.steps.every(function (s) { return s.status === 'done'; }), failed = run.steps.some(function (s) { return s.status === 'fail'; });
     var waiting = run.steps.some(function (s) { return s.status === 'wait'; });
     var nodes = [
-      { name: '需求分析', s: st('need'), sub: st('need') === 'done' ? ['已完成 ' + state.selected.length + ' 个'].concat(state.selected.map(function (t) { return '《' + run.topic + '》' + RES_NAME[t]; })) : [] },
+      { name: '需求分析', s: st('need'), sub: st('need') === 'done' ? ['已完成 ' + (run.types || state.selected).length + ' 个'].concat((run.types || state.selected).map(function (t) { return '《' + run.topic + '》' + RES_NAME[t]; })) : [] },
       { name: '知识点确认', s: st('kp'), sub: [] }
     ];
-    state.selected.forEach(function (t) {
+    (run.types || state.selected).forEach(function (t) {
       var ss = run.steps.filter(function (x) { return x.res === t; });
       var s = ss.every(function (x) { return x.status === 'done'; }) ? 'done' : ss.some(function (x) { return x.status === 'wait'; }) ? 'wait' : ss.some(function (x) { return x.status !== 'idle'; }) ? 'run' : 'idle';
       var files = []; ss.forEach(function (x) { if (x.status === 'done') files = files.concat((x.out || []).map(function (f) { return typeof f === 'string' ? f : f.name; })); });
@@ -682,8 +820,8 @@
     nodes.push({ name: '资源打包', s: st('pack'), sub: [] });
     var tag = function (s) { return s === 'done' ? '<span class="tag done">已完成</span>' : s === 'wait' ? '<span class="tag wait">等待确认</span>' : s === 'run' ? '<span class="tag run">生成中</span>' : '<span class="tag idle">等待中</span>'; };
     $('#wbProg').innerHTML = '<div class="h">任务进度</div><div class="tk"><b title="' + esc(run.title) + '">' + esc(run.title) + '</b>' +
-      (all ? '<span class="tag done">已完成</span>' : waiting ? '<span class="tag wait">等待确认</span>' : '<span class="tag run">生成中</span>') + '</div>' +
-      '<div class="res">生成资源：' + esc(state.selected.join('、')) + '</div>' +
+      (all ? '<span class="tag done">已完成</span>' : failed ? '<span class="tag fail">失败</span>' : waiting ? '<span class="tag wait">等待确认</span>' : '<span class="tag run">生成中</span>') + '</div>' +
+      '<div class="res">生成资源：' + esc((run.types || state.selected).join('、')) + '</div>' +
       nodes.map(function (n, i) {
         return '<div class="ps"><div class="rl"><span class="dt ' + n.s + '"></span>' + (i < nodes.length - 1 ? '<span class="ln"></span>' : '') + '</div><div class="bd"><div class="rw">' + esc(n.name) + tag(n.s) + '</div>' +
           n.sub.map(function (x, k) { return '<div class="sub' + (k ? ' f' : '') + '">' + esc(x) + '</div>'; }).join('') + '</div></div>';
@@ -707,7 +845,11 @@
     if (i >= 0) { if (state.selected.length > 1) state.selected.splice(i, 1); } else state.selected.push(t);
     renderChips(); renderTools();
   });
-  $('#wbTa').addEventListener('input', function () { state.text = this.value; renderSend(); });
+  $('#wbTa').addEventListener('input', function () {
+    state.text = this.value; skipMatch = false;
+    if (prep && prep.auto) { prep = null; sc = null; renderPrep(null); }   // 需求改了，重新匹配
+    renderSend();
+  });
   $('#wbTa').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
   $('#wbSend').addEventListener('click', send);
   $('#wbFiles').addEventListener('click', function (e) { var x = e.target.closest('[data-rm]'); if (!x) return; state.files.splice(+x.getAttribute('data-rm'), 1); renderFiles(); });
@@ -763,7 +905,7 @@
   // 顶栏
   $('#wbSideTog').addEventListener('click', function () { var s = $('#wbSide'); s.hidden = !s.hidden; });
   $('#wbNew').addEventListener('click', function () {
-    clearTimeout(timer); run = null; if (apiCtl) { apiCtl.abort(); apiCtl = null; }
+    clearTimeout(timer); run = null; if (apiCtl) { apiCtl.abort(); apiCtl = null; } renderTasks();
     state.text = ''; state.files = []; $('#wbTa').value = '';
     $('#wbFlow').hidden = true; $('#wbFlow').innerHTML = ''; $('#wbTop').hidden = true; $('#wbSide').hidden = true;
     $('#wbHero').hidden = false; $('#wbInput').hidden = false;
@@ -810,7 +952,7 @@
 
   /* ── 带入备课：读取能力图谱传来的「完整链路 + 直接子节点」 ── */
   var PREP_KEY = 'kmapToWorkbench';
-  var prep = null;
+  var prep = null, session = null;   // session：从任务中心课次「去备课」带入时的课次
   function loadPrep() { var raw = null; try { raw = localStorage.getItem(PREP_KEY); } catch (e) {} if (!raw) return null; try { return JSON.parse(raw); } catch (e) { return null; } }
   // 兼容旧格式（只有直接下级 children）
   function prepTreeOf(p) { return p.tree || (p.children || []).map(function (c) { return { type: c.type, name: c.name, children: [] }; }); }
@@ -822,6 +964,10 @@
   }
   function countText(c) { return Object.keys(c.counts).map(function (k) { return k + ' ' + c.counts[k]; }).join('、'); }
   function prepText(p) {
+    if (p.skipped) {
+      var cs = prepCounts(p);
+      return '帮我基于' + p.skipped.map(function (x) { return x.type + '「' + x.name + '」'; }).join('、') + '的全部内容（共 ' + cs.total + ' 个节点：' + countText(cs) + '）生成一份课件';
+    }
     if (p.multi) {
       var cm = prepCounts(p), names = p.selected.map(function (x) { return '「' + x.name + '」'; }).join('');
       return '帮我基于' + names + '这 ' + p.selected.length + ' 个节点及其下级（共 ' + cm.total + ' 个节点：' + countText(cm) + '）生成一份课件';
@@ -861,33 +1007,439 @@
     tb.scrollTop += (b.top - a.top) - tb.clientHeight / 2 + b.height / 2;
     tb.scrollLeft = 0;
   }
+  /* ── 选择备课范围：行业、子行业、专业、岗位、课程等大范围节点带入时，先在知识体系里勾选本次备课的任务或技能 ── */
+  var SC_COLOR = { '专业': '#6366f1', '课程分类': '#8b5cf6', '课程': '#0ea5e9', '任务': '#10b981', '技能': '#f59e0b' };
+  var sc = null;   // { p: 带入的范围数据, nodes: {id: 节点}, sel: {技能id: true}, open: {id: true}, q: 搜索词 }
+  function scInit(p) {
+    sc = { p: p, nodes: {}, sel: {}, open: {}, q: '' };
+    (function walk(list, parent, depth) {
+      list.forEach(function (n, i) {
+        var id = (parent ? parent.sid + '.' : '') + i;
+        n.sid = id; n.parentSid = parent ? parent.sid : null; sc.nodes[id] = n;
+        if (n.type === '技能') { n.skills = [id]; return; }
+        walk(n.children || [], n, depth + 1);
+        n.skills = [].concat.apply([], (n.children || []).map(function (k) { return k.skills || []; }));
+        if (n.type !== '课程' && n.type !== '任务') sc.open[id] = true;   // 默认展开到课程
+      });
+    })(p.majors, null, 0);
+  }
+  function scState(n) {   // 0 未选 / 1 部分 / 2 全选
+    var k = n.skills.filter(function (s) { return sc.sel[s]; }).length;
+    return !k ? 0 : k === n.skills.length ? 2 : 1;
+  }
+  function scHit(n, q) {
+    if (!q) return true;
+    if (n.name.indexOf(q) >= 0) return true;
+    return n.type !== '技能' && (n.children || []).some(function (k) { return scHit(k, q); });
+  }
+  // inHit：上级已命中搜索词时，下级全部显示
+  function scRows(list, depth, inHit) {
+    var q = inHit ? '' : sc.q, out = '';
+    list.forEach(function (n) {
+      if (!scHit(n, q)) return;
+      var self = !!(q && n.name.indexOf(q) >= 0);
+      var group = n.type !== '技能', open = group && (sc.open[n.sid] || (q && !self)), st = scState(n);
+      var pick = n.type === '任务' || n.type === '技能';
+      var name = self ? esc(n.name).split(esc(q)).join('<mark>' + esc(q) + '</mark>') : esc(n.name);
+      var sel = n.skills.filter(function (s) { return sc.sel[s]; }).length;
+      out += '<div class="sc-row" style="padding-left:' + (10 + depth * 18) + 'px">' +
+        '<span class="car"' + (group ? ' data-sc-open="' + n.sid + '"' : '') + '>' + (group ? (open ? '▾' : '▸') : '') + '</span>' +
+        (pick ? '<input type="checkbox" data-sc-pick="' + n.sid + '"' + (st === 2 ? ' checked' : '') + (st === 1 ? ' data-mixed="1"' : '') + '>' : '') +
+        '<em style="background:' + (SC_COLOR[n.type] || '#94a3b8') + '">' + esc(n.type) + '</em><span class="n" title="' + esc(n.name) + '">' + name + '</span>' +
+        (group ? '<span class="m">' + (sel ? '已选 ' + sel + ' / ' : '') + n.skills.length + ' 个技能</span>' : '') + '</div>';
+      if (open) out += scRows(n.children || [], depth + 1, inHit || self);
+    });
+    return out;
+  }
+  function scCount() { return Object.keys(sc.sel).length; }
+  function renderScopeTree() {
+    var html = scRows(sc.p.majors, 0);
+    $('#scTree').innerHTML = html || '<div class="sc-empty">没有找到「' + esc(sc.q) + '」相关的课程、任务或技能</div>';
+    [].forEach.call($('#scTree').querySelectorAll('[data-mixed]'), function (x) { x.indeterminate = true; });
+    $('#scCnt').innerHTML = '已选 <b>' + scCount() + '</b> 个技能';
+    $('#scOk').disabled = !scCount();
+  }
+  function renderScope(p) {
+    var from = (p.from || []).map(function (x) { return (x.type ? x.type : '') + '「' + esc(x.name) + '」'; }).join('、');
+    var total = p.majors.reduce(function (a, m) { return a + m.skills.length; }, 0);
+    $('#wbScope').innerHTML =
+      '<div class="sc-head">' + (p.auto ? '根据你的需求匹配到 ' : '') + from + ' 范围较大，涉及 <b>' + total + '</b> 个技能。请先选择本次备课的范围：勾选任务（含其下全部技能）或单个技能。</div>' +
+      '<div class="sc-tools"><input id="scQ" placeholder="搜索课程、任务或技能" value="' + esc(sc.q) + '"><span class="cnt" id="scCnt"></span></div>' +
+      '<div class="sc-tree" id="scTree"></div>' +
+      '<div class="sc-foot"><span class="tip">选定后按这些任务、技能及其下级内容生成课件；也可以先不选，按整个范围' + (p.auto ? '生成' : '带入') + '</span>' +
+      '<button class="sc-skip" id="scSkip" type="button">' + (p.auto ? '先不选，直接生成' : '先不选，全部带入') + '</button>' +
+      '<button class="sc-ok" id="scOk" type="button" disabled>' + (p.auto ? '确定范围并生成' : '确定范围') + '</button></div>';
+    renderScopeTree();
+  }
+  // 勾选结果 → 与「多选备课」相同的带入数据：根为专业，选中的任务 / 技能带整棵下级
+  function scApply() {
+    var picked = [];
+    (function walk(list) {
+      list.forEach(function (n) {
+        var st = scState(n); if (!st) return;
+        if (st === 2 && (n.type === '技能' || (n.type === '任务' && n.full !== false))) { picked.push(n); return; }
+        walk(n.children || []);
+      });
+    })(sc.p.majors);
+    if (!picked.length) return null;
+    function plain(n) { return { id: n.id, type: n.type, name: n.name, children: (n.children || []).map(plain) }; }
+    function anc(n) { var a = []; for (var s = n.parentSid; s != null; s = sc.nodes[s].parentSid) a.unshift(sc.nodes[s]); return a; }
+    var root = anc(picked[0])[0], ids = {};
+    picked = picked.filter(function (n) { return anc(n)[0] === root; });   // 只取同一专业（演示数据为单专业）
+    picked.forEach(function (n) { ids[n.sid] = true; anc(n).forEach(function (a) { ids[a.sid] = 'path'; }); });
+    function build(n, flagged) {
+      var o = { id: n.id, type: n.type, name: n.name, children: [] };
+      if (ids[n.sid] === true) { o.children = (n.children || []).map(plain); if (flagged) o.sel = true; return o; }
+      if (flagged) o.path = true;
+      o.children = (n.children || []).filter(function (k) { return ids[k.sid]; }).map(function (k) { return build(k, flagged); });
+      return o;
+    }
+    var tree = root.children.filter(function (k) { return ids[k.sid]; }).map(function (k) { return build(k, true); });
+    var ksTree = build(root, false);
+    var counts = {}, total = 0;
+    (function walk(l, inSel) { l.forEach(function (n) { var s = inSel || n.sel; if (s) { counts[n.type] = (counts[n.type] || 0) + 1; total++; } walk(n.children, s); }); })(tree, false);
+    var parents = [];
+    picked.forEach(function (n) { var x = anc(n).map(function (a) { return a.name; }).join(' › '); if (parents.indexOf(x) < 0) parents.push(x); });
+    var skills = 0; picked.forEach(function (n) { skills += n.skills.length; });
+    return {
+      multi: true, current: { type: root.type, name: root.name, id: root.id }, chain: [{ type: root.type, name: root.name }],
+      tree: tree, total: total, counts: counts, theme: picked.map(function (n) { return n.name; }).join('、'),
+      selected: picked.map(function (n) { return { id: n.id, type: n.type, name: n.name, path: anc(n).concat([n]).map(function (a) { return a.name; }).join(' › ') }; }),
+      children: tree.map(function (x) { return { type: x.type, name: x.name }; }),
+      ks: { tree: ksTree, skillCount: skills, otherMajors: [], parents: parents },
+      scopeOrig: sc.p
+    };
+  }
+  $('#wbScope').addEventListener('click', function (e) {
+    var o = e.target.closest('[data-sc-open]');
+    if (o) { var id = o.getAttribute('data-sc-open'); sc.open[id] = !sc.open[id]; renderScopeTree(); return; }
+    var k = e.target.closest('[data-sc-pick]');
+    if (k) {
+      var n = sc.nodes[k.getAttribute('data-sc-pick')], on = scState(n) !== 2;
+      n.skills.forEach(function (s) { if (on) sc.sel[s] = true; else delete sc.sel[s]; });
+      renderScopeTree(); return;
+    }
+    var skip = e.target.id === 'scSkip';
+    if (skip) Object.keys(sc.nodes).forEach(function (k) { if (sc.nodes[k].type === '技能') sc.sel[k] = true; });   // 先不选：按整个范围
+    if (e.target.id === 'scOk' || skip) {
+      var np = scApply(); if (!np) return;
+      if (skip) { np.skipped = sc.p.from; np.theme = (sc.p.from || []).map(function (x) { return x.name; }).join('、'); }
+      if (sc.p.auto) { np.auto = true; np.scopeOrig = null; prep = np; renderPrep(prep); renderSend(); send(); return; }   // 保留老师输入的需求，直接生成
+      prep = np; renderPrep(prep); setPrepText(prep);
+    }
+  });
+  $('#wbScope').addEventListener('input', function (e) {
+    if (e.target.id !== 'scQ') return;
+    sc.q = e.target.value.trim(); renderScopeTree();
+  });
+  function setPrepText(p) {
+    var pt = p.scope ? '' : prepText(p);
+    $('#wbTa').value = pt; state.text = pt;
+    renderChips(); renderSend();
+  }
+  /* ── 直接输入需求时匹配知识范围（行业 / 子行业 / 岗位 / 专业 / 课程 / 任务 / 能力项 / 技能的名称） ── */
+  var skipMatch = false, KM = null;
+  var BIG_TYPES = { '行业': 1, '子行业': 1, '专业': 1, '岗位': 1, '课程': 1 };
+  // 与能力地图一致的节点编号：前缀 + sha1(知识体系路径) 前 10 位
+  function sha1(s) {
+    var b = unescape(encodeURIComponent(s)), n = b.length, w = [], i, j;
+    for (i = 0; i < n; i++) w[i >> 2] |= b.charCodeAt(i) << (24 - (i % 4) * 8);
+    w[n >> 2] |= 0x80 << (24 - (n % 4) * 8); w[((n + 8) >> 6 << 4) + 15] = n * 8;
+    var h = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
+    function rl(x, c) { return (x << c) | (x >>> (32 - c)); }
+    for (i = 0; i < w.length; i += 16) {
+      var x = [], a = h[0], bb = h[1], c = h[2], d = h[3], e = h[4];
+      for (j = 0; j < 80; j++) {
+        x[j] = j < 16 ? (w[i + j] | 0) : rl(x[j - 3] ^ x[j - 8] ^ x[j - 14] ^ x[j - 16], 1);
+        var f = j < 20 ? (bb & c) | (~bb & d) : j < 40 ? bb ^ c ^ d : j < 60 ? (bb & c) | (bb & d) | (c & d) : bb ^ c ^ d;
+        var k = j < 20 ? 0x5a827999 : j < 40 ? 0x6ed9eba1 : j < 60 ? 0x8f1bbcdc : 0xca62c1d6;
+        var tmp = (rl(a, 5) + f + e + k + x[j]) | 0; e = d; d = c; c = rl(bb, 30); bb = a; a = tmp;
+      }
+      h[0] = (h[0] + a) | 0; h[1] = (h[1] + bb) | 0; h[2] = (h[2] + c) | 0; h[3] = (h[3] + d) | 0; h[4] = (h[4] + e) | 0;
+    }
+    return h.map(function (v) { return ('00000000' + (v >>> 0).toString(16)).slice(-8); }).join('');
+  }
+  function kmIndex() {
+    if (KM) return KM;
+    var A = window.ASSESS_DATA || {}, G = A.graph || {}, K = (A.knowledge || {})['MAJOR-GUIDE'];
+    KM = { skill: {}, entries: [] };
+    if (!K) return KM;
+    var all = [], byAbl = {};
+    K.courses.forEach(function (c) {
+      var cs = [];
+      c.tasks.forEach(function (tk) {
+        var ts = tk.skills.map(function (s) { KM.skill[s.id] = { s: s, task: tk, course: c }; all.push(s.id); cs.push(s.id); return s.id; });
+        KM.entries.push({ type: '任务', name: tk.name, skills: ts });
+        tk.skills.forEach(function (s) { KM.entries.push({ type: '技能', name: s.name, skills: [s.id] }); });
+      });
+      KM.entries.push({ type: '课程', name: c.name, skills: cs });
+    });
+    ((A.mappings || {})['MAJOR-GUIDE'] || []).forEach(function (m) {
+      if ((A.confirmedStatuses || []).indexOf(m.status) < 0 || (A.countedTypes || []).indexOf(m.type) < 0 || !KM.skill[m.skill]) return;
+      (byAbl[m.abl] = byAbl[m.abl] || []).push(m.skill);
+    });
+    function uniq(l) { return l.filter(function (x, i) { return l.indexOf(x) === i; }); }
+    (G.abilities || []).forEach(function (a) { if (byAbl[a.id]) KM.entries.push({ type: '能力项', name: a.name, skills: uniq(byAbl[a.id]) }); });
+    var byPos = {};
+    (G.require || []).forEach(function (r) { byPos[r.pos] = (byPos[r.pos] || []).concat(byAbl[r.abl] || []); });
+    (G.positions || []).forEach(function (p) { if (byPos[p.id]) KM.entries.push({ type: '岗位', name: p.name, skills: uniq(byPos[p.id]) }); });
+    (G.subs || []).forEach(function (sb) {
+      var l = []; (G.positions || []).forEach(function (p) { if (p.sub === sb.id) l = l.concat(byPos[p.id] || []); });
+      if (l.length) KM.entries.push({ type: '子行业', name: sb.name, skills: uniq(l) });
+    });
+    var major = K.name.replace(/（.*$/, '');
+    KM.entries.push({ type: '专业', name: K.name, alias: [major + '专业'], short: [major], skills: all });
+    // 行业与能力地图一致：只含映射到能力图谱的技能
+    var mapped = uniq([].concat.apply([], Object.keys(byAbl).map(function (k) { return byAbl[k]; })));
+    if (G.industry) KM.entries.push({ type: '行业', name: G.industry.name, alias: [G.industry.name.replace(/行业$/, '业')], short: [G.industry.name.replace(/行业$/, '')], skills: mapped });
+    return KM;
+  }
+  // 按技能组装知识体系：专业 › 课程分类 › 课程 › 任务 › 技能
+  function kmTree(skills) {
+    var majors = [], idx = {};
+    skills.forEach(function (id) {
+      var x = KM.skill[id], seg = x.s.path.split('--'), level = majors;
+      var ids = ['M' + sha1(seg[0]).slice(0, 10), 'G' + sha1(seg.slice(0, 2).join('--')).slice(0, 10), x.course.id, x.task.id];
+      ['专业', '课程分类', '课程', '任务'].forEach(function (type, i) {
+        if (!idx[ids[i]]) { idx[ids[i]] = { id: ids[i], type: type, name: seg[i], children: [] }; level.push(idx[ids[i]]); }
+        level = idx[ids[i]].children;
+      });
+      level.push({ id: id, type: '技能', name: x.s.name, children: [] });
+      idx[x.task.id].full = level.length === x.task.skills.length;   // 任务下技能不全时，不按整个任务带入
+    });
+    return majors;
+  }
+  function matchScope(text) {
+    var km = kmIndex(), hits = [];
+    km.entries.forEach(function (e) {
+      // 名称至少 3 个字才匹配；专业、行业的简称（如「导游」「旅游」）例外
+      var names = [e.name].concat(e.alias || []).filter(function (s) { return s.length >= 3 && text.indexOf(s) >= 0; })
+        .concat((e.short || []).filter(function (s) { return text.indexOf(s) >= 0; }));
+      if (names.length) hits.push({ e: e, key: names.sort(function (a, b) { return b.length - a.length; })[0] });
+    });
+    // 名称被另一个命中的名称包含时，只算更长的那个（如「导游业务」与「模拟导游业务」）
+    hits = hits.filter(function (h) { return !hits.some(function (o) { return o !== h && o.key.length > h.key.length && o.key.indexOf(h.key) >= 0; }); });
+    if (!hits.length) return null;
+    var small = hits.filter(function (h) { return !BIG_TYPES[h.e.type]; }), use = small.length ? small : hits;
+    var skills = [], from = use.map(function (h) { return { type: h.e.type, name: h.e.name }; });
+    use.forEach(function (h) { h.e.skills.forEach(function (s) { if (skills.indexOf(s) < 0) skills.push(s); }); });
+    var p = { scope: true, auto: true, from: from, majors: kmTree(skills) };
+    if (!small.length) return p;   // 只命中大范围：先选范围
+    // 命中任务 / 技能 / 能力项：全部选中后直接带入
+    scInit(p);
+    Object.keys(sc.nodes).forEach(function (k) { var n = sc.nodes[k]; if (n.type === '技能') sc.sel[k] = true; });
+    var np = scApply(); np.auto = true; np.scopeOrig = null; np.from = from; sc = null;
+    return np;
+  }
   function renderPrep(p) {
-    var box = $('#wbPrep'); box.hidden = !p; if (!p) return;
+    var box = $('#wbPrep'); box.hidden = !p; renderTry(); renderSess(); if (!p) return;
+    $('#wbPrep .ph .t').textContent = p.auto ? '已按需求匹配知识范围' : '带入备课';
+    $('#wbScope').hidden = !p.scope; $('#wbPrepBody').hidden = !!p.scope;
+    if (p.scope) { if (!sc || sc.p !== p) scInit(p); renderScope(p); return; }
     var c = prepCounts(p);
     if (p.multi) $('#wbPrepSum').innerHTML = '已选 <b>' + p.selected.length + '</b> 个节点，连同下级共 <b>' + c.total + '</b> 个节点：' + esc(countText(c));
     else $('#wbPrepSum').innerHTML = c.total ? '下级共 <b>' + c.total + '</b> 个节点：' + esc(countText(c)) : '暂无下级节点';
+    if (p.scopeOrig) $('#wbPrepSum').innerHTML += ' <button class="tb" data-rescope type="button">重新选择范围</button>';
     htRootNode = htRoot(p); htDefault(htRootNode); renderHT(); htFocus();
     var ks = p.ks;
     $('#wbPrepKs').innerHTML = ks && ks.tree
       ? '所属知识体系：<b>' + esc(ks.tree.name) + '</b> · 课程 ' + ksCount(ks.tree, '课程') + ' 门 · 技能 ' + ks.skillCount + ' 个' +
         (ks.otherMajors && ks.otherMajors.length ? '<span class="note">（另涉及 ' + esc(ks.otherMajors.join('、')) + '）</span>' : '') + '；生成课件时按此知识体系生成'
-      : '未找到所属专业的知识体系（该节点在知识体系中没有对应技能），生成的课件为演示内容';
+      : (p.session && !(p.tree || []).length ? '这节课还没有挂技能：发送时会按需求自动匹配知识范围，匹配到的技能记在资源上，发布任务时由您确认'
+        : '未找到所属专业的知识体系（该节点在知识体系中没有对应技能），按需求直接生成课件');
+    var ss = session || chosenSess;
+    if (ss) $('#wbPrepKs').innerHTML += '<div style="margin-top:4px;color:#2ba954">本次为课次「' + esc(ss.name) + '」（' + esc(ss.plan || '') + '）备课，生成完成后资源包自动关联到该课次。</div>';
   }
   $('#wbPrep').addEventListener('click', function (e) {
     var t = e.target.closest('[data-ht-id]');
     if (t) { var id = t.getAttribute('data-ht-id'); htOpen[id] = !htOpen[id]; renderHT(); return; }
+    if (e.target.closest('[data-rescope]')) { prep = prep.scopeOrig; renderPrep(prep); setPrepText(prep); return; }
     var b = e.target.closest('[data-ht]'); if (!b || !htRootNode) return;
     if (b.getAttribute('data-ht') === 'all') htWalk(htRootNode, '0', function (n, id) { if ((n.children || []).length) htOpen[id] = true; });
     else htDefault(htRootNode);
     renderHT(); htFocus();
   });
-  $('#wbPrepClose').addEventListener('click', function () { prep = null; try { localStorage.removeItem(PREP_KEY); } catch (e) {} renderPrep(null); });
+  $('#wbPrepClose').addEventListener('click', function () {
+    var wasScope = prep && (prep.scope || prep.scopeOrig) && !prep.auto;
+    if (prep && prep.auto) skipMatch = true;   // 老师移除了匹配结果：本条需求不再匹配，按原样生成
+    prep = null; session = null; sc = null; try { localStorage.removeItem(PREP_KEY); } catch (e) {} renderPrep(null);
+    if (wasScope) { $('#wbTa').value = ''; state.text = ''; renderChips(); }
+    renderSend();
+  });
+
+  /* ── 任务列表（左侧菜单下半部分）──
+     每次发送需求的生成过程是一个任务，按老师存在本机；点一条回到那次的生成过程和结果，未完成的接着生成。
+     另外列出本人已有、但不是在这里生成的备课资源包，点开到任务中心看资源详情 */
+  function TKfmt() { var d = new Date(), z = function (n) { return ('0' + n).slice(-2); }; return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + ' ' + z(d.getHours()) + ':' + z(d.getMinutes()); }
+  function taskKey() { return 'wbTasks.v1|' + myName(); }
+  function loadTasks() { try { return JSON.parse(localStorage.getItem(taskKey()) || '[]'); } catch (e) { return []; } }
+  function saveTasks(list) { try { localStorage.setItem(taskKey(), JSON.stringify(list.slice(0, 40))); } catch (e) {} }
+  function runStatus(r) { if (r.steps.some(function (x) { return x.status === 'fail'; })) return '失败'; if (r.steps.length && r.steps.every(function (x) { return x.status === 'done'; })) return '已完成'; return r.steps.some(function (x) { return x.status === 'wait'; }) ? '待确认' : '生成中'; }
+  function saveTask() {
+    if (!run || !run.tid) return;
+    var list = loadTasks().filter(function (t) { return t.id !== run.tid; }), snap = JSON.parse(JSON.stringify(run));
+    snap.edit = null;
+    list.unshift({ id: run.tid, title: run.title, at: run.at, status: runStatus(run), res: (run.linked || run.saved || {}).res || '', session: run.linked ? run.linked.name : '', run: snap });
+    saveTasks(list); renderTasks();
+  }
+  var DOT_ST = { '生成中': 1, '待确认': 1, '失败': 1, '生成失败': 1 };   // 只有进行中和异常的显示状态点
+  var ST_COL = { '生成中': '#6366F1', '待确认': '#f59e0b', '已完成': '#10b981', '失败': '#ef4444', '生成失败': '#ef4444', '资源包': '#94a3b8' };
+  function renderTasks() {
+    var nav = document.getElementById('lnav'); if (!nav) return;
+    var box = nav.querySelector('.ltasks');
+    if (!box) { box = document.createElement('div'); box.className = 'ltasks'; var u = nav.querySelector('.luser'); nav.insertBefore(box, u || null); }
+    if (box.querySelector('.lti.editing')) return;   // 正在重命名时不刷新，避免打断输入
+    var list = loadTasks(), used = {};
+    list.forEach(function (t) { if (t.res) used[t.res] = 1; });
+    var items = list.map(function (t) { return { kind: 'run', id: t.id, title: t.title, at: t.at, st: t.status, res: t.res, sub: t.session ? '课次：' + t.session : '' }; });
+    if (window.TK) {
+      var me = myName();
+      TK.load().resources.filter(function (r) { return (r.owner || '李老师') === me && !used[r.id]; }).forEach(function (r) {
+        items.push({ kind: 'res', id: r.id, title: r.name, at: r.createdAt || '', st: r.status === '已完成' ? '资源包' : r.status, res: r.id, sub: '' });
+      });
+    }
+    var pins = loadPins();
+    items.forEach(function (it) { it.pin = pins.indexOf(it.id) >= 0; });
+    items.sort(function (a, b) { return a.pin !== b.pin ? (a.pin ? -1 : 1) : a.at < b.at ? 1 : a.at > b.at ? -1 : 0; });
+    var curId = run && run.tid;
+    box.innerHTML = '<div class="lth">任务<span class="n">' + items.length + '</span></div><div class="ltl">' +
+      (items.map(function (it) {
+        return '<div role="button" tabindex="0" class="lti' + (it.id === curId ? ' on' : '') + '" data-t="' + it.kind + ':' + esc(it.id) + '" title="' + esc(it.title + '（' + it.st + '）') + '"><span class="t">' + (DOT_ST[it.st] ? '<i class="d" style="background:' + ST_COL[it.st] + '"></i>' : '') + (it.pin ? '<span class="pin">📌</span>' : '') + '<span class="tx">' + esc(it.title) + '</span></span>' +
+          '<span class="x" data-tmore="' + it.kind + ':' + esc(it.id) + '" title="更多操作" aria-label="更多操作">⋯</span></div>';
+      }).join('') || '<div class="lte">还没有任务。在右侧输入需求并发送后，生成任务会出现在这里。</div>') + '</div>';
+  }
+  function openTask(id) {
+    var t = loadTasks().filter(function (x) { return x.id === id; })[0]; if (!t) return;
+    if (run && run.tid === id) return;
+    clearTimeout(timer); if (apiCtl) { apiCtl.abort(); apiCtl = null; }
+    run = t.run;
+    $('#wbHero').hidden = true; $('#wbInput').hidden = true;
+    $('#wbFlow').hidden = false; $('#wbTop').hidden = false; $('#wbSide').hidden = false;
+    $('#wbTopTitle').textContent = run.title;
+    render();
+    var c = cur(); if (c && c.status === 'run') timer = setTimeout(advance, 400);   // 未完成的接着生成
+  }
+  /* 任务「⋯」操作：置顶、重命名、在任务中心查看资源包 / 课次、删除（仅工作台生成的任务；资源包是任务中心里的备课资源，不在这里删） */
+  function pinKey() { return 'wbPins.v1|' + myName(); }
+  function loadPins() { try { return JSON.parse(localStorage.getItem(pinKey()) || '[]'); } catch (e) { return []; } }
+  function savePins(p) { try { localStorage.setItem(pinKey(), JSON.stringify(p)); } catch (e) {} }
+  function closeTaskMenu() { var p = document.querySelector('.tpop'); if (p) p.remove(); document.querySelectorAll('#lnav .lti.menu').forEach(function (x) { x.classList.remove('menu'); }); }
+  function taskInfo(kind, id) {
+    var S = window.TK ? TK.load() : null, t = kind === 'run' ? loadTasks().filter(function (x) { return x.id === id; })[0] : null;
+    var resId = kind === 'res' ? id : t && t.res, r = S && resId ? S.resources.filter(function (x) { return x.id === resId; })[0] : null;
+    var c = S && resId ? S.courses.filter(function (x) { return (x.resIds || []).indexOf(resId) >= 0; })[0] : null;
+    return { t: t, r: r, c: c, title: t ? t.title : r ? r.name : '' };
+  }
+  function taskMenu(btn) {
+    var open = btn.closest('.lti').classList.contains('menu'); closeTaskMenu(); if (open) return;
+    var k = btn.getAttribute('data-tmore').split(':'), kind = k[0], id = k.slice(1).join(':'), I = taskInfo(kind, id), pinned = loadPins().indexOf(id) >= 0;
+    var pop = document.createElement('div'); pop.className = 'tpop';
+    pop.innerHTML = '<button data-op="pin">' + (pinned ? '📌 取消置顶' : '📌 置顶') + '</button><button data-op="rename">✎ 重命名</button>' +
+      (I.r ? '<button data-op="res">▤ 在任务中心查看资源包</button>' : '') + (I.c ? '<button data-op="course">↗ 查看关联课次「' + esc(I.c.name.length > 8 ? I.c.name.slice(0, 8) + '…' : I.c.name) + '」</button>' : '') +
+      '<div class="sep"></div>' + (kind === 'run' ? '<button data-op="del" class="del">🗑 删除</button>' : '<button data-op="del" class="del" disabled title="备课资源包在任务中心管理，这里不能删除">🗑 删除</button>');
+    document.body.appendChild(pop); btn.closest('.lti').classList.add('menu');
+    var rc = btn.getBoundingClientRect(), top = rc.bottom + 4;
+    if (top + pop.offsetHeight > window.innerHeight - 8) top = rc.top - pop.offsetHeight - 4;
+    pop.style.left = Math.min(rc.left, window.innerWidth - pop.offsetWidth - 8) + 'px'; pop.style.top = top + 'px';
+    pop.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-op]'); if (!b || b.disabled) return;
+      var op = b.getAttribute('data-op'); closeTaskMenu();
+      if (op === 'pin') { var p = loadPins().filter(function (x) { return x !== id; }); if (!pinned) p.unshift(id); savePins(p); renderTasks(); }
+      else if (op === 'rename') renameTask(kind, id, I);
+      else if (op === 'res') location.href = UI.link('teacher-tasks.html?open=res:' + I.r.id);
+      else if (op === 'course') location.href = UI.link('teacher-tasks.html') + '&open=course:' + encodeURIComponent(I.c.id);
+      else if (op === 'del') TK.confirm('确定删除任务「' + I.title + '」吗？' + (I.r ? '生成的备课资源包仍保留在任务中心。' : ''), function () {
+        saveTasks(loadTasks().filter(function (t) { return t.id !== id; })); savePins(loadPins().filter(function (x) { return x !== id; }));
+        if (run && run.tid === id) $('#wbNew').click(); else renderTasks(); toast('已删除');
+      });
+    });
+  }
+  // 重命名：任务名称就地变成输入框，回车或点别处保存，Esc 取消
+  function renameTask(kind, id, I) {
+    var row = document.querySelector('#lnav .lti[data-t="' + kind + ':' + id + '"]'); if (!row) return;
+    var tx = row.querySelector('.tx'); row.classList.add('editing');
+    var inp = document.createElement('input'); inp.maxLength = 40; inp.value = I.title; inp.setAttribute('aria-label', '任务名称');
+    tx.replaceWith(inp); inp.focus(); inp.select();
+    var done = false;
+    function finish(save) {
+      if (done) return; done = true; row.classList.remove('editing');
+      var n = inp.value.trim();
+      if (!save || !n || n === I.title) { renderTasks(); if (save && !n) toast('任务名称不能为空'); return; }
+      if (kind === 'run') {
+        var list = loadTasks(); list.forEach(function (t) { if (t.id === id) { t.title = n; if (t.run) t.run.title = n; } }); saveTasks(list);
+      } else { var S = TK.load(); S.resources.forEach(function (r) { if (r.id === id) r.name = n; }); TK.save(S); }
+      if (run && run.tid === id) { run.title = n; $('#wbTopTitle').textContent = n; if (run.ro) render(); else renderProg(); }
+      renderTasks();
+    }
+    inp.addEventListener('keydown', function (e) { e.stopPropagation(); if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') finish(false); });
+    inp.addEventListener('blur', function () { finish(true); });
+    inp.addEventListener('click', function (e) { e.stopPropagation(); });
+  }
+  document.addEventListener('click', function (e) { if (!e.target.closest('.tpop') && !e.target.closest('[data-tmore]')) closeTaskMenu(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeTaskMenu(); });
+  document.getElementById('lnav').addEventListener('keydown', function (e) { var r = e.target.closest && e.target.closest('.lti'); if (r && e.target === r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); r.click(); } });
+  document.getElementById('lnav').addEventListener('scroll', closeTaskMenu, true);
+
+  // 不是在工作台生成的备课资源包：按资源包内容还原成一次已完成的生成过程，在本页查看（只读）
+  var TYPE_RES = { '课件': '课件生成', '教案': '教案生成', '情景互动游戏': '情景互动游戏生成', '图片': '图片素材生成', '视频': '视频素材生成' };
+  function openRes(id) {
+    if (!window.TK || (run && run.tid === id)) return;
+    var S = TK.load(), r = S.resources.filter(function (x) { return x.id === id; })[0]; if (!r) return;
+    var topic = r.name.replace(/^《/, '').replace(/》.*$/, '') || r.name;
+    var types = [];
+    (r.files || []).forEach(function (f) { var t = TYPE_RES[f.type]; if (t && types.indexOf(t) < 0) types.push(t); });
+    if (!types.length) { var m = r.name.match(/》(.+)$/), t0 = m && TYPE_RES[m[1]]; types = [t0 || '课件生成']; }
+    clearTimeout(timer); if (apiCtl) { apiCtl.abort(); apiCtl = null; }
+    run = { tid: r.id, ro: true, at: r.createdAt || '', topic: topic, title: r.name, text: '帮我生成关于《' + topic + '》的' + (types.length > 1 ? '教学资源包' : RES_NAME[types[0]]), types: types,
+      kp: mockKP(topic), outline: mockOutline(topic), steps: [], edit: null, failMsg: '生成失败，请点「新建对话」重新发起' };
+    var files = function (t) { return (r.files || []).filter(function (f) { return TYPE_RES[f.type] === t; }).map(function (f) { return f.name; }); };
+    var st = [
+      step('start', '启动', ['备课工作台已启动']),
+      step('need', '需求分析', ['正在智能分析您的教学内容...', '已识别到教学主题「' + topic + '」，准备为您生成 ' + types.join('、') + ' 等备课资源', '备课任务创建完成', '需求分析任务完成']),
+      step('kp', '知识体系', [], { confirm: 'kp', doneTag: '已确认' }),
+      step('search', '知识检索', ['正在为您检索相关知识点...', '知识检索完成'])
+    ];
+    types.forEach(function (t) {
+      if (t === '课件生成') { st.push(step('outline', '课件大纲生成', ['正在为您生成课件大纲...', '课件大纲生成完成'], { res: t })); st.push(step('olc', '等待人工确认课件大纲', [], { res: t, confirm: 'outline', doneTag: '已确认' })); }
+      st.push(step(t, t, ['正在生成' + RES_NAME[t] + '...', t + '完成'], { res: t, out: files(t) }));
+    });
+    st.push(step('pack', '资源打包', ['正在为您整理备课资源...', '资源包已生成'], { pack: true }));
+    st.forEach(function (x) { x.status = 'done'; x.shown = x.msgs.length; x.open = !!x.pack; });
+    if (r.status === '生成中' || r.status === '生成失败') {
+      // 最后一个有产出的生成步骤之后的还没完成：生成中停在下一步，失败的标为失败
+      var gi = st.map(function (x) { return !!x.res && !x.confirm; }), last = -1, next = -1;
+      st.forEach(function (x, i) { if (gi[i] && (x.out || []).length) last = i; });
+      for (var i = last + 1; i < st.length; i++) if (gi[i] || st[i].pack) { next = i; break; }
+      if (next < 0) next = st.length - 1;
+      st.forEach(function (x, i) { if (i === next) { x.status = r.status === '生成中' ? 'run' : 'fail'; x.shown = r.status === '生成中' ? 1 : x.msgs.length - 1; if (r.status === '生成失败') x.msgs = x.msgs.slice(0, 1); } else if (i > next) { x.status = 'idle'; x.shown = 0; } });
+    }
+    var c = S.courses.filter(function (x) { return (x.resIds || []).indexOf(r.id) >= 0; })[0];
+    if (c) run.linked = { id: c.id, name: c.name, res: r.id }; else run.saved = { res: r.id };
+    run.steps = st;
+    $('#wbHero').hidden = true; $('#wbInput').hidden = true;
+    $('#wbFlow').hidden = false; $('#wbTop').hidden = false; $('#wbSide').hidden = false;
+    $('#wbTopTitle').textContent = run.title;
+    render(); renderTasks();
+    $('#wbCenter').scrollTop = 0;
+  }
+  document.getElementById('lnav').addEventListener('click', function (e) {
+    if (e.target.closest('.lti.editing')) return;
+    var mo = e.target.closest('[data-tmore]');
+    if (mo) { e.stopPropagation(); taskMenu(mo); return; }
+    var b = e.target.closest('[data-t]'); if (!b) return;
+    var k = b.getAttribute('data-t').split(':');
+    if (k[0] === 'run') openTask(k.slice(1).join(':'));
+    else openRes(k.slice(1).join(':'));
+  });
 
   /* ── 启动 ── */
   UI.boot({ portal: 'teacher', active: 'workbench' });
+  renderTasks();
   prep = loadPrep();
-  if (prep) { renderPrep(prep); var pt = prepText(prep); $('#wbTa').value = pt; state.text = pt; try { localStorage.removeItem(PREP_KEY); } catch (e) {} }
-  renderChips(); renderTools(); renderFiles(); renderSend();
+  if (prep) { session = prep.session || null; renderPrep(prep); try { localStorage.removeItem(PREP_KEY); } catch (e) {} }
+  renderChips(); renderTools(); renderFiles(); renderSess();
+  if (prep) setPrepText(prep);
+  renderSend();
 })();
 </script>
 </body>

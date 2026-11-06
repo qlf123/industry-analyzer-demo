@@ -10,7 +10,7 @@
   'use strict';
 
   var STORAGE_KEY = 'permission-demo-state';
-  var DATA_VERSION = 2; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
+  var DATA_VERSION = 4; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
 
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
@@ -40,13 +40,15 @@
     { id: 'ORG-BASE-DEPT', name: '公共基础部', code: 'DIV-BASE', typeId: 'OT-DIV', parentId: 'ORG-ROOT', sort: 3, status: 'enabled', desc: '' }
   ];
 
-  /* ── 专业（挂到组织节点） ── */
+  /* ── 专业（教务数据，不挂组织；组织只管人员） ── */
   var MAJORS = [
-    { id: 'MAJOR-TOURISM', name: '旅游管理', orgId: 'ORG-TOUR-DEPT' },
-    { id: 'MAJOR-GUIDE', name: '导游', orgId: 'ORG-GUIDE-ROOM' },
-    { id: 'MAJOR-HOTEL', name: '酒店管理与数字化运营', orgId: 'ORG-HOTEL' },
-    { id: 'MAJOR-TOUR-SVC', name: '旅游服务与管理（中职）', orgId: 'ORG-TOUR-MAJOR-DEPT' }
+    { id: 'MAJOR-TOURISM', name: '旅游管理' },
+    { id: 'MAJOR-GUIDE', name: '导游' },
+    { id: 'MAJOR-HOTEL', name: '酒店管理与数字化运营' },
+    { id: 'MAJOR-TOUR-SVC', name: '旅游服务与管理（中职）' }
   ];
+  // 示例学生的所属组织：按学生实际所在的学院 / 教研室
+  var STUDENT_ORG = { 'MAJOR-TOURISM': 'ORG-TOUR-DEPT', 'MAJOR-GUIDE': 'ORG-GUIDE-ROOM', 'MAJOR-HOTEL': 'ORG-HOTEL', 'MAJOR-TOUR-SVC': 'ORG-TOUR-MAJOR-DEPT' };
 
   /* ── 课程（挂到专业，用于教学范围的课程维度） ── */
   var COURSES = [
@@ -124,6 +126,7 @@
         idCard: '110101' + String(19900101 + seq) + String(1000 + seq).slice(-4),
         address: ADDR_PREFIX[seq % ADDR_PREFIX.length] + '幸福路' + ((seq % 99) + 1) + '号',
         klassId: k.id,
+        orgId: STUDENT_ORG[k.majorId],
         status: grade.graduated ? '已毕业' : '在读',
         scores: [
           { course: '旅游学概论', score: 60 + (seq * 7) % 40 },
@@ -133,6 +136,9 @@
       });
     }
   });
+
+  // 演示学生林同学：导游 2024级 1班（与教师端任务中心的课程计划一致）
+  STUDENTS.find(function (s) { return s.id === 'STU-G24-1-01'; }).name = '林同学';
 
   /* ── 作业（每班按课程生成 3 条；在读可提交，已毕业全部已提交） ── */
   var HOMEWORKS = [];
@@ -248,7 +254,7 @@
     { id: 'ACC-QIAN',  name: '钱信息',   orgId: 'ORG-ROOT',       kind: '信息中心', status: '正常', studentId: null, phone: '13800000015', lastLoginAt: '2026-10-08 14:00', createdAt: '2024-09-18', createdBy: '系统',     updatedAt: '2026-09-28 09:30', updatedBy: '张校管' },
     { id: 'ACC-FENG',  name: '冯导师',   orgId: 'ORG-HOTEL', baseId: 'BASE-HOTEL', kind: '企业导师', status: '正常', studentId: null, phone: '13800000016', lastLoginAt: '2026-10-05 10:30', createdAt: '2024-09-19', createdBy: '系统', updatedAt: '2026-09-27 14:15', updatedBy: '张校管' },
     { id: 'ACC-GRAD',  name: '已毕业学生', orgId: 'ORG-TOUR-DEPT', kind: '学生',   status: '正常', studentId: 'STU-T23-1-01', phone: '13800000017', lastLoginAt: '2025-06-30 12:00', createdAt: '2024-09-20', createdBy: '系统', updatedAt: '2025-07-01 09:00', updatedBy: '系统' },
-    { id: 'ACC-STU',   name: '林同学',     orgId: 'ORG-TOUR-DEPT', kind: '学生',   status: '正常', studentId: 'STU-T24-1-01', phone: '13800000020', lastLoginAt: '2026-10-20 09:30', createdAt: '2024-09-20', createdBy: '系统', updatedAt: '2026-10-20 09:30', updatedBy: '系统' },
+    { id: 'ACC-STU',   name: '林同学',     orgId: 'ORG-GUIDE-ROOM', kind: '学生',   status: '正常', studentId: 'STU-G24-1-01', phone: '13800000020', lastLoginAt: '2026-10-20 09:30', createdAt: '2024-09-20', createdBy: '系统', updatedAt: '2026-10-20 09:30', updatedBy: '系统' },
     { id: 'ACC-STOP',  name: '停用老师', orgId: 'ORG-HOTEL',      kind: '教师',     status: '停用', studentId: null, phone: '13800000018', lastLoginAt: '2026-01-15 09:00', createdAt: '2024-09-21', createdBy: '系统',     updatedAt: '2026-02-10 10:00', updatedBy: '刘院管' },
     { id: 'ACC-QIN',   name: '秦秘书',   orgId: 'ORG-TOURISM',    kind: '管理员',   status: '正常', studentId: null, phone: '13800000019', lastLoginAt: null, createdAt: '2026-10-16', createdBy: '系统', updatedAt: '2026-10-16', updatedBy: '系统' }
   ];

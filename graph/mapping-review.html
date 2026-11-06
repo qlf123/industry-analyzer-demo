@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图谱映射审核台｜专业图谱平台</title>
+    <link rel="stylesheet" href="mapping-review.css" />
+    <link rel="stylesheet" href="mapping-pagination.css" />
+    <link rel="stylesheet" href="mapping-polish.css" />
+    <link rel="stylesheet" href="mapping-compact.css" />
+    <link rel="stylesheet" href="mapping-reference.css" />
+    <link rel="stylesheet" href="mapping-approved.css" />
+    <link rel="stylesheet" href="mapping-task.css" />
+    <link rel="stylesheet" href="mapping-task-override.css" />
+    <link rel="stylesheet" href="design-tokens.css" />
+  <link rel="stylesheet" href="gc-shell.css" />
+</head>
+  <body>
+    <aside class="lnav gc-lnav" id="lnav"></aside>
+<!-- 左侧菜单与其它页面共用 ../js/common.js -->
+<script src="../js/mock-data.js"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js"></script>
+<script src="gc-shell.js"></script>
+<script src="gc-flow.js"></script>
+<script>GC.boot('gc-mr');</script>
+    <div class="platform-page">
+    <main class="app-shell">
+      <section class="page-heading">
+        <div><h1>图谱映射审核台</h1></div>
+      </section>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 0 18px 4px">
+        <section class="status-tabs" role="tablist" style="padding:0">
+          <button class="status-tab active" data-status="pending">待审核 <b id="pendingCount">0</b></button>
+          <button class="status-tab" data-status="approved">已确认 <b id="approvedCount">0</b></button>
+          <button class="status-tab" data-status="rejected">已驳回 <b id="rejectedCount">0</b></button>
+        </section>
+        <button class="add-mapping-btn" id="addMappingButton" type="button">＋ 新增映射关系</button>
+      </div>
+
+      <section class="table-toolbar">
+        <div class="toolbar-note"><strong id="visibleCount">6</strong> 条待审核候选 <span>·</span> 置信度与锚定依据由算法生成</div>
+        <div class="toolbar-actions"><label class="search"><span>⌕</span><input id="searchInput" placeholder="搜索节点" /></label><select id="ksFilter"><option value="all">全部知识体系</option><option value="旅游管理专业知识体系 V1.0">旅游管理专业知识体系 V1.0</option><option value="酒店管理专业知识体系 V1.0">酒店管理专业知识体系 V1.0</option><option value="景区开发与管理专业知识体系 V1.0">景区开发与管理专业知识体系 V1.0</option></select><select id="agFilter"><option value="all">全部能力图谱</option><option value="旅游行业能力图谱 V1.0">旅游行业能力图谱 V1.0</option><option value="电商行业能力图谱 V1.0">电商行业能力图谱 V1.0</option></select><select id="nodeTypeFilter"><option value="all">全部节点类型</option><optgroup label="知识体系"><option value="专业大类">专业大类</option><option value="专业">专业</option><option value="课程">课程</option><option value="任务">任务</option><option value="操作流程">操作流程</option><option value="技能">技能</option><option value="知识点">知识点</option><option value="操作步骤">操作步骤</option><option value="标准">标准</option><option value="案例">案例</option></optgroup><optgroup label="能力图谱"><option value="行业">行业</option><option value="子行业">子行业</option><option value="岗位">岗位</option><option value="能力">能力</option></optgroup></select><select id="typeFilter"><option value="all">全部映射类型</option><option value="direct_support">直接支撑</option><option value="partial_support">部分支撑</option><option value="foundation_support">基础支撑</option><option value="assessment_basis">提供达标判据</option><option value="scenario_support">情境案例</option><option value="related">相关但不构成覆盖</option></select><button class="primary-button" id="searchBtn" type="button">搜索</button><button class="primary-button" id="batchApprove">批量确认</button><button class="primary-button" id="autoApproveHigh" style="background:#52c41a;border-color:#52c41a;color:#fff;">⚡ 一键通过 ≥0.9</button></div>
+      </section>
+
+      <section class="mapping-table" aria-label="映射审核表格">
+        <div class="table-head"><span class="head-select"><input id="pageSelectAll" type="checkbox" aria-label="选择本页全部候选" /></span><span class="head-ks">知识体系</span><span class="head-source">知识体系节点</span><span class="head-ag">能力图谱</span><span>能力项</span><span>映射类型</span><span>服务等级</span><span>置信度</span><span>判定依据</span><span id="headSource">来源</span><span class="reviewer-col">审核人</span><span>操作</span></div>
+        <div id="tableBody"></div>
+      </section>
+      <section class="pagination-bar" aria-label="列表分页">
+        <div class="pagination-summary">共 <strong id="totalCount">0</strong> 条候选</div>
+        <div class="pagination-controls">
+          <span>每页</span>
+          <select id="pageSize" aria-label="每页显示条数">
+            <option value="10">10 条</option>
+            <option value="20">20 条</option>
+            <option value="50">50 条</option>
+          </select>
+          <button class="page-button" id="prevPage" type="button" aria-label="上一页">‹</button>
+          <span id="pageNumbers" class="page-numbers"></span>
+          <button class="page-button" id="nextPage" type="button" aria-label="下一页">›</button>
+        </div>
+      </section>
+      <p class="footnote">当前页面仅审核通用教学内容与行业能力之间的候选映射，不代表学生已经掌握对应能力。</p>
+    </main>
+    <div class="task-modal" id="addMappingModal" aria-hidden="true">
+      <div class="task-dialog" role="dialog" aria-modal="true" aria-labelledby="addMappingTitle" style="max-width:680px;width:90vw;max-height:85vh;display:flex;flex-direction:column;">
+        <div class="task-dialog-head"><div><h2 id="addMappingTitle">新增映射关系</h2></div><button class="task-close" id="closeAddMapping" type="button" aria-label="关闭">×</button></div>
+        <div class="task-form" style="padding:0 20px;overflow-y:auto;flex:1;min-height:0;">
+          <div style="font-size:13px;font-weight:600;color:#41536f;margin-bottom:10px;padding:6px 10px;background:#f5f3fa;border-radius:6px;">知识体系侧</div>
+          <label style="display:block;font-size:13px;color:#41536f;margin-bottom:10px;">知识体系<select id="newKnowledgeSystem" style="display:block;width:100%;height:40px;margin-top:4px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;padding:0 12px;box-sizing:border-box;"><option value="">请选择知识体系</option><option value="旅游管理专业知识体系 V1.0">旅游管理专业知识体系 V1.0</option><option value="酒店管理专业知识体系 V1.0">酒店管理专业知识体系 V1.0</option><option value="景区开发与管理专业知识体系 V1.0">景区开发与管理专业知识体系 V1.0</option></select></label>
+          <label style="display:block;font-size:13px;color:#41536f;margin-bottom:10px;">节点类型<select id="newSourceType" style="display:block;width:100%;height:40px;margin-top:4px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;padding:0 12px;box-sizing:border-box;"><option value="专业大类">专业大类</option><option value="专业">专业</option><option value="课程">课程</option><option value="任务">任务</option><option value="操作流程">操作流程</option><option value="技能">技能</option><option value="知识点">知识点</option><option value="操作步骤">操作步骤</option><option value="标准">标准</option><option value="案例">案例</option></select></label>
+          <label style="display:block;font-size:13px;color:#41536f;margin-bottom:14px;">知识体系节点<div class="search-select" id="sourceNodeWrapper" style="position:relative;margin-top:4px;"><input id="newSourceNodeInput" type="text" placeholder="输入关键词搜索知识体系节点" autocomplete="off" style="display:block;width:100%;height:40px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;padding:0 12px;box-sizing:border-box;" /><div class="search-select-dropdown" id="sourceNodeDropdown" style="position:absolute;top:100%;left:0;right:0;z-index:200;background:#fff;border:1px solid #dfe6ef;border-radius:6px;max-height:200px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,.08);"></div><input type="hidden" id="newSourceNode" /></div></label>
+          <div style="font-size:13px;font-weight:600;color:#41536f;margin-bottom:10px;padding:6px 10px;background:#f5f3fa;border-radius:6px;">能力图谱侧</div>
+          <label style="display:block;font-size:13px;color:#41536f;margin-bottom:10px;">能力图谱<select id="newIndustryGraph" style="display:block;width:100%;height:40px;margin-top:4px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;padding:0 12px;box-sizing:border-box;"><option value="">请选择能力图谱</option><option value="旅游行业能力图谱 V1.0">旅游行业能力图谱 V1.0</option><option value="电商行业能力图谱 V1.0">电商行业能力图谱 V1.0</option></select></label>
+          <label style="display:block;font-size:13px;color:#41536f;margin-bottom:10px;">节点类型<select id="newTargetType" style="display:block;width:100%;height:40px;margin-top:4px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;padding:0 12px;box-sizing:border-box;"><option value="行业">行业</option><option value="子行业">子行业</option><option value="岗位">岗位</option><option value="能力">能力</option></select></label>
+          <label style="display:block;font-size:13px;color:#41536f;margin-bottom:14px;">能力图谱节点<div class="search-select" id="targetAbilityWrapper" style="position:relative;margin-top:4px;"><input id="newTargetAbilityInput" type="text" placeholder="输入关键词搜索能力图谱节点" autocomplete="off" style="display:block;width:100%;height:40px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;padding:0 12px;box-sizing:border-box;" /><div class="search-select-dropdown" id="targetAbilityDropdown" style="position:absolute;top:100%;left:0;right:0;z-index:200;background:#fff;border:1px solid #dfe6ef;border-radius:6px;max-height:200px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,.08);"></div><input type="hidden" id="newTargetAbility" /></div></label>
+          <div id="levelFieldWrap" style="display:block;margin-bottom:14px;">
+            <label style="display:block;font-size:13px;color:#41536f;">等级<select id="newLevel" style="display:block;width:100%;height:40px;margin-top:4px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;padding:0 12px;box-sizing:border-box;"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option></select></label>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:#41536f;margin-bottom:10px;padding:6px 10px;background:#f5f3fa;border-radius:6px;">映射信息</div>
+          <label style="display:block;font-size:13px;color:#41536f;margin-bottom:10px;">映射关系
+            <input id="newRelationText" type="text" placeholder="如：直接支撑" style="display:block;width:100%;height:40px;margin-top:4px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;padding:0 12px;box-sizing:border-box;" />
+            <select id="newRelationSelect" style="display:none;width:100%;height:40px;margin-top:4px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;padding:0 12px;box-sizing:border-box;"><option value="">请选择映射关系</option><option value="直接支撑">直接支撑</option><option value="部分支撑">部分支撑</option><option value="前置支撑">前置支撑</option><option value="相关但不构成覆盖">相关但不构成覆盖</option></select>
+          </label>
+          <label style="display:block;font-size:13px;color:#41536f;margin-bottom:14px;">判定依据（可选）<textarea id="newEvidence" rows="3" placeholder="请输入依据" style="display:block;width:100%;border:1px solid #dfe6ef;border-radius:8px;padding:8px 12px;font-size:13px;color:#41536f;margin-top:4px;resize:vertical;font-family:inherit;box-sizing:border-box;"></textarea></label>
+        </div>
+        <div class="task-dialog-actions" style="margin-top:8px;"><button class="ghost-button" id="cancelAddMapping" type="button">取消</button><button class="primary-button" id="submitAddMapping" type="button">创建映射</button></div>
+      </div>
+    </div>
+</div>
+    </div>
+    <div id="toast" class="toast" role="status"></div>
+    <script src="mapping-review.js"></script>
+    </div>
+  </body>
+</html>

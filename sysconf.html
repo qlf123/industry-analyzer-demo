@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>基础信息配置</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+/* 基础信息配置：多套版本，每套含登录页 / 教师端 / 学生端的品牌与入口配置，同一时间只启用一套 */
+.vbar{background:var(--card);border:1px solid var(--rule);border-radius:13px;margin-bottom:12px}
+.vtabs{display:flex;gap:24px;padding:0 18px;border-bottom:1px solid var(--rule-2)}
+.vtabs button{border:0;background:none;font:inherit;font-size:13px;color:var(--ink-2);padding:11px 0;cursor:pointer;border-bottom:2px solid transparent}
+.vtabs button.on{color:var(--brand-ink);border-color:var(--brand);font-weight:500}
+.vtabs .act{font-size:10.5px;color:var(--good);margin-left:4px}
+.ven{display:flex;align-items:center;gap:10px;padding:10px 18px;font-size:12.5px}
+.ven .sp{flex:1}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--rule);border-radius:9px;padding:3px;margin-bottom:12px}
+.seg button{border:0;background:none;font:inherit;font-size:12.5px;padding:5px 16px;border-radius:7px;color:var(--ink-2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
+.sec{background:var(--card);border:1px solid var(--rule);border-radius:13px;padding:16px 18px;margin-bottom:12px}
+.sec-t{font-size:14px;font-weight:700;margin-bottom:12px}
+.sec-t small{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border:1px solid var(--rule-2);border-radius:10px;padding:12px 14px;min-width:0}
+.box .bt{font-size:12.5px;font-weight:600;margin-bottom:8px}
+.box .hint{font-size:11.5px;color:var(--muted);margin-top:6px}
+.box input[type=text],.box textarea{width:100%;box-sizing:border-box;font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--card);color:var(--ink)}
+.img{display:flex;align-items:center;gap:12px}
+.img .th{width:56px;height:56px;border-radius:10px;background:var(--card-2);border:1px solid var(--rule);display:grid;place-items:center;overflow:hidden;flex:none;color:var(--muted);font-size:11px}
+.img .th.wide{width:120px;height:68px}
+.img .th img{width:100%;height:100%;object-fit:cover}
+.img label{cursor:pointer}
+.radio{display:flex;gap:16px;font-size:12.5px;margin-bottom:8px}
+.ln{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.prev{background:var(--card-2);border-radius:10px;padding:14px;font-size:20px;font-weight:700;line-height:1.5;color:var(--ink)}
+.prev em{font-style:normal;background:linear-gradient(90deg,#4f7cff,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.asst{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--rule-2);font-size:12.5px}
+.asst:first-child{border-top:0}
+.asst .nm{font-weight:600;width:130px;flex:none}
+.asst .ds{flex:1;color:var(--ink-2);font-size:12px;min-width:0}
+.asst .st{width:110px;flex:none;color:var(--muted);font-size:12px}
+.asst .lk{margin-left:8px}
+.asst.off .nm{color:var(--muted)}
+.banner{display:flex;gap:14px;padding:12px 0;border-top:1px solid var(--rule-2)}
+.banner:first-child{border-top:0}
+.banner .th{width:150px;height:100px;border-radius:10px;background:linear-gradient(135deg,#eef2ff,#f5f3ff);display:grid;place-items:center;overflow:hidden;flex:none;color:var(--muted);font-size:12px}
+.banner .th img{width:100%;height:100%;object-fit:cover}
+.banner .bd{flex:1;font-size:12.5px;line-height:1.8;min-width:0}
+.banner .bd .k{color:var(--muted)}
+.lk{color:var(--brand-ink);cursor:pointer;background:none;border:0;padding:0;font:inherit;font-size:12.5px}
+.lk:hover{text-decoration:underline}
+.savebar{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:10px;padding:12px 0;background:linear-gradient(transparent,var(--plane) 30%)}
+@media (max-width:900px){.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">基础信息配置</h1><div class="pt-d">可准备多套版本，同一时间只启用一套；启用版本的教师端、学生端 Logo 名称显示在对应端侧栏顶部</div></div></div></div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'admin', active: 'sysconf' });
+  var esc = TK.esc, KEY = 'sysConf.v1';
+  var ASSTS = [['课件生成', '围绕教学主题快速生成可编辑课件，辅助老师完成课堂展示内容准备'], ['教案生成', '根据教学主题生成结构化教案，帮助老师更快完成教学设计'], ['情景互动游戏生成', '通过角色扮演、任务驱动或故事情境，让学生在沉浸式体验中掌握知识点'], ['图片生成', '自动生成或关联配图，增强课件视觉支撑'], ['视频生成', '自动生成配套教学短视频，丰富课件形式，辅助课堂讲解']];
+  function version() {
+    return {
+      login: { logo: '', logoName: 'AIGC智慧课堂教学平台', bg: '', mode: 2, l1: ['让老师', '轻松备课'], l2: ['让学生', '学的有趣'], sub: 'AI 助力每一堂课的教与学', boxLogo: '', welcome: '欢迎登录', copyright: '' },
+      teacher: { logo: '', logoName: 'AIGC智慧课堂教学平台', wbImg: '', mode: 2, t1: '让 AI 助您', t2: '更快完成一节课的教学准备', wbSub: '', wbAssts: ASSTS.map(function (a, i) { return { name: a[0], on: a[0] !== '视频生成', order: i + 1 }; }), wbBg: '',
+        banners: [{ id: 'B1', img: '', title: '让 AI 助您 / 更快完成一节课的教学准备', sub: '围绕课堂备课场景，快速完成课件、教案、情景互动游戏、讲解视频、图片素材等教学内容创作', on: true, order: 1 }],
+        rcAssts: ASSTS.map(function (a, i) { return { name: a[0], desc: a[1], on: a[0] !== '视频生成', order: i + 1 }; }), rcBg: '' },
+      student: { logo: '', logoName: 'AIGC智慧课堂教学平台' }
+    };
+  }
+  var C; try { C = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  var saved = !!C;
+  if (!C) C = { active: 0, versions: [version(), version(), version()] };
+  var F = { v: 0, tab: 'login' }, W = JSON.parse(JSON.stringify(C)), dirty = false;   // W：编辑中的副本，保存配置后才写入
+  function V() { return W.versions[F.v]; }
+  function mark() { dirty = true; }
+
+  function img(path, val, wide, hint) {
+    return '<div class="img"><span class="th' + (wide ? ' wide' : '') + '">' + (val ? '<img src="' + val + '" alt="">' : '未上传') + '</span><div><label class="btn-s">⤒ 上传替换<input type="file" accept="image/png,image/jpeg" hidden data-img="' + path + '"></label>' + (val ? ' <button class="lk" data-clrimg="' + path + '">恢复默认</button>' : '') + '<div class="hint">' + hint + '</div></div></div>';
+  }
+  function text(path, val, max, ph) { return '<input type="text" data-t="' + path + '" value="' + esc(val || '') + '" maxlength="' + (max || 40) + '" placeholder="' + (ph || '请输入') + '">'; }
+  function box(title, body, hint, full) { return '<div class="box"' + (full ? ' style="grid-column:1/-1"' : '') + '><div class="bt">' + title + '</div>' + body + (hint ? '<div class="hint">' + hint + '</div>' : '') + '</div>'; }
+  function hl(a) { return esc(a[0] || '') + '<em>' + esc(a[1] || '') + '</em>'; }
+  function assts(list, key, withDesc) {
+    var sorted = list.slice().sort(function (a, b) { return a.order - b.order; });
+    return sorted.map(function (a, i) {
+      return '<div class="asst' + (a.on ? '' : ' off') + '"><span class="nm">' + esc(a.name) + '</span>' + (withDesc ? '<span class="ds">' + esc(a.desc) + '</span>' : '<span class="ds"></span>') + '<span class="st">状态：' + (a.on ? '已启用' : '已停用') + '　排序：' + (i + 1) + '</span>' +
+        (withDesc ? '<button class="lk" data-aedit="' + key + '|' + esc(a.name) + '">编辑</button>' : '') + '<button class="lk" data-atog="' + key + '|' + esc(a.name) + '">' + (a.on ? '停用' : '启用') + '</button>' + (i ? '<button class="lk" data-amv="' + key + '|' + esc(a.name) + '|-1">上移</button>' : '') + (i < sorted.length - 1 ? '<button class="lk" data-amv="' + key + '|' + esc(a.name) + '|1">下移</button>' : '') + '</div>';
+    }).join('');
+  }
+  function render() {
+    var v = V(), L = v.login, T = v.teacher, S = v.student, h = '';
+    h += '<div class="vbar"><div class="vtabs">' + W.versions.map(function (_, i) { return '<button data-v="' + i + '" class="' + (F.v === i ? 'on' : '') + '">版本' + (i + 1) + (W.active === i ? '<span class="act">● 启用中</span>' : '') + '</button>'; }).join('') + '</div>' +
+      '<div class="ven">启用版本' + (F.v + 1) + '<span class="sp"></span><button type="button" class="sw" data-enable aria-pressed="' + (W.active === F.v) + '"></button></div></div>';
+    h += '<div class="seg">' + [['login', '登录页配置'], ['teacher', '教师端配置'], ['student', '学生端配置']].map(function (x) { return '<button data-tab="' + x[0] + '" aria-pressed="' + (F.tab === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div>';
+    if (F.tab === 'login') {
+      h += '<div class="sec"><div class="sec-t">登录页配置</div><div class="g2">' +
+        box('登录页左上角 Logo（图标）', img('login.logo', L.logo, false, '支持 PNG / JPG，最多一张，建议 1:1')) + box('登录页左上角 Logo 名称', text('login.logoName', L.logoName, 20), 'Logo 旁显示的文字，不超过 20 字') +
+        box('登录页背景图', img('login.bg', L.bg, true, '支持 PNG / JPG，最多一张，建议 16:9'), '', true) +
+        box('登录页主标题', '<div class="radio"><label><input type="radio" name="lmode" value="2"' + (L.mode === 2 ? ' checked' : '') + '> 两行标题</label><label><input type="radio" name="lmode" value="1"' + (L.mode === 1 ? ' checked' : '') + '> 单行标题</label></div>' +
+          '<div class="ln">' + text('login.l1.0', L.l1[0], 12, '第一行 左侧文案') + text('login.l1.1', L.l1[1], 12, '第一行 重点文案') + '</div>' + (L.mode === 2 ? '<div class="ln">' + text('login.l2.0', L.l2[0], 12, '第二行 左侧文案') + text('login.l2.1', L.l2[1], 12, '第二行 重点文案') + '</div>' : '') +
+          '<div class="hint" style="margin-bottom:8px">重点文案以蓝紫渐变色显示</div><div class="bt">当前预览</div><div class="prev">' + hl(L.l1) + (L.mode === 2 ? '<br>' + hl(L.l2) : '') + '</div>', '', true) +
+        box('登录页副标题', text('login.sub', L.sub, 40)) + box('版权文案', text('login.copyright', L.copyright, 60, '如：© 2026 华夏旅游职业学院')) +
+        box('登录框上方 Logo（图标）', img('login.boxLogo', L.boxLogo, false, '支持 PNG / JPG，最多一张，建议 1:1')) + box('登录框欢迎标题', text('login.welcome', L.welcome, 20), '不超过 20 字') + '</div></div>';
+    } else if (F.tab === 'teacher') {
+      h += '<div class="sec"><div class="sec-t">教师端 Logo 配置</div><div class="g2">' + box('教师端左上角 Logo（图标）', img('teacher.logo', T.logo, false, '支持 PNG / JPG，最多一张，建议 1:1')) + box('教师端 Logo 名称', text('teacher.logoName', T.logoName, 20), '显示在教师端侧栏顶部，不超过 20 字') + '</div></div>' +
+        '<div class="sec"><div class="sec-t">工作台配置</div><div class="g2">' + box('工作台插画图', img('teacher.wbImg', T.wbImg, true, '支持 PNG / JPG，最多一张，建议 3:2')) +
+          box('工作台顶部图主标题', '<div class="radio"><label><input type="radio" name="tmode" value="2"' + (T.mode === 2 ? ' checked' : '') + '> 两行标题</label><label><input type="radio" name="tmode" value="1"' + (T.mode === 1 ? ' checked' : '') + '> 单行标题</label></div>' + text('teacher.t1', T.t1, 20, '第一行标题') + (T.mode === 2 ? '<div style="height:6px"></div>' + text('teacher.t2', T.t2, 30, '第二行标题') : '') + '<div class="bt" style="margin-top:10px">当前预览</div><div class="prev" style="font-size:17px">' + esc(T.t1) + (T.mode === 2 ? '<br>' + esc(T.t2) : '') + '</div>') +
+          box('工作台顶部图副标题', text('teacher.wbSub', T.wbSub, 60), '', true) +
+          box('工作台生成助手配置', assts(T.wbAssts, 'wbAssts', false), '停用的生成助手在工作台不显示', true) +
+          box('工作台底部背景', img('teacher.wbBg', T.wbBg, true, '支持 PNG / JPG，最多一张，建议横向背景图'), '', true) + '</div></div>' +
+        '<div class="sec"><div class="sec-t">备课中心配置<small>每个 Banner 一张图片，建议 3:2</small></div>' +
+          '<div class="box" style="margin-bottom:12px">' + T.banners.slice().sort(function (a, b) { return a.order - b.order; }).map(function (b, i) {
+            return '<div class="banner"><span class="th">' + (b.img ? '<img src="' + b.img + '" alt="">' : 'Banner' + (i + 1)) + '</span><div class="bd"><b>Banner' + (i + 1) + '</b><br><span class="k">标题：</span>' + esc(b.title) + '<br><span class="k">副标题：</span>' + esc(b.sub || '—') + '<br><span class="k">状态：</span>' + (b.on ? '已启用' : '已停用') + '　<span class="k">排序：</span>' + b.order +
+              '<div style="margin-top:4px"><label class="lk">上传替换<input type="file" accept="image/png,image/jpeg" hidden data-bimg="' + b.id + '"></label>　<button class="lk" data-bedit="' + b.id + '">编辑</button>　<button class="lk" data-btog="' + b.id + '">' + (b.on ? '停用' : '启用') + '</button>' + (T.banners.length > 1 ? '　<button class="lk" data-bdel="' + b.id + '" style="color:var(--crit)">删除</button>' : '') + '</div></div></div>';
+          }).join('') + '<button class="btn-s" data-badd style="margin-top:8px">+ 新增 Banner</button></div>' +
+          '<div class="g2">' + box('备课中心生成助手配置', assts(T.rcAssts, 'rcAssts', true), '', true) + box('备课中心底部背景', img('teacher.rcBg', T.rcBg, true, '支持 PNG / JPG，最多一张，建议横向背景图'), '', true) + '</div></div>';
+    } else {
+      h += '<div class="sec"><div class="sec-t">学生端配置</div><div class="g2">' + box('学生端左上角 Logo（图标）', img('student.logo', S.logo, false, '支持 PNG / JPG，最多一张，建议 1:1')) + box('学生端 Logo 名称', text('student.logoName', S.logoName, 20), '显示在学生端侧栏顶部，不超过 20 字') + '</div></div>';
+    }
+    h += '<div class="savebar"><button class="btn-s" data-cancel>取消</button><button class="btn" style="height:34px" data-save>保存配置</button></div>';
+    document.getElementById('body').innerHTML = h;
+  }
+  function setPath(path, val) { var ks = path.split('.'), o = V(); for (var i = 0; i < ks.length - 1; i++) o = o[ks[i]]; o[ks[ks.length - 1]] = val; mark(); }
+  // 图片压缩到长边 1200 像素以内再存（演示数据存浏览器本地）
+  function readImg(file, cb) {
+    if (!/image\/(png|jpeg)/.test(file.type)) return TK.toast('只支持 PNG / JPG');
+    if (file.size > 20 * 1024 * 1024) return TK.toast('图片不超过 20MB');
+    var rd = new FileReader();
+    rd.onload = function () {
+      var im = new Image();
+      im.onload = function () { var s = Math.min(1, 1200 / Math.max(im.width, im.height)), cv = document.createElement('canvas'); cv.width = Math.round(im.width * s); cv.height = Math.round(im.height * s); cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height); cb(cv.toDataURL('image/jpeg', 0.85)); };
+      im.src = rd.result;
+    };
+    rd.readAsDataURL(file);
+  }
+  function asstEdit(key, name) {
+    var a = V().teacher[key].filter(function (x) { return x.name === name; })[0];
+    var m = TK.modal({ title: '编辑生成助手 · ' + name, width: 480, body: '<div class="fgrid"><div class="ff full"><span class="lh"><span class="req">说明</span></span><textarea data-k="desc" maxlength="80">' + esc(a.desc) + '</textarea></div></div>', foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">确定</button>' });
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () { var d = m.body.querySelector('[data-k="desc"]').value.trim(); if (!d) return TK.toast('请输入说明'); a.desc = d; mark(); m.close(); render(); };
+  }
+  function bannerEdit(b) {
+    var T = V().teacher;
+    var m = TK.modal({ title: b ? '编辑 Banner' : '新增 Banner', width: 520, body: '<div class="fgrid"><div class="ff full"><span class="lh"><span class="req">标题</span></span><input data-k="title" maxlength="40" value="' + esc(b ? b.title : '') + '" placeholder="用「/」分隔两行"></div><div class="ff full"><span class="lh"><span>副标题</span></span><textarea data-k="sub" maxlength="120">' + esc(b ? b.sub : '') + '</textarea></div><div class="ff"><span class="lh"><span class="req">排序</span></span><input data-k="order" type="number" min="1" value="' + (b ? b.order : T.banners.length + 1) + '"></div></div>',
+      foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">确定</button>' });
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () {
+      var g = function (k) { return m.body.querySelector('[data-k="' + k + '"]').value.trim(); };
+      if (!g('title')) return TK.toast('请输入标题'); if (!(+g('order') >= 1)) return TK.toast('排序需为正整数');
+      var x = b || { id: TK.uid('B'), img: '', on: true }; x.title = g('title'); x.sub = g('sub'); x.order = +g('order');
+      if (!b) T.banners.push(x); mark(); m.close(); render();
+    };
+  }
+  document.addEventListener('click', function (e) {
+    var t, p;
+    if ((t = e.target.closest('[data-v]'))) { F.v = +t.dataset.v; render(); }
+    else if ((t = e.target.closest('[data-tab]'))) { F.tab = t.dataset.tab; render(); }
+    else if (e.target.closest('[data-enable]')) {
+      if (W.active === F.v) return TK.toast('至少启用一套版本；启用其他版本即可切换');
+      W.active = F.v; mark(); render(); TK.toast('保存配置后生效');
+    }
+    else if ((t = e.target.closest('[data-clrimg]'))) { setPath(t.dataset.clrimg, ''); render(); }
+    else if ((t = e.target.closest('[data-atog]'))) { p = t.dataset.atog.split('|'); V().teacher[p[0]].forEach(function (a) { if (a.name === p[1]) a.on = !a.on; }); mark(); render(); }
+    else if ((t = e.target.closest('[data-aedit]'))) { p = t.dataset.aedit.split('|'); asstEdit(p[0], p[1]); }
+    else if ((t = e.target.closest('[data-amv]'))) {
+      p = t.dataset.amv.split('|'); var list = V().teacher[p[0]].slice().sort(function (a, b) { return a.order - b.order; }), i = list.findIndex(function (a) { return a.name === p[1]; }), j = i + (+p[2]);
+      var tmp = list[i]; list[i] = list[j]; list[j] = tmp; list.forEach(function (a, k) { a.order = k + 1; }); mark(); render();
+    }
+    else if (e.target.closest('[data-badd]')) bannerEdit(null);
+    else if ((t = e.target.closest('[data-bedit]'))) bannerEdit(V().teacher.banners.filter(function (b) { return b.id === t.dataset.bedit; })[0]);
+    else if ((t = e.target.closest('[data-btog]'))) { V().teacher.banners.forEach(function (b) { if (b.id === t.dataset.btog) b.on = !b.on; }); mark(); render(); }
+    else if ((t = e.target.closest('[data-bdel]'))) { var id = t.dataset.bdel; TK.confirm('确定删除该 Banner 吗？', function () { V().teacher.banners = V().teacher.banners.filter(function (b) { return b.id !== id; }); mark(); render(); }); }
+    else if (e.target.closest('[data-cancel]')) { if (!dirty) return TK.toast('没有未保存的修改'); TK.confirm('放弃未保存的修改吗？', function () { W = JSON.parse(JSON.stringify(C)); dirty = false; render(); }); }
+    else if (e.target.closest('[data-save]')) {
+      var bad = []; W.versions.forEach(function (v, i) { ['login', 'teacher', 'student'].forEach(function (k) { if (!String(v[k].logoName || '').trim()) bad.push('版本' + (i + 1) + ' Logo 名称'); }); });
+      if (bad.length) return TK.toast('请填写：' + bad.slice(0, 2).join('、'));
+      C = JSON.parse(JSON.stringify(W));
+      try { localStorage.setItem(KEY, JSON.stringify(C)); } catch (e2) { return TK.toast('图片太大，浏览器本地存不下，请换一张小一点的图片'); }
+      dirty = false; saved = true; UI.boot({ portal: 'admin', active: 'sysconf' }); render(); TK.toast('已保存配置，启用版本：版本' + (C.active + 1));
+    }
+  });
+  document.addEventListener('input', function (e) { var p = e.target.getAttribute('data-t'); if (!p) return; var ks = p.split('.'); if (/^\d$/.test(ks[ks.length - 1])) { V()[ks[0]][ks[1]][+ks[2]] = e.target.value; mark(); var pv = document.querySelector('.prev'); if (pv && ks[0] === 'login') { var L = V().login; pv.innerHTML = hl(L.l1) + (L.mode === 2 ? '<br>' + hl(L.l2) : ''); } } else { setPath(p, e.target.value); if (ks[0] === 'teacher' && /^t[12]$/.test(ks[1])) { var T = V().teacher, pv2 = document.querySelector('.prev'); if (pv2) pv2.innerHTML = esc(T.t1) + (T.mode === 2 ? '<br>' + esc(T.t2) : ''); } } });
+  document.addEventListener('change', function (e) {
+    var t = e.target, p;
+    if (t.name === 'lmode') { V().login.mode = +t.value; mark(); render(); }
+    else if (t.name === 'tmode') { V().teacher.mode = +t.value; mark(); render(); }
+    else if ((p = t.getAttribute('data-img')) && t.files[0]) readImg(t.files[0], function (u) { setPath(p, u); render(); });
+    else if ((p = t.getAttribute('data-bimg')) && t.files[0]) readImg(t.files[0], function (u) { V().teacher.banners.forEach(function (b) { if (b.id === p) b.img = u; }); mark(); render(); });
+  });
+  window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+  render();
+})();
+</script>
+</body>
+</html>

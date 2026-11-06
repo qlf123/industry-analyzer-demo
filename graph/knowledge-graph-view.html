@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>全景图谱｜专业图谱平台</title>
+<link rel="stylesheet" href="mapping-review.css" />
+<link rel="stylesheet" href="mapping-polish.css" />
+<link rel="stylesheet" href="mapping-compact.css" />
+<link rel="stylesheet" href="pano-version.css" />
+<style>
+  .graph-canvas-wrap{position:relative;width:100%;height:calc(100vh - 110px);overflow:hidden;background:#f5f3fa;}
+  .graph-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .graph-toolbar button{height:32px;padding:0 14px;border:1px solid #dfe6ef;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;transition:all .15s;}
+  .graph-toolbar button:hover{border-color:#5149e9;color:#5149e9;}
+  .graph-legend{position:absolute;bottom:12px;left:12px;z-index:10;display:flex;gap:16px;padding:10px 16px;background:rgba(255,255,255,.92);border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.06);font-size:12px;}
+  .graph-legend-item{display:flex;align-items:center;gap:6px;}
+  .graph-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .graph-info{position:absolute;top:12px;left:12px;z-index:10;display:flex;align-items:center;gap:8px;}
+  .graph-info a{color:#5149e9;text-decoration:none;font-size:13px;}
+  .graph-info a:hover{text-decoration:underline;}
+  .graph-info h1{font-size:16px;font-weight:600;margin:0;color:#31425e;}
+  svg.graph-svg{display:block;width:100%;height:100%;cursor:grab;}
+  svg.graph-svg:active{cursor:grabbing;}
+  .graph-node{cursor:pointer;transition:opacity .2s;}
+  .graph-node:hover circle{stroke-width:2.5;}
+  .graph-node text{font-size:11px;fill:#31425e;pointer-events:none;user-select:none;text-anchor:middle;}
+  .graph-link{stroke:#ccc;stroke-width:1;fill:none;transition:stroke-width .2s,stroke .2s;}
+  .graph-node.dimmed{opacity:.15;}
+  .graph-link.dimmed{opacity:.08;}
+  .graph-link.highlighted{stroke:#5149e9;stroke-width:2;}
+  .graph-link.mapped{stroke:#eb2f96;stroke-width:1.6;stroke-dasharray:4 3;}
+  .graph-node-label{font-size:10px;fill:#555;pointer-events:none;user-select:none;text-anchor:middle;}
+  .graph-tooltip{position:absolute;z-index:20;background:rgba(33,33,33,.92);color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;pointer-events:none;white-space:nowrap;display:none;line-height:1.5;}
+  .graph-search{height:32px;padding:0 12px;border:1px solid #dfe6ef;border-radius:6px;font-size:13px;width:180px;}
+.graph-search-panel{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:6px;}
+.graph-search-panel h3{font-size:13px;font-weight:600;margin:0 0 12px 0;color:#31425e;}
+.graph-search-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.graph-search-row label{font-size:12px;color:#8b99ac;width:50px;flex-shrink:0;text-align:right;}
+.graph-search-row select,.graph-search-row input{height:28px;padding:0 8px;border:1px solid #dfe6ef;border-radius:5px;font-size:12px;flex:1;min-width:0;}
+  .graph-icon-btn{width:30px;height:28px;padding:0;border:1px solid #dfe6ef;border-radius:5px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+  .graph-icon-btn:hover{border-color:#5149e9;}
+  .graph-icon-btn.gray:hover{border-color:#c72c2a;}
+  .graph-icon-btn.gray svg path{stroke:#8b99ac;}
+.graph-path-result{margin-top:8px;padding:8px 10px;background:#f5f3fa;border-radius:6px;font-size:12px;color:#555;display:none;line-height:1.6;}
+.graph-path-result .path-node{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:#fff;border-radius:4px;margin:2px 0;}
+.graph-path-result .path-arrow{color:#5149e9;margin:0 4px;font-weight:bold;}
+.graph-quick-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.graph-quick-tag{padding:3px 10px;border-radius:12px;font-size:12px;cursor:pointer;border:1px solid #e2e8f0;background:#fff;color:#60718a;transition:all .15s;}
+.graph-quick-tag:hover,.graph-quick-tag.active{background:#5149e9;color:#fff;border-color:#5149e9;}
+.graph-search-panel.collapsed{padding:8px 14px;}
+.graph-search-panel.collapsed .graph-search-body{display:none;}
+  .graph-detail-panel{position:absolute;top:12px;right:12px;z-index:12;width:260px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:14px 16px;display:none;}
+  .graph-detail-panel.show{display:block;}
+  .graph-detail-panel h4{font-size:14px;font-weight:600;margin:0 0 10px 0;color:#31425e;}
+  .graph-detail-row{display:flex;gap:6px;font-size:12px;margin-bottom:6px;line-height:1.5;}
+  .graph-detail-row span:first-child{color:#8b99ac;min-width:56px;}
+  .graph-detail-row span:last-child{color:#31425e;}
+  .graph-detail-connected{margin-top:8px;border-top:1px solid #f0f0f0;padding-top:8px;}
+  .graph-detail-connected-title{font-size:12px;color:#8b99ac;margin-bottom:6px;}
+  .graph-detail-connected-item{display:inline-block;padding:2px 8px;margin:2px;border-radius:4px;font-size:11px;background:#f5f3fa;color:#555;cursor:pointer;}
+  .graph-detail-connected-item:hover{background:#5149e9;color:#fff;}
+  .graph-detail-close{position:absolute;top:8px;right:12px;cursor:pointer;color:#8b99ac;font-size:18px;border:none;background:none;}
+  .graph-result-count{font-size:12px;color:#8b99ac;margin-left:8px;}
+  .graph-result-count strong{color:#5149e9;}
+  .graph-search-suggest{position:absolute;z-index:20;background:#fff;border:1px solid #e2e8f0;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.08);max-height:160px;overflow-y:auto;display:none;}
+  .graph-search-suggest-item{padding:4px 10px;font-size:12px;cursor:pointer;color:#555;}
+  .graph-search-suggest-item:hover{background:#f5f3fa;color:#5149e9;}
+  .graph-hover-label{position:absolute;z-index:15;background:rgba(33,33,33,.9);color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;pointer-events:none;white-space:nowrap;display:none;}
+  .graph-toolbar-btn{height:32px;padding:0 14px;border:1px solid #dfe6ef;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;transition:all .15s;}
+  .graph-toolbar-btn:hover{border-color:#5149e9;color:#5149e9;}
+  .graph-search-tabs{display:flex;gap:0;border-bottom:1px solid #e2e8f0;margin-bottom:8px;}
+  .graph-search-tab{padding:4px 16px;font-size:13px;color:#8b99ac;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;}
+  .graph-search-tab.active{color:#5149e9;border-bottom-color:#5149e9;font-weight:600;}
+  .graph-search-tab:hover{color:#5149e9;}
+  .combo-select{position:relative;flex:1;min-width:80px;}
+  .combo-input{width:100%;height:28px;padding:0 24px 0 8px;border:1px solid #dfe6ef;border-radius:5px;font-size:12px;outline:none;box-sizing:border-box;}
+  .combo-input:focus{border-color:#5149e9;}
+  .combo-arrow{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#8b99ac;pointer-events:none;}
+  .combo-dropdown{position:absolute;top:calc(100% + 2px);left:0;right:0;z-index:30;background:#fff;border:1px solid #e2e8f0;border-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.08);max-height:140px;overflow-y:auto;display:none;}
+  .combo-dropdown.open{display:block;}
+  .combo-option{padding:4px 10px;font-size:12px;cursor:pointer;color:#555;}
+  .combo-option:hover,.combo-option.selected{background:#f5f3fa;color:#5149e9;}
+  .graph-search-content{display:none;}
+  .graph-search-content.active{display:block;}
+</style>
+  <link rel="stylesheet" href="design-tokens.css" />
+  <link rel="stylesheet" href="gc-shell.css" />
+</head>
+<body>
+<aside class="lnav gc-lnav" id="lnav"></aside>
+<!-- 左侧菜单与其它页面共用 ../js/common.js -->
+<script src="../js/mock-data.js"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js"></script>
+<script src="gc-shell.js"></script>
+<script src="gc-flow.js"></script>
+<script>GC.boot('gc-kg');</script>
+<div class="platform-page">
+<main class="app-shell">
+  <section class="page-heading">
+    <div style="display:flex;gap:10px;align-items:center;width:100%;">
+      <a href="knowledge-graph.html" style="color:#5149e9;text-decoration:none;font-size:14px;">← 返回</a>
+      <h1 id="graphTitle">全景图谱</h1>
+      <div class="sg-ctrl" id="sgCtrl"></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-left:auto;">
+        <button id="zoomInBtn" type="button" class="graph-toolbar-btn">放大</button>
+        <button id="zoomOutBtn" type="button" class="graph-toolbar-btn">缩小</button>
+        <button id="resetBtn" type="button" class="graph-toolbar-btn">重置</button>
+      </div>
+    </div>
+  </section>
+  <div class="pv-bar" id="pvBar"></div>
+  <div class="graph-canvas-wrap" id="canvasWrap">
+    <div class="graph-search-panel" id="searchPanel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;">
+        <h3 style="margin:0;">搜索</h3>
+      </div>
+      <div class="graph-search-body">
+        <div class="graph-search-tabs">
+          <span class="graph-search-tab active" data-tab="node">找节点</span>
+          <span class="graph-search-tab" data-tab="path">找链路</span>
+        </div>
+        <div class="graph-search-content active" id="contentNode">
+          <div class="graph-search-row">
+            <div class="combo-select" id="filterIndustry" data-value="all">
+              <input type="text" class="combo-input" placeholder="全部行业" autocomplete="off" />
+              <span class="combo-arrow">▾</span>
+              <div class="combo-dropdown">
+                <div class="combo-option" data-value="all" data-label="全部行业">全部行业</div>
+                <div class="combo-option" data-value="旅游" data-label="旅游业">旅游业</div>
+                <div class="combo-option" data-value="电商" data-label="电商行业">电商行业</div>
+              </div>
+            </div>
+            <div class="combo-select" id="filterMajor" data-value="all">
+              <input type="text" class="combo-input" placeholder="全部专业" autocomplete="off" />
+              <span class="combo-arrow">▾</span>
+              <div class="combo-dropdown">
+                <div class="combo-option" data-value="all" data-label="全部专业">全部专业</div>
+                <div class="combo-option" data-value="旅游管理" data-label="旅游管理">旅游管理</div>
+                <div class="combo-option" data-value="酒店管理" data-label="酒店管理">酒店管理</div>
+                <div class="combo-option" data-value="景区开发" data-label="景区开发">景区开发</div>
+              </div>
+            </div>
+            <select id="filterNodeType"><option value="all">全部类型</option><option value="课程">课程</option><option value="章节">章节</option><option value="知识点">知识点</option><option value="技能规范">技能规范</option><option value="核心概念">核心概念</option><option value="能力项">能力项</option></select>
+            <input id="quickSearchInput" placeholder="节点名称" style="flex:1;min-width:100px;" />
+            <button class="primary-button" id="quickSearchBtn" type="button">搜索</button>
+            <button class="ghost-button" id="clearNodeBtn" type="button">清除</button>
+            <span class="graph-result-count" id="resultCount"></span>
+          </div>
+        </div>
+        <div class="graph-search-content" id="contentPath">
+          <div class="graph-search-row">
+            <select id="pathStartType"><option value="all">全部类型</option><option value="课程">课程</option><option value="章节">章节</option><option value="知识点">知识点</option><option value="技能规范">技能规范</option><option value="核心概念">核心概念</option><option value="能力项">能力项</option></select>
+            <input id="pathStart" placeholder="起点节点名称" style="flex:1;min-width:80px;" />
+            <span style="color:#8b99ac;font-size:13px;">→</span>
+            <select id="pathEndType"><option value="all">全部类型</option><option value="课程">课程</option><option value="章节">章节</option><option value="知识点">知识点</option><option value="技能规范">技能规范</option><option value="核心概念">核心概念</option><option value="能力项">能力项</option></select>
+            <input id="pathEnd" placeholder="终点节点名称" style="flex:1;min-width:80px;" />
+            <button class="primary-button" id="pathSearchBtn" type="button">查找链路</button>
+            <button class="ghost-button" id="clearFilterBtn" type="button">清除</button>
+          </div>
+          <div class="graph-path-result" id="pathResult"></div>
+        </div>
+        <div class="graph-search-suggest" id="searchSuggest"></div>
+      </div>
+    </div>
+
+    <div class="graph-detail-panel" id="detailPanel">
+      <button class="graph-detail-close" id="detailClose">×</button>
+      <h4 id="detailTitle"></h4>
+      <div id="detailBody"></div>
+    </div>
+    <div class="graph-hover-label" id="hoverLabel"></div>
+    <div class="graph-legend">
+      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#52c41a;"></span>知识点</div>
+      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#1890ff;"></span>技能规范</div>
+      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#722ed1;"></span>课程</div>
+      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#fa8c16;"></span>章节</div>
+      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#c72c2a;"></span>核心概念</div>
+      <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#eb2f96;"></span>能力项（已确认映射）</div>
+    </div>
+    <div class="graph-tooltip" id="tooltip"></div>
+    <div class="sg-note" id="sgNote"></div>
+    <svg class="graph-svg" id="graphSvg"></svg>
+  </div>
+</main>
+</div>
+<script>
+  var taskName = sessionStorage.getItem('viewTaskName') || '';
+  if(taskName){
+    var t = document.getElementById('graphTitle');
+    if(t) t.textContent = taskName + ' · 全景图谱';
+  }
+(function(){
+  var typeColors = {'知识点':'#52c41a','技能规范':'#1890ff','课程':'#722ed1','章节':'#fa8c16','核心概念':'#c72c2a','能力项':'#eb2f96'};
+  var typeRadius = {'知识点':6,'技能规范':7,'课程':10,'章节':8,'核心概念':9,'能力项':9};
+
+  function generateData(){
+    var nodes=[], links=[], idc=0;
+    var courses=['旅游学概论','导游实务','旅游营销','酒店管理','景区开发','旅游地理','旅游法规','客户服务'];
+    var chapters=['第一章','第二章','第三章','第四章','第五章'];
+    var knNames=['旅游概念','旅游资源','旅游业','旅游产品','旅游市场','旅游文化','旅游心理','旅游行为','旅游动机','旅游决策','旅游体验','旅游满意度','目的地形象','旅游规划','可持续旅游','生态旅游','文化旅游','遗产旅游','乡村旅游','智慧旅游'];
+    var skNames=['线路设计','行程规划','成本核算','客户沟通','应急处理','资源调度','市场分析','渠道管理','服务标准','质量管控','投诉处理','团队管理','预算编制','合同管理','安全管理','风险管理','数据统计','报告撰写','方案策划','项目执行'];
+    var cpNames=['OTA平台','旅游电商','共享经济','区块链','AI推荐','大数据','云计算','物联网','5G应用','元宇宙'];
+    var industries=['旅游','旅游','旅游','旅游','旅游','旅游','旅游','旅游'];
+    courses.forEach(function(c,i){nodes.push({id:idc++,name:c,type:'课程',industry:industries[i]||'旅游',major:courses[i].indexOf('酒店')>=0?'酒店管理':courses[i].indexOf('景区')>=0?'景区开发':'旅游管理'})});
+    chapters.forEach(function(c){nodes.push({id:idc++,name:c,type:'章节',industry:'旅游',major:'旅游管理'})});
+    knNames.forEach(function(n){nodes.push({id:idc++,name:n,type:'知识点',industry:'旅游',major:'旅游管理'})});
+    skNames.forEach(function(n){nodes.push({id:idc++,name:n,type:'技能规范',industry:'旅游',major:'旅游管理'})});
+    cpNames.forEach(function(n){nodes.push({id:idc++,name:n,type:'核心概念',industry:'旅游',major:'旅游管理'})});
+    var nC=courses.length,nCh=chapters.length,nK=knNames.length,nS=skNames.length;
+    for(var i=0;i<nC;i++)for(var j=0;j<nCh;j++){if(Math.random()>0.6)links.push({source:i,target:nC+j})}
+    for(var i=0;i<nC;i++)for(var k=0;k<nK;k++){if(Math.random()>0.75)links.push({source:i,target:nC+nCh+k})}
+    for(var j=0;j<nCh;j++)for(var k=0;k<nK;k++){if(Math.random()>0.7)links.push({source:nC+j,target:nC+nCh+k})}
+    for(var k=0;k<nK;k++)for(var s=0;s<nS;s++){if(Math.random()>0.8)links.push({source:nC+nCh+k,target:nC+nCh+nK+s})}
+    var cpStart=nC+nCh+nK+nS;
+    for(var c=0;c<cpNames.length;c++)for(var k=0;k<nK;k++){if(Math.random()>0.75)links.push({source:cpStart+c,target:nC+nCh+k})}
+    for(var c=0;c<cpNames.length;c++)for(var s=0;s<nS;s++){if(Math.random()>0.85)links.push({source:cpStart+c,target:nC+nCh+nK+s})}
+    for(var k=0;k<nK;k++)for(var k2=k+1;k2<nK;k2++){if(Math.random()>0.88)links.push({source:nC+nCh+k,target:nC+nCh+k2})}
+    return {nodes:nodes,links:links};
+  }
+
+  // 原页面调用了 clearFilters 但未定义：清空筛选条件
+  function clearFilters(){
+    svg.querySelectorAll('.graph-node,.graph-link').forEach(function(e){e.classList.remove('dimmed');e.classList.remove('highlighted');});
+  }
+  var data=generateData();
+  // 图谱中心：「映射审核」已确认的映射显示为 能力项 —— 知识体系节点
+  (function(){
+    var ap=window.GCF?GCF.approved():[], idx={};
+    data.nodes.forEach(function(n){idx[n.type+'|'+n.name]=n.id;});
+    function node(type,name){var k=type+'|'+name;if(idx[k]===undefined){idx[k]=data.nodes.length;data.nodes.push({id:data.nodes.length,name:name,type:type,industry:'旅游',major:'旅游管理'});}return idx[k];}
+    ap.forEach(function(r){
+      if(!r.sourceName||!r.targetName)return;
+      var a=node('能力项',r.targetName), b=node(r.sourceType==='知识点'?'知识点':'技能规范',r.sourceName);
+      data.links.push({source:a,target:b,mapped:true});
+    });
+  })();
+  var nodes=data.nodes;
+  var links=data.links;
+  var wrap=document.getElementById('canvasWrap');
+  var W=wrap.clientWidth, H=wrap.clientHeight;
+  nodes.forEach(function(n){n.x=W/2+(Math.random()-0.5)*400;n.y=H/2+(Math.random()-0.5)*400;n.vx=0;n.vy=0});
+  var alpha=1,alphaMin=0.005,alphaDecay=0.015;
+  // 当前显示的节点 / 关系（子图、数据权限过滤后的子集）
+  var act=nodes,actLinks=links;
+
+  function tick(){
+    if(alpha<alphaMin)return;
+    alpha*=(1-alphaDecay);
+    for(var i=0;i<act.length;i++){var ni=act[i];for(var j=i+1;j<act.length;j++){var nj=act[j];var dx=nj.x-ni.x,dy=nj.y-ni.y;var d=Math.sqrt(dx*dx+dy*dy)||1;var f=(-1500)/(d*d)*alpha;ni.vx-=dx/d*f;ni.vy-=dy/d*f;nj.vx+=dx/d*f;nj.vy+=dy/d*f}}
+    for(var l=0;l<actLinks.length;l++){var s=nodes[actLinks[l].source],t=nodes[actLinks[l].target];var dx=t.x-s.x,dy=t.y-s.y;var d=Math.sqrt(dx*dx+dy*dy)||1;var f=(d-90)*0.06*alpha;s.vx+=dx/d*f;s.vy+=dy/d*f;t.vx-=dx/d*f;t.vy-=dy/d*f}
+    var cx=W/2,cy=H/2;
+    for(var i=0;i<act.length;i++){var n=act[i];n.vx+=(cx-n.x)*0.03*alpha;n.vy+=(cy-n.y)*0.03*alpha}
+    for(var i=0;i<act.length;i++){var n=act[i];n.vx*=0.6;n.vy*=0.6;var sp=Math.sqrt(n.vx*n.vx+n.vy*n.vy);if(sp>20){n.vx*=20/sp;n.vy*=20/sp}n.x+=n.vx;n.y+=n.vy}
+  }
+
+  var svg=document.getElementById('graphSvg');
+  var tooltip=document.getElementById('tooltip');
+  var zoom=1,panX=0,panY=0;
+  var SVGNS='http://www.w3.org/2000/svg';
+
+  function render(){
+    while(svg.firstChild)svg.removeChild(svg.firstChild);
+    var g=document.createElementNS(SVGNS,'g');
+    g.setAttribute('transform','translate('+panX+','+panY+') scale('+zoom+')');
+    for(var l=0;l<actLinks.length;l++){var s=nodes[actLinks[l].source],t=nodes[actLinks[l].target];var ln=document.createElementNS(SVGNS,'line');ln.setAttribute('x1',s.x);ln.setAttribute('y1',s.y);ln.setAttribute('x2',t.x);ln.setAttribute('y2',t.y);ln.setAttribute('class','graph-link'+(actLinks[l].mapped?' mapped':''));ln.setAttribute('data-source',actLinks[l].source);ln.setAttribute('data-target',actLinks[l].target);g.appendChild(ln)}
+    for(var i=0;i<act.length;i++){var n=act[i];var ng=document.createElementNS(SVGNS,'g');ng.setAttribute('class','graph-node');ng.setAttribute('transform','translate('+n.x+','+n.y+')');ng.setAttribute('data-id',n.id);ng.setAttribute('data-name',n.name);ng.setAttribute('data-type',n.type);
+      var c=document.createElementNS(SVGNS,'circle');c.setAttribute('r',typeRadius[n.type]||6);c.setAttribute('fill',typeColors[n.type]||'#8b99ac');c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','1.5');ng.appendChild(c);
+      if(zoom>1.5||n.type==='课程'||n.type==='核心概念'||n.type==='能力项'){var tx=document.createElementNS(SVGNS,'text');tx.setAttribute('class','graph-node-label');tx.setAttribute('y',(typeRadius[n.type]||6)+12);tx.textContent=n.name;ng.appendChild(tx)}
+      ng.addEventListener('mousedown',startDrag);
+      ng.addEventListener('mouseenter',function(e){var nd=e.target.closest('.graph-node');if(!nd)return;var nm=nd.getAttribute('data-name'),tp=nd.getAttribute('data-type');tooltip.style.display='block';tooltip.innerHTML='<strong>'+nm+'</strong><br/>'+tp;var rect=wrap.getBoundingClientRect();tooltip.style.left=(e.clientX-rect.left+15)+'px';tooltip.style.top=(e.clientY-rect.top+15)+'px';var nid=Number(nd.getAttribute('data-id'));var conn={};conn[nid]=true;actLinks.forEach(function(l){if(l.source===nid)conn[l.target]=true;if(l.target===nid)conn[l.source]=true});svg.querySelectorAll('.graph-node').forEach(function(nn){var id=Number(nn.getAttribute('data-id'));if(!conn[id])nn.classList.add('dimmed');else nn.classList.remove('dimmed')});svg.querySelectorAll('.graph-link').forEach(function(lk){var s2=Number(lk.getAttribute('data-source')),t2=Number(lk.getAttribute('data-target'));if(s2===nid||t2===nid){lk.classList.add('highlighted');lk.classList.remove('dimmed')}else{lk.classList.add('dimmed');lk.classList.remove('highlighted')}})});
+      ng.addEventListener('mouseleave',function(){tooltip.style.display='none';svg.querySelectorAll('.graph-node').forEach(function(n){n.classList.remove('dimmed')});svg.querySelectorAll('.graph-link').forEach(function(l){l.classList.remove('dimmed');l.classList.remove('highlighted')})});
+      g.appendChild(ng)}
+    svg.appendChild(g);
+  }
+
+  // 布局在首屏前一次性算完再渲染，避免节点持续晃动；之后只在拖拽 / 缩放 / 平移时重绘
+  var running=false;
+  function layout(){alpha=1;while(alpha>=alphaMin)tick();act.forEach(function(n){n.vx=0;n.vy=0})}
+  // 按节点范围自适应缩放并居中
+  function fitView(){
+    var x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+    act.forEach(function(n){x0=Math.min(x0,n.x);y0=Math.min(y0,n.y);x1=Math.max(x1,n.x);y1=Math.max(y1,n.y)});
+    // 搜索面板占据画布顶部，按 svg 可见区域计算
+    var r=svg.getBoundingClientRect(),wr=wrap.getBoundingClientRect(),vw=r.width,vh=Math.min(r.height,Math.min(wr.bottom,window.innerHeight)-r.top);
+    var pad=40;zoom=Math.max(0.3,Math.min(1.5,Math.min((vw-pad*2)/((x1-x0)||1),(vh-pad*2)/((y1-y0)||1))));
+    panX=vw/2-(x0+x1)/2*zoom;panY=vh/2-(y0+y1)/2*zoom;
+  }
+  function animate(){layout();fitView();render()}
+
+  var dragNode=null,dragMoved=false,dragOffset={x:0,y:0};
+  function startDrag(e){e.preventDefault();var ng=e.target.closest('.graph-node');if(!ng)return;var id=Number(ng.getAttribute('data-id'));dragNode=nodes[id];dragMoved=false;var pt=svgPoint(svg,e);dragOffset.x=pt.x/zoom-panX/zoom-dragNode.x;dragOffset.y=pt.y/zoom-panY/zoom-dragNode.y;window.addEventListener('mousemove',onDrag);window.addEventListener('mouseup',endDrag)}
+  function onDrag(e){if(!dragNode)return;dragMoved=true;var pt=svgPoint(svg,e);dragNode.x=pt.x/zoom-panX/zoom-dragOffset.x;dragNode.y=pt.y/zoom-panY/zoom-dragOffset.y;render()}
+  function endDrag(){if(dragNode&&!dragMoved)showDetail(dragNode);dragNode=null;window.removeEventListener('mousemove',onDrag);window.removeEventListener('mouseup',endDrag)}
+  function svgPoint(el,e){var pt=el.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(el.getScreenCTM().inverse())}
+
+  var panning=false,panStart={x:0,y:0};
+  svg.addEventListener('mousedown',function(e){if(e.target.tagName==='svg'){panning=true;panStart.x=e.clientX-panX;panStart.y=e.clientY-panY}});
+  window.addEventListener('mousemove',function(e){if(panning){panX=e.clientX-panStart.x;panY=e.clientY-panStart.y;if(!running)render()}});
+  window.addEventListener('mouseup',function(){panning=false});
+  document.getElementById('zoomInBtn').addEventListener('click',function(){zoom=Math.min(zoom*1.3,5);render()});
+  document.getElementById('zoomOutBtn').addEventListener('click',function(){zoom=Math.max(zoom/1.3,0.2);render()});
+  document.getElementById('resetBtn').addEventListener('click',function(){fitView();render()});
+  svg.addEventListener('wheel',function(e){e.preventDefault();var d=e.deltaY>0?0.9:1.1;zoom=Math.max(0.2,Math.min(5,zoom*d));render()});
+
+  document.getElementById('clearFilterBtn').addEventListener('click',function(){
+    document.getElementById('quickSearchInput').value='';
+    comboSetValue('filterIndustry','all');
+    comboSetValue('filterMajor','all');
+    document.getElementById('pathStartType').value='all';
+    document.getElementById('pathEndType').value='all';
+    document.getElementById('filterNodeType').value='all';
+    document.getElementById('pathStart').value='';
+    document.getElementById('pathEnd').value='';
+    document.getElementById('pathResult').style.display='none';
+    clearFilters();
+  });
+
+  // Quick search
+  var quickInput=document.getElementById('quickSearchInput');
+  var searchSuggest=document.getElementById('searchSuggest');
+  var pathResult=document.getElementById('pathResult');
+  var resultCount=document.getElementById('resultCount');
+
+  function doQuickSearch(){
+    var q=quickInput.value.trim().toLowerCase();
+    var fType=document.getElementById('filterNodeType').value;
+    var fInd=comboGetValue('filterIndustry');
+    var fMaj=comboGetValue('filterMajor');
+    var m={};
+    nodes.forEach(function(n){
+      var ok=true;
+      if(q&&n.name.toLowerCase().indexOf(q)<0)ok=false;
+      if(fType!=='all'&&n.type!==fType)ok=false;
+      if(fInd!=='all'&&(!n.industry||n.industry!==fInd))ok=false;
+      if(fMaj!=='all'&&(!n.major||n.major!==fMaj))ok=false;
+      if(ok)m[n.id]=true;
+    });
+    var count=Object.keys(m).length;
+    links.forEach(function(l){if(m[l.source])m[l.target]=true;if(m[l.target])m[l.source]=true});
+    svg.querySelectorAll('.graph-node').forEach(function(nn){
+      var id=Number(nn.getAttribute('data-id'));
+      if(m[id]){nn.classList.remove('dimmed');nn.classList.add('highlighted')}else{nn.classList.add('dimmed');nn.classList.remove('highlighted')}
+    });
+    svg.querySelectorAll('.graph-link').forEach(function(lk){
+      var s=Number(lk.getAttribute('data-source')),t=Number(lk.getAttribute('data-target'));
+      if(m[s]&&m[t])lk.classList.remove('dimmed');else lk.classList.add('dimmed');
+    });
+    resultCount.innerHTML=q||fType!=='all'?'找到 <strong>'+count+'</strong> 个节点':'';
+    pathResult.style.display='none';
+  }
+
+  quickInput.addEventListener('keydown',function(e){if(e.key==='Enter'){doQuickSearch();searchSuggest.style.display='none'}});
+  var qt;quickInput.addEventListener('input',function(){clearTimeout(qt);qt=setTimeout(doQuickSearch,500);showSuggest()});
+  document.getElementById('quickSearchBtn').addEventListener('click',function(){doQuickSearch();searchSuggest.style.display='none'});
+  document.getElementById('filterNodeType').addEventListener('change',doQuickSearch);
+  document.getElementById('filterIndustry').addEventListener('change',doQuickSearch);
+  document.getElementById('filterMajor').addEventListener('change',doQuickSearch);
+  document.getElementById('pathStartType').addEventListener('change',function(){document.getElementById('pathStart').dispatchEvent(new Event('input'))});
+  document.getElementById('pathEndType').addEventListener('change',function(){document.getElementById('pathEnd').dispatchEvent(new Event('input'))});
+
+  // Path search
+  function doPathSearch(){
+    var sName=document.getElementById('pathStart').value.trim();
+    var eName=document.getElementById('pathEnd').value.trim();
+    var sType=document.getElementById('pathStartType').value;
+    var eType=document.getElementById('pathEndType').value;
+    if(!sName||!eName)return;
+    var sNode=nodes.find(function(n){var ok=n.name.toLowerCase()===sName.toLowerCase()||n.name.toLowerCase().indexOf(sName.toLowerCase())>=0;if(sType!=='all'&&n.type!==sType)ok=false;return ok});
+    var eNode=nodes.find(function(n){var ok=n.name.toLowerCase()===eName.toLowerCase()||n.name.toLowerCase().indexOf(eName.toLowerCase())>=0;if(eType!=='all'&&n.type!==eType)ok=false;return ok});
+    if(!sNode||!eNode){
+      pathResult.style.display='block';
+      pathResult.innerHTML='<span style="color:#c72c2a;">未找到节点「'+(!sNode?sName:eName)+'」</span>';
+      return;
+    }
+    var adj={};
+    links.forEach(function(l){if(!adj[l.source])adj[l.source]=[];if(!adj[l.target])adj[l.target]=[];adj[l.source].push(l.target);adj[l.target].push(l.source)});
+    var visited={};visited[sNode.id]=true;
+    var queue=[[sNode.id]];var found=null;
+    while(queue.length){var path=queue.shift();var cur=path[path.length-1];if(cur===eNode.id){found=path;break}var nb=adj[cur]||[];for(var i=0;i<nb.length;i++){if(!visited[nb[i]]){visited[nb[i]]=true;queue.push(path.concat([nb[i]]))}}}
+    if(!found){pathResult.style.display='block';pathResult.innerHTML='<span style="color:#c72c2a;">未找到从「'+sNode.name+'」到「'+eNode.name+'」的链路</span>';return}
+    var ps={};found.forEach(function(id){ps[id]=true});
+    svg.querySelectorAll('.graph-node').forEach(function(nn){var id=Number(nn.getAttribute('data-id'));if(ps[id]){nn.classList.remove('dimmed');nn.classList.add('highlighted')}else{nn.classList.add('dimmed');nn.classList.remove('highlighted')}});
+    svg.querySelectorAll('.graph-link').forEach(function(lk){var s=Number(lk.getAttribute('data-source')),t=Number(lk.getAttribute('data-target'));var on=false;for(var i=0;i<found.length-1;i++){if((s===found[i]&&t===found[i+1])||(t===found[i]&&s===found[i+1])){on=true;break}}if(on){lk.classList.add('highlighted');lk.classList.remove('dimmed')}else{lk.classList.add('dimmed');lk.classList.remove('highlighted')}});
+    pathResult.style.display='block';
+    var html='<span style="color:#8b99ac;">链路：</span>';
+    found.forEach(function(id,i){var n=nodes[id];html+='<span class="path-node"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+typeColors[n.type]+';"></span>'+n.name+'</span>';if(i<found.length-1)html+='<span class="path-arrow">→</span>'});
+    html+=' <span style="color:#8b99ac;margin-left:8px;">('+found.length+' 节点)</span>';
+    pathResult.innerHTML=html;
+    resultCount.innerHTML='链路 <strong>'+found.length+'</strong> 节点';
+  }
+  document.getElementById('pathSearchBtn').addEventListener('click',doPathSearch);
+  document.getElementById('pathEnd').addEventListener('keydown',function(e){if(e.key==='Enter')doPathSearch()});
+
+  // Clear
+  document.getElementById('clearFilterBtn').addEventListener('click',function(){
+    quickInput.value='';document.getElementById('pathStart').value='';document.getElementById('pathEnd').value='';
+    document.getElementById('filterNodeType').value='all';
+    comboSetValue('filterIndustry','all');
+    comboSetValue('filterMajor','all');
+    document.getElementById('pathStartType').value='all';
+    document.getElementById('pathEndType').value='all';
+    pathResult.style.display='none';resultCount.innerHTML='';clearFilters();
+  });
+
+  // Suggestions for both inputs
+  function showSuggest(){
+    var q=quickInput.value.trim().toLowerCase();
+    if(!q){searchSuggest.style.display='none';return}
+    var matches=nodes.filter(function(n){return n.name.toLowerCase().indexOf(q)>=0}).slice(0,6);
+    if(matches.length===0){searchSuggest.style.display='none';return}
+    var rect=quickInput.getBoundingClientRect();var wrapRect=canvasWrap.getBoundingClientRect();
+    searchSuggest.style.left=(rect.left-wrapRect.left)+'px';searchSuggest.style.top=(rect.bottom-wrapRect.top+2)+'px';searchSuggest.style.width=rect.width+'px';
+    searchSuggest.innerHTML='';
+    matches.forEach(function(m){var item=document.createElement('div');item.className='graph-search-suggest-item';item.innerHTML='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+typeColors[m.type]+';margin-right:6px;"></span>'+m.name;item.addEventListener('click',function(){quickInput.value=m.name;searchSuggest.style.display='none';doQuickSearch()});searchSuggest.appendChild(item)});
+    searchSuggest.style.display='block';
+  }
+  quickInput.addEventListener('blur',function(){setTimeout(function(){searchSuggest.style.display='none'},200)});
+
+  // Suggest for path inputs
+  function setupPathSuggest(inputId,typeId){
+    var inp=document.getElementById(inputId);
+    inp.addEventListener('input',function(){
+      var q=this.value.trim().toLowerCase();if(!q){searchSuggest.style.display='none';return}
+      var tp=document.getElementById(typeId).value;
+      var matches=nodes.filter(function(n){if(tp!=='all'&&n.type!==tp)return false;return n.name.toLowerCase().indexOf(q)>=0}).slice(0,6);
+      if(matches.length===0){searchSuggest.style.display='none';return}
+      var rect=this.getBoundingClientRect();var wrapRect=canvasWrap.getBoundingClientRect();
+      searchSuggest.style.left=(rect.left-wrapRect.left)+'px';searchSuggest.style.top=(rect.bottom-wrapRect.top+2)+'px';searchSuggest.style.width=rect.width+'px';
+      searchSuggest.innerHTML='';
+      matches.forEach(function(m){var item=document.createElement('div');item.className='graph-search-suggest-item';item.innerHTML='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+typeColors[m.type]+';margin-right:6px;"></span>'+m.name;item.addEventListener('click',function(){inp.value=m.name;searchSuggest.style.display='none'});searchSuggest.appendChild(item)});
+      searchSuggest.style.display='block';
+    });
+    inp.addEventListener('blur',function(){setTimeout(function(){searchSuggest.style.display='none'},200)});
+  }
+  setupPathSuggest('pathStart','pathStartType');setupPathSuggest('pathEnd','pathEndType');
+
+  // Combo select helpers
+  function comboGetValue(id){
+    var el=document.getElementById(id);
+    return el?el.getAttribute('data-value'):'all';
+  }
+  function comboSetValue(id,val){
+    var el=document.getElementById(id);
+    if(!el)return;
+    el.setAttribute('data-value',val);
+    var inp=el.querySelector('.combo-input');
+    var opt=el.querySelector('.combo-option[data-value="'+val+'"]');
+    inp.value='';
+    inp.placeholder=opt?opt.getAttribute('data-label'):'';
+    el.querySelectorAll('.combo-option').forEach(function(o){o.classList.toggle('selected',o.getAttribute('data-value')===val)});
+  }
+  function comboInit(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    var inp=el.querySelector('.combo-input');
+    var dd=el.querySelector('.combo-dropdown');
+    var opts=el.querySelectorAll('.combo-option');
+    inp.addEventListener('focus',function(){
+      // Show all on focus
+      opts.forEach(function(o){o.style.display=''});
+      dd.classList.add('open');
+    });
+    inp.addEventListener('input',function(){
+      var q=this.value.trim().toLowerCase();
+      opts.forEach(function(o){
+        var label=o.getAttribute('data-label').toLowerCase();
+        o.style.display=label.indexOf(q)>=0?'':'none';
+      });
+      dd.classList.add('open');
+    });
+    inp.addEventListener('blur',function(){
+      setTimeout(function(){dd.classList.remove('open')},150);
+    });
+    opts.forEach(function(o){
+      o.addEventListener('click',function(){
+        var val=o.getAttribute('data-value');
+        var label=o.getAttribute('data-label');
+        el.setAttribute('data-value',val);
+        inp.value='';
+        inp.placeholder=label;
+        opts.forEach(function(x){x.classList.toggle('selected',x===o)});
+        dd.classList.remove('open');
+      });
+    });
+  }
+  comboInit('filterIndustry');
+  comboInit('filterMajor');
+
+  // Tab switching
+  document.querySelectorAll('.graph-search-tab').forEach(function(tab){
+    tab.addEventListener('click',function(){
+      document.querySelectorAll('.graph-search-tab').forEach(function(t){t.classList.remove('active')});
+      tab.classList.add('active');
+      var isNode=tab.dataset.tab==='node';
+      document.getElementById('contentNode').classList.toggle('active',isNode);
+      document.getElementById('contentPath').classList.toggle('active',!isNode);
+    });
+  });
+  // Clear for node search tab
+  document.getElementById('clearNodeBtn').addEventListener('click',function(){
+    document.getElementById('quickSearchInput').value='';
+    comboSetValue('filterIndustry','all');
+    comboSetValue('filterMajor','all');
+    document.getElementById('filterNodeType').value='all';
+    document.getElementById('resultCount').innerHTML='';
+    clearFilters();
+  });
+
+  // 节点详情：所属来源与来源版本（版本信息由 pano-version.js 提供）
+  var detailPanel=document.getElementById('detailPanel');
+  document.getElementById('detailClose').addEventListener('click',function(){detailPanel.classList.remove('show')});
+  function showDetail(n){
+    var deg=actLinks.filter(function(l){return l.source===n.id||l.target===n.id}).length;
+    var info=window.PanoVersion?PanoVersion.nodeSource(n):null;
+    var row=function(k,v){return '<div class="graph-detail-row"><span>'+k+'</span><span>'+v+'</span></div>'};
+    document.getElementById('detailTitle').textContent=n.name;
+    document.getElementById('detailBody').innerHTML=row('类型',n.type)+row('所属专业',n.major||'—')
+      +(info?row('所属来源',info.source)+row('来源版本',info.sourceVer)+row('全景版本',info.panoVer):'')
+      +row('关联节点',deg+' 个')
+      +'<div class="graph-detail-connected"><div class="graph-detail-connected-title">节点在所属来源中维护，全景图谱与子图不能直接修改</div>'
+      +'<a href="'+(info?info.href:'#')+'" style="font-size:12px;color:#5149e9;text-decoration:none">在'+(info?info.sourceType:'来源图谱')+'中查看 →</a></div>';
+    detailPanel.classList.add('show');
+  }
+
+  // 供子图 / 数据权限过滤使用：只显示 ids 内的节点，重新布局
+  window.PanoGraph={
+    nodes:nodes,links:links,typeColors:typeColors,
+    setVisible:function(ids){
+      act=ids?nodes.filter(function(n){return ids[n.id]}):nodes;
+      actLinks=ids?links.filter(function(l){return ids[l.source]&&ids[l.target]}):links;
+      act.forEach(function(n){n.x=W/2+(Math.random()-0.5)*400;n.y=H/2+(Math.random()-0.5)*400;n.vx=0;n.vy=0});
+      detailPanel.classList.remove('show');
+      animate();
+    }
+  };
+
+  animate();
+})();
+</script>
+<script src="pano-version.js"></script>
+<script src="pano-subgraph.js"></script>
+</body>
+</html>

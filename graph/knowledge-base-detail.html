@@ -1,0 +1,1573 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>知识库详情｜专业图谱平台</title>
+<link rel="stylesheet" href="mapping-review.css" />
+<link rel="stylesheet" href="mapping-polish.css" />
+<link rel="stylesheet" href="mapping-compact.css" />
+<link rel="stylesheet" href="mapping-reference.css" />
+<style>
+/* ---------- 布局 ---------- */
+.kbd-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:24px 4px 6px;}
+.kbd-back{color:#5149e9;text-decoration:none;font-size:14px;white-space:nowrap;}
+.kbd-title{font-size:18px;font-weight:700;color:#2f405d;margin:0;}
+.kbd-meta{font-size:12px;color:#8b99ac;}
+.kbd-head-actions{margin-left:auto;display:flex;align-items:center;gap:8px;}
+
+/* ---------- Tabs ---------- */
+.kbd-tabs{display:flex;gap:24px;border-bottom:1px solid #e2e8f0;margin-top:14px;}
+.kbd-tab{position:relative;padding:10px 2px;font-size:14px;color:#8b99ac;background:none;border:none;cursor:pointer;font-weight:500;}
+.kbd-tab:hover{color:#5149e9;}
+.kbd-tab.active{color:#5149e9;font-weight:600;}
+.kbd-tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#5149e9;}
+
+/* ---------- 工具条 ---------- */
+.kbd-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:16px 0;}
+.kbd-toolbar select,.kbd-toolbar input{height:32px;padding:0 10px;border:1px solid #dfe6ef;border-radius:6px;font-size:13px;background:#fff;color:#41536f;}
+.kbd-toolbar select{min-width:110px;}
+.kbd-toolbar input{width:200px;}
+.kbd-toolbar .spacer{flex:1;}
+.kbd-primary{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 16px;border-radius:8px;border:1px solid #5149e9;background:#5149e9;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.kbd-primary:hover{background:#4038c0;border-color:#4038c0;}
+.kbd-ghost{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:8px;border:1px solid #dfe6ef;background:#fff;color:#41536f;font-size:13px;cursor:pointer;}
+.kbd-ghost:hover{border-color:#5149e9;color:#5149e9;}
+.kbd-ghost.danger:hover{border-color:#c72c2a;color:#c72c2a;}
+
+/* ---------- 批量条 ---------- */
+.kbd-batch{display:none;align-items:center;gap:12px;padding:8px 14px;background:#eef0ff;border:1px solid #d6d2f2;border-radius:8px;margin-bottom:12px;font-size:13px;color:#5149e9;}
+.kbd-batch.show{display:flex;}
+
+/* ---------- 表格 ---------- */
+.kbd-table{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff;}
+.kbd-thead,.kbd-row{display:grid;grid-template-columns:40px minmax(220px,1fr) 140px 80px 150px 80px 150px 100px 60px;align-items:center;}
+.kbd-thead{background:#f7f9fc;border-bottom:1px solid #e2e8f0;font-size:12px;color:#8b99ac;font-weight:600;}
+.kbd-thead>span{padding:11px 12px;white-space:nowrap;}
+.kbd-row{border-bottom:1px solid #f0f0f0;font-size:13px;color:#41536f;transition:background .12s;}
+.kbd-row:last-child{border-bottom:none;}
+.kbd-row:hover{background:#fafbfd;}
+.kbd-row>div{padding:11px 12px;min-width:0;}
+.kbd-cell-check{display:flex;align-items:center;}
+.kbd-check{width:15px;height:15px;accent-color:#5149e9;cursor:pointer;}
+.kbd-doc{display:flex;align-items:center;gap:10px;min-width:0;}
+.kbd-doc-icon{width:34px;height:34px;flex-shrink:0;border-radius:7px;display:flex;align-items:center;justify-content:center;background:#f5f7fa;border:1px solid #eef0f2;}
+.kbd-doc-name{font-weight:600;color:#31425e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
+.kbd-doc-name:hover{color:#5149e9;}
+.kbd-doc-sub{font-size:11px;color:#aaa;margin-top:1px;}
+.kbd-type-badge{flex-shrink:0;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;}
+
+/* 状态 / 索引方式徽标 */
+.kbd-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:2px 9px;border-radius:10px;white-space:nowrap;}
+.kbd-badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.kbd-idx{display:inline-flex;font-size:12px;padding:2px 9px;border-radius:10px;white-space:nowrap;}
+
+/* ---------- 分页 ---------- */
+.kbd-pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 2px 0;font-size:13px;color:#8b99ac;flex-wrap:wrap;gap:10px;}
+.kbd-pages{display:flex;gap:6px;align-items:center;}
+.kbd-page-btn{min-width:28px;height:28px;padding:0 8px;border:1px solid #dfe6ef;border-radius:6px;background:#fff;font-size:13px;color:#41536f;cursor:pointer;}
+.kbd-page-btn:hover{border-color:#5149e9;color:#5149e9;}
+.kbd-page-btn.active{background:#5149e9;border-color:#5149e9;color:#fff;}
+.kbd-page-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ---------- 行操作菜单 ---------- */
+.kbd-menu{position:fixed;z-index:60;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.12);padding:4px 0;min-width:160px;display:none;}
+.kbd-menu.show{display:block;}
+.kbd-menu-item{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:13px;color:#31425e;cursor:pointer;white-space:nowrap;}
+.kbd-menu-item:hover{background:#f5f3fa;color:#5149e9;}
+.kbd-menu-item.danger{color:#c72c2a;}
+.kbd-menu-item.danger:hover{background:#fff1f0;color:#c72c2a;}
+.kbd-menu-divider{height:1px;background:#f0f0f0;margin:4px 0;}
+.kbd-more{border:none;background:none;cursor:pointer;color:#aaa;font-size:16px;line-height:1;padding:4px 6px;border-radius:6px;}
+.kbd-more:hover{background:#f0f2f5;color:#5149e9;}
+
+/* ---------- 召回测试 ---------- */
+.kbd-hit{display:flex;flex-direction:column;gap:12px;max-width:880px;}
+.kbd-hit-form{display:flex;gap:8px;flex-wrap:wrap;}
+.kbd-hit-form input{flex:1;min-width:260px;height:42px;border:1px solid #dfe6ef;border-radius:8px;padding:0 14px;font-size:14px;font-family:inherit;}
+.kbd-hit-form input:focus{outline:none;border-color:#5149e9;}
+.kbd-hit-result{display:flex;flex-direction:column;gap:10px;}
+.kbd-hit-item{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid #e2e8f0;border-radius:10px;background:#fff;}
+.kbd-hit-item .kbd-doc-icon{margin-top:1px;}
+.kbd-hit-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+.kbd-hit-name{font-size:14px;font-weight:600;color:#31425e;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.kbd-hit-snippet{font-size:13px;color:#41536f;line-height:1.7;white-space:pre-line;}
+.kbd-hit-score{font-size:12px;font-weight:600;color:#5149e9;flex-shrink:0;}
+.kp-ai{color:#F79009;font-size:11px;margin-right:1px;}
+.kp-cell{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.kp-pend{border:0;background:#fff7e6;color:#B54708;font-size:12px;font-weight:600;border-radius:10px;padding:2px 8px;cursor:pointer;font-family:inherit;}
+.kp-pend:hover{background:#ffedd1;}
+.kbd-set-val{font-size:13px;color:#41536f;}
+.kbd-hit-thumb{flex:none;width:96px;height:64px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#f7f9fc;line-height:0;}
+.kbd-hit-thumb svg{width:100%;height:100%;display:block;}
+.kbd-hit-ts{font-size:12px;color:#8b99ac;}
+.kbd-hit-empty{color:#8b99ac;font-size:13px;padding:20px 0;text-align:center;}
+
+/* ---------- 设置 / API ---------- */
+.kbd-panel{max-width:760px;}
+.kbd-section-title{font-size:13px;font-weight:700;color:#2f405d;margin:22px 0 10px;}
+.kbd-section-title:first-child{margin-top:4px;}
+.kbd-set-row{display:flex;align-items:center;gap:16px;padding:14px 16px;border:1px solid #e2e8f0;border-bottom:none;background:#fff;}
+.kbd-set-row:first-of-type{border-radius:10px 10px 0 0;}
+.kbd-set-row:last-of-type{border-bottom:1px solid #e2e8f0;border-radius:0 0 10px 10px;}
+.kbd-set-row:only-of-type{border:1px solid #e2e8f0;border-radius:10px;}
+.kbd-set-label{flex:1;min-width:0;}
+.kbd-set-label b{font-size:14px;color:#31425e;font-weight:600;display:block;}
+.kbd-set-label span{font-size:12px;color:#8b99ac;}
+.kbd-set-row select,.kbd-set-row input{height:32px;padding:0 10px;border:1px solid #dfe6ef;border-radius:6px;font-size:13px;background:#fff;color:#41536f;}
+.kbd-api-key{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:#41536f;background:#f7f9fc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px;word-break:break-all;}
+.kbd-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#d6dee9;background:#1d2333;border-radius:8px;padding:14px 16px;line-height:1.7;overflow-x:auto;white-space:pre;}
+
+/* ---------- 弹窗 ---------- */
+.kbd-modal{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:80;display:none;align-items:center;justify-content:center;padding:20px;}
+.kbd-modal.show{display:flex;}
+.kbd-dialog{background:#fff;border-radius:14px;width:620px;max-width:96vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.kbd-dialog-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #eef0f2;gap:12px;}
+.kbd-dialog-head h2{font-size:16px;font-weight:700;color:#2f405d;margin:0;display:flex;align-items:center;gap:10px;min-width:0;}
+.kbd-close{border:none;background:none;font-size:20px;color:#aaa;cursor:pointer;line-height:1;padding:4px;flex-shrink:0;}
+.kbd-close:hover{color:#31425e;}
+.kbd-dialog-body{padding:20px;overflow-y:auto;flex:1;min-height:0;}
+.kbd-dialog-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #eef0f2;}
+
+
+/* ---------- 文档详情 ---------- */
+.dd-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:18px;}
+.dd-stat{display:flex;flex-direction:column;gap:2px;padding:11px 13px;border-radius:10px;background:#f7f9fc;}
+.dd-stat b{font-size:17px;color:#2f405d;}
+.dd-stat span{font-size:12px;color:#8b99ac;}
+.dd-sub{font-size:13px;font-weight:700;color:#2f405d;margin:16px 0 8px;}
+.dd-seg-toolbar{display:flex;align-items:center;gap:8px;margin:0 0 12px;flex-wrap:wrap;}
+.dd-seg-toolbar b{font-size:15px;margin-right:4px;color:#2f405d;white-space:nowrap;}
+.dd-seg-toolbar select{height:32px;padding:0 8px;border:1px solid #dfe6ef;border-radius:6px;font-size:13px;background:#fff;color:#41536f;font-family:inherit;}
+.search{height:32px;min-width:150px;flex:1 1 160px;border:1px solid #dfe6ef;border-radius:8px;padding:0 10px 0 32px;font-size:13px;color:#41536f;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b99ac' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 11px center;box-sizing:border-box;font-family:inherit;}
+.search:focus{outline:none;border-color:#5149e9;}
+.dd-seg{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px;}
+.dd-seg.on{border:1.5px solid #5149e9;background:#fafaff;}
+.dd-seg-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#8b99ac;}
+.dd-seg-text{font-size:13px;color:#41536f;line-height:1.8;white-space:pre-line;}
+.dd-seg-text[contenteditable="true"]{outline:1px dashed #5149e9;border-radius:4px;padding:4px 6px;background:#fff;}
+.dd-img{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;line-height:0;margin-bottom:16px;background:#f7f9fc;}
+.dd-img svg{width:100%;height:auto;display:block;}
+.dd-tag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:5px;}
+.dd-mini{min-height:30px;padding:0 12px;border-radius:8px;border:1px solid #dfe6ef;background:#fff;font-size:12px;color:#41536f;cursor:pointer;}
+.dd-mini:hover{border-color:#5149e9;color:#5149e9;}
+.dd-mini.pri{background:#5149e9;border-color:#5149e9;color:#fff;}
+.dd-mini.pri:hover{background:#4038c0;color:#fff;}
+
+/* 播放器 */
+.player{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.video{position:relative;aspect-ratio:16/8;background:#101828;display:flex;align-items:center;justify-content:center;color:#98A2B3;font-size:13px;}
+.subtitle{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);max-width:86%;padding:6px 12px;border-radius:6px;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:1.6;text-align:center;}
+.wave{height:110px;padding:0 18px;background:#f7f9fc;display:flex;align-items:center;gap:3px;overflow:hidden;cursor:pointer;}
+.bar{width:4px;border-radius:2px;background:#dfe6ef;flex:none;}
+.bar.p{background:#5149e9;}
+.ctrl{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#fff;border-top:1px solid #f0f0f0;}
+.play{width:40px;height:40px;border-radius:50%;border:0;background:#5149e9;display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer;}
+.play:hover{background:#4038c0;}
+.seek{flex:1;height:6px;border-radius:3px;background:#eef0f2;overflow:hidden;cursor:pointer;}
+.seek>div{height:100%;background:#5149e9;}
+.sp-tag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:5px;}
+.sp1{background:#eef0ff;color:#5149e9}.sp2{background:#FEF0C7;color:#93370D}.sp3{background:#F4F3FF;color:#5925DC}
+.sp-rename{min-height:28px;padding:0 10px;border:1px solid #dfe6ef;border-radius:7px;background:#fff;font-size:12px;color:#41536f;cursor:pointer;}
+.sp-rename:hover{border-color:#5149e9;color:#5149e9;}
+
+.kbd-footnote{font-size:12px;color:#b4bdcb;padding:10px 0 0;}
+
+@keyframes kbdPulse{0%,100%{opacity:1}50%{opacity:.55}}
+.kbd-pulse{animation:kbdPulse 1.2s ease-in-out infinite;}
+
+/* ---------- 分段详情：两栏 + 知识点关联 ---------- */
+.doc-grid{display:grid;grid-template-columns:220px minmax(0,1fr) 300px;gap:18px;align-items:start;}
+.doc-col{display:flex;flex-direction:column;gap:10px;min-width:0;}
+.doc-toc{border-right:1px solid #eef0f2;padding-right:14px;position:sticky;top:0;align-self:start;max-height:calc(100vh - 32px);overflow:auto;display:flex;flex-direction:column;gap:2px;}
+.doc-toc-title{font-size:13px;font-weight:700;color:#2f405d;padding:2px 10px 10px;}
+.doc-toc-btn{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;font-size:13px;color:#41536f;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:inherit;}
+.doc-toc-btn:hover{background:#f5f7fa;}
+.doc-toc-dot{width:6px;height:6px;border-radius:50%;background:#F79009;flex:none;}
+.ch-head.on{background:#eef0ff;}
+.ch-head{margin:6px 0 10px;padding:10px 14px;border-left:3px solid #5149e9;background:#f7f6ff;border-radius:8px;}
+.row-ch{display:flex;align-items:center;gap:10px;font-size:14px;color:#2f405d;}
+.muted-ch{font-size:12px;color:#8b99ac;}
+.doc-toc-ch{font-weight:600;color:#2f405d;display:flex;align-items:center;gap:6px;margin-top:4px;}
+.doc-toc-n{margin-left:auto;font-size:11px;font-weight:500;color:#8b99ac;background:#f0f2f5;border-radius:8px;padding:0 6px;}
+.doc-toc-btn.sub{padding-left:22px;color:#60718a;font-size:12px;}
+.doc-toc-btn.on{background:#eef0ff;color:#5149e9;font-weight:600;}
+@media (max-width:1300px){.doc-grid{grid-template-columns:minmax(0,1fr) 300px;}.doc-toc{display:none;}}
+.seg-card{display:flex;flex-direction:column;gap:9px;padding:12px 14px;border:1px solid #e2e8f0;border-radius:10px;background:#fff;}
+.seg-card.on{border:1.5px solid #5149e9;background:#fafaff;}
+.seg-card:hover{border-color:#c9c2ef;}
+.seg-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#8b99ac;}
+.seg-body{font-size:13px;color:#41536f;line-height:1.8;white-space:pre-line;}
+.seg-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.seg-edit{margin-left:auto;}
+.kp{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#5149e9;background:#eef0ff;border:1px solid #dcd6f5;border-radius:10px;padding:2px 8px;}
+.kp .x{cursor:pointer;opacity:.6;font-style:normal;}
+.kp .x:hover{opacity:1;}
+.dd-vhint{font-size:12px;color:#8b99ac;background:#f7f9fc;border-radius:6px;padding:6px 10px;margin:-6px 0 14px;}
+.seg-part{padding:6px 0;}
+.seg-part+.seg-part{border-top:1px dashed #e2e8f0;}
+.seg-part-title{font-size:12px;font-weight:600;color:#8b99ac;margin-bottom:4px;}
+.seg-fail{font-size:13px;color:#c72c2a;display:flex;align-items:center;gap:8px;}
+.row-time{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.t-in{width:72px;height:28px;border:1px solid #dfe6ef;border-radius:6px;padding:0 8px;font-size:13px;color:#41536f;font-variant-numeric:tabular-nums;font-family:inherit;}
+.t-in:focus{outline:none;border-color:#5149e9;}
+.t-in.err{border-color:#c72c2a;}
+.t-hint{font-size:12px;color:#8b99ac;margin:-4px 0 4px;}
+.t-hint.err{color:#c72c2a;}
+.sugg-why{font-size:12px;color:#41536f;line-height:1.6;background:#f7f9fc;border-radius:6px;padding:6px 8px;}
+.sugg-src{font-size:11px;color:#0e9384;background:#e6f6f3;border-radius:4px;padding:1px 6px;}
+.sugg-ts{border:0;background:none;color:#5149e9;font-size:12px;cursor:pointer;padding:0;font-family:inherit;}
+.kp-none{font-size:12px;color:#b4bdcb;}
+.kp-add{font-size:12px;color:#5149e9;background:none;border:1px dashed #c9c2ef;border-radius:10px;padding:2px 8px;cursor:pointer;}
+.kp-add:hover{background:#f7f6ff;}
+.sugg-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#f59e0b;background:#fff7e6;border-radius:10px;padding:2px 8px;font-weight:500;cursor:pointer;}
+.doc-aside{display:flex;flex-direction:column;gap:14px;position:sticky;top:0;}
+.aside-card{border:1px solid #e2e8f0;border-radius:10px;background:#fff;overflow:hidden;}
+.aside-head{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:700;color:#2f405d;}
+.aside-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+.aicard{border-radius:14px;padding:16px;background:linear-gradient(180deg,#FFFAEB,#fff);border:1px solid #FEDF89;display:flex;flex-direction:column;gap:12px;}
+.ai-head{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#2f405d;}
+.ai-stats{display:flex;gap:20px;}
+.ai-stat{display:flex;flex-direction:column;gap:2px;}
+.ai-stat b{font-size:22px;font-weight:700;color:#2f405d;line-height:1.1;}
+.ai-stat span{font-size:12px;color:#8b99ac;}
+.ai-btn{width:100%;height:34px;border-radius:8px;border:1px solid #dfe6ef;background:#fff;font-size:13px;color:#41536f;cursor:pointer;font-family:inherit;}
+.ai-btn:hover{border-color:#c9c2ef;}
+.ai-btn.pri{background:#5149e9;border-color:#5149e9;color:#fff;}
+.ai-btn.pri:hover{background:#4038c0;}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed;}
+.ai-note{font-size:12px;color:#8b99ac;line-height:1.7;}
+.sugg-card{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:9px;background:#fbfcfe;}
+.sugg-card:hover{border-color:#c9c2ef;}
+.sugg-card.sugg-done{opacity:.55;}
+.sugg-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.sugg-type{font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;}
+.sugg-type.A{color:#5149e9;background:#eef0ff;}
+.sugg-type.B{color:#0e9384;background:#e6f6f3;}
+.sugg-type.D{color:#7a5af8;background:#f4f3ff;}
+.sugg-type.U{color:#c72c2a;background:#fff1f0;}
+a.kp-link{text-decoration:none;cursor:pointer;}
+a.kp-link:hover{border-color:#5149e9;}
+.sugg-name{font-size:13px;font-weight:600;color:#31425e;}
+.sugg-conf{font-size:11px;color:#16a34a;margin-left:auto;font-variant-numeric:tabular-nums;}
+.sugg-quote{font-size:12px;color:#8b99ac;line-height:1.6;border-left:2px solid #e2e8f0;padding-left:8px;}
+.sugg-row{display:flex;gap:6px;flex-wrap:wrap;}
+.mount-box{display:flex;flex-direction:column;gap:6px;}
+.mount-title{font-size:12px;font-weight:600;color:#41536f;}
+.mount-item{padding:6px 8px;border:1px dashed #dcd6f5;border-radius:7px;background:#fff;}
+.mount-path{display:flex;align-items:center;gap:6px;font-size:12px;color:#5149e9;font-weight:500;}
+.mount-reason{font-size:11px;color:#8b99ac;margin-top:2px;line-height:1.5;}
+.mount-type{font-size:10px;font-weight:600;color:#60718a;background:#f1f3f6;border-radius:4px;padding:0 5px;margin-right:2px;white-space:nowrap;}
+.mount-shallow{font-size:10px;font-weight:600;color:#b54708;background:#fffaeb;border-radius:4px;padding:0 5px;white-space:nowrap;}
+.mount-hint{font-size:11px;color:#b54708;line-height:1.5;}
+.mount-none{font-size:12px;color:#c72c2a;}
+.sugg-mini{font-size:11px;padding:2px 8px;border-radius:6px;border:1px solid #dfe6ef;background:#fff;color:#41536f;cursor:pointer;}
+.sugg-mini:hover{border-color:#5149e9;color:#5149e9;}
+.sugg-mini.pri{background:#5149e9;border-color:#5149e9;color:#fff;}
+.sugg-mini.pri:hover{background:#4038c0;color:#fff;}
+.sugg-mini.danger{color:#c72c2a;}
+.sugg-mini.danger:hover{border-color:#c72c2a;color:#c72c2a;}
+/* 编辑分段抽屉 */
+.seg-drawer{position:fixed;inset:0;z-index:90;display:none;}
+.seg-drawer.show{display:block;}
+.seg-drawer-mask{position:absolute;inset:0;background:rgba(15,23,42,.35);}
+.seg-drawer-panel{position:absolute;top:0;right:0;bottom:0;width:520px;max-width:94vw;background:#fff;box-shadow:-10px 0 40px rgba(0,0,0,.18);display:flex;flex-direction:column;}
+.drawer-head{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid #eef0f2;}
+.drawer-head h2{font-size:16px;font-weight:700;color:#2f405d;margin:0;flex:1;}
+.drawer-body{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:18px;min-height:0;}
+.drawer-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #eef0f2;}
+.drawer-sec-title{font-size:13px;font-weight:700;color:#2f405d;}
+.edtx{width:100%;min-height:90px;padding:10px 12px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;font-family:inherit;line-height:1.7;resize:vertical;color:#41536f;box-sizing:border-box;}
+.edtx:focus{outline:none;border-color:#5149e9;}
+.field{width:100%;height:34px;padding:0 10px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;color:#41536f;box-sizing:border-box;font-family:inherit;}
+.field:focus{outline:none;border-color:#5149e9;}
+.pk{display:flex;flex-direction:column;gap:8px;border:1px solid #e2e8f0;border-radius:9px;padding:10px;}
+.pk-list{max-height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
+.pk-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;border:0;background:none;cursor:pointer;font-size:13px;color:#31425e;width:100%;text-align:left;font-family:inherit;}
+.pk-item:hover{background:#f5f3fa;}
+.pk-item.on{background:#eef0ff;color:#5149e9;}
+.pk-check{width:16px;height:16px;flex:none;border:1px solid #c9c2ef;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;background:#fff;}
+.pk-item.on .pk-check{background:#5149e9;border-color:#5149e9;}
+.pk-path{font-size:11px;color:#8b99ac;margin-left:auto;}
+</style>
+  <link rel="stylesheet" href="design-tokens.css" />
+  <link rel="stylesheet" href="gc-shell.css" />
+</head>
+<body>
+<aside class="lnav gc-lnav" id="lnav"></aside>
+<!-- 左侧菜单与其它页面共用 ../js/common.js -->
+<script src="../js/mock-data.js"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js"></script>
+<script src="gc-shell.js"></script>
+<script>GC.boot('gc-kb');</script>
+<div class="platform-page">
+<main class="app-shell">
+
+  <div class="kbd-head" id="kbHead">
+    <a class="kbd-back" href="knowledge-base.html">← 知识库</a>
+    <h1 class="kbd-title" id="kbTitle">旅游管理专业教学资源库</h1>
+    <span class="kbd-meta" id="kbMeta">admin · 更新于 3 周前</span>
+    <div class="kbd-head-actions">
+      <button class="kbd-ghost" onclick="toast('同步数据源')">↻ 同步</button>
+      <button class="kbd-primary" onclick="goAddFiles()">＋ 添加文件</button>
+    </div>
+  </div>
+
+  <div class="kbd-tabs" role="tablist">
+    <button class="kbd-tab active" data-tab="doc" onclick="switchTab('doc')">文档</button>
+    <button class="kbd-tab" data-tab="recall" onclick="switchTab('recall')">召回测试</button>
+    <button class="kbd-tab" data-tab="settings" onclick="switchTab('settings')">设置</button>
+    <button class="kbd-tab" data-tab="api" onclick="switchTab('api')">API 访问</button>
+  </div>
+
+  <!-- 文档 -->
+  <div id="panel-doc">
+    <div class="kbd-toolbar">
+      <select id="typeFilter" onchange="renderTable()">
+        <option value="all">全部类型</option>
+        <option value="text">文本</option>
+        <option value="image">图文</option>
+        <option value="av">音视频</option>
+      </select>
+      <select id="statusFilter" onchange="renderTable()">
+        <option value="all">全部状态</option>
+        <option value="available">可用</option>
+        <option value="indexing">索引中</option>
+        <option value="queuing">排队中</option>
+        <option value="waiting">待处理</option>
+        <option value="unavailable">不可用</option>
+        <option value="error">错误</option>
+      </select>
+      <select id="sourceFilter" onchange="renderTable()">
+        <option value="all">全部来源</option>
+        <option value="local">本地文件</option>
+        <option value="web">从网页导入</option>
+        <option value="notion">从 Notion 导入</option>
+      </select>
+      <select id="kpStateFilter" onchange="renderTable()" aria-label="知识点状态">
+        <option value="all">全部知识点状态</option>
+        <option value="pending">有待确认</option>
+        <option value="none">无知识点</option>
+      </select>
+      <input type="text" id="docSearch" placeholder="搜索文档名称" onkeydown="if(event.key==='Enter')renderTable()" />
+      <div class="spacer"></div>
+      <button class="kbd-primary" onclick="goAddFiles()">＋ 添加文件</button>
+    </div>
+
+    <div class="kbd-batch" id="batchBar">
+      <span id="batchCount">已选 0 项</span>
+      <button class="kbd-ghost" onclick="clearSelection()">取消选择</button>
+      <button class="kbd-ghost danger" onclick="batchDelete()">删除</button>
+    </div>
+
+    <div class="kbd-table">
+      <div class="kbd-thead">
+        <span class="kbd-cell-check"><input type="checkbox" class="kbd-check" id="selectAll" onchange="toggleSelectAll()" aria-label="全选"></span>
+        <span>名称</span><span>分段模式</span><span>文件大小</span><span>知识点</span><span>召回次数</span><span>上传时间</span><span>状态</span><span>操作</span>
+      </div>
+      <div id="docRows"></div>
+    </div>
+
+    <div class="kbd-pagination">
+      <span id="pageSummary">共 128 条文档</span>
+      <div class="kbd-pages">
+        <button class="kbd-page-btn" disabled>‹</button>
+        <button class="kbd-page-btn active">1</button>
+        <button class="kbd-page-btn">2</button>
+        <button class="kbd-page-btn">3</button>
+        <span style="color:#b4bdcb">…</span>
+        <button class="kbd-page-btn">13</button>
+        <button class="kbd-page-btn">›</button>
+      </div>
+    </div>
+    <p class="kbd-footnote">点击文档名查看并编辑分段信息；每个分段可关联知识点、处理 AI 建议。</p>
+  </div>
+
+  <!-- 召回测试 -->
+  <div id="panel-recall" style="display:none;">
+    <div class="kbd-panel">
+      <p class="kbd-footnote" style="padding-top:6px">在「旅游管理专业教学资源库」中检索，文本、图文、音视频分段一起召回。</p>
+      <div class="kbd-hit">
+        <div class="kbd-hit-form">
+          <input id="recallInput" placeholder="输入问题，例如：VD 房是什么意思" value="客人要求提前入住怎么处理" />
+          <button class="kbd-primary" onclick="doRecall()">测试</button>
+        </div>
+        <div class="kbd-hit-result" id="recallResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设置 -->
+  <div id="panel-settings" style="display:none;">
+    <div class="kbd-panel">
+      <div class="kbd-section-title">索引与检索</div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>索引方式</b><span>整个知识库统一；更改需重建全部索引</span></div><span class="kbd-set-val">高质量</span></div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>向量模型</b><span>创建时确定，不可更改</span></div><span class="kbd-set-val">系统默认向量模型</span></div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>检索设置</b><span>用于召回测试与知识库问答</span></div><select><option>混合检索</option><option>向量检索</option><option>全文检索</option></select></div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>Rerank 重排</b><span>对召回结果重新排序</span></div><select><option>开启（系统默认 Rerank 模型）</option><option>关闭</option></select></div>
+      <div class="kbd-section-title">解析模型 <span style="font-weight:400;color:#8b99ac;font-size:12px">由管理员配置</span></div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>文字识别</b><span>扫描件、图中文字</span></div><span class="kbd-set-val">系统默认 OCR 模型</span></div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>画面描述</b><span>图片画面内容</span></div><span class="kbd-set-val">系统默认图像理解模型</span></div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>语音转写</b><span>音频、视频音轨</span></div><span class="kbd-set-val">系统默认语音识别模型</span></div>
+      <div class="kbd-section-title">知识点</div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>知识体</b><span>知识点的关联与提取限定在该知识体内</span></div><span class="kbd-set-val">旅游类-酒店管理与数字化运营</span></div>
+      <div class="kbd-section-title">分段规则</div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>分段模式</b><span>通用知识、多路分段</span></div><select><option>自动分段与清洗</option><option>自定义分段</option></select></div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>分段最大长度</b><span>单位 tokens</span></div><input value="500" style="width:120px"></div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>扫描件 OCR</b><span>无文字层页面自动识别文字</span></div><select><option>开启</option><option>关闭</option></select></div>
+    </div>
+  </div>
+
+  <!-- API 访问 -->
+  <div id="panel-api" style="display:none;">
+    <div class="kbd-panel">
+      <div class="kbd-section-title">知识库 API</div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>API Key</b><span>调用检索接口使用，请妥善保管</span></div><button class="kbd-ghost" onclick="toast('已复制 API Key')">复制</button></div>
+      <div class="kbd-set-row"><div class="kbd-set-label"><b>知识库 ID</b></div><span class="kbd-api-key" id="apiId">9a87bbc1-9075-4b61-aaf0-0658ed9cc568</span></div>
+      <div class="kbd-section-title">调用示例</div>
+      <div class="kbd-code" id="apiCode"></div>
+    </div>
+  </div>
+
+  <!-- 文档详情（整页） -->
+  <div id="docDetail" style="display:none;">
+    <div class="kbd-head">
+      <a class="kbd-back" href="javascript:void(0)" onclick="closeDoc()">← 返回文档列表</a>
+      <h1 class="kbd-title" id="docTitle"></h1>
+      <span class="kbd-meta" id="docMeta"></span>
+      <div class="kbd-head-actions">
+        <button class="kbd-ghost" id="docPreviewBtn" onclick="openPreview()">源文预览</button>
+        <button class="kbd-ghost" onclick="toast('下载「'+activeDoc.name+'」')">↓ 下载</button>
+      </div>
+    </div>
+    <div id="docDetailBody"></div>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+</main>
+</div>
+
+<!-- 行操作菜单 -->
+<div class="kbd-menu" id="rowMenu">
+  <div class="kbd-menu-item" data-act="preview">👁 预览</div>
+  <div class="kbd-menu-item" data-act="reparse">⟳ 重新解析</div>
+  <div class="kbd-menu-item" data-act="rename">✎ 重命名</div>
+  <div class="kbd-menu-item" data-act="download">↓ 下载</div>
+  <div class="kbd-menu-item" data-act="toggle">⏸ 停用 / 启用</div>
+  <div class="kbd-menu-divider"></div>
+  <div class="kbd-menu-item danger" data-act="delete">🗑 删除</div>
+</div>
+
+
+
+<!-- 编辑分段抽屉 -->
+<div class="seg-drawer" id="segDrawer">
+  <div class="seg-drawer-mask" onclick="closeDrawer()"></div>
+  <div class="seg-drawer-panel" id="segDrawerPanel"></div>
+</div>
+
+<!-- 源文预览弹窗 -->
+<div class="kbd-modal" id="confirmModal">
+  <div class="kbd-dialog" style="width:420px">
+    <div class="kbd-dialog-head"><h2>一键通过高置信关联</h2><button class="kbd-close" onclick="closeConfirm()">×</button></div>
+    <div class="kbd-dialog-body"><p id="confirmText" style="margin:0;font-size:14px;color:#41536f;line-height:1.7"></p></div>
+    <div class="kbd-dialog-foot"><button class="kbd-ghost" onclick="closeConfirm()">取消</button><button class="kbd-primary" onclick="doOneClick()">确认通过</button></div>
+  </div>
+</div>
+<div class="kbd-modal" id="previewModal">
+  <div class="kbd-dialog" style="width:860px">
+    <div class="kbd-dialog-head"><h2 id="previewTitle"></h2><button class="kbd-close" onclick="closePreview()">×</button></div>
+    <div class="kbd-dialog-body" id="previewBody"></div>
+  </div>
+</div>
+
+<script>
+/* ================= 数据 ================= */
+const KB_META = {
+  KB001:{name:'xhf_test_09_14',creator:'admin',editTime:'25 天前'},
+  KB002:{name:'知识工程与知识体系详解.docx',creator:'admin',editTime:'2 个月前'},
+  KB003:{name:'现代酒店管理',creator:'admin',editTime:'1 个月前'},
+  KB004:{name:'旅游管理专业教学资源库',creator:'admin',editTime:'3 周前',total:128},
+  KB005:{name:'导游实务案例集',creator:'admin',editTime:'1 周前',total:45},
+  KB006:{name:'景区开发与管理规范',creator:'admin',editTime:'2 周前',total:32}
+};
+// 图谱中心：新建的知识库（创建页保存）；只有本次上传的文档
+const GC_NEW_KB = (()=>{ try{ return JSON.parse(sessionStorage.getItem('gc_kbs_new')||'[]'); }catch(e){ return []; } })();
+GC_NEW_KB.forEach(k=>{ KB_META[k.id]={name:k.name,creator:k.creator,editTime:'刚刚',isNew:true}; });
+
+const STATUS = {
+  available:{label:'可用',color:'#16a34a',bg:'#eaf6ec'},
+  indexing:{label:'索引中',color:'#5149e9',bg:'#eef0ff',pulse:true},
+  queuing:{label:'排队中',color:'#8b99ac',bg:'#f0f2f5'},
+  waiting:{label:'待处理',color:'#f59e0b',bg:'#fff7e6'},
+  unavailable:{label:'不可用',color:'#8b99ac',bg:'#f0f2f5'},
+  error:{label:'错误',color:'#c72c2a',bg:'#fff1f0'}
+};
+const TYPE = { text:{label:'文本',color:'#5149e9'}, image:{label:'图文',color:'#0e9384'}, av:{label:'音视频',color:'#dc6803'} };
+const MEDIA_LABEL = {audio:'音频',video:'视频'};
+const SOURCE = {local:'本地文件',web:'网页导入',notion:'Notion 导入'};
+
+const IMG_BOARD = `<svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="白板手写房态表">
+  <rect width="480" height="320" fill="#DDE3EA"/><rect x="20" y="16" width="440" height="288" rx="6" fill="#FDFDFB" stroke="#AEB8C4" stroke-width="6"/>
+  <g font-family="Kaiti SC, STKaiti, KaiTi, serif" fill="#1F3A8A">
+    <text x="48" y="62" font-size="26" font-weight="700">房态表（8F）</text>
+    <line x1="46" y1="76" x2="430" y2="76" stroke="#1F3A8A" stroke-width="2"/>
+    <text x="52" y="110" font-size="20">801　VC　空房已清洁</text>
+    <text x="52" y="142" font-size="20">802　OC　住客房</text>
+    <text x="52" y="174" font-size="20">803　VD　空房未清洁</text>
+    <text x="52" y="206" font-size="20">804　OOO　维修房</text>
+    <text x="52" y="238" font-size="20">805　VC　空房已清洁</text>
+    <text x="52" y="282" font-size="17" fill="#B42318">备注：VD 清洁完 → 客房部通知前台改 VC</text>
+  </g></svg>`;
+const IMG_DESK = `<svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="酒店前台工作区照片">
+  <rect width="480" height="320" fill="#EFE7DC"/><rect y="250" width="480" height="70" fill="#D8CBB8"/>
+  <rect x="150" y="34" width="180" height="46" rx="6" fill="#3B2F25"/>
+  <text x="240" y="56" text-anchor="middle" font-size="14" fill="#E9D8B4" font-family="sans-serif" letter-spacing="3">RECEPTION</text>
+  <text x="240" y="73" text-anchor="middle" font-size="12" fill="#E9D8B4" font-family="sans-serif">前台接待</text>
+  <rect x="70" y="128" width="100" height="66" rx="4" fill="#1F2937"/><rect x="76" y="134" width="88" height="54" fill="#60A5FA" opacity=".55"/>
+  <rect x="112" y="194" width="16" height="16" fill="#374151"/><rect x="86" y="206" width="70" height="10" rx="2" fill="#4B5563"/>
+  <rect x="300" y="168" width="54" height="40" rx="4" fill="#E5E7EB" stroke="#9CA3AF"/><rect x="310" y="160" width="34" height="10" rx="2" fill="#CBD5E1"/>
+  <rect x="372" y="176" width="34" height="34" rx="5" fill="#111827"/><rect x="378" y="182" width="22" height="10" fill="#34D399"/>
+  <rect x="30" y="214" width="420" height="16" rx="3" fill="#C9A27C"/><rect x="40" y="230" width="400" height="70" fill="#8B6B4A"/>
+  </svg>`;
+
+const IMG_MENU = `<svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="手写中餐菜单">
+  <rect width="480" height="320" fill="#E8E2D6"/><rect x="120" y="20" width="240" height="280" rx="4" fill="#FFFDF7" stroke="#CDBFA6" transform="rotate(-3 240 160)"/>
+  <g font-family="Kaiti SC, STKaiti, KaiTi, serif" fill="#3B2F25" transform="rotate(-3 240 160)">
+    <text x="190" y="70" font-size="24" font-weight="700">今日推荐</text>
+    <text x="150" y="130" font-size="19">松鼠桂鱼　168</text><text x="150" y="180" font-size="19">蟹粉豆腐　58</text><text x="150" y="230" font-size="19">清炒时蔬　32</text></g>
+  <rect x="260" y="40" width="120" height="90" fill="#fff" opacity=".55" transform="rotate(18 320 85)"/></svg>`;
+
+let DOCS = [
+  /* ---- 文本 ---- */
+  {id:'d1', cat:'text', name:'前厅服务规范.docx', ext:'DOCX', size:'1.2 MB', status:'available', source:'local', time:'2026-09-18 14:22', hits:12,
+    segs:[
+      '第一章 总则：前厅部是酒店对客服务的第一窗口，员工须统一着装、佩戴工牌，站立服务，主动问候。',
+      '前厅员工应熟悉酒店各营业场所的位置与营业时间，能准确回答客人问询。',
+      '第二章 入住登记：核验有效证件，确认预订信息与房型、房价、离店日期，收取押金后制作房卡并告知早餐时间。',
+      '无预订的散客入住时，先查询当前可售房态，向客人介绍房型与房价，确认后再办理登记。',
+      '第三章 提前入住与延迟退房：提前入住视当日可售房态安排；延迟退房至 14:00 不另收费，14:00–18:00 加收半日房费，18:00 后按全日房费计。',
+      '第四章 交接班：每班结束前核对房态、备用金和未完成事项，填写交接班记录本并双方签字。'
+    ]},
+  {id:'d2', cat:'text', name:'夜审操作手册（扫描件）.pdf', ext:'PDF', size:'8.6 MB', status:'available', source:'local', time:'2026-09-17 09:05', hits:5, scanned:true,
+    segs:[
+      '夜审时间一般为每日 0:00 至 3:00，夜审员需核对当日所有入住、退房及在住房间的房价与账务。',
+      '完成核对后执行日结，生成营业日报，并将系统营业日期滚动至次日。'
+    ]},
+  {id:'d3', cat:'text', name:'客房部服务标准.docx', ext:'DOCX', size:'3.4 MB', status:'available', source:'local', time:'2026-09-16 16:40', hits:9,
+    segs:[
+      '客房清洁按「先住客房、后空房」顺序进行，退房房需在 15 分钟内完成查房并通知前台。',
+      '布草更换标准：床单、被套、枕套每客一换，续住客人按三天一换或按客人要求更换。'
+    ]},
+  {id:'d4', cat:'text', name:'餐饮服务流程.pdf', ext:'PDF', size:'5.1 MB', status:'available', source:'local', time:'2026-09-15 11:30', hits:2,
+    segs:['餐前准备：检查台面、餐具、菜单，确认预订信息。','席间服务：上菜报菜名、斟酒茶水、及时撤换骨碟。']},
+  {id:'d5', cat:'text', name:'酒店英语情景对话.txt', ext:'TXT', size:'64 KB', status:'available', source:'web', time:'2026-09-14 20:11', hits:15,
+    segs:['Receptionist: Good afternoon, welcome to our hotel. May I help you with check-in?','Guest: I have a reservation under the name of Li. A double room for two nights.']},
+  {id:'d6', cat:'text', name:'旅游管理专业人才培养方案.docx', ext:'DOCX', size:'2.8 MB', status:'indexing', source:'local', time:'2026-09-20 10:02', hits:0, segs:[]},
+  {id:'d7', cat:'text', name:'导游资格考试大纲.pdf', ext:'PDF', size:'6.2 MB', status:'error', source:'local', time:'2026-09-13 08:45', hits:0, segs:[], errReason:'文件已加密，无法解析'},
+  {id:'d8', cat:'text', name:'2024级学生名单.xlsx', ext:'XLSX', size:'210 KB', status:'waiting', source:'local', time:'2026-09-20 11:20', hits:0, segs:[]},
+  {id:'d9', cat:'text', name:'实习基地汇总表.csv', ext:'CSV', size:'88 KB', status:'unavailable', source:'notion', time:'2026-09-12 15:00', hits:0, segs:[]},
+
+  /* ---- 图文 ---- */
+  {id:'d10', cat:'image', name:'房态表板书.jpg', ext:'JPG', size:'2.4 MB', status:'available', source:'local', time:'2026-09-18 14:30', hits:4, svg:IMG_BOARD,
+    ocr:'房态表（8F）\n801 VC 空房已清洁\n802 OC 住客房\n803 VD 空房未清洁\n804 OOO 维修房\n805 VC 空房已清洁\n备注：VD 清洁完 → 客房部通知前台改 VC',
+    desc:'白板上手写的 8 楼房态表，按房号列出 5 个房间的房态代码与含义，底部有一条红色交接备注，说明 VD 房清洁完成后的改态流程。'},
+  {id:'d11', cat:'image', name:'前台工作区照片.jpg', ext:'JPG', size:'3.1 MB', status:'available', source:'local', time:'2026-09-18 14:32', hits:3, svg:IMG_DESK,
+    ocr:'RECEPTION\n前台接待',
+    desc:'酒店前台工作区。台面左侧是电脑显示器和键盘，右侧是房卡制卡机和 POS 机，后方墙上挂着「前台接待」标识，台面整洁，画面中没有客人。'},
+  {id:'d17', cat:'image', name:'中餐菜单手写稿.jpg', ext:'JPG', size:'1.9 MB', status:'available', source:'local', time:'2026-09-18 14:35', hits:1, svg:IMG_MENU,
+    ocrFailed:true, ocr:'', ocrRetryText:'今日推荐\n松鼠桂鱼 168\n蟹粉豆腐 58\n清炒时蔬 32',
+    desc:'一张手写的中餐菜单，纸面有折痕和反光，列出 3 道菜名与价格，字迹较潦草。'},
+  {id:'d12', cat:'image', name:'中餐摆台示意图.jpg', ext:'JPG', size:'1.6 MB', status:'indexing', source:'local', time:'2026-09-20 10:05', hits:0, svg:null, ocr:'', desc:''},
+
+  /* ---- 音视频 ---- */
+  {id:'d13', cat:'av', media:'video', name:'前厅接待实训课录像.mp4', ext:'MP4', size:'162.4 MB', status:'available', source:'local', time:'2026-09-17 10:18', hits:6, sec:1100,
+    speakers:{1:'说话人 1',2:'说话人 2',3:'说话人 3'},
+    segs:[
+      [0,156,1,'同学们好，今天这节实训课我们练习前厅散客入住登记的完整流程。先回顾上节课讲的五个环节：问候、确认预订、核验证件、收取押金、发放房卡。'],
+      [156,370,1,'核验证件这一步要同时核对系统里的预订姓名和证件姓名，不一致时先问清楚是不是代订，再按酒店规定处理。'],
+      [370,522,2,'老师，如果客人是通过 OTA 平台预订的，押金也要在前台另外收吗？'],
+      [522,725,1,'要看预订类型。预付房型通常只收杂费押金，现付房型收房费加杂费。另外常遇到客人要求提前入住，先查当前可售房态，有已清洁的同类型房就可以安排，没有的话请客人寄存行李，并告知预计可入住时间。'],
+      [725,930,3,'我来演示一遍。您好，欢迎光临，请问有预订吗？好的，麻烦出示一下您的身份证，我为您办理入住登记。'],
+      [930,1100,1,'刚才的演示流程是对的，有两个细节：递还证件要双手，并且要复述房号和早餐时间。']
+    ]},
+  {id:'d14', cat:'av', media:'audio', name:'导游讲解示范_故宫中轴线.m4a', ext:'M4A', size:'38.6 MB', status:'available', source:'local', time:'2026-09-17 10:20', hits:5, sec:960,
+    speakers:{1:'说话人 1'},
+    segs:[
+      [0,200,1,'各位游客朋友，大家好。我们现在站在午门前，午门是紫禁城的正门，平面呈凹字形，俗称五凤楼。'],
+      [200,465,1,'穿过午门，眼前这条金水河自西向东流过，河上五座汉白玉石桥就是内金水桥，中间一座是皇帝专用的御路桥。'],
+      [465,730,1,'接下来看到的是太和殿，也就是俗称的金銮殿，是紫禁城中规格最高的建筑，明清两代的重大典礼都在这里举行。'],
+      [730,960,1,'讲解时要注意节奏，每个点位控制在三到五分钟，并提醒游客注意台阶和人流。']
+    ]},
+  {id:'d15', cat:'av', media:'audio', segMode:'speaker', name:'企业师傅访谈-酒店前台.mp3', ext:'MP3', size:'21.7 MB', status:'available', source:'local', time:'2026-09-16 13:55', hits:8, sec:1125,
+    speakers:{1:'说话人 1',2:'说话人 2'},
+    segs:[
+      [0,110,1,'王经理您好，想请您谈谈新员工到前台岗位后，最常见的问题是什么？'],
+      [110,390,2,'最常见的是房态不熟。新人上岗前两周，我们要求每天交接班时手工核对一次房态表，熟了以后系统操作才不容易出错。'],
+      [390,615,2,'第二是处理投诉时急于解释。我们教的是先倾听、再致歉、最后给方案，而且方案要给客人选择。'],
+      [615,820,1,'那您觉得学校在实训课里应该加强哪方面？'],
+      [820,1125,2,'多练夜审和交接班。学校实训一般练入住退房比较多，夜审很少涉及，但上岗后每个人都要轮。']
+    ]},
+  {id:'d16', cat:'av', media:'video', name:'研学活动全程记录.mov', ext:'MOV', size:'1.8 GB', status:'error', source:'local', time:'2026-09-11 09:00', hits:0, sec:5400, speakers:{}, segs:[], errReason:'时长超过 1 小时，无法导入'}
+];
+
+let selected = new Set();
+let menuDocId = null;
+let activeDoc = null;
+let currentTab = 'doc';
+let segQ = '';
+let segFilter = 'all';
+let kpFilter = 'all';
+let curTime = 0, playing = false, playTimer = null, editing = null, renames = {};
+
+/* ================= 工具 ================= */
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.__t);window.__t=setTimeout(()=>el.classList.remove('show'),2200);}
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=s=>{s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>(n<10?'0':'')+n;return h?h+':'+p(m)+':'+p(x):p(m)+':'+p(x)};
+const segCount=f=>f.cat==='image'?1:f.segs.length;
+const charCount=f=>{if(f.cat==='image')return (f.ocr||'').length+(f.desc||'').length;return f.segs.reduce((a,s)=>a+(f.cat==='av'?s[3]:s).length,0);};
+const spName=(f,n)=>renames[f.id+'-'+n]||f.speakers[n]||('说话人 '+n);
+
+/* ================= 图标 ================= */
+const IC={
+  doc:(c,w=20)=>`<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"><path d="M6 2.5h8l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V4A1.5 1.5 0 0 1 6.5 2.5z"/><path d="M14 2.5V8h5M8.5 13h7M8.5 16.5h5"/></svg>`,
+  image:(c,w=20)=>`<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 9"/></svg>`,
+  audio:(c,w=20)=>`<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>`,
+  video:(c,w=20)=>`<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"><rect x="2.5" y="5" width="13" height="14" rx="2.5"/><path d="M15.5 10l5-3v10l-5-3"/></svg>`,
+  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5.5v13l10.5-6.5z"/></svg>',
+  pause:'<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
+};
+function docIcon(d,w=20){
+  const c=TYPE[d.cat].color;
+  if(d.cat==='text') return IC.doc(c,w);
+  if(d.cat==='image') return IC.image(c,w);
+  return d.media==='video'?IC.video(c,w):IC.audio(c,w);
+}
+function typeBadge(d){
+  const c=TYPE[d.cat].color;
+  const label=d.cat==='av'?MEDIA_LABEL[d.media]:TYPE[d.cat].label;
+  return `<span class="kbd-type-badge" style="color:${c};background:${c}14">${d.ext} · ${label}</span>`;
+}
+function statusBadge(d){
+  const s=STATUS[d.status];
+  return `<span class="kbd-badge ${s.pulse?'kbd-pulse':''}" style="color:${s.color};background:${s.bg}"><span class="dot"></span>${s.label}</span>`;
+}
+/* 分段模式：随文件处理时的设置展示 */
+const IMG_MODE_LABEL = {both:'识别文字 + 描述画面', ocr:'仅识别文字', desc:'仅描述画面'};
+const AV_MODE_LABEL = {semantic:'转写 · 语义段落', speaker:'转写 · 按说话人'};
+function segModeLabel(d){
+  if(d.cat==='av') return AV_MODE_LABEL[d.segMode||'semantic'];
+  if(d.cat==='image') return IMG_MODE_LABEL[d.imgMode||'both'];
+  if(d.scanned) return d.ocrOff ? '扫描件 · 未识别' : '扫描件 · OCR';
+  return '语义';
+}
+
+/* ================= 表格 ================= */
+function filtered(){
+  const q=document.getElementById('docSearch').value.trim().toLowerCase();
+  const ty=document.getElementById('typeFilter').value;
+  const st=document.getElementById('statusFilter').value;
+  const so=document.getElementById('sourceFilter').value;
+  const ks=document.getElementById('kpStateFilter').value;
+  return DOCS.filter(d=>
+    (ks==='all'||(d.status==='available'&&(ks==='pending'?kpStat(d).pend>0:kpStat(d).total===0&&kpStat(d).pend===0))) &&
+    (!q||d.name.toLowerCase().includes(q)) &&
+    (ty==='all'||d.cat===ty) &&
+    (st==='all'||d.status===st) &&
+    (so==='all'||d.source===so)
+  );
+}
+function renderTable(){
+  const rows=filtered();
+  const box=document.getElementById('docRows');
+  document.getElementById('selectAll').checked = rows.length>0 && rows.every(d=>selected.has(d.id));
+  if(!rows.length){box.innerHTML='<div style="padding:40px;text-align:center;color:#8b99ac;font-size:13px">没有匹配的文档</div>';updateBatch();return;}
+  box.innerHTML=rows.map(d=>`<div class="kbd-row">
+    <div class="kbd-cell-check"><input type="checkbox" class="kbd-check" ${selected.has(d.id)?'checked':''} onchange="toggleSelect('${d.id}')" aria-label="选择"></div>
+    <div class="kbd-doc">
+      <span class="kbd-doc-icon">${docIcon(d)}</span>
+      <div style="min-width:0">
+        <div class="kbd-doc-name" onclick="openDoc('${d.id}')" title="${esc(d.name)}">${esc(d.name)}</div>
+        <div class="kbd-doc-sub">${typeBadge(d)}</div>
+      </div>
+    </div>
+    <div style="white-space:nowrap">${segModeLabel(d)}</div>
+    <div style="white-space:nowrap">${d.size}</div>
+    <div style="white-space:nowrap">${kpCell(d)}</div>
+    <div>${d.hits||'—'}</div>
+    <div style="color:#8b99ac;white-space:nowrap">${d.time}</div>
+    <div title="${d.status==='error'?esc(d.errReason||''):''}">${statusBadge(d)}${d.status==='error'&&d.errReason?`<div style="font-size:11px;color:#c72c2a;margin-top:3px;white-space:normal">${esc(d.errReason)}</div>`:''}</div>
+    <div><button class="kbd-more" onclick="openMenu(event,'${d.id}')" aria-label="操作">⋯</button></div>
+  </div>`).join('');
+  updateBatch();
+}
+/* 知识点统计：按知识点去重；来源取该知识点首次关联的方式 */
+function kpStat(d){
+  const src={}; let pend=0;
+  segKeys(d).forEach(k=>{ const st=segState(d,k); st.kps.forEach(id=>{ if(!(id in src)) src[id]=linkSrc(st,id).by; }); pend+=st.sugg.filter(g=>g.status==='pending').length; });
+  chaptersOf(d).forEach(g=>{ const st=chState(d,g.items[0].i); st.kps.forEach(id=>{ if(!(id in src)) src[id]=linkSrc(st,id).by; }); pend+=st.sugg.filter(x=>x.status==='pending').length; });
+  const ids=Object.keys(src);
+  return {total:ids.length, manual:ids.filter(id=>src[id]==='manual').length, ai:ids.filter(id=>src[id]==='ai').length, pend};
+}
+function kpCell(d){
+  if(d.status!=='available') return '<span style="color:#b4bdcb">—</span>';
+  const x=kpStat(d);
+  if(!x.total&&!x.pend) return '<span style="color:#b4bdcb">无知识点</span>';
+  const tip=(x.total?`已关联 ${x.total} 个知识点（手动 ${x.manual} · AI 识别确认 ${x.ai}）`:'暂无已关联知识点')+(x.pend?`；${x.pend} 条 AI 建议待确认`:'');
+  return `<span class="kp-cell" title="${tip}">${x.total?`<span>${x.total} 个知识点</span>`:''}${x.pend?`<button class="kp-pend" onclick="openDocPending('${d.id}')">${x.pend} 待确认</button>`:''}</span>`;
+}
+function openDocPending(id){ openDoc(id); kpFilter='pending'; refreshDoc(); }
+function updateBatch(){
+  const n=selected.size;
+  document.getElementById('batchBar').classList.toggle('show',n>0);
+  document.getElementById('batchCount').textContent='已选 '+n+' 项';
+}
+function toggleSelect(id){selected.has(id)?selected.delete(id):selected.add(id);renderTable();}
+function toggleSelectAll(){
+  const rows=filtered();
+  if(rows.every(d=>selected.has(d.id))) rows.forEach(d=>selected.delete(d.id));
+  else rows.forEach(d=>selected.add(d.id));
+  renderTable();
+}
+function clearSelection(){selected.clear();renderTable();}
+/* 删除文件：未审核的待确认项作废，已关联的关联解除（已关联的知识点保留在图谱，无来源时由图谱平台标「无来源」） */
+function removeDocs(ids){
+  let voided=0, unlinked=0;
+  ids.forEach(id=>{
+    const st=SEG_STATE[id];
+    if(st) Object.values(st).forEach(x=>{ voided+=x.sugg.filter(g=>g.status==='pending').length; unlinked+=x.kps.length; });
+    delete SEG_STATE[id];
+  });
+  DOCS=DOCS.filter(d=>!ids.includes(d.id));
+  return (voided||unlinked)?`，作废 ${voided} 条待确认建议，解除 ${unlinked} 条关联`:'';
+}
+function batchDelete(){
+  const n=selected.size; if(!n) return;
+  const extra=removeDocs([...selected]); selected.clear(); renderTable();
+  toast('已删除 '+n+' 个文档'+extra);
+}
+
+/* ================= 行操作 ================= */
+function openMenu(e,id){
+  e.stopPropagation();
+  menuDocId=id;
+  const m=document.getElementById('rowMenu');
+  m.classList.add('show');
+  m.style.left=Math.min(e.clientX,window.innerWidth-180)+'px';
+  m.style.top=Math.min(e.clientY,window.innerHeight-240)+'px';
+}
+function hideMenu(){document.getElementById('rowMenu').classList.remove('show');}
+document.addEventListener('click',e=>{ if(!e.target.closest('.kbd-menu') && !e.target.closest('.kbd-more')) hideMenu(); });
+/* 重新处理：按「分段内容被编辑」处理全部分段 */
+function reparse(d){
+  const wasError=d.status==='error';
+  d.status='indexing'; renderTable(); if(activeDoc&&activeDoc.id===d.id) refreshDoc();
+  toast('已重新提交解析「'+d.name+'」');
+  setTimeout(()=>{
+    if(wasError){ d.status='error'; toast('「'+d.name+'」解析失败：'+(d.errReason||'未知原因')); }
+    else{
+      d.status='available';
+      if(SEG_STATE[d.id]&&d.autoKp!==false){ let v=0,f=0,u=0; segKeys(d).forEach(k=>{ const r=reextract(d,k,'文件重新处理',false); v+=r.voided; f+=r.fresh; u+=r.unlink; });
+        toast(`「${d.name}」重新处理完成：作废 ${v} 条旧建议，新增 ${f} 条建议${u?`，${u} 条关联待解除`:''}`); }
+      else toast('「'+d.name+'」重新处理完成');
+    }
+    if(activeDoc&&activeDoc.id===d.id) refreshDoc(); renderTable();
+  },2400);
+}
+document.getElementById('rowMenu').addEventListener('click',e=>{
+  const item=e.target.closest('.kbd-menu-item'); if(!item) return;
+  const act=item.dataset.act, d=DOCS.find(x=>x.id===menuDocId); hideMenu();
+  if(!d) return;
+  if(act==='preview') openDoc(d.id);
+  else if(act==='reparse') reparse(d);
+  else if(act==='rename'){const n=prompt('重命名文档',d.name);if(n&&n.trim()){d.name=n.trim();renderTable();toast('已重命名');}}
+  else if(act==='download') toast('下载「'+d.name+'」');
+  else if(act==='toggle'){ if(d.status==='unavailable'){d.status='available';toast('已启用「'+d.name+'」');} else {d.status='unavailable';toast('已停用「'+d.name+'」');} renderTable(); }
+  else if(act==='delete'){const extra=removeDocs([d.id]);renderTable();toast('已删除「'+d.name+'」'+extra);}
+});
+
+/* ================= Tab ================= */
+function switchTab(t){
+  currentTab=t;
+  ['doc','recall','settings','api'].forEach(k=>{
+    document.getElementById('panel-'+k).style.display = k===t?'':'none';
+  });
+  document.querySelectorAll('.kbd-tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+}
+
+/* ================= 召回测试 ================= */
+function corpus(){
+  const out=[];
+  DOCS.forEach(f=>{
+    if(f.cat==='text'){ f.segs.forEach((s,i)=>out.push({f,i,text:s})); }
+    else if(f.cat==='image'){ out.push({f,i:0,text:[f.ocr,f.desc].filter(Boolean).join('\n')}); }
+    else f.segs.forEach((s,i)=>out.push({f,i,text:s[3],t:s[0]}));
+  });
+  return out;
+}
+function doRecall(){
+  const q=document.getElementById('recallInput').value.trim();
+  const box=document.getElementById('recallResult');
+  if(!q){box.innerHTML='';return;}
+  const toks=[...new Set(q.replace(/[？?。，,！!\s]/g,'').match(/.{2}/g)||[])];
+  const hits=corpus().map(c=>{const hit=toks.filter(t=>c.text.includes(t)).length;return {...c,score:hit?Math.min(0.95,0.52+hit/toks.length*0.44):0}})
+    .filter(c=>c.score>0).sort((a,b)=>b.score-a.score).slice(0,5);
+  if(!hits.length){box.innerHTML='<div class="kbd-hit-empty">没有命中的文档，换个说法试试。</div>';return;}
+  box.innerHTML=hits.map(({f,text,score,i,t})=>`<div class="kbd-hit-item">
+    ${f.cat==='image'&&f.svg?`<div class="kbd-hit-thumb">${f.svg}</div>`:`<span class="kbd-doc-icon">${docIcon(f)}</span>`}
+    <div class="kbd-hit-body">
+      <div class="kbd-hit-name">${esc(f.name)} ${typeBadge(f)} ${statusBadge(f)}</div>
+      ${f.cat==='av'?`<div class="kbd-hit-ts">#${i+1} · ${fmt(f.segs[i][0])} – ${fmt(f.segs[i][1])}</div>`:''}
+      <div class="kbd-hit-snippet">${esc(text.length>120?text.slice(0,120)+'…':text)}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+      <span class="kbd-hit-score">相似度 ${score.toFixed(2)}</span>
+      ${f.cat==='image'?`<button class="dd-mini" onclick="openImage('${f.id}')">查看原图</button>`:''}
+      ${f.cat==='av'?`<button class="dd-mini" onclick="playFrom('${f.id}',${t})">▶ 从 ${fmt(t)} 播放</button>`:''}
+      <button class="dd-mini" onclick="openDoc('${f.id}')">查看详情</button>
+    </div>
+  </div>`).join('');
+}
+
+/* 命中图文：查看原图；命中音视频：打开文档并从分段开始时间播放 */
+function openImage(id){
+  const d=DOCS.find(x=>x.id===id); if(!d) return;
+  document.getElementById('previewTitle').innerHTML=docIcon(d,20)+'<span style="margin-left:8px">'+esc(d.name)+'</span>';
+  document.getElementById('previewBody').innerHTML=`<div class="dd-img">${d.svg||placeholder('图片处理中')}</div>`;
+  document.getElementById('previewModal').classList.add('show');
+}
+function playFrom(id,t){
+  openDoc(id); curTime=t; togglePlay();
+  const i=activeDoc.segs.findIndex(s=>t>=s[0]&&t<s[1]);
+  const el=document.getElementById('seg-'+i); if(el) el.scrollIntoView({block:'center'});
+}
+
+/* ================= 添加文件 ================= */
+/* 与创建知识库相同的上传流程：上传文件 → 解析与分段 → 处理并完成，完成后回到本页 */
+function goAddFiles(){
+  const id=new URLSearchParams(location.search).get('id')||'KB004';
+  const meta=KB_META[id]||KB_META.KB004;
+  location.href=GC.url('knowledge-base-create.html?mode=add&kb='+encodeURIComponent(id)+'&name='+encodeURIComponent(meta.name));
+}
+/* 读取「添加文件」流程交回的文档；仍在处理的文件模拟后台完成 */
+function loadAddedDocs(id){
+  let added=[];
+  try{ added=JSON.parse(sessionStorage.getItem('kb-added-'+id)||'[]'); }catch(e){}
+  added.forEach(d=>{ if(!DOCS.some(x=>x.id===d.id)) DOCS.unshift(d); });
+  const pending=added.filter(d=>d.status==='indexing');
+  if(pending.length) setTimeout(()=>{ pending.forEach(p=>{ const d=DOCS.find(x=>x.id===p.id); if(d) d.status='available'; }); renderTable(); if(activeDoc) refreshDoc(); },3000);
+  return added.length;
+}
+
+/* ================= 知识点 ================= */
+/* 知识体系节点树（mock）：专业 › 课程 › 任务 › 技能规范 / 操作流程 / 标准 / 案例 */
+const NODE_TREE=[
+  ['酒店管理','major',[
+    ['前厅服务','course',[
+      ['房态管理','task',[['房态变更流程','process']]],
+      ['入住接待','task',[['散客入住登记','process'],['前台收银与押金','skill']]],
+      ['退房办理','task',[['退房结算流程','process'],['提前入住与延迟退房标准','standard']]],
+      ['交接班','task',[['交接班流程','process']]],
+      ['前厅服务礼仪','task',[['仪容仪表规范','skill']]]
+    ]],
+    ['酒店财务管理','course',[['夜审','task',[['夜审日结流程','process']]]]],
+    ['客房服务','course',[['客房清洁','task',[['客房清洁标准','standard']]]]],
+    ['餐饮服务','course',[['席间服务','task',[['席间服务规范','skill']]]]],
+    ['服务质量管理','course',[['投诉处理','task',[['投诉处理流程','process'],['典型投诉案例','case']]]]],
+    ['酒店收益管理','course',[['OTA 渠道管理','task',[['OTA 订单处理','process']]]]]
+  ]],
+  ['旅游管理','major',[['导游实务','course',[['景点讲解','task',[['故宫讲解','skill']]]]]]]
+];
+const NODE_TYPE_LABEL={major:'专业',course:'课程',task:'任务',skill:'技能规范',process:'操作流程',standard:'标准',case:'案例',step:'操作步骤'};
+const NODES=[];
+(function walk(list,parent){ list.forEach(([name,type,kids])=>{ const path=parent.concat(name); NODES.push({path,type}); if(kids) walk(kids,path); }); })(NODE_TREE,[]);
+const nodeType=p=>(NODES.find(n=>n.path.join('/')===p.join('/'))||{}).type;
+/* 6.3：专业大类 / 专业 / 课程分类不可挂载；课程、任务仅作兜底（挂载层级偏浅） */
+const isShallow=p=>['course','task'].includes(nodeType(p));
+const KP=[
+  {id:'kp1',name:'房态代码（VC / VD / OC / OOO）',path:['酒店管理','前厅服务','房态管理','房态变更流程'],kw:['房态','VC','VD','OOO']},
+  {id:'kp2',name:'散客入住登记流程',path:['酒店管理','前厅服务','入住接待','散客入住登记'],kw:['入住登记','核验证件','办理入住']},
+  {id:'kp3',name:'提前入住与延迟退房政策',path:['酒店管理','前厅服务','退房办理','提前入住与延迟退房标准'],kw:['提前入住','延迟退房']},
+  {id:'kp4',name:'夜审流程与日结',path:['酒店管理','酒店财务管理','夜审','夜审日结流程'],kw:['夜审','日结']},
+  {id:'kp5',name:'客房清洁与布草更换标准',path:['酒店管理','客房服务','客房清洁','客房清洁标准'],kw:['布草','查房','客房清洁']},
+  {id:'kp6',name:'餐饮席间服务规范',path:['酒店管理','餐饮服务','席间服务','席间服务规范'],kw:['席间','上菜','斟酒']},
+  {id:'kp7',name:'投诉处理三步法',path:['酒店管理','服务质量管理','投诉处理','投诉处理流程'],kw:['投诉','致歉']},
+  {id:'kp8',name:'OTA 预订与房费结算',path:['酒店管理','酒店收益管理','OTA 渠道管理','OTA 订单处理'],kw:['OTA','押金','预付']},
+  {id:'kp9',name:'故宫中轴线讲解要点',path:['旅游管理','导游实务','景点讲解','故宫讲解'],kw:['午门','太和殿','金水桥','故宫','天坛']},
+  {id:'kp10',name:'交接班记录规范',path:['酒店管理','前厅服务','交接班','交接班流程'],kw:['交接班']}
+];
+function kpById(id){ return KP.find(k=>k.id===id); }
+/* 关联来源：manual 手动关联；ai AI 识别后人工确认 */
+const nowStr=()=>{ const d=new Date(), p=n=>(n<10?'0':'')+n; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); };
+function addLink(st,id,by){ if(!st.kps.includes(id)) st.kps.push(id); (st.src||(st.src={}))[id]={by,who:GC.me(),time:nowStr()}; }
+function dropLink(st,id){ st.kps=st.kps.filter(x=>x!==id); if(st.src) delete st.src[id]; }
+function linkSrc(st,id){ return (st.src&&st.src[id])||{by:'manual',who:'平台管理员',time:'2026-09-20 10:00'}; }
+function linkTitle(st,id){ const x=linkSrc(st,id); return (x.by==='ai'?'AI 识别 · '+x.who+'确认':'手动关联 · '+x.who)+' · '+x.time; }
+/* 知识点提取（mock）：分段原文命中知识点关键词即生成「关联已有」建议，原文依据取命中句 */
+let suggUid=1000;
+const NO_INFO_RE=/^(第?\d+页|目录|谢谢(大家|观看)?|好的?|我们继续|下面[我们]*[开始讲]*|同学们好)[。！!，,]*$/;
+function extractSeg(d,k,opts){
+  opts=opts||{};
+  const text=segTextOf(d,k), st=SEG_STATE[d.id]&&SEG_STATE[d.id][k];
+  const linked=st?st.kps:[], old=st?st.sugg:[];
+  // 6.1 短分段：无信息段不识别；短信息段（< 30 字，音视频 < 10 秒）只保留置信度 ≥ 0.90 的关联已有
+  const isCh=String(k).startsWith('ch'), body=text.replace(CH_RE,'').replace(/\s/g,'');
+  const avSeg=d.cat==='av'&&!isCh?d.segs[+k]:null;
+  if(!isCh&&(body.length<6||NO_INFO_RE.test(body))) return [];
+  const short=!isCh&&(body.length<30||(avSeg&&avSeg[1]-avSeg[0]<10));
+  const sentences=text.split(/(?<=[。！？?\n])/);
+  const out=[];
+  KP.forEach(x=>{
+    if(!x.kw||linked.includes(x.id)) return;
+    if(old.some(g=>g.kp===x.id&&g.status==='pending')) return;
+    // 驳回过的同一建议不重复推送；分段内容变更后除外
+    if(!opts.contentChanged && old.some(g=>g.kp===x.id&&g.status==='rejected')) return;
+    const hits=x.kw.filter(w=>text.includes(w));
+    if(!hits.length) return;
+    const quote=(sentences.find(t=>t.includes(hits[0]))||text).trim().replace(/[。！？?]$/,'');
+    const conf=Math.min(.97,.86+hits.length*.04);
+    if(short&&conf<.9) return;
+    const g={id:'s'+(suggUid++),type:'A',kp:x.id,conf,quote,status:'pending',
+      why:'原文提到「'+hits.join('」「')+'」，与已有知识点「'+x.name+'」指同一内容'};
+    if(d.cat==='image') g.src=(d.desc||'').includes(hits[0])&&!(d.ocr||'').includes(hits[0])?'desc':'ocr';
+    out.push(g);
+  });
+  return out;
+}
+/* 分段内容变化后，已关联的知识点若不再被原文支持，生成「关联待解除」交人工确认 */
+function unlinkCheck(d,k){
+  const st=segState(d,k), text=segTextOf(d,k), out=[];
+  st.kps.forEach(id=>{
+    const x=kpById(id); if(!x||!x.kw) return;
+    if(x.kw.some(w=>text.includes(w))) return;
+    if(st.sugg.some(g=>g.type==='U'&&g.kp===id&&g.status==='pending')) return;
+    out.push({id:'s'+(suggUid++),type:'U',kp:id,quote:'',status:'pending',def:'修改后的分段内容中已找不到支撑该知识点的原文'});
+  });
+  return out;
+}
+/* 分段重新提取：未审核的旧建议作废 → 重新提取 → 检查已关联的知识点 */
+function reextract(d,k,reason,contentChanged){
+  const st=segState(d,k);
+  let voided=0;
+  st.sugg.forEach(g=>{ if(g.status==='pending'){ g.status='void'; g.reason=reason; voided++; } });
+  // 上传批次未开启 AI 自动关联知识点的文件，不重新提取
+  const fresh=d.autoKp===false?[]:extractSeg(d,k,{contentChanged}), un=unlinkCheck(d,k);
+  st.sugg=st.sugg.concat(fresh,un);
+  return {voided,fresh:fresh.length,unlink:un.length};
+}
+/* 知识体系节点（挂载候选）：只列课程及以下可挂载类型 */
+function kbNodes(){ return NODES.filter(n=>n.type!=='major').map(n=>n.path); }
+/* 路径从课程开始显示 */
+const mountPath=p=>p.slice(1).join(' › ');
+/* 同一路径：a 是 b 的上级或下级 */
+const onSamePath=(a,b)=>{ const x=a.join('/'), y=b.join('/'); return x!==y&&(y.startsWith(x+'/')||x.startsWith(y+'/')); };
+let kpUid=100;
+
+/* 分段关联状态：docId -> { segKey: {kps:[], sugg:[]} } */
+const SEG_STATE={};
+function segKeys(d){ return d.cat==='image' ? ['0'] : d.segs.map((_,i)=>String(i)); }
+/* 图文每张图一个分段：图中文字 + 画面描述合在同一分段 */
+function segTextOf(d,key){
+  if(typeof key==='string'&&key.startsWith('ch')){ const i=+key.slice(2), g=textChapters(d).find(x=>x.items[0].i===i); return g?g.items.map(x=>d.segs[x.i]).join('\n'):''; }
+  if(d.cat==='image') return [d.ocr,d.desc].filter(Boolean).join('\n'); const s=d.segs[+key]; return d.cat==='av'?s[3]:s; }
+function segState(d,key){ if(!SEG_STATE[d.id]) seedState(d); return SEG_STATE[d.id][key] || (SEG_STATE[d.id][key]={kps:[],sugg:[],enabled:true}); }
+function seedState(d){
+  SEG_STATE[d.id]={};
+  segKeys(d).forEach(k=> SEG_STATE[d.id][k]={kps:[],sugg:[],enabled:true});
+  const link=(k,ids,by)=> ids.forEach(id=>{ const st=SEG_STATE[d.id][k]; if(!st.kps.includes(id)) st.kps.push(id); (st.src||(st.src={}))[id]={by:by||'manual',who:'平台管理员',time:'2026-09-20 15:30'}; });
+  const sugg=(k,list)=> SEG_STATE[d.id][k].sugg=list.slice();
+  if(d.id==='d1'){
+    link('2',['kp8'],'ai'); link('3',['kp2']); link('4',['kp3']); link('5',['kp10']);
+    // 章节：第二章手动关联；第一章、第三章有章节级 AI 建议
+    addLink(chState(d,2),'kp2','manual');
+    chState(d,0).sugg=[{id:'sc1',type:'B',name:'前厅服务礼仪规范',def:'着装、工牌、站立服务与主动问候等前厅服务基本要求。',conf:.83,quote:'员工须统一着装、佩戴工牌，站立服务，主动问候',status:'pending',
+      why:'本章整体讲前厅员工的服务礼仪要求，图谱中没有对应知识点，判定为新知识点',mounts:[{path:['酒店管理','前厅服务','前厅服务礼仪'],reason:'本章讲前厅员工礼仪要求，对应前厅服务礼仪任务',conf:.83}]}];
+    chState(d,4).sugg=[{id:'sc2',type:'A',kp:'kp3',conf:.95,quote:'提前入住视当日可售房态安排',status:'pending',
+      why:'本章整体讲提前入住与延迟退房的处理规则，与「提前入住与延迟退房政策」指同一内容'}];
+    sugg('2',[{id:'s1',type:'A',kp:'kp2',why:'原文描述入住时核验证件、确认预订信息的步骤，与「散客入住登记流程」指同一内容',conf:.96,quote:'核验有效证件，确认预订信息与房型、房价、离店日期',status:'pending'}]);
+    sugg('4',[{id:'s2',type:'B',why:'图谱中没有讲延迟退房计费的知识点；「提前入住与延迟退房政策」只讲政策、不含计费标准，判定为新知识点',name:'延迟退房计费标准',def:'14:00–18:00 加收半日房费，18:00 后按全日房费计。',conf:.88,quote:'14:00–18:00 加收半日房费',status:'pending',
+      mounts:[{path:['酒店管理','前厅服务','退房办理','退房结算流程'],reason:'原文讲延迟退房的计费，属退房结算',conf:.88},{path:['酒店管理','前厅服务','退房办理','提前入住与延迟退房标准'],reason:'计费标准是延迟退房政策的组成部分',conf:.66}]}]);
+  } else if(d.id==='d2'){
+    link('0',['kp4']);
+    sugg('0',[{id:'s3',type:'A',kp:'kp4',why:'原文说明夜审时间与核对内容，与「夜审流程与日结」指同一内容',conf:.91,quote:'夜审时间一般为每日 0:00 至 3:00',status:'pending'}]);
+  } else if(d.id==='d3'){ link('0',['kp5']); link('1',['kp5']); }
+  else if(d.id==='d4'){ link('1',['kp6']); }
+  else if(d.id==='d5'){ link('0',['kp2']); link('1',['kp2']); }
+  else if(d.id==='d10'){
+    link('0',['kp1'],'ai');
+    sugg('0',[{id:'s4',src:'ocr',type:'B',why:'已有「房态代码」只讲代码含义，本条讲 VD 改 VC 的交接流程，侧重点不同，判定为新知识点',name:'VD 房改 VC 房交接流程',def:'客房清洁完成后由客房部通知前台，将 VD 房改为 VC 房。',conf:.82,quote:'VD 清洁完 → 客房部通知前台改 VC',status:'pending',
+      mounts:[{path:['酒店管理','前厅服务','房态管理','房态变更流程'],reason:'板书内容为房态改态流程',conf:.82}]}]);
+  } else if(d.id==='d11'){
+    sugg('0',[{id:'s7',type:'B',src:'desc',why:'画面描述列出前台的设备配置，图谱中没有设备配置类知识点，判定为新知识点',name:'前台设备配置',def:'前台台面配置电脑、房卡制卡机与 POS 机。',conf:.8,quote:'右侧是房卡制卡机和 POS 机',status:'pending',
+      mounts:[{path:['酒店管理','前厅服务','入住接待'],reason:'设备用于入住接待时制卡与收款，下级无对应节点',conf:.74}]}]);
+  } else if(d.id==='d13'){
+    link('0',['kp2'],'ai'); link('2',['kp8']); link('3',['kp8'],'ai'); link('4',['kp3']);
+    sugg('2',[{id:'s8',type:'D',kp:'kp8',why:'「OTA 预订与房费结算」目前只挂在「OTA 渠道管理 › OTA 订单处理」，原文在前台入住场景讨论 OTA 订单押金，建议增加挂载',t:380,conf:.86,quote:'如果客人是通过 OTA 平台预订的，押金也要在前台另外收吗',status:'pending',
+      mounts:[{path:['酒店管理','前厅服务','入住接待','前台收银与押金'],reason:'原文讨论前台入住时 OTA 订单的押金收取',conf:.86}]}]);
+    sugg('3',[{id:'s5',type:'A',kp:'kp3',why:'原文讲客人要求提前入住时的处理方式，与「提前入住与延迟退房政策」指同一内容',t:610,conf:.93,quote:'常遇到客人要求提前入住',status:'pending'}]);
+  } else if(d.id==='d14'){ link('2',['kp9']); }
+  else if(!['d1','d2','d3','d4','d5','d10','d11','d15'].includes(d.id)){
+    // 其他文件（如新添加的文件）：上传批次开启了 AI 自动关联知识点才提取
+    if(d.autoKp!==false){
+      segKeys(d).forEach(k=> SEG_STATE[d.id][k].sugg=extractSeg(d,k));
+      // 章节级建议：只保留分段建议中没有的知识点
+      chaptersOf(d).forEach(g=>{ const st=chState(d,g.items[0].i), seg=new Set(g.items.flatMap(x=>SEG_STATE[d.id][String(x.i)].sugg.map(v=>v.kp)));
+        st.sugg=extractSeg(d,'ch'+g.items[0].i).filter(v=>!seg.has(v.kp)); });
+    }
+  }
+  else if(d.id==='d15'){
+    link('2',['kp7']);
+    sugg('2',[{id:'s6',type:'B',why:'图谱中没有讲投诉处理方法的知识点，判定为新知识点',name:'投诉处理三步法',def:'先倾听、再致歉、最后给方案。',conf:.52,quote:'先倾听、再致歉、最后给方案',status:'pending',mounts:[]}]);
+  }
+}
+
+/* ================= 文档详情 ================= */
+function showDocDetail(){
+  document.getElementById('kbHead').style.display='none';
+  document.querySelector('.kbd-tabs').style.display='none';
+  ['doc','recall','settings','api'].forEach(k=>document.getElementById('panel-'+k).style.display='none');
+  document.getElementById('docDetail').style.display='';
+}
+function hideDocDetail(){
+  document.getElementById('kbHead').style.display='';
+  document.querySelector('.kbd-tabs').style.display='';
+  document.getElementById('docDetail').style.display='none';
+  switchTab(currentTab);
+}
+function openDoc(id){
+  stopPlay();
+  activeDoc=DOCS.find(x=>x.id===id); if(!activeDoc) return;
+  segQ=''; segFilter='all'; kpFilter='all'; selCh=null;
+  curTime=0;
+  document.getElementById('docTitle').innerHTML=docIcon(activeDoc,22)+'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(activeDoc.name)+'</span>';
+  document.getElementById('docMeta').textContent=activeDoc.size+' · 上传于 '+activeDoc.time;
+  document.getElementById('docPreviewBtn').style.display = activeDoc.status==='available' ? '' : 'none';
+  showDocDetail();
+  refreshDoc();
+}
+function closeDoc(){ stopPlay(); activeDoc=null; closeDrawer(); hideDocDetail(); renderTable(); }
+function chapterAside(d){
+  const g=chaptersOf(d).find(x=>x.items[0].i===selCh), st=chState(d,selCh), pend=st.sugg.filter(x=>x.status==='pending').length;
+  return `<div class="doc-aside">
+    <div class="aicard">
+      <div class="ai-head"><svg width="16" height="16" viewBox="0 0 24 24" fill="#F79009"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/></svg>章节 · ${esc(g.title)}</div>
+      <div class="muted-ch">本章 ${g.items.length} 个分段（#${g.items[0].i+1}–#${g.items[g.items.length-1].i+1}）。章节关联表示整章内容对应该知识点，与分段关联相互独立。</div>
+      <div><div class="drawer-sec-title">关联知识点 <span style="font-weight:400;color:#8b99ac;font-size:12px"><span class="kp-ai">✦</span> AI 识别后确认</span></div>
+        <div class="seg-foot" style="margin-top:8px">${st.kps.length?st.kps.map(id=>`<span class="kp" title="${esc(linkTitle(st,id))}">${linkSrc(st,id).by==='ai'?'<span class="kp-ai">✦</span>':''}${esc(kpById(id)?.name||id)}<span class="x" data-act="unlink" data-kp="${id}">✕</span></span>`).join(''):'<span class="kp-none">无知识点</span>'}<button class="kp-add" data-act="pkToggle">＋ 添加知识点</button></div>
+        ${pickerOpen?renderPicker():''}</div>
+      <div><div class="drawer-sec-title">AI 建议${pend?`<span class="sugg-badge">${pend} 待确认</span>`:''}</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">${st.sugg.map(x=>suggCard(x)).join('')||'<span class="kp-none">暂无 AI 建议</span>'}</div></div>
+      <button class="ai-btn" data-act="chClear">返回全部分段</button>
+    </div>
+    <div class="aside-card">
+      <div class="aside-head">文档信息</div>
+      <div class="aside-body" style="font-size:12px;color:#8b99ac;line-height:2">${docInfoRows(d)}</div>
+    </div>
+  </div>`;
+}
+function selectChapter(k){ selCh=k; pickerOpen=false; pickerQ=''; suggEditing=null; suggRejecting=null; nodePickerOpen=false; nodeQ=''; refreshDoc(); const c=document.querySelector('.doc-col'); if(c) c.scrollIntoView({block:'start'}); }
+function refreshDoc(){
+  if(!activeDoc) return;
+  const body=document.getElementById('docDetailBody');
+  if(activeDoc.status!=='available'){ body.innerHTML=processingNote(activeDoc); return; }
+  const act=document.activeElement, keepId=act&&act.id&&body.contains(act)?act.id:null, pos=keepId?act.selectionStart:null;
+  body.innerHTML=`<div class="doc-grid">${docToc(activeDoc)}<div class="doc-col">${activeDoc.cat==='text'?docText(activeDoc):activeDoc.cat==='image'?docImage(activeDoc):docAV(activeDoc)}</div>${docAside(activeDoc)}</div>`;
+  if(selCh!=null) bindDrawerInputs();
+  if(keepId){ const el=document.getElementById(keepId); if(el){ el.focus(); try{ if(pos!=null) el.setSelectionRange(pos,pos); }catch(e){} } }
+}
+/* 文本按章节分组：以「第X章 / 第X节 标题：」开头的分段开启新章节，之后的分段归入该章节 */
+const CH_RE=/^(第[一二三四五六七八九十百\d]+[章节][^：:，,。]{0,20})[：:]\s*/;
+function textChapters(d){
+  const groups=[]; let cur=null;
+  d.segs.forEach((s,i)=>{ const m=s.match(CH_RE);
+    if(m){ cur={title:m[1],items:[]}; groups.push(cur); } else if(!cur){ cur={title:null,items:[]}; groups.push(cur); }
+    cur.items.push({i,label:(m?s.slice(m[0].length):s)}); });
+  return groups;
+}
+/* 章节：与分段一样可关联知识点、有 AI 建议，与分段关联相互独立；状态存于 SEG_STATE，key = 'ch' + 章节第一个分段的序号 */
+let selCh=null;
+function chState(d,key){ return segState(d,'ch'+key); }
+function chaptersOf(d){ return d.cat==='text'&&d.segs.length?textChapters(d).filter(g=>g.title):[]; }
+function allKeys(d){ return segKeys(d).concat(chaptersOf(d).map(g=>'ch'+g.items[0].i)); }
+/* 当前审核上下文：分段抽屉优先，否则为选中的章节 */
+function ctx(){ if(drawerDoc) return {d:drawerDoc,k:drawerKey}; if(activeDoc&&selCh!=null) return {d:activeDoc,k:'ch'+selCh}; return null; }
+function ctxState(){ const c=ctx(); return c?segState(c.d,c.k):null; }
+function docToc(d){
+  if(d.cat==='text'&&d.segs.length){
+    const groups=textChapters(d);
+    if(groups.some(g=>g.title)) return `<nav class="doc-toc" aria-label="目录">
+      <div class="doc-toc-title">目录</div>
+      <button type="button" class="doc-toc-btn ${selCh==null?'on':''}" data-act="chClear">全部分段<span class="doc-toc-n">${d.segs.length}</span></button>
+      ${groups.map(g=>`${g.title?`<button type="button" class="doc-toc-btn doc-toc-ch ${selCh===g.items[0].i?'on':''}" data-act="tocCh" data-k="${g.items[0].i}">${esc(g.title)}${chState(d,g.items[0].i).sugg.some(x=>x.status==='pending')?'<span class="doc-toc-dot" title="有待确认的章节建议"></span>':''}<span class="doc-toc-n">${g.items.length}</span></button>`:''}
+        ${g.items.map(x=>`<button type="button" class="doc-toc-btn ${g.title?'sub':''}" data-act="tocJump" data-k="${x.i}">#${x.i+1} · ${esc(x.label.slice(0,14))}${x.label.length>14?'…':''}</button>`).join('')}`).join('')}
+    </nav>`;
+  }
+  let items=[];
+  if(d.cat==='image'){ if(d.ocr||d.ocrFailed) items.push(['ocr','图中文字']); if(d.desc) items.push(['desc','画面描述']); }
+  else if(d.cat==='av') items=d.segs.map((s,i)=>[String(i),`${fmt(s[0])}  ${s[3].slice(0,12)}${s[3].length>12?'…':''}`]);
+  else items=d.segs.map((s,i)=>[String(i),`#${i+1} · ${s.slice(0,16)}${s.length>16?'…':''}`]);
+  return `<nav class="doc-toc" aria-label="目录">
+    <div class="doc-toc-title">目录</div>
+    ${items.map(([k,label])=>`<button type="button" class="doc-toc-btn" data-act="tocJump" data-k="${k}">${esc(label)}</button>`).join('')||'<span class="kp-none" style="padding:0 10px">无分段</span>'}
+  </nav>`;
+}
+function previewBodyOf(d){
+  if(d.cat==='image') return `<div class="dd-img">${d.svg||placeholder('图片处理中')}</div>`;
+  if(d.cat==='text') return `<div style="font-size:14px;line-height:1.9;color:#41536f">${d.segs.map((s,i)=>`<div style="margin-bottom:14px"><b style="color:#2f405d">#${i+1}</b>　${esc(s)}</div>`).join('')||placeholder('暂无内容')}</div>`;
+  const N=72, seed=d.id.charCodeAt(d.id.length-1);
+  const bars=Array.from({length:N},(_,i)=>`<span class="bar" style="height:${Math.round(12+Math.abs(Math.sin(i*1.7+seed)*Math.cos(i*.37+seed))*68)}px"></span>`).join('');
+  const media=d.media==='video'?`<div class="video" style="margin-bottom:12px">视频画面（mock）</div>`:`<div class="wave" style="margin-bottom:12px">${bars}</div>`;
+  const segs=`<div class="dd-sub">转写全文（${d.segs.length} 段）</div>`+d.segs.map((s,i)=>`<div style="font-size:13px;color:#41536f;line-height:1.8;padding:8px 0;border-bottom:1px solid #f0f0f0"><span style="color:#8b99ac">${fmt(s[0])} – ${fmt(s[1])}</span>　<span class="sp-tag sp${s[2]}">${esc(spName(d,s[2]))}</span><div style="margin-top:4px">${esc(s[3])}</div></div>`).join('');
+  return media+segs;
+}
+function openPreview(){
+  if(!activeDoc) return;
+  const d=activeDoc;
+  document.getElementById('previewTitle').innerHTML=docIcon(d,20)+'<span style="margin-left:8px">'+esc(d.name)+'</span>';
+  document.getElementById('previewBody').innerHTML=previewBodyOf(d);
+  document.getElementById('previewModal').classList.add('show');
+}
+function closePreview(){ document.getElementById('previewModal').classList.remove('show'); }
+
+function statRow(items){ return `<div class="dd-stats">${items.map(([b,s])=>`<div class="dd-stat"><b>${b}</b><span>${s}</span></div>`).join('')}</div>`; }
+function segChips(d,key){
+  const st=segState(d,key);
+  const kps=st.kps.map(id=>`<a class="kp kp-link" href="knowledge-system-detail.html" target="_blank" rel="noopener" title="${esc(linkTitle(st,id))}；点击在图谱平台查看">${linkSrc(st,id).by==='ai'?'<span class="kp-ai" aria-label="AI 识别">✦</span>':''}${esc(kpById(id)?.name||id)}</a>`).join('');
+  const pend=st.sugg.filter(g=>g.status==='pending').length;
+  return `<div class="seg-foot">${kps||(pend?'':'<span class="kp-none">无知识点</span>')}
+    ${pend?`<span class="sugg-badge" data-act="segEdit" data-k="${key}">✦ ${pend} 条建议待确认</span>`:''}
+    <button class="dd-mini seg-edit" data-act="segEdit" data-k="${key}">编辑分段</button></div>`;
+}
+
+function segMatch(f,key){
+  const q=segQ.trim().toLowerCase();
+  if(q && !segTextOf(f,key).toLowerCase().includes(q)) return false;
+  const st=segState(f,key);
+  if(segFilter==='on' && !st.enabled) return false;
+  if(segFilter==='off' && st.enabled) return false;
+  const linked=st.kps.length>0;
+  const pending=st.sugg.some(g=>g.status==='pending');
+  if(kpFilter==='linked' && !linked) return false;
+  if(kpFilter==='pending' && !pending) return false;
+  if(kpFilter==='none' && (linked||pending)) return false;
+  return true;
+}
+function segToolbar(f){
+  return `<div class="dd-seg-toolbar">
+    <b>${f.segs.length} 分段</b>
+    <select id="segEn" aria-label="启用状态"><option value="all" ${segFilter==='all'?'selected':''}>全部状态</option><option value="on" ${segFilter==='on'?'selected':''}>已启用</option><option value="off" ${segFilter==='off'?'selected':''}>已禁用</option></select>
+    <select id="segKp" aria-label="知识点"><option value="all" ${kpFilter==='all'?'selected':''}>全部知识点</option><option value="linked" ${kpFilter==='linked'?'selected':''}>已关联</option><option value="pending" ${kpFilter==='pending'?'selected':''}>有待确认</option><option value="none" ${kpFilter==='none'?'selected':''}>无知识点</option></select>
+    <input class="search" id="segQ" placeholder="搜索" value="${esc(segQ)}" aria-label="搜索分段">
+  </div>`;
+}
+function docText(f){
+  if(f.status!=='available') return processingNote(f);
+  let segs='';
+  if(f.segs.length){
+    const inCh=selCh!=null?new Set((chaptersOf(f).find(g=>g.items[0].i===selCh)||{items:[]}).items.map(x=>x.i)):null;
+    const items=f.segs.map((s,i)=>[i,s]).filter(([i,s])=>(!inCh||inCh.has(i))&&segMatch(f,String(i)));
+    const chOf={}; chaptersOf(f).forEach(g=>g.items.forEach(x=>chOf[x.i]=g)); let shown=null;
+    segs=segToolbar(f)
+      +(items.length?items.map(([i,s])=>{const key=String(i), g=chOf[i]; let head='';
+      if(g&&g!==shown){ shown=g; head=chapterHead(f,g); }
+      return head+`<div class="seg-card" id="seg-${key}">
+      <div class="seg-head"><span style="font-weight:600">#${i+1}</span>${f.scanned?'<span class="dd-tag" style="color:#5149e9;background:#eef0ff">OCR</span>':''}<span style="margin-left:auto">${s.length} 字</span></div>
+      <div class="seg-body">${esc(s)}</div>${segChips(f,key)}</div>`;}).join(''):'<div class="kbd-hit-empty">没有匹配的分段。</div>');
+  } else segs=`<div class="kbd-hit-empty">${f.scanned&&f.ocrOff?'无分段：该文件没有文字层且处理时未开启 OCR，不参与检索。可开启 OCR 后重新解析。':'无分段，不参与检索。'}</div>`;
+  return statRow([[f.ext+(f.scanned?' · 扫描件':''),'类型'],[f.segs.length,'分段数'],[charCount(f),'字数']])+segs;
+}
+function chapterHead(f,g){
+  const k=g.items[0].i, st=chState(f,k);
+  const kps=st.kps.map(id=>`<a class="kp kp-link" href="knowledge-system-detail.html" target="_blank" rel="noopener" title="${esc(linkTitle(st,id))}；点击在图谱平台查看">${linkSrc(st,id).by==='ai'?'<span class="kp-ai">✦</span>':''}${esc(kpById(id)?.name||id)}</a>`).join('');
+  return `<div class="ch-head ${selCh===k?'on':''}" id="ch-${k}">
+    <div class="row-ch"><b>${esc(g.title)}</b><span class="muted-ch">${g.items.length} 个分段</span>
+      ${selCh===k?'<button class="dd-mini" style="margin-left:auto" data-act="chClear">查看全部分段</button>':`<button class="dd-mini" style="margin-left:auto" data-act="tocCh" data-k="${k}">章节知识点</button>`}</div>
+    ${kps||st.sugg.some(x=>x.status==='pending')?`<div class="seg-foot" style="margin-top:6px"><span class="muted-ch">章节知识点</span>${kps}${st.sugg.some(x=>x.status==='pending')?`<span class="sugg-badge" data-act="tocCh" data-k="${k}">✦ ${st.sugg.filter(x=>x.status==='pending').length} 条建议待确认</span>`:''}</div>`:''}</div>`;
+}
+function docImage(f){
+  if(f.status!=='available') return processingNote(f);
+  return `<div class="dd-img">${f.svg||placeholder('图片处理中')}</div>
+    ${statRow([[f.ext,'类型'],[1,'分段数'],[charCount(f),'识别字数']])}
+    <div class="seg-card" id="seg-0">
+      <div class="seg-head"><span style="font-weight:600">#1</span><span class="dd-tag" style="color:#0e9384;background:#e6f6f3">${IMG_MODE_LABEL[f.imgMode||'both']}</span><span style="margin-left:auto">${charCount(f)} 字</span></div>
+      ${f.ocr||f.ocrFailed?`<div class="seg-part" id="seg-ocr"><div class="seg-part-title">图中文字</div>${f.ocrFailed
+        ?`<div class="seg-fail">识别失败${f.desc?'，已保留画面描述':''} <button class="dd-mini" data-act="ocrRetry">重试</button></div>`
+        :`<div class="seg-body">${esc(f.ocr)}</div>`}</div>`:''}
+      ${f.desc?`<div class="seg-part" id="seg-desc"><div class="seg-part-title">画面描述</div><div class="seg-body">${esc(f.desc)}</div></div>`:''}
+      ${segChips(f,'0')}</div>`;
+}
+function docAV(f){
+  if(f.status!=='available') return processingNote(f);
+  const ratio=Math.min(1,curTime/f.sec), N=72, seed=f.id.charCodeAt(f.id.length-1);
+  const bars=Array.from({length:N},(_,i)=>`<span class="bar ${i/N<ratio?'p':''}" style="height:${Math.round(12+Math.abs(Math.sin(i*1.7+seed)*Math.cos(i*.37+seed))*68)}px"></span>`).join('');
+  let ai=f.segs.findIndex(s=>curTime>=s[0]&&curTime<s[1]); if(ai<0) ai=f.segs.length-1;
+  const st=f.segs[ai]?f.segs[ai][3]:'';
+  const spk=Object.keys(f.speakers);
+  const player=`<div class="player">
+    ${f.media==='video'
+      ? `<div class="video">视频画面（mock）${st?`<div class="subtitle">${esc(st.slice(0,44))}${st.length>44?'…':''}</div>`:''}</div>`
+      : `<div class="wave" data-act="seek">${bars}</div>`}
+    <div class="ctrl"><button class="play" data-act="play" aria-label="${playing?'暂停':'播放'}">${playing?IC.pause:IC.play}</button>
+      <div class="seek" data-act="seek"><div style="width:${(ratio*100).toFixed(1)}%"></div></div>
+      <span style="font-size:12px;color:#8b99ac;font-variant-numeric:tabular-nums;white-space:nowrap">${fmt(curTime)} / ${fmt(f.sec)}</span></div></div>`;
+  const stats=statRow([[fmt(f.sec),'时长'],[f.segs.length,'分段数'],[charCount(f),'转写字数'],[spk.length,'说话人']]);
+  const speakers=`<div class="dd-sub">说话人</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+    ${spk.map(n=>`<button class="sp-rename" data-act="sprename" data-v="${n}"><span class="sp-tag sp${n}">${esc(spName(f,n))}</span> 改名</button>`).join('')}</div>`;
+  const items=f.segs.map((s,i)=>[i,s]).filter(([i,s])=>segMatch(f,String(i)));
+  const segs=segToolbar(f)
+    +(items.length?items.map(([i,s])=>{const key=String(i);return `<div class="seg-card ${i===ai?'on':''}" id="seg-${key}" data-act="segjump" data-t="${s[0]}" style="cursor:pointer">
+    <div class="seg-head"><span style="font-weight:600">#${i+1}</span><span class="dd-tag" style="color:#8b99ac;background:#f0f2f5">${fmt(s[0])} – ${fmt(s[1])}</span>
+      <span class="sp-tag sp${s[2]}">${esc(spName(f,s[2]))}</span><span style="margin-left:auto">${s[3].length} 字</span></div>
+    <div class="seg-body">${esc(s[3])}</div>${segChips(f,key)}</div>`;}).join(''):'<div class="kbd-hit-empty">没有匹配的分段。</div>');
+  const vhint=f.media==='video'?'<div class="dd-vhint">视频仅提取音轨做语音转写，不解析画面内容。</div>':'';
+  return player+vhint+stats+speakers+segs;
+}
+function placeholder(t){ return `<div style="padding:40px;text-align:center;color:#8b99ac;font-size:13px">${t}</div>`; }
+function processingNote(f){
+  const s=STATUS[f.status];
+  return statRow([[f.ext,'类型'],[f.size,'大小'],[SOURCE[f.source],'来源'],[f.time,'上传时间']])
+    +`<div class="kbd-hit-empty" style="padding:30px 0">${s.pulse?'文件正在解析与向量索引中，完成后可查看分段详情。':(f.status==='error'?'解析失败：'+esc(f.errReason||'未知原因')+'。可在文档列表该文件的「⋯」菜单中重新解析。':s.label+'，暂无可用分段。')}</div>`;
+}
+
+/* ---------- 右栏：AI 建议 + 文档信息 ---------- */
+/* 原文依据的出处：图片标「来自画面描述」；音视频带开始时间，可从该处播放 */
+function quoteMeta(d,k,g){
+  if(!d) return '';
+  if(d.cat==='image') return g.src==='desc'?'<span class="sugg-src">来自画面描述 · 请对照原图</span>':(g.src==='ocr'?'<span class="sugg-src" style="color:#5149e9;background:#eef0ff">来自图中文字</span>':'');
+  if(d.cat==='av'&&d.segs[+k]){ const t=g.t!=null?g.t:d.segs[+k][0]; return `<button class="sugg-ts" data-act="quotePlay" data-t="${t}">▶ 从 ${fmt(t)} 播放</button>`; }
+  return '';
+}
+function suggTypeLabel(g){ return {A:'关联已有',B:'新建知识点',D:'新增挂载',U:'关联待解除'}[g.type]; }
+function suggName(g){ if(g.type==='A'||g.type==='D'||g.type==='U') return kpById(g.kp)?.name||g.kp; return g.name; }
+function suggCardMini(k,g){
+  return `<div class="sugg-card" data-act="openSugg" data-k="${k}" style="cursor:pointer">
+    <div class="sugg-top"><span class="sugg-type ${g.type}">${suggTypeLabel(g)}</span><span class="sugg-name">${esc(suggName(g))}</span>${g.conf?`<span class="sugg-conf">${Math.round(g.conf*100)}%</span>`:''}</div>
+    <div class="sugg-quote">${esc(g.quote||g.def||'')}</div>${activeDoc&&activeDoc.cat==='image'&&g.src==='desc'?'<div>'+quoteMeta(activeDoc,k,g)+'</div>':''}</div>`;
+}
+function docInfoRows(d){
+  const rows=[['类型',d.ext+' · '+(d.cat==='av'?MEDIA_LABEL[d.media]:TYPE[d.cat].label)],['大小',d.size],['来源',SOURCE[d.source]],['上传时间',d.time]];
+  if(d.cat==='av') rows.push(['时长',fmt(d.sec)]);
+  return rows.map(([k,v])=>`<div style="display:flex;justify-content:space-between;gap:12px"><span>${k}</span><span style="color:#41536f">${esc(v)}</span></div>`).join('');
+}
+function docAside(d){
+  if(selCh!=null) return chapterAside(d);
+  const pend=allKeys(d).flatMap(k=>segState(d,k).sugg.map(g=>({g,k}))).filter(x=>x.g.status==='pending').sort((a,b)=>(b.g.conf||0)-(a.g.conf||0));
+  const high=pend.filter(x=>x.g.type==='A'&&x.g.conf>=.9).length;
+  const linked=allKeys(d).reduce((a,k)=>a+segState(d,k).kps.length,0);
+  return `<div class="doc-aside">
+    <div class="aicard">
+      <div class="ai-head"><svg width="16" height="16" viewBox="0 0 24 24" fill="#F79009"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/></svg>AI 知识点建议</div>
+      <div class="ai-stats">
+        <div class="ai-stat"><b>${linked}</b><span>已关联</span></div>
+        <div class="ai-stat"><b style="color:#B54708">${pend.length}</b><span>待确认</span></div>
+        <div class="ai-stat"><b>${high}</b><span>高置信关联（≥ 0.90）</span></div>
+      </div>
+      <button class="ai-btn pri" data-act="oneclick" ${high?'':'disabled'}>一键通过高置信关联（${high} 条）</button>
+      <button class="ai-btn" data-act="onlypending" ${pend.length?'':'disabled'}>只看有待确认的分段</button>
+      <div class="ai-note">只对「关联已有知识点、置信度 ≥ 0.90」生效；新建知识点、新增挂载需逐条确认。确认后写入知识图谱。</div>
+    </div>
+    <div class="aside-card">
+      <div class="aside-head">文档信息</div>
+      <div class="aside-body" style="font-size:12px;color:#8b99ac;line-height:2">${docInfoRows(d)}</div>
+    </div>
+  </div>`;
+}
+
+/* ---------- 编辑分段抽屉 ---------- */
+let drawerDoc=null, drawerKey=null, pickerOpen=false, pickerQ='', suggEditing=null, suggRejecting=null, draft={}, nodePickerOpen=false, nodeQ='';
+function segLabel(d,k){ return '#'+(+k+1); }
+function openDrawer(key){
+  drawerDoc=activeDoc; drawerKey=key; pickerOpen=false; pickerQ=''; suggEditing=null; suggRejecting=null; nodePickerOpen=false; nodeQ='';
+  const d=drawerDoc, k=key;
+  draft={ text: d.cat==='av'?d.segs[+k][3]:(d.cat==='text'?d.segs[+k]:''), ocr:d.ocr||'', desc:d.desc||'', reason:'', origText: segTextOf(d,k),
+    t0: d.cat==='av'?fmt(d.segs[+k][0]):'', t1: d.cat==='av'?fmt(d.segs[+k][1]):'' };
+  renderDrawer();
+  document.getElementById('segDrawer').classList.add('show');
+}
+function closeDrawer(){ const el=document.getElementById('segDrawer'); if(el) el.classList.remove('show'); drawerDoc=null; drawerKey=null; }
+function findSugg(id){ const st=ctxState(); return st?st.sugg.find(x=>x.id===id):null; }
+function bindDrawerInputs(){
+  const panel=document.getElementById('segDrawerPanel');
+  ['t0','t1'].forEach(fld=>{ const el=panel.querySelector('[data-fld="'+fld+'"]'); if(el) el.oninput=()=>{ draft[fld]=el.value; el.classList.remove('err'); const h=document.getElementById('tHint'); if(h) h.classList.remove('err'); }; });
+  ['text','ocr','desc'].forEach(fld=>{ const el=panel.querySelector('[data-fld="'+fld+'"]'); if(el) el.oninput=()=>{ draft[fld]=el.value; }; });
+  const pk=document.getElementById('pkQ'); if(pk) pk.oninput=()=>{ pickerQ=pk.value; drawerDoc?renderDrawer():refreshDoc(); };
+  const sn=document.getElementById('suggName'); if(sn) sn.oninput=()=>{ const g=findSugg(suggEditing); if(g) g.edit.name=sn.value; };
+  const sd=document.getElementById('suggDef'); if(sd) sd.oninput=()=>{ const g=findSugg(suggEditing); if(g) g.edit.def=sd.value; };
+  const nq=document.getElementById('nodeQ'); if(nq) nq.oninput=()=>{ nodeQ=nq.value; drawerDoc?renderDrawer():refreshDoc(); };
+  const sr=document.getElementById('suggReason'); if(sr) sr.oninput=()=>{ draft.reason=sr.value; };
+}
+function renderPicker(){
+  const st=ctxState();
+  const q=pickerQ.trim().toLowerCase();
+  const list=KP.filter(x=>!q||x.name.toLowerCase().includes(q)||x.path.join('/').toLowerCase().includes(q));
+  return `<div class="pk" style="margin-top:10px">
+    <input class="field" id="pkQ" placeholder="搜索知识点" value="${esc(pickerQ)}">
+    <div class="pk-list">${list.map(x=>`<button type="button" class="pk-item ${st.kps.includes(x.id)?'on':''}" data-act="pkToggleItem" data-kp="${x.id}">
+      <span class="pk-check">${st.kps.includes(x.id)?'✓':''}</span><span style="flex:1;text-align:left">${esc(x.name)}</span><span class="pk-path">${esc(mountPath(x.path))}</span></button>`).join('')||'<span class="kp-none">未找到知识点</span>'}</div></div>`;
+}
+const shallowTag=`<span class="mount-shallow" title="课程、任务一级仅作兜底，建议确认下级是否有更合适的节点">挂载层级偏浅</span>`;
+const typeTag=p=>`<span class="mount-type">${NODE_TYPE_LABEL[nodeType(p)]||''}</span>`;
+function suggMounts(g){
+  const ms=g.mounts||[], ch=String((ctx()||{}).k).startsWith('ch');
+  if(!ms.length) return `<div class="mount-box"><div class="mount-title">建议挂载</div><div class="mount-none">未找到合适节点，需手动指定至少一个节点</div></div>`;
+  return `<div class="mount-box"><div class="mount-title">建议挂载</div>${ms.map(m=>`<div class="mount-item"><div class="mount-path">${typeTag(m.path)}${esc(mountPath(m.path))}${isShallow(m.path)&&!(ch&&nodeType(m.path)==='task')?shallowTag:''}<span class="sugg-conf">${Math.round(m.conf*100)}%</span></div><div class="mount-reason">${esc(m.reason)}</div></div>`).join('')}</div>`;
+}
+function mountEditor(g){
+  const sel=g.edit.mounts, on=p=>sel.some(x=>x.join('/')===p.join('/'));
+  const q=nodeQ.trim().toLowerCase();
+  const list=kbNodes().filter(p=>!q||p.join('/').toLowerCase().includes(q));
+  const ch=String((ctx()||{}).k).startsWith('ch');
+  const hints=[];
+  if(sel.some(p=>isShallow(p)&&!(ch&&nodeType(p)==='task'))) hints.push('已选课程或任务一级节点，挂载层级偏浅，建议确认下级是否有更合适的节点');
+  if(sel.some((p,i)=>sel.some((q,j)=>j>i&&onSamePath(p,q)))) hints.push('已选节点中包含同一路径的上级 / 下级节点，同一路径建议只挂一个');
+  return `<div class="mount-box"><div class="mount-title">挂载节点 <span style="font-weight:400;color:#8b99ac">至少 1 个</span></div>
+    <div class="seg-foot">${sel.map((p,i)=>`<span class="kp">${esc(mountPath(p))}<span class="x" data-act="mountRemove" data-i="${i}">✕</span></span>`).join('')||'<span class="mount-none">未选择挂载节点</span>'}<button class="kp-add" data-act="nodePkToggle">＋ 添加挂载节点</button></div>
+    ${hints.map(h=>`<div class="mount-hint">${h}</div>`).join('')}
+    ${nodePickerOpen?`<div class="pk"><input class="field" id="nodeQ" placeholder="搜索课程、任务、技能规范等节点" value="${esc(nodeQ)}">
+      <div class="pk-list">${list.map(p=>`<button type="button" class="pk-item ${on(p)?'on':''}" data-act="mountToggle" data-p="${esc(p.join('/'))}"><span class="pk-check">${on(p)?'✓':''}</span>${typeTag(p)}<span style="flex:1;text-align:left">${esc(mountPath(p))}</span>${!on(p)&&sel.some(q=>onSamePath(p,q))?'<span class="pk-path">已选其'+(sel.some(q=>p.join('/').startsWith(q.join('/')+'/'))?'上级':'下级')+'节点</span>':''}</button>`).join('')||'<span class="kp-none">未找到节点</span>'}</div></div>`:''}</div>`;
+}
+function startSuggEdit(g){ g.edit={name:g.name,def:g.def,mounts:(g.mounts||[]).map(m=>m.path.slice())}; suggEditing=g.id; suggRejecting=null; nodePickerOpen=!(g.mounts||[]).length; nodeQ=''; renderDrawer(); }
+function suggCard(g){
+  const done=g.status!=='pending';
+  if(done){
+    return `<div class="sugg-card sugg-done"><div class="sugg-top"><span class="sugg-type ${g.type}">${suggTypeLabel(g)}</span><span class="sugg-name">${esc(suggName(g))}</span><span class="sugg-conf">${{done:'已通过',rejected:'已驳回',void:'已作废',kept:'已保留'}[g.status]}</span></div>${g.reason?`<div class="sugg-quote">${esc(g.reason)}</div>`:''}</div>`;
+  }
+  if(suggEditing===g.id){
+    return `<div class="sugg-card"><div class="sugg-top"><span class="sugg-type B">新建知识点</span></div>
+      <input class="field" id="suggName" value="${esc(g.edit?.name||g.name)}" placeholder="知识点名称">
+      <textarea class="edtx" id="suggDef" style="min-height:60px" placeholder="定义 / 说明">${esc(g.edit?.def||g.def||'')}</textarea>
+      ${mountEditor(g)}
+      <div class="sugg-row"><button class="sugg-mini" data-act="suggCancelEdit">取消</button><button class="sugg-mini pri" data-act="suggSaveEdit" data-g="${g.id}">保存为新知识点</button></div></div>`;
+  }
+  if(suggRejecting===g.id){
+    return `<div class="sugg-card"><div class="sugg-top"><span class="sugg-name" style="color:#c72c2a">填写驳回原因</span></div>
+      <input class="field" id="suggReason" placeholder="驳回原因（可选）">
+      <div class="sugg-row"><button class="sugg-mini" data-act="suggCancelReject">取消</button><button class="sugg-mini danger" data-act="suggConfirmReject" data-g="${g.id}">确认驳回</button></div></div>`;
+  }
+  return `<div class="sugg-card"><div class="sugg-top"><span class="sugg-type ${g.type}">${suggTypeLabel(g)}</span><span class="sugg-name">${esc(suggName(g))}</span>${g.conf?`<span class="sugg-conf">置信 ${Math.round(g.conf*100)}%</span>`:''}</div>
+    ${g.def?`<div class="sugg-quote">${esc(g.def)}</div>`:''}
+    ${g.quote?`<div class="sugg-quote">原文依据：${esc(g.quote)}</div>`:''}
+    ${g.why?`<div class="sugg-why">判定原因：${esc(g.why)}</div>`:''}
+    ${quoteMeta(drawerDoc,drawerKey,g)?`<div>${quoteMeta(drawerDoc,drawerKey,g)}</div>`:''}
+    ${g.type==='B'?suggMounts(g):''}
+    ${g.type==='D'?`<div class="mount-box"><div class="mount-title">建议新增挂载</div>${g.mounts.map(m=>`<div class="mount-item"><div class="mount-path">${esc(mountPath(m.path))}</div><div class="mount-reason">${esc(m.reason)}</div></div>`).join('')}</div>`:''}
+    <div class="sugg-row">
+      ${g.type==='D'?`<button class="sugg-mini pri" data-act="mountApprove" data-g="${g.id}">通过</button>`:''}
+      ${g.type==='A'?`<button class="sugg-mini pri" data-act="suggApprove" data-g="${g.id}">通过</button>`:''}
+      ${g.type==='B'?`<button class="sugg-mini pri" data-act="suggEdit" data-g="${g.id}">作为新知识点</button>`:''}
+      ${g.type==='U'?`<button class="sugg-mini danger" data-act="unlinkOk" data-g="${g.id}">解除关联</button><button class="sugg-mini" data-act="unlinkKeep" data-g="${g.id}">保留</button>`:`<button class="sugg-mini danger" data-act="suggReject" data-g="${g.id}">驳回</button>`}
+    </div></div>`;
+}
+function renderDrawer(){
+  if(!drawerDoc) return;
+  const d=drawerDoc, k=drawerKey, st=segState(d,k);
+  const panel=document.getElementById('segDrawerPanel');
+  const act=document.activeElement, keepId=(act&&act.id)?act.id:null, keepPos=(act&&act.selectionStart!=null)?act.selectionStart:null;
+  let editor='';
+  if(d.cat==='image'){
+    editor = `<div class="drawer-sec-title">图中文字（识别结果）</div><textarea class="edtx" data-fld="ocr" placeholder="识别出的图中文字">${esc(draft.ocr)}</textarea>
+      <div class="drawer-sec-title">画面描述</div><textarea class="edtx" data-fld="desc" placeholder="画面内容描述">${esc(draft.desc)}</textarea>`;
+  } else if(d.cat==='av'){
+    const lim=avTimeLimits(d,+k);
+    editor = `<div class="drawer-sec-title row-time">转写文本
+        <input class="t-in" data-fld="t0" value="${esc(draft.t0)}" aria-label="开始时间" placeholder="mm:ss"> –
+        <input class="t-in" data-fld="t1" value="${esc(draft.t1)}" aria-label="结束时间" placeholder="mm:ss"></div>
+      <div class="t-hint" id="tHint">可调整范围 ${fmt(lim.min)} – ${fmt(lim.max)}</div>
+      <textarea class="edtx" data-fld="text">${esc(draft.text)}</textarea>`;
+  } else {
+    editor = `<div class="drawer-sec-title">分段内容</div><textarea class="edtx" data-fld="text">${esc(draft.text)}</textarea>`;
+  }
+  const pend=st.sugg.filter(g=>g.status==='pending').length;
+  panel.innerHTML=`
+    <div class="drawer-head"><h2>编辑分段 · ${esc(segLabel(d,k))}</h2><button class="kbd-close" data-act="drClose">×</button></div>
+    <div class="drawer-body">
+      ${editor}
+      <div>
+        <div class="drawer-sec-title">关联知识点 <span style="font-weight:400;color:#8b99ac;font-size:12px"><span class="kp-ai">✦</span> AI 识别后确认，无标记为手动关联</span></div>
+        <div class="seg-foot" style="margin-top:8px">${st.kps.length?st.kps.map(id=>`<span class="kp" title="${esc(linkTitle(st,id))}">${linkSrc(st,id).by==='ai'?'<span class="kp-ai" aria-label="AI 识别">✦</span>':''}${esc(kpById(id)?.name||id)}<span class="x" data-act="unlink" data-kp="${id}">✕</span></span>`).join(''):'<span class="kp-none">无知识点</span>'}<button class="kp-add" data-act="pkToggle">＋ 添加知识点</button></div>
+        ${pickerOpen?renderPicker():''}
+      </div>
+      <div>
+        <div class="drawer-sec-title">AI 建议${pend?`<span class="sugg-badge">${pend} 待确认</span>`:''}</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">${st.sugg.map(g=>suggCard(g)).join('')||'<span class="kp-none">暂无 AI 建议</span>'}</div>
+      </div>
+    </div>
+    <div class="drawer-foot"><button class="kbd-ghost" data-act="drClose">取消</button><button class="kbd-primary" data-act="drSave">保存</button></div>`;
+  bindDrawerInputs();
+  if(keepId){ const el=document.getElementById(keepId); if(el){ el.focus(); try{ if(keepPos!=null) el.setSelectionRange(keepPos,keepPos); }catch(e){} } }
+}
+/* 音视频分段时间：在音视频时长内即可，允许与相邻分段重叠（便于往前 / 往后多选一点） */
+function avTimeLimits(d,i){ return {min:0, max:d.sec}; }
+function parseTime(t){ const m=String(t).trim().match(/^(?:(\d+):)?(\d{1,2}):(\d{2})$/); if(!m||+m[3]>59||(m[1]&&+m[2]>59)) return null; return (+(m[1]||0))*3600+(+m[2])*60+(+m[3]); }
+function saveDrawer(){
+  if(!drawerDoc) return;
+  const d=drawerDoc, k=drawerKey;
+  let changed=false, newText='', timeChanged=false;
+  if(d.cat==='av'){
+    const a=parseTime(draft.t0), b=parseTime(draft.t1), lim=avTimeLimits(d,+k), panel=document.getElementById('segDrawerPanel'), hint=document.getElementById('tHint');
+    let err='';
+    if(a==null||b==null) err='时间格式应为 mm:ss（超过 1 小时为 h:mm:ss）';
+    else if(a>=b) err='开始时间需早于结束时间';
+    else if(a<lim.min||b>lim.max) err=`超出音视频时长，可调整范围 ${fmt(lim.min)} – ${fmt(lim.max)}`;
+    if(err){ if(hint){ hint.textContent=err; hint.classList.add('err'); } panel.querySelectorAll('.t-in').forEach(x=>x.classList.add('err')); toast(err); return; }
+    timeChanged=a!==d.segs[+k][0]||b!==d.segs[+k][1];
+    d.segs[+k][0]=a; d.segs[+k][1]=b;
+  }
+  if(d.cat==='image'){ changed = draft.ocr!==(d.ocr||'') || draft.desc!==(d.desc||''); d.ocr=draft.ocr; d.desc=draft.desc; if(d.ocr) d.ocrFailed=false; }
+  else if(d.cat==='av'){ newText=draft.text; changed=newText!==draft.origText; d.segs[+k][3]=newText; }
+  else { newText=draft.text; changed=newText!==draft.origText; d.segs[+k]=newText; }
+  let r=null;
+  if(changed) r=reextract(d,k,'分段内容已修改',true);
+  closeDrawer(); refreshDoc(); renderTable();
+  toast(r?`已保存并重新提取：作废 ${r.voided} 条旧建议，新增 ${r.fresh} 条建议${r.unlink?`，${r.unlink} 条关联待解除`:''}`:(timeChanged?'已保存，分段时间已更新':'已保存'));
+}
+function approveSugg(gid, mode){
+  const st=ctxState(); if(!st) return;
+  const g=st.sugg.find(x=>x.id===gid); if(!g) return;
+  let kpId;
+  if(g.type==='A') kpId=g.kp;
+  else return; // 新建知识点须确认挂载节点，统一由 saveNewSugg 保存
+  addLink(st,kpId,'ai');
+  g.status='done';
+  suggEditing=null; suggRejecting=null;
+  renderDrawer(); refreshDoc();
+  toast(g.type==='A'?'已通过，关联已写入知识图谱':'已通过，新知识点已写入知识图谱');
+}
+function saveNewSugg(gid){
+  const st=ctxState(); if(!st) return;
+  const g=st.sugg.find(x=>x.id===gid); if(!g) return;
+  if(!(g.edit&&g.edit.name&&g.edit.name.trim())){ toast('请填写知识点名称'); return; }
+  if(!g.edit.mounts.length){ nodePickerOpen=true; renderDrawer(); toast('请至少指定一个挂载节点'); return; }
+  const kpId='kp'+(kpUid++);
+  KP.push({id:kpId,name:g.edit.name.trim(),def:g.edit.def||'',path:g.edit.mounts[0].slice(),mounts:g.edit.mounts.map(p=>p.slice())});
+  addLink(st,kpId,'ai');
+  g.status='done';
+  suggEditing=null;
+  renderDrawer(); refreshDoc();
+  toast('新知识点已写入知识图谱，挂载到 '+g.edit.mounts.length+' 个节点');
+}
+/* 新增挂载：给已有知识点增加挂载节点（不改动已有挂载） */
+function approveMount(gid, paths){
+  const g=findSugg(gid); if(!g) return;
+  if(!paths.length){ nodePickerOpen=true; renderDrawer(); toast('请至少指定一个挂载节点'); return; }
+  const x=kpById(g.kp), cur=x.mounts||[x.path], add=paths.filter(p=>!cur.some(c=>c.join('/')===p.join('/')));
+  x.mounts=cur.concat(add.map(p=>p.slice()));
+  g.status='done'; suggEditing=null; nodePickerOpen=false;
+  renderDrawer(); refreshDoc();
+  toast('已为「'+x.name+'」新增 '+add.length+' 个挂载节点');
+}
+function rejectSugg(gid){
+  const st=ctxState(); if(!st) return;
+  const g=st.sugg.find(x=>x.id===gid); if(!g) return;
+  g.status='rejected'; g.reason=draft.reason||'';
+  suggRejecting=null;
+  renderDrawer(); refreshDoc();
+  toast('已驳回');
+}
+function oneClickCount(){ return activeDoc?allKeys(activeDoc).reduce((a,k)=>a+segState(activeDoc,k).sugg.filter(g=>g.type==='A'&&g.conf>=.9&&g.status==='pending').length,0):0; }
+function askOneClick(){
+  const n=oneClickCount(); if(!n) return;
+  document.getElementById('confirmText').textContent='将通过 '+n+' 条置信度 ≥ 0.90 的关联，不包含新建知识点和新增挂载。';
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeConfirm(){ document.getElementById('confirmModal').classList.remove('show'); }
+function doOneClick(){
+  closeConfirm();
+  if(!activeDoc) return;
+  const d=activeDoc; let n=0;
+  allKeys(d).forEach(k=>{ const st=segState(d,k); st.sugg.forEach(g=>{ if(g.type==='A'&&g.conf>=.9&&g.status==='pending'){ addLink(st,g.kp,'ai'); g.status='done'; n++; } }); });
+  refreshDoc(); if(drawerDoc) renderDrawer();
+  toast('已通过 '+n+' 条高置信关联，已写入知识图谱');
+}
+
+/* ---------- 播放 ---------- */
+function stopPlay(){ playing=false; clearInterval(playTimer); }
+function togglePlay(){
+  if(playing){stopPlay();refreshDoc();return;}
+  playing=true;
+  playTimer=setInterval(()=>{ curTime+=1; if(curTime>=activeDoc.sec){curTime=activeDoc.sec;stopPlay();} refreshDoc(); },250);
+  refreshDoc();
+}
+
+/* ---------- 点击委托（详情 + 抽屉） ---------- */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]'); if(!el) return;
+  const a=el.dataset.act;
+  if(a==='play') togglePlay();
+  else if(a==='seek'){ if(!activeDoc||!activeDoc.sec) return; const r=el.getBoundingClientRect(); curTime=Math.round((e.clientX-r.left)/r.width*activeDoc.sec); refreshDoc(); }
+  else if(a==='segjump'){ if(e.target.closest('button,input,textarea,label')) return; curTime=+el.dataset.t; refreshDoc(); }
+  else if(a==='tocJump'){ if(selCh!=null&&!document.getElementById('seg-'+el.dataset.k)){ selCh=null; refreshDoc(); } const seg=document.getElementById('seg-'+el.dataset.k); if(seg) seg.scrollIntoView({block:'center',behavior:'smooth'}); }
+  else if(a==='sprename'){ const n=prompt('重命名说话人',spName(activeDoc,el.dataset.v)); if(n&&n.trim()) renames[activeDoc.id+'-'+el.dataset.v]=n.trim(); refreshDoc(); }
+  else if(a==='segEdit') openDrawer(el.dataset.k);
+  else if(a==='tocCh') selectChapter(+el.dataset.k);
+  else if(a==='chClear'){ selCh=null; refreshDoc(); }
+  else if(a==='quotePlay'){ const t=+el.dataset.t; closeDrawer(); curTime=t; if(!playing) togglePlay(); else refreshDoc(); toast('从 '+fmt(t)+' 开始播放'); }
+  else if(a==='ocrRetry'){ const d=activeDoc; toast('已重新提交文字识别'); setTimeout(()=>{ d.ocrFailed=false; d.ocr=d.ocrRetryText||''; refreshDoc(); renderTable(); toast('图中文字识别完成'); },1600); }
+  else if(a==='openSugg') openDrawer(el.dataset.k);
+  else if(a==='oneclick') askOneClick();
+  else if(a==='unlinkOk'){ const g=findSugg(el.dataset.g); if(g){ const st=ctxState(); dropLink(st,g.kp); g.status='done'; g.reason='已解除关联'; renderDrawer(); refreshDoc(); toast('已解除关联'); } }
+  else if(a==='unlinkKeep'){ const g=findSugg(el.dataset.g); if(g){ g.status='kept'; g.reason='审核人确认保留关联'; renderDrawer(); refreshDoc(); toast('已保留关联'); } }
+  else if(a==='onlypending'){ kpFilter='pending'; refreshDoc(); }
+  else if(a==='drClose'){ closeDrawer(); refreshDoc(); renderTable(); }
+  else if(a==='drSave') saveDrawer();
+  else if(a==='unlink'){ const st=ctxState(); if(st){ dropLink(st,el.dataset.kp); renderDrawer(); refreshDoc(); renderTable(); } }
+  else if(a==='pkToggle'){ pickerOpen=!pickerOpen; renderDrawer(); if(!drawerDoc) refreshDoc(); }
+  else if(a==='pkToggleItem'){ const st=ctxState(), id=el.dataset.kp; if(st){ st.kps.includes(id)?dropLink(st,id):addLink(st,id,'manual'); renderDrawer(); refreshDoc(); renderTable(); } }
+  else if(a==='suggApprove'){ approveSugg(el.dataset.g); }
+  else if(a==='suggEdit'){ const g=findSugg(el.dataset.g); if(g) startSuggEdit(g); }
+  else if(a==='nodePkToggle'){ nodePickerOpen=!nodePickerOpen; renderDrawer(); }
+  else if(a==='mountToggle'){ const g=findSugg(suggEditing); if(g){ const ms=g.edit.mounts, i=ms.findIndex(p=>p.join('/')===el.dataset.p); i>=0?ms.splice(i,1):ms.push(el.dataset.p.split('/')); renderDrawer(); } }
+  else if(a==='mountRemove'){ const g=findSugg(suggEditing); if(g){ g.edit.mounts.splice(+el.dataset.i,1); renderDrawer(); } }
+  else if(a==='suggSaveEdit'){ saveNewSugg(el.dataset.g); }
+  else if(a==='mountApprove'){ const g=findSugg(el.dataset.g); if(g) approveMount(g.id, g.mounts.map(m=>m.path)); }
+  else if(a==='suggCancelEdit'){ suggEditing=null; nodePickerOpen=false; renderDrawer(); }
+  else if(a==='suggReject'){ suggRejecting=el.dataset.g; suggEditing=null; renderDrawer(); }
+  else if(a==='suggConfirmReject'){ rejectSugg(el.dataset.g); }
+  else if(a==='suggCancelReject'){ suggRejecting=null; renderDrawer(); }
+  // 章节上下文没有抽屉，这些只改面板状态的操作需要刷新右侧章节面板
+  if(!drawerDoc&&selCh!=null&&['suggEdit','suggCancelEdit','suggReject','suggCancelReject','nodePkToggle','mountToggle','mountRemove'].includes(a)) refreshDoc();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('previewModal').classList.contains('show')) closePreview();
+    else if(pickerOpen){ pickerOpen=false; renderDrawer(); }
+    else if(drawerDoc){ closeDrawer(); refreshDoc(); renderTable(); }
+  }
+});
+document.addEventListener('input',e=>{
+  if(e.target && e.target.id==='segQ'){
+    segQ=e.target.value;
+    const pos=e.target.selectionStart;
+    refreshDoc();
+    const n=document.getElementById('segQ'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch(err){} }
+  }
+});
+document.addEventListener('change',e=>{
+  if(e.target && e.target.id==='segEn'){ segFilter=e.target.value; refreshDoc(); }
+  else if(e.target && e.target.id==='segKp'){ kpFilter=e.target.value; refreshDoc(); }
+});
+
+/* ================= 初始化 ================= */
+(function init(){
+  const id=new URLSearchParams(location.search).get('id')||'KB004';
+  const meta=KB_META[id]||KB_META.KB004;
+  document.title=meta.name+'｜专业图谱平台';
+  document.getElementById('kbTitle').textContent=meta.name;
+  document.getElementById('kbMeta').textContent=meta.creator+' · 更新于 '+(meta.editTime||'3 周前')+' · 知识体：旅游类-酒店管理与数字化运营';
+  if(meta.isNew) DOCS=[];
+  const addedN=loadAddedDocs(id);
+  document.getElementById('pageSummary').textContent='共 '+((meta.total||DOCS.length-addedN)+addedN)+' 条文档';
+  document.getElementById('apiId').textContent=id==='KB004'?'9a87bbc1-9075-4b61-aaf0-0658ed9cc568':('kb-'+id.toLowerCase()+'-'+Math.random().toString(16).slice(2,10));
+  document.getElementById('apiCode').textContent=`curl --location --request POST 'http://<your-host>/v1/knowledge-bases/{id}/retrieval' \\
+  --header 'Authorization: Bearer <api-key>' \\
+  --header 'Content-Type: application/json' \\
+  --data-raw '{
+    "query": "客人要求提前入住怎么处理",
+    "retrieval_model": { "search_method": "hybrid_search", "top_k": 5 }
+  }'`;
+  renderTable();
+})();
+</script>
+</body>
+</html>

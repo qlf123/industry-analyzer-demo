@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>院校基础信息</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+/* 院校基础信息：本校档案，查看 / 编辑 */
+.cp{background:var(--card);border:1px solid var(--rule);border-radius:13px;padding:18px 22px;max-width:1080px}
+.cp-h{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;padding-bottom:12px;border-bottom:1px solid var(--rule-2);margin-bottom:16px}
+.cp-h .sp{flex:1}
+.cp .fgrid{gap:14px 26px}
+.cp .ff input:disabled,.cp .ff select:disabled,.cp .ff textarea:disabled{background:var(--card-2);color:var(--ink-2)}
+.cp .reg{display:flex;gap:8px}
+.cp .chips2 button:disabled{cursor:default}
+.cp-meta{font-size:12px;color:var(--muted);margin-top:14px}
+.cp-err{border-color:var(--crit)!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">院校基础信息管理</h1><div class="pt-d">本校的基本档案；办学类型、办学性质、所在地区的选项在「字典管理」中维护</div></div></div></div>
+    <div class="body"><div class="cp" id="cp"></div></div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script src="js/sys-dict.js"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'admin', active: 'college' });
+  var esc = TK.esc, KEY = 'college.v1', editing = false;
+  var C; try { C = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (!C) C = { name: '华夏旅游职业学院', short: '华夏旅院', code: 'HXLY001', type: ['高职（专科）'], nature: '公办', province: '浙江省', city: '杭州市', address: '杭州市西湖区文三路 88 号', contact: '陈老师', phone: '0571-88880000', email: '', intro: '', by: '管理员', at: '2026-08-05 16:40' };
+  function me() { try { return UI.currentIdentity(DEMO.getState()).account.name; } catch (e) { return '管理员'; } }
+  // 选项来自字典；当前值若已在字典中停用，仍保留显示
+  function withCur(list, v) { return v && list.indexOf(v) < 0 ? list.concat([v]) : list; }
+  function sel(k, list, v, ph) { return '<select data-k="' + k + '"' + (editing ? '' : ' disabled') + '><option value="">' + ph + '</option>' + withCur(list, v).map(function (o) { return '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>'; }
+  function inp(k, v, ph, max) { return '<input data-k="' + k + '" value="' + esc(v || '') + '" placeholder="' + (editing ? ph || '请输入' : '') + '" maxlength="' + (max || 50) + '"' + (editing ? '' : ' disabled') + '>'; }
+  function ff(label, req, body, full) { return '<div class="ff' + (full ? ' full' : '') + '"><span class="lh"><span class="' + (req ? 'req' : '') + '">' + label + '</span></span>' + body + '</div>'; }
+  function render() {
+    var types = withCur(SysDict.opts('DM_BXLX'), '');
+    C.type.forEach(function (t) { if (types.indexOf(t) < 0) types.push(t); });
+    var h = '<div class="cp-h">院校基础信息<span class="sp"></span>' + (editing ? '<button class="btn-s" data-cancel>取消</button><button class="btn" style="height:32px" data-save>保存</button>' : '<button class="btn" style="height:32px" data-edit>编辑</button>') + '</div><div class="fgrid">' +
+      ff('院校名称', 1, inp('name', C.name, '请输入院校全称', 40)) + ff('院校简称', 0, inp('short', C.short, '请输入', 20)) +
+      ff('院校编码', 1, inp('code', C.code, '如：教育部院校代码', 20)) +
+      ff('办学类型', 1, '<div class="chips2" data-k="type">' + types.map(function (t) { return '<button type="button" aria-pressed="' + (C.type.indexOf(t) >= 0) + '"' + (editing ? '' : ' disabled') + '>' + esc(t) + '</button>'; }).join('') + '</div>') +
+      ff('办学性质', 0, sel('nature', SysDict.opts('DM_BXXZ'), C.nature, '请选择')) +
+      ff('所在地区', 0, '<div class="reg">' + sel('province', SysDict.opts('DM_DQ'), C.province, '省 / 直辖市') + sel('city', C.province ? SysDict.opts('DM_DQ', C.province) : [], C.city, '市') + '</div>') +
+      ff('院校地址', 0, inp('address', C.address, '请输入详细地址', 80)) + ff('联系人', 0, inp('contact', C.contact, '请输入', 20)) +
+      ff('联系电话', 0, inp('phone', C.phone, '手机或座机', 20)) + ff('联系邮箱', 0, inp('email', C.email, '请输入邮箱', 50)) +
+      ff('院校简介', 0, '<textarea data-k="intro" maxlength="1000" rows="4" placeholder="' + (editing ? '请输入' : '') + '"' + (editing ? '' : ' disabled') + '>' + esc(C.intro || '') + '</textarea>', 1) +
+      '</div><div class="cp-meta">最后修改：' + esc(C.by) + '　' + esc(C.at) + '</div>';
+    document.getElementById('cp').innerHTML = h;
+  }
+  function val(k) { var el = document.querySelector('[data-k="' + k + '"]'); return el ? el.value.trim() : ''; }
+  document.addEventListener('click', function (e) {
+    var t;
+    if (e.target.closest('[data-edit]')) { editing = true; render(); }
+    else if (e.target.closest('[data-cancel]')) { editing = false; render(); }
+    else if ((t = e.target.closest('[data-k="type"] button')) && editing) t.setAttribute('aria-pressed', t.getAttribute('aria-pressed') !== 'true');
+    else if (e.target.closest('[data-save]')) {
+      var d = {}; ['name', 'short', 'code', 'nature', 'province', 'city', 'address', 'contact', 'phone', 'email', 'intro'].forEach(function (k) { d[k] = val(k); });
+      d.type = [].map.call(document.querySelectorAll('[data-k="type"] button[aria-pressed="true"]'), function (b) { return b.textContent; });
+      document.querySelectorAll('.cp-err').forEach(function (x) { x.classList.remove('cp-err'); });
+      var bad = [];
+      if (!d.name) bad.push('name'); if (!d.code) bad.push('code'); if (!d.type.length) bad.push('type');
+      if (bad.length) { bad.forEach(function (k) { document.querySelector('[data-k="' + k + '"]').classList.add('cp-err'); }); return TK.toast('请填写必填项'); }
+      if (d.phone && !/^[\d\-+ ]{7,20}$/.test(d.phone)) { document.querySelector('[data-k="phone"]').classList.add('cp-err'); return TK.toast('联系电话格式不正确'); }
+      if (d.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) { document.querySelector('[data-k="email"]').classList.add('cp-err'); return TK.toast('联系邮箱格式不正确'); }
+      if (d.province && !d.city && SysDict.opts('DM_DQ', d.province).length) { document.querySelector('[data-k="city"]').classList.add('cp-err'); return TK.toast('请选择所在城市'); }
+      d.by = me(); d.at = TK.fmt(new Date()); C = d;
+      try { localStorage.setItem(KEY, JSON.stringify(C)); } catch (e2) {}
+      editing = false; render(); TK.toast('已保存');
+    }
+  });
+  document.addEventListener('change', function (e) {
+    if (e.target.getAttribute('data-k') === 'province') {
+      var cs = SysDict.opts('DM_DQ', e.target.value), city = document.querySelector('[data-k="city"]');
+      city.innerHTML = '<option value="">市</option>' + cs.map(function (o) { return '<option>' + esc(o) + '</option>'; }).join('');
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

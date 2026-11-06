@@ -1,0 +1,52 @@
+.mapping-row.approved .confirm-button,.mapping-row.approved .reject-button{display:none}.mapping-row.approved .selected-check{display:none}
+.mapping-row.approved .relation-select,.mapping-row.approved .level-select{opacity:.65;cursor:not-allowed;background:#f5f7fa}
+.mapping-row.rejected .relation-select,.mapping-row.rejected .level-select{opacity:.65;cursor:not-allowed;background:#f5f7fa}
+.mapping-row.rejected .confirm-button,.mapping-row.rejected .reject-button{display:none}.mapping-row.rejected .row-actions:after{content:"已驳回";display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:8px;background:#fff0f0;color:#c72c2a;font-size:12px;font-weight:600;white-space:nowrap;border:1px solid #ffd6d6}
+
+.add-resource-button{height:34px;padding:0 14px;border-radius:8px;background:#fff;border:1px solid #e2e8f0;color:#334155;font-size:12px;font-weight:600;cursor:pointer}
+.add-resource-button:hover{background:#f5f7fa}
+#addMappingButton{background:#5149e9;color:#fff}
+#addMappingButton:hover{background:#463bc9}
+#addMappingModal .task-form>label{display:block;margin-bottom:15px}
+#addMappingModal .task-form textarea{box-sizing:border-box}
+
+
+/* 模糊搜索下拉框 */
+.search-select{position:relative}
+.search-select input{display:block;width:100%;height:38px;margin-top:7px;border:1px solid #dfe6ef;border-radius:8px;color:#41536f;background:#fff;font-size:13px;padding:0 10px;font-family:inherit}
+.search-select input:focus{border-color:#5149e9;outline:none;box-shadow:0 0 0 3px rgba(81,73,233,.1)}
+.search-select-dropdown{display:none;position:absolute;top:100%;left:0;right:0;margin-top:4px;background:#fff;border:1px solid #dfe6ef;border-radius:8px;box-shadow:0 8px 24px rgba(30,49,82,.12);max-height:200px;overflow-y:auto;z-index:100}
+.search-select-option{padding:8px 12px;font-size:13px;color:#41536f;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #f0f3f7}
+.search-select-option:last-child{border-bottom:none}
+.search-select-option:hover{background:#f5f7ff;color:#5149e9}
+.search-select-type{font-size:10px;color:#8b99ac;background:#eef1f6;padding:1px 6px;border-radius:4px;white-space:nowrap}
+.search-select-empty{padding:12px;text-align:center;font-size:12px;color:#8b99ac}
+
+
+/* 新增映射关系按钮（次要操作样式） */
+.add-mapping-btn{height:44px;padding:0 16px;border:1px solid #d8dcff;border-radius:10px;background:#fff;color:#5149e9;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s;display:flex;align-items:center}
+.add-mapping-btn:hover{background:#f2f2ff;border-color:#5149e9}
+
+
+.approved-label{display:inline-block;font-size:12px;font-weight:600;color:#12946f;background:#edf9f5;padding:4px 12px;border-radius:6px}
+
+/* 审核人列：默认隐藏 */
+.reviewer-col{display:none}
+/* 已确认状态下显示审核人列，grid 改为9列 */
+body.has-reviewer-col .reviewer-col{display:block}
+body.has-reviewer-col .table-head,body.has-reviewer-col .row-content{grid-template-columns:40px 130px minmax(190px,1.05fr) 130px minmax(190px,1.12fr) 145px 82px 130px minmax(220px,1.35fr) 120px 100px 150px}
+@media(max-width:760px){body.has-reviewer-col .table-head,body.has-reviewer-col .row-content{grid-template-columns:36px 100px minmax(130px,1.15fr) 100px minmax(145px,1.25fr) 112px 62px 88px minmax(180px,1.65fr) 88px 80px 108px}}
+.reviewer-cell{font-size:12px;color:#52647d;font-weight:500}
+
+
+/* 选择列隐藏（已确认/已驳回状态） */
+body.hide-selection-column .select-cell input,body.hide-selection-column .head-select input{display:none}
+
+/* 知识体系 / 能力图谱 列样式 */
+.ks-cell,.ag-cell{display:flex;align-items:center}
+.ks-name,.ag-name{font-size:12px;color:#52647d;font-weight:500;line-height:1.4;word-break:break-all}
+.head-ks,.head-ag{color:#70809a;font-size:13px;font-weight:600;white-space:nowrap}
+@media(max-width:760px){
+  .ks-name,.ag-name{font-size:10px}
+  .head-ks,.head-ag{font-size:10px}
+}

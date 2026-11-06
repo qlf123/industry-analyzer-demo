@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数据概览</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+/* 管理端数据概览：教学基本概况 / 教学运行统计 / 教师统计 / 专业统计 / 课程统计 */
+.db-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--rule);border-radius:13px;padding:12px 16px;margin-bottom:14px}
+.db-bar .sp{flex:1}
+.db-bar .cyc{font-size:12.5px;color:var(--muted);background:var(--card-2);border-radius:8px;padding:5px 10px}
+.db-bar .lk{font-size:12.5px}
+.db-sec{background:var(--card);border:1px solid var(--rule);border-radius:13px;padding:16px 18px;margin-bottom:14px}
+.db-st{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--ink);margin-bottom:12px}
+.db-st .no{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--brand);color:#fff;font-size:11.5px}
+.db-st .sp{flex:1}
+.db-sub{font-size:12.5px;font-weight:600;color:var(--ink-2);margin:4px 0 8px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:var(--card-2);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.kpi .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:15px;flex:none}
+.kpi .k{font-size:12px;color:var(--muted)}
+.kpi .v{font-size:24px;font-weight:700;color:var(--ink);line-height:1.25}
+.kpi .v small{font-size:12px;font-weight:400;color:var(--ink-2);margin-left:2px}
+.kpi .d{font-size:11.5px;margin-top:2px}
+.up{color:var(--good)}.down{color:var(--warn-ink)}.flat{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.panel2{background:var(--card-2);border-radius:10px;padding:12px 14px;min-width:0}
+.ph2{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:8px}
+.ph2 .sp{flex:1}
+.ph2 .lk{font-size:12px;font-weight:400}
+.lgd{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--muted);margin-bottom:6px}
+.lgd i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.tabs-s{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.tabs-s button{border:1px solid var(--rule);background:var(--card);border-radius:7px;padding:3px 10px;font:inherit;font-size:12px;color:var(--ink-2);cursor:pointer}
+.tabs-s button[aria-pressed="true"]{border-color:var(--brand);color:var(--brand-ink);background:var(--brand-soft)}
+.risk{display:flex;justify-content:space-around;align-items:center;padding:6px 0}
+.risk .r{text-align:center;cursor:pointer}
+.risk .r .cap{font-size:12px;color:var(--muted);margin-top:4px}
+.don{display:flex;align-items:center;gap:18px}
+.don .rows{flex:1;font-size:12.5px}
+.don .rows div{display:flex;align-items:center;gap:8px;padding:5px 0}
+.don .rows .n{margin-left:auto;color:var(--ink-2);font-family:var(--mono);font-size:12px}
+.band{font-size:12.5px}
+.band div{display:flex;align-items:center;gap:8px;padding:4px 0}
+.band .n{margin-left:auto;font-weight:600}
+.avg{background:var(--card);border-radius:8px;text-align:center;padding:8px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.avg b{font-size:18px;color:var(--brand-ink);margin-left:6px}
+.top5 div{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px}
+.top5 .rk{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;background:var(--brand);color:#fff;flex:none}
+.top5 .rk.g{background:var(--rule);color:var(--ink-2)}
+.top5 .nm{width:64px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top5 .bar{flex:1;height:10px;border-radius:5px;background:var(--card);overflow:hidden}
+.top5 .bar span{display:block;height:100%;background:linear-gradient(90deg,#4f7cff,#7aa2ff);border-radius:5px}
+.top5 .v{width:48px;text-align:right;font-family:var(--mono);font-size:12px}
+.stk{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--card);margin:6px 0}
+.stk span{display:block;height:100%}
+.stk-l{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--muted)}
+.stk-l b{font-weight:500;color:var(--ink-2)}
+.hb div{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12.5px}
+.hb .nm{width:120px;flex:none;text-align:right;color:var(--brand-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .bar{flex:1;height:12px;border-radius:4px;overflow:hidden;display:flex;background:var(--card)}
+.hb .bar span{display:flex;align-items:center;justify-content:center;height:100%;font-size:10.5px;color:#fff;font-weight:600;overflow:hidden}
+.hb .v{width:96px;flex:none;font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.hours{background:#ecfdf5;border-radius:10px;padding:16px;display:flex;flex-direction:column;justify-content:center}
+.hours .k{font-size:12.5px;color:var(--muted)}
+.hours .v{font-size:32px;font-weight:700;margin:6px 0}
+.hours .v small{font-size:13px;font-weight:400;margin-left:4px}
+.empty3{font-size:12.5px;color:var(--muted);padding:18px 0;text-align:center}
+svg text{font-family:inherit}
+@media (max-width:1100px){.kpis,.grid4{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">数据概览</h1><div class="pt-d">全校教学运行情况，数据来自教务基础数据、课程计划、教师备课与任务中心</div></div></div></div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'admin', active: 'dash' });
+  var esc = TK.esc, S = TK.load(), E = S.edu;
+  var C = ['#4f7cff', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+  var F = { p: 'term', off: 0, scope: '', trend: 0 };
+
+  /* ── 基础数据 ── */
+  function teachers() { try { return DEMO.getState().accounts.filter(function (a) { return a.kind === '教师' && a.status === '正常'; }).map(function (a) { return a.name; }); } catch (e) { return ['李老师', '王老师', '何老师']; } }
+  function cls(id) { return S.classes.filter(function (c) { return c.id === id; })[0] || {}; }
+  function plan(id) { return S.plans.filter(function (p) { return p.id === id; })[0]; }
+  function majorOfPlan(p) { return cls(p.classId).majorId; }
+  function inScopeMajor(mid) { return !F.scope || TK.majorSubIds(E, F.scope).indexOf(mid) >= 0; }
+  function scopedPlans() { return S.plans.filter(function (p) { return inScopeMajor(majorOfPlan(p)); }); }
+  function scopedTeachers() {
+    var all = teachers();
+    if (!F.scope) return all;
+    var t = {}; scopedPlans().forEach(function (p) { t[p.teacher] = 1; });
+    return all.filter(function (n) { return t[n]; });
+  }
+  function scopedLessons() { var ids = {}; scopedPlans().forEach(function (p) { ids[p.id] = 1; }); return S.courses.filter(function (c) { return ids[c.planId]; }); }
+  function teacherOf(c) { var p = plan(c.planId); return p ? p.teacher : ''; }
+  function scopedResources() { var t = {}; scopedTeachers().forEach(function (n) { t[n] = 1; }); return S.resources.filter(function (r) { return t[r.owner || '李老师']; }); }
+
+  /* ── 周期：本周 / 本月 / 本学期 / 本学年，可前后翻 ── */
+  function shiftRange(r, k) {
+    if (!k) return r;
+    var a = new Date(r.a), b = new Date(r.b);
+    if (F.p === 'week') { a.setDate(a.getDate() + 7 * k); b.setDate(b.getDate() + 7 * k); }
+    else if (F.p === 'month') { a = new Date(a.getFullYear(), a.getMonth() + k, 1); b = new Date(a.getFullYear(), a.getMonth() + 1, 1); }
+    else if (F.p === 'year') { a.setFullYear(a.getFullYear() + k); b.setFullYear(b.getFullYear() + k); }
+    else { // 学期：按学期表
+      var terms = E.terms.slice().sort(function (x, y) { return x.start < y.start ? -1 : 1; });
+      var i = terms.findIndex(function (t) { return t.year + ' ' + t.term === TK.TERM; }), t = terms[i + k];
+      if (t) { a = new Date(t.start + 'T00:00:00'); b = new Date(t.end + 'T00:00:00'); b.setDate(b.getDate() + 1); }
+      else { a.setMonth(a.getMonth() + 6 * k); b.setMonth(b.getMonth() + 6 * k); }
+    }
+    return { a: a, b: b };
+  }
+  function cur() { return shiftRange(TK.periodRange(F.p), F.off); }
+  function prev() { return shiftRange(TK.periodRange(F.p), F.off - 1); }
+  function inR(s, r) { if (!s) return false; var d = new Date(String(s).replace(' ', 'T')); return d >= r.a && d < r.b; }
+  function d10(d) { return TK.fmt(d, false); }
+  function cycleLabel(r) {
+    if (F.p === 'term') { var t = E.terms.filter(function (x) { return x.start === d10(r.a); })[0]; if (t) return t.year + ' ' + t.term; }
+    if (F.p === 'year') return r.a.getFullYear() + '-' + (r.a.getFullYear() + 1) + ' 学年';
+    return d10(r.a) + ' ~ ' + d10(new Date(r.b - 864e5));
+  }
+  var UNIT = { week: '周', month: '月', term: '学期', year: '学年' };
+  // 趋势图的时间刻度：周按天、月按周、学期 / 学年按月
+  function buckets(r) {
+    var out = [], a = new Date(r.a);
+    if (F.p === 'week') { for (var i = 0; i < 7; i++) { var x = new Date(a); x.setDate(a.getDate() + i); var y = new Date(x); y.setDate(x.getDate() + 1); out.push({ a: x, b: y, l: (x.getMonth() + 1) + '/' + x.getDate() }); } }
+    else if (F.p === 'month') { var s = new Date(a), n = 1; while (s < r.b) { var e = new Date(s); e.setDate(s.getDate() + 7); if (e > r.b) e = new Date(r.b); out.push({ a: new Date(s), b: e, l: '第' + (n++) + '周' }); s = e; } }
+    else { var m = new Date(a.getFullYear(), a.getMonth(), 1); while (m < r.b) { var nx = new Date(m.getFullYear(), m.getMonth() + 1, 1); out.push({ a: m < r.a ? r.a : m, b: nx > r.b ? r.b : nx, l: (m.getMonth() + 1) + '月' }); m = nx; } }
+    return out;
+  }
+
+  /* ── 指标 ── */
+  function resFiles(r) { var out = []; scopedResources().forEach(function (x) { if (inR(x.createdAt, r)) (x.files || []).forEach(function (f) { out.push({ f: f, r: x }); }); }); return out; }
+  function lessons(r) { return scopedLessons().filter(function (c) { return inR(c.start, r); }); }
+  function published(r) { return scopedLessons().filter(function (c) { return c.publish && inR(c.publish.at, r); }); }
+  function pubFiles(r) { return published(r).reduce(function (a, c) { return a + (c.publish.fileIds || []).length; }, 0); }
+  function pubTasks(r) { return published(r).filter(function (c) { return c.publish.task && c.publish.task.on; }).length; }
+  function subs(r) { var o = []; scopedLessons().forEach(function (c) { (c.submissions || []).forEach(function (s) { if (s.status !== '未提交' && inR(s.at, r)) o.push({ c: c, s: s }); }); }); return o; }
+  function evals(r) { var o = []; scopedLessons().forEach(function (c) { (c.submissions || []).forEach(function (s) { if (s.teacher && inR(s.teacher.at, r)) o.push({ c: c, s: s }); }); }); return o; }
+  function fbScore(f) { if (f.scores) { var v = Object.keys(f.scores).map(function (k) { return f.scores[k]; }); return v.reduce(function (a, b) { return a + b; }, 0) / v.length; } return f.overall || 0; }
+  function fbAvg(list) { return list.length ? list.reduce(function (a, f) { return a + fbScore(f); }, 0) / list.length : null; }
+  function feedbacks(r, cs) { var o = []; (cs || scopedLessons()).forEach(function (c) { (c.feedbacks || []).forEach(function (f) { if (inR(f.at, r)) o.push(f); }); }); return o; }
+  // 授课时长只算已经开始的课次（已结束 + 授课中），未上的课不计
+  function held(r) { var now = new Date(); return lessons(r).filter(function (c) { return new Date(c.start.replace(' ', 'T')) <= now; }); }
+  function hoursOf(c) { return (new Date(c.end.replace(' ', 'T')) - new Date(c.start.replace(' ', 'T'))) / 3600e3; }
+  // 教师在周期内的各项动作
+  function activity(r) {
+    var A = {}; scopedTeachers().forEach(function (n) { A[n] = { gen: 0, pub: 0, eval: 0, lesson: 0 }; });
+    scopedResources().forEach(function (x) { var n = x.owner || '李老师'; if (A[n] && inR(x.createdAt, r)) A[n].gen++; });
+    published(r).forEach(function (c) { var n = teacherOf(c); if (A[n]) A[n].pub++; });
+    evals(r).forEach(function (o) { var n = teacherOf(o.c); if (A[n]) A[n].eval++; });
+    scopedLessons().forEach(function (c) { var n = teacherOf(c); if (A[n] && c.source !== '排课' && inR(c.createdAt, r)) A[n].lesson++; });
+    Object.keys(A).forEach(function (n) { var a = A[n]; a.active = a.gen + a.pub + a.eval + a.lesson > 0; });
+    return A;
+  }
+  // 低分课次：课程反馈均分低于 3 分（满分 5 分，阈值可由学校设置）
+  var LOW = 3;
+  function lowLessons(r) { return lessons(r).concat(published(r)).filter(function (c, i, a) { return a.indexOf(c) === i; }).filter(function (c) { var f = feedbacks(r, [c]); var v = fbAvg(f); return v != null && v < LOW; }); }
+
+  /* ── 图表（SVG） ── */
+  function lineChart(series, labels, h) {
+    var W = 520, H = h || 200, L = 32, R = 10, T = 12, B = 24, mx = 0;
+    series.forEach(function (s) { s.v.forEach(function (v) { if (v > mx) mx = v; }); });
+    mx = mx <= 4 ? 4 : Math.ceil(mx / 4) * 4;
+    var x = function (i) { return labels.length > 1 ? L + (W - L - R) * i / (labels.length - 1) : (L + W - R) / 2; }, y = function (v) { return T + (H - T - B) * (1 - v / mx); };
+    var g = '';
+    for (var k = 0; k <= 4; k++) { var vv = mx * k / 4; g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(vv) + '" y2="' + y(vv) + '" stroke="var(--rule)" stroke-dasharray="' + (k ? '3 3' : '') + '"/><text x="' + (L - 6) + '" y="' + (y(vv) + 4) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + (Math.round(vv * 10) / 10) + '</text>'; }
+    labels.forEach(function (l, i) { g += '<text x="' + x(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="10" fill="var(--muted)">' + esc(l) + '</text>'; });
+    series.slice().reverse().forEach(function (s, ri) {   // 第一条（总量）最后画、加粗，避免被重合的线盖住
+      g += '<polyline fill="none" stroke="' + s.c + '" stroke-width="' + (ri === series.length - 1 && series.length > 1 ? 3 : 2) + '" points="' + s.v.map(function (v, i) { return x(i) + ',' + y(v); }).join(' ') + '"/>';
+      s.v.forEach(function (v, i) { g += '<circle cx="' + x(i) + '" cy="' + y(v) + '" r="2.8" fill="' + s.c + '"><title>' + esc(s.n + ' · ' + labels[i] + '：' + (Math.round(v * 10) / 10)) + '</title></circle>'; });
+    });
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img">' + g + '</svg>';
+  }
+  function legend(items) { return '<div class="lgd">' + items.map(function (s) { return '<span><i style="background:' + s.c + '"></i>' + esc(s.n) + '</span>'; }).join('') + '</div>'; }
+  function donut(parts, cap, size) {
+    var S0 = size || 130, r = S0 / 2 - 10, cx = S0 / 2, tot = parts.reduce(function (a, p) { return a + p.v; }, 0), a0 = -Math.PI / 2, g = '';
+    if (!tot) g = '<circle cx="' + cx + '" cy="' + cx + '" r="' + r + '" fill="none" stroke="var(--rule)" stroke-width="16"/>';
+    else parts.forEach(function (p) {
+      if (!p.v) return;
+      var a1 = a0 + 2 * Math.PI * p.v / tot, large = a1 - a0 > Math.PI ? 1 : 0;
+      if (p.v === tot) g += '<circle cx="' + cx + '" cy="' + cx + '" r="' + r + '" fill="none" stroke="' + p.c + '" stroke-width="16"/>';
+      else g += '<path d="M' + (cx + r * Math.cos(a0)) + ' ' + (cx + r * Math.sin(a0)) + 'A' + r + ' ' + r + ' 0 ' + large + ' 1 ' + (cx + r * Math.cos(a1)) + ' ' + (cx + r * Math.sin(a1)) + '" fill="none" stroke="' + p.c + '" stroke-width="16"><title>' + esc(p.n + '：' + p.v) + '</title></path>';
+      a0 = a1;
+    });
+    return '<svg viewBox="0 0 ' + S0 + ' ' + S0 + '" width="' + S0 + '" height="' + S0 + '" role="img">' + g + '<text x="' + cx + '" y="' + (cx - 4) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + esc(cap) + '</text><text x="' + cx + '" y="' + (cx + 18) + '" text-anchor="middle" font-size="22" font-weight="700" fill="var(--ink)">' + tot + '</text></svg>';
+  }
+  function gauge(v, max, unit, cap, col) {
+    var r = 56, c = 2 * Math.PI * r, p = max ? Math.min(1, v / max) : 0;
+    return '<svg viewBox="0 0 140 140" width="132" height="132" role="img"><circle cx="70" cy="70" r="' + r + '" fill="none" stroke="var(--rule)" stroke-width="10"/><circle cx="70" cy="70" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="10" stroke-linecap="round" stroke-dasharray="' + (c * p) + ' ' + c + '" transform="rotate(-90 70 70)"/>' +
+      '<text x="70" y="72" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)">' + v + esc(unit) + '</text><text x="70" y="92" text-anchor="middle" font-size="11" fill="var(--muted)">' + esc(cap) + '</text></svg>';
+  }
+  function radar(dims) {
+    var cx = 160, cy = 120, R = 82, n = dims.length, pt = function (i, v) { var a = -Math.PI / 2 + 2 * Math.PI * i / n; return [cx + R * v / 100 * Math.cos(a), cy + R * v / 100 * Math.sin(a)]; }, g = '';
+    [25, 50, 75, 100].forEach(function (lv) { g += '<polygon points="' + dims.map(function (d, i) { return pt(i, lv).join(','); }).join(' ') + '" fill="none" stroke="var(--rule)"/>'; });
+    dims.forEach(function (d, i) { var p = pt(i, 100), q = pt(i, 122); g += '<line x1="' + cx + '" y1="' + cy + '" x2="' + p[0] + '" y2="' + p[1] + '" stroke="var(--rule)"/><text x="' + q[0] + '" y="' + q[1] + '" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">' + esc(d.n) + '</text><text x="' + q[0] + '" y="' + (q[1] + 13) + '" text-anchor="middle" font-size="10" fill="var(--muted)">' + d.v + '</text>'; });
+    g += '<polygon points="' + dims.map(function (d, i) { return pt(i, d.v).join(','); }).join(' ') + '" fill="rgba(79,124,255,.18)" stroke="#4f7cff" stroke-width="2"/>';
+    return '<svg viewBox="0 0 320 250" width="100%" role="img">' + g + '</svg>';
+  }
+  function groupBars(groups, names) {
+    var W = 520, H = 210, L = 28, B = 30, T = 16, mx = 1;
+    groups.forEach(function (g) { g.v.forEach(function (v) { if (v > mx) mx = v; }); });
+    mx = Math.ceil(mx / 5) * 5;
+    var gw = (W - L - 10) / Math.max(1, groups.length), bw = Math.min(14, (gw - 16) / names.length), y = function (v) { return T + (H - T - B) * (1 - v / mx); }, g = '';
+    for (var k = 0; k <= 5; k++) { var vv = mx * k / 5; g += '<line x1="' + L + '" x2="' + (W - 10) + '" y1="' + y(vv) + '" y2="' + y(vv) + '" stroke="var(--rule)" stroke-dasharray="' + (k ? '3 3' : '') + '"/><text x="' + (L - 6) + '" y="' + (y(vv) + 4) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + vv + '</text>'; }
+    groups.forEach(function (gr, i) {
+      var x0 = L + gw * i + (gw - bw * names.length - 4 * (names.length - 1)) / 2;
+      gr.v.forEach(function (v, j) { var x = x0 + j * (bw + 4); g += '<rect x="' + x + '" y="' + y(v) + '" width="' + bw + '" height="' + (H - B - y(v)) + '" rx="3" fill="' + C[j] + '"><title>' + esc(gr.l + ' · ' + names[j] + '：' + v) + '</title></rect><text x="' + (x + bw / 2) + '" y="' + (y(v) - 4) + '" text-anchor="middle" font-size="10" fill="var(--ink-2)">' + v + '</text>'; });
+      g += '<text x="' + (L + gw * i + gw / 2) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">' + esc(gr.l.length > 7 ? gr.l.slice(0, 7) + '…' : gr.l) + '</text>';
+    });
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img">' + g + '</svg>';
+  }
+  function delta(a, b, unit) {
+    var d = Math.round((a - b) * 10) / 10;
+    return '<div class="d ' + (d > 0 ? 'up' : d < 0 ? 'down' : 'flat') + '">较上' + UNIT[F.p] + ' ' + (d > 0 ? '↑ ' + d + (unit || '') : d < 0 ? '↓ ' + (-d) + (unit || '') : '持平') + '</div>';
+  }
+  function kpi(icon, bg, k, v, unit, dl) { return '<div class="kpi"><span class="ic" style="background:' + bg + '">' + icon + '</span><div><div class="k">' + k + '</div><div class="v">' + v + (unit ? '<small>' + unit + '</small>' : '') + '</div>' + (dl || '') + '</div></div>'; }
+  function more(key, txt) { return '<button class="lk" data-more="' + key + '">' + (txt || '查看详情') + ' ›</button>'; }
+
+  /* ── 教师档案摘要（职称、年龄、学历、画像五维评分），来自教师档案 ── */
+  var DIMS = ['教师评价', '教学建设与实施', '专业发展', '科研教研', '成果贡献'];
+  var PROFILE = {
+    '李老师': { title: '中级', age: 34, edu: '硕士', s: [82, 76, 70, 48, 52] },
+    '王老师': { title: '副高级', age: 41, edu: '硕士', s: [88, 80, 76, 62, 70] },
+    '何老师': { title: '中级', age: 29, edu: '本科', s: [74, 66, 58, 30, 26] },
+    '马老师': { title: '初级', age: 26, edu: '本科', s: [70, 60, 52, 18, 20] }
+  };
+  function prof(n) { return PROFILE[n] || { title: '初级', age: 30, edu: '其他', s: [0, 0, 0, 0, 0] }; }
+  function overallOf(n) { var s = prof(n).s; return Math.round(s.reduce(function (a, b) { return a + b; }, 0) / s.length * 10) / 10; }
+
+  /* ── 页面 ── */
+  function render() {
+    var r = cur(), pr = prev(), T = scopedTeachers();
+    var majors = TK.majorTree(E).filter(function (x) { return x.m.status === '启用'; });
+    var h = '<div class="db-bar"><span class="tabs-s" style="margin:0">' + [['week', '本周'], ['month', '本月'], ['term', '本学期'], ['year', '本学年']].map(function (p) { return '<button data-p="' + p[0] + '" aria-pressed="' + (F.p === p[0]) + '">' + p[1] + '</button>'; }).join('') + '</span>' +
+      '<span style="font-size:12.5px;color:var(--muted)">查看范围</span><select class="sel" data-scope><option value="">全校</option>' + majors.map(function (x) { return '<option value="' + x.m.id + '"' + (F.scope === x.m.id ? ' selected' : '') + '>' + esc(TK.majorPath(E, x.m.id)) + '</option>'; }).join('') + '</select>' +
+      '<span class="sp"></span><span class="cyc">当前周期：' + esc(cycleLabel(r)) + '</span><button class="lk" data-off="-1">‹ 上一' + UNIT[F.p] + '</button><button class="lk" data-off="1">下一' + UNIT[F.p] + ' ›</button>' + (F.off ? '<button class="lk" data-off="0">回到本' + UNIT[F.p] + '</button>' : '') + '</div>';
+
+    // 1 教学基本概况
+    var stu = E.students.filter(function (x) { return x.status === '在读' && (!F.scope || inScopeMajor(cls(x.classId).majorId)); }).length;
+    var nMaj = F.scope ? TK.majorSubIds(E, F.scope).filter(function (id) { return E.majors.some(function (m) { return m.id === id && m.status === '启用'; }); }).length : E.majors.filter(function (m) { return m.status === '启用'; }).length;
+    var nCls = S.classes.filter(function (c) { return c.status !== '停用' && inScopeMajor(c.majorId); }).length;
+    var rf = resFiles(r), rfp = resFiles(pr), ls = lessons(r), lsp = lessons(pr);
+    h += '<div class="db-sec"><div class="db-st"><span class="no">1</span>教学基本概况</div><div class="db-sub">基础数据</div><div class="kpis">' +
+      kpi('👤', '#eef2ff', '教师总数', T.length, '人') + kpi('🎓', '#eef2ff', '学生总数', stu, '人') + kpi('📚', '#eef2ff', '专业总数', nMaj, '个') + kpi('🏫', '#f3e8ff', '班级总数', nCls, '个') +
+      '</div><div class="db-sub">教学资产沉淀</div><div class="kpis">' +
+      kpi('📁', '#ecfdf5', '备课资源生成总数', rf.length, '个', delta(rf.length, rfp.length)) + kpi('📖', '#eef2ff', '课程总数（已上）', held(r).length, '堂', delta(held(r).length, held(pr).length)) +
+      kpi('📄', '#eef2ff', '已发布学习资源数', pubFiles(r), '个', delta(pubFiles(r), pubFiles(pr))) + kpi('🧩', '#fff7ed', '已发布情景任务数', pubTasks(r), '个', delta(pubTasks(r), pubTasks(pr))) + '</div></div>';
+
+    // 2 教学运行统计
+    var bk = buckets(r), labels = bk.map(function (b) { return b.l; });
+    var act = bk.map(function (b) { return activity(b); });
+    var actSeries = [
+      { n: '总活跃教师数', c: C[0], v: act.map(function (A) { return Object.keys(A).filter(function (n) { return A[n].active; }).length; }) },
+      { n: '备课生成', c: C[1], v: act.map(function (A) { return Object.keys(A).filter(function (n) { return A[n].gen; }).length; }) },
+      { n: '发布学习内容', c: C[2], v: act.map(function (A) { return Object.keys(A).filter(function (n) { return A[n].pub; }).length; }) },
+      { n: '评价学生任务', c: C[3], v: act.map(function (A) { return Object.keys(A).filter(function (n) { return A[n].eval; }).length; }) },
+      { n: '新建课程', c: C[4], v: act.map(function (A) { return Object.keys(A).filter(function (n) { return A[n].lesson; }).length; }) }];
+    var TYPES = ['课件', '教案', '图片', '视频', '情景互动游戏'];
+    var trendTabs = ['备课资源生成数', '学习资源发布数', '任务提交数', '任务评价完成数', '课程反馈均分'], ts;
+    if (F.trend === 0) ts = TYPES.map(function (t, i) { return { n: t, c: C[i], v: bk.map(function (b) { return resFiles(b).filter(function (x) { return x.f.type === t; }).length; }) }; });
+    else if (F.trend === 1) ts = [{ n: '学习资源发布数', c: C[0], v: bk.map(function (b) { return pubFiles(b); }) }];
+    else if (F.trend === 2) ts = [{ n: '任务提交数', c: C[0], v: bk.map(function (b) { return subs(b).length; }) }];
+    else if (F.trend === 3) ts = [{ n: '任务评价完成数', c: C[0], v: bk.map(function (b) { return evals(b).length; }) }];
+    else ts = [{ n: '课程反馈均分', c: C[0], v: bk.map(function (b) { var v = fbAvg(feedbacks(b)); return v == null ? 0 : Math.round(v * 10) / 10; }) }];
+    var A = activity(r), inactive = T.filter(function (n) { return !A[n] || !A[n].active; }), low = lowLessons(r);
+    var typeParts = TYPES.map(function (t, i) { return { n: t, c: C[i], v: rf.filter(function (x) { return x.f.type === t; }).length }; }), tot = rf.length;
+    h += '<div class="db-sec"><div class="db-st"><span class="no">2</span>教学运行统计</div><div class="grid2">' +
+      '<div class="panel2"><div class="ph2">教师活跃度趋势统计<span class="sp"></span>' + more('activity') + '</div>' + legend(actSeries) + lineChart(actSeries, labels) + '</div>' +
+      '<div class="panel2"><div class="ph2">教学趋势统计<span class="sp"></span>' + more('trend') + '</div><div class="tabs-s">' + trendTabs.map(function (t, i) { return '<button data-trend="' + i + '" aria-pressed="' + (F.trend === i) + '">' + t + '</button>'; }).join('') + '</div>' + legend(ts) + lineChart(ts, labels) + '</div>' +
+      '<div class="panel2"><div class="ph2">教学风险预警<span class="sp"></span>' + more('risk') + '</div><div class="risk">' +
+        '<div class="r" data-more="risk">' + gauge(inactive.length, T.length || 1, '人', '低活跃', '#f59e0b') + '<div class="cap">未活跃教师 ' + inactive.length + ' 人</div></div>' +
+        '<div class="r" data-more="risk">' + gauge(low.length, Math.max(1, lessons(r).length), '门', '低分课程', '#4f7cff') + '<div class="cap">低分课程 ' + low.length + ' 门</div></div></div>' +
+        '<div style="font-size:11.5px;color:var(--muted);text-align:center">未活跃：本' + UNIT[F.p] + '没有备课、发布、评价、新建课次；低分课程：课程反馈均分低于 ' + LOW + ' 分（满分 5 分，阈值可由学校设置）</div></div>' +
+      '<div class="panel2"><div class="ph2">生成备课资源类型统计<span class="sp"></span>' + more('types') + '</div><div class="don">' + donut(typeParts, '总计', 150) + '<div class="rows">' + typeParts.map(function (p) { return '<div><i style="width:8px;height:8px;border-radius:50%;background:' + p.c + ';display:inline-block"></i>' + p.n + '<span class="n">' + p.v + '　' + (tot ? (p.v * 100 / tot).toFixed(1) : '0.0') + '%</span></div>'; }).join('') + '</div></div></div>' +
+      '</div></div>';
+
+    // 3 教师统计
+    var bands = [['优秀（≥85分）', C[0], function (v) { return v >= 85; }], ['良好（70~84分）', C[1], function (v) { return v >= 70 && v < 85; }], ['中等（60~69分）', C[2], function (v) { return v >= 60 && v < 70; }], ['待提升（<60分）', C[3], function (v) { return v < 60; }]];
+    var ovs = T.map(overallOf), avgAll = ovs.length ? Math.round(ovs.reduce(function (a, b) { return a + b; }, 0) / ovs.length * 10) / 10 : 0;
+    var dimAvg = DIMS.map(function (d, i) { return { n: d, v: T.length ? Math.round(T.reduce(function (a, n) { return a + prof(n).s[i]; }, 0) / T.length * 10) / 10 : 0 }; });
+    var topP = T.map(function (n) { return { n: n, v: overallOf(n) }; }).sort(function (a, b) { return b.v - a.v; }).slice(0, 5);
+    var hrs = {}; T.forEach(function (n) { hrs[n] = 0; }); held(r).forEach(function (c) { var n = teacherOf(c); if (n in hrs) hrs[n] += hoursOf(c); });
+    var topH = Object.keys(hrs).map(function (n) { return { n: n, v: Math.round(hrs[n] * 10) / 10 }; }).sort(function (a, b) { return b.v - a.v; }).slice(0, 5), mxH = Math.max(1, topH.length ? topH[0].v : 1);
+    var top5 = function (list, mx, unit) { return '<div class="top5">' + (list.map(function (x, i) { return '<div><span class="rk' + (i > 2 ? ' g' : '') + '">' + (i + 1) + '</span><span class="nm">' + esc(x.n) + '</span><span class="bar"><span style="width:' + (x.v * 100 / mx) + '%"></span></span><span class="v">' + x.v + unit + '</span></div>'; }).join('') || '<div class="empty3">暂无数据</div>') + '</div>'; };
+    var struct = function (title, cats, val) {
+      var cnt = cats.map(function (c, i) { return { n: c, c: [C[0], C[1], C[2], C[4], '#cbd5e1'][i], v: T.filter(function (n) { return val(n) === c; }).length }; }), tt = T.length || 1;
+      return '<div class="panel2" style="background:var(--card)"><div class="ph2">' + title + '</div><div class="stk">' + cnt.map(function (x) { return x.v ? '<span style="width:' + (x.v * 100 / tt) + '%;background:' + x.c + '" title="' + esc(x.n + ' ' + x.v + ' 人') + '"></span>' : ''; }).join('') + '</div><div class="stk-l">' + cnt.map(function (x) { return '<span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + x.c + ';margin-right:4px"></i>' + x.n + ' <b>' + x.v + ' 人</b></span>'; }).join('') + '</div></div>';
+    };
+    var ageBand = function (n) { var a = prof(n).age; return a < 25 ? '25岁以下' : a <= 35 ? '25-35岁' : a <= 45 ? '36-45岁' : a <= 55 ? '46-55岁' : '55岁以上'; };
+    h += '<div class="db-sec"><div class="db-st"><span class="no">3</span>教师统计</div><div class="grid4">' +
+      '<div class="panel2"><div class="ph2">教师画像综合评分分布<span class="sp"></span>' + more('portrait') + '</div><div style="display:flex;justify-content:center">' + donut(bands.map(function (b) { return { n: b[0], c: b[1], v: ovs.filter(b[2]).length }; }), '教师总数', 120) + '</div><div class="band">' + bands.map(function (b) { return '<div><i style="width:8px;height:8px;border-radius:50%;background:' + b[1] + ';display:inline-block"></i>' + b[0] + '<span class="n">' + ovs.filter(b[2]).length + '人</span></div>'; }).join('') + '</div><div class="avg">综合平均分<b>' + avgAll + '</b></div></div>' +
+      '<div class="panel2"><div class="ph2">教师画像五维评分均值<span class="sp"></span>' + more('portrait') + '</div>' + radar(dimAvg) + '<div style="font-size:11.5px;color:var(--muted);text-align:center">全校平均分（满分 100 分）</div></div>' +
+      '<div class="panel2"><div class="ph2">教师画像综合评分 Top5<span class="sp"></span>' + more('portrait', '查看更多') + '</div>' + top5(topP, 100, '') + '</div>' +
+      '<div class="panel2"><div class="ph2">教师授课时长 Top5<span class="sp"></span>' + more('hours', '查看更多') + '</div><div style="font-size:11.5px;color:var(--muted);margin-bottom:4px">本' + UNIT[F.p] + '（小时）</div>' + top5(topH, mxH, 'h') + '</div></div>' +
+      '<div class="panel2" style="margin-top:12px"><div class="ph2">师资结构<span class="sp"></span>' + more('staff') + '</div><div class="grid2" style="grid-template-columns:repeat(3,1fr)">' +
+        struct('教师职称结构', ['正高级', '副高级', '中级', '初级'], function (n) { return prof(n).title; }) +
+        struct('年龄结构', ['25岁以下', '25-35岁', '36-45岁', '46-55岁', '55岁以上'], ageBand) +
+        struct('学历结构', ['博士', '硕士', '本科', '其他'], function (n) { return prof(n).edu; }) + '</div></div></div>';
+
+    // 4 专业统计
+    var MS = majorStats(r);
+    var mxT = Math.max(1, Math.max.apply(null, MS.map(function (m) { return m.act; }).concat([0])));
+    h += '<div class="db-sec"><div class="db-st"><span class="no">4</span>专业统计</div><div class="grid2">' +
+      '<div class="panel2"><div class="ph2">各专业活跃教师排行<span class="sp"></span>' + more('major') + '</div><div class="hb">' + (MS.slice().sort(function (a, b) { return b.act - a.act; }).map(function (m) { return '<div><span class="nm" title="' + esc(m.path) + '">' + esc(m.name) + '</span><span class="bar"><span style="width:' + (m.act * 100 / mxT) + '%;background:#4f7cff"></span></span><span class="v">' + m.act + ' 人　' + (m.tch ? (m.act * 100 / m.tch).toFixed(1) : '0.0') + '%</span></div>'; }).join('') || '<div class="empty3">本周期没有课程计划</div>') + '</div><div style="font-size:11.5px;color:var(--muted);margin-top:4px">活跃教师数 / 活跃率（该专业授课教师中本' + UNIT[F.p] + '有教学动作的比例）</div></div>' +
+      '<div class="panel2"><div class="ph2">各专业课程反馈均分<span class="sp"></span>' + more('major') + '</div><div class="hb">' + (MS.map(function (m) { return '<div><span class="nm" title="' + esc(m.path) + '">' + esc(m.name) + '</span><span class="bar"><span style="width:' + ((m.fb || 0) * 20) + '%;background:#22c55e"></span></span><span class="v">' + (m.fb == null ? '—' : m.fb.toFixed(1) + ' 分') + '</span></div>'; }).join('') || '<div class="empty3">暂无数据</div>') + '</div></div>' +
+      '<div class="panel2"><div class="ph2">各专业情景任务评价结果分布<span class="sp"></span>' + more('major') + '</div>' + legend([{ n: '优秀', c: C[1] }, { n: '合格', c: C[0] }, { n: '需改进', c: C[2] }]) + '<div class="hb">' + (MS.map(function (m) {
+        var t = m.g['优秀'] + m.g['合格'] + m.g['需改进'];
+        return '<div><span class="nm" title="' + esc(m.path) + '">' + esc(m.name) + '</span><span class="bar">' + (t ? [['优秀', C[1]], ['合格', C[0]], ['需改进', C[2]]].map(function (x) { var p = m.g[x[0]] * 100 / t; return p ? '<span style="width:' + p + '%;background:' + x[1] + '">' + Math.round(p) + '%</span>' : ''; }).join('') : '') + '</span><span class="v">' + (t ? t + ' 人次' : '—') + '</span></div>';
+      }).join('') || '<div class="empty3">暂无数据</div>') + '</div></div>' +
+      '<div class="panel2"><div class="ph2">各专业教学规模对比<span class="sp"></span>' + more('major') + '</div>' + legend([{ n: '班级数', c: C[0] }, { n: '课程计划数', c: C[1] }, { n: '课次数', c: C[2] }]) + (MS.length ? groupBars(MS.map(function (m) { return { l: m.name, v: [m.cls, m.plans, m.lessons] }; }), ['班级数', '课程计划数', '课次数']) : '<div class="empty3">暂无数据</div>') + '</div>' +
+      '</div></div>';
+
+    // 5 课程统计
+    var now = new Date(), hrsTot = Math.round(held(r).reduce(function (a, c) { return a + hoursOf(c); }, 0) * 10) / 10, hrsPrev = Math.round(held(pr).reduce(function (a, c) { return a + hoursOf(c); }, 0) * 10) / 10;
+    var stOf = function (c) { var a = new Date(c.start.replace(' ', 'T')), b = new Date(c.end.replace(' ', 'T')); return b < now ? '已结束' : a > now ? '待授课' : '授课中'; };
+    var stParts = [['已结束课程', '已结束', C[0]], ['待授课课程', '待授课', C[1]], ['授课中课程', '授课中', C[2]]].map(function (x) { return { n: x[0], c: x[2], v: ls.filter(function (c) { return stOf(c) === x[1]; }).length }; });
+    var srcParts = [{ n: '教务排课', c: C[0], v: ls.filter(function (c) { return c.source === '排课'; }).length }, { n: '教师自建', c: C[1], v: ls.filter(function (c) { return c.source !== '排课'; }).length }];
+    var rows = function (parts) { var t = parts.reduce(function (a, p) { return a + p.v; }, 0); return '<div class="rows">' + parts.map(function (p) { return '<div><i style="width:8px;height:8px;border-radius:50%;background:' + p.c + ';display:inline-block"></i>' + p.n + '<span class="n">' + p.v + ' (' + (t ? (p.v * 100 / t).toFixed(1) : '0.0') + '%)</span></div>'; }).join('') + '</div>'; };
+    h += '<div class="db-sec"><div class="db-st"><span class="no">5</span>课程统计<span class="sp"></span>' + more('lessons') + '</div><div class="grid2" style="grid-template-columns:1fr 2fr 2fr">' +
+      '<div class="hours"><div class="k">授课总时长（已上课次）</div><div class="v">' + hrsTot + '<small>小时</small></div>' + delta(hrsTot, hrsPrev, ' 小时') + '</div>' +
+      '<div class="panel2"><div class="don">' + donut(stParts, '排课总数', 120) + rows(stParts) + '</div></div>' +
+      '<div class="panel2"><div class="don">' + donut(srcParts, '排课总数', 120) + rows(srcParts) + '</div><div style="font-size:11.5px;color:var(--muted)">教务排课：管理端排课自动生成的课次；教师自建：老师另建的额外课次和补训课次</div></div>' +
+      '</div></div>';
+    document.getElementById('body').innerHTML = h;
+  }
+  // 按专业汇总（取课程计划所在班级的专业）
+  function majorStats(r) {
+    var by = {};
+    scopedPlans().forEach(function (p) {
+      var mid = majorOfPlan(p); if (!mid) return;
+      var m = by[mid] || (by[mid] = { id: mid, name: (E.majors.filter(function (x) { return x.id === mid; })[0] || {}).name || mid, path: TK.majorPath(E, mid), tchSet: {}, cls: {}, plans: 0, lessons: 0, fbs: [], g: { '优秀': 0, '合格': 0, '需改进': 0 } });
+      m.tchSet[p.teacher] = 1; m.cls[p.classId] = 1; m.plans++;
+      S.courses.filter(function (c) { return c.planId === p.id; }).forEach(function (c) {
+        if (inR(c.start, r)) m.lessons++;
+        (c.feedbacks || []).forEach(function (f) { if (inR(f.at, r)) m.fbs.push(f); });
+        (c.submissions || []).forEach(function (s) { if (s.teacher && inR(s.teacher.at, r) && m.g[s.teacher.grade] != null) m.g[s.teacher.grade]++; });
+      });
+    });
+    var A = activity(r);
+    return Object.keys(by).map(function (k) { var m = by[k], t = Object.keys(m.tchSet); m.tch = t.length; m.act = t.filter(function (n) { return A[n] && A[n].active; }).length; m.cls = Object.keys(m.cls).length; m.fb = fbAvg(m.fbs); return m; });
+  }
+
+  /* ── 查看详情 ── */
+  function table(heads, rows) { return '<table class="tbl2"><thead><tr>' + heads.map(function (x) { return '<th>' + x + '</th>'; }).join('') + '</tr></thead><tbody>' + (rows.join('') || '<tr><td colspan="' + heads.length + '"><div class="empty3">暂无数据</div></td></tr>') + '</tbody></table>'; }
+  function td(list) { return '<tr>' + list.map(function (x) { return '<td>' + x + '</td>'; }).join('') + '</tr>'; }
+  function detail(key) {
+    var r = cur(), T = scopedTeachers(), A = activity(r), title = '', body = '', sub = cycleLabel(r) + (F.scope ? ' · ' + TK.majorPath(E, F.scope) : ' · 全校');
+    if (key === 'activity') { title = '教师数据详情'; body = table(['教师', '备课生成', '发布学习内容', '评价学生任务', '新建课次', '状态'], T.map(function (n) { var a = A[n]; return td([esc(n), a.gen, a.pub, a.eval, a.lesson, a.active ? '<span class="tag g">活跃</span>' : '<span class="tag w">未活跃</span>']); })); }
+    else if (key === 'trend') { title = '教学过程数据明细'; body = table(['时间', '备课资源生成数', '学习资源发布数', '任务提交数', '任务评价完成数', '课程反馈均分'], buckets(r).map(function (b) { var v = fbAvg(feedbacks(b)); return td([b.l, resFiles(b).length, pubFiles(b), subs(b).length, evals(b).length, v == null ? '—' : v.toFixed(1)]); })); }
+    else if (key === 'risk') { title = '教学风险预警详情'; body = '<div class="db-sub">未活跃教师（本' + UNIT[F.p] + '没有备课、发布、评价、新建课次）</div>' + table(['教师', '负责课程计划'], T.filter(function (n) { return !A[n].active; }).map(function (n) { return td([esc(n), esc(S.plans.filter(function (p) { return p.teacher === n; }).map(function (p) { return p.course + ' · ' + cls(p.classId).name; }).join('；') || '—')]); })) +
+      '<div class="db-sub" style="margin-top:14px">低分课程（课程反馈均分低于 ' + LOW + ' 分）</div>' + table(['课次', '课程 · 班级', '授课教师', '反馈均分', '反馈人数'], lowLessons(r).map(function (c) { var f = feedbacks(r, [c]); var p = plan(c.planId) || {}; return td([esc(c.name), esc((p.course || '') + ' · ' + cls(p.classId).name), esc(p.teacher || ''), fbAvg(f).toFixed(1), f.length]); })); }
+    else if (key === 'types') { title = '生成备课资源明细'; body = table(['资源包', '教师', '文件', '类型', '生成时间'], resFiles(r).map(function (x) { return td([esc(x.r.name), esc(x.r.owner || '李老师'), esc(x.f.name), x.f.type, esc(x.r.createdAt)]); })); }
+    else if (key === 'portrait') { title = '教师画像评分'; body = table(['教师'].concat(DIMS).concat(['综合分']), T.map(function (n) { return td([esc(n)].concat(prof(n).s).concat(['<b>' + overallOf(n) + '</b>'])); })) + '<div style="font-size:11.5px;color:var(--muted);margin-top:8px">来自教师档案的画像五维评分，综合分为五维平均</div>'; }
+    else if (key === 'hours') { title = '教师授课时长'; var hs = {}; T.forEach(function (n) { hs[n] = { h: 0, n: 0 }; }); held(r).forEach(function (c) { var n = teacherOf(c); if (hs[n]) { hs[n].h += hoursOf(c); hs[n].n++; } }); body = table(['教师', '课次数', '授课时长（小时）'], Object.keys(hs).sort(function (a, b) { return hs[b].h - hs[a].h; }).map(function (n) { return td([esc(n), hs[n].n, Math.round(hs[n].h * 10) / 10]); })); }
+    else if (key === 'staff') { title = '师资结构'; body = table(['教师', '职称', '年龄', '学历'], T.map(function (n) { var p = prof(n); return td([esc(n), p.title, p.age, p.edu]); })); }
+    else if (key === 'major') { title = '专业统计详情'; body = table(['专业', '授课教师', '活跃教师', '班级数', '课程计划数', '课次数', '反馈均分', '评价（优秀/合格/需改进）'], majorStats(r).map(function (m) { return td([esc(m.path), m.tch, m.act, m.cls, m.plans, m.lessons, m.fb == null ? '—' : m.fb.toFixed(1), m.g['优秀'] + ' / ' + m.g['合格'] + ' / ' + m.g['需改进']]); })); }
+    else if (key === 'lessons') {
+      title = '课程统计详情'; var now = new Date();
+      body = table(['课次', '专业', '班级', '授课教师', '开始时间', '结束时间', '时长', '状态', '来源'], lessons(r).sort(function (a, b) { return a.start < b.start ? -1 : 1; }).map(function (c) {
+        var p = plan(c.planId) || {}, k = cls(p.classId), a = new Date(c.start.replace(' ', 'T')), b = new Date(c.end.replace(' ', 'T'));
+        return td([esc(c.name), esc(TK.majorPath(E, k.majorId)), esc(k.name || ''), esc(p.teacher || ''), c.start, c.end.slice(11), (Math.round(hoursOf(c) * 10) / 10) + 'h', b < now ? '已结束' : a > now ? '待授课' : '授课中', c.source === '排课' ? '教务排课' : '教师自建']);
+      }));
+    }
+    var d = TK.drawer({ title: title, sub: sub, width: 860 }); d.body.innerHTML = '<div style="overflow-x:auto">' + body + '</div>';
+  }
+
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-p]'))) { F.p = t.dataset.p; F.off = 0; render(); return; }
+    if ((t = e.target.closest('[data-off]'))) { var o = +t.dataset.off; F.off = o ? F.off + o : 0; render(); return; }
+    if ((t = e.target.closest('[data-trend]'))) { F.trend = +t.dataset.trend; render(); return; }
+    if ((t = e.target.closest('[data-more]'))) { detail(t.dataset.more); return; }
+  });
+  document.addEventListener('change', function (e) { if (e.target.hasAttribute('data-scope')) { F.scope = e.target.value; render(); } });
+  render();
+})();
+</script>
+</body>
+</html>

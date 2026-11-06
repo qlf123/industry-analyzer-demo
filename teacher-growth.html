@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>教师成长中心</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+.crumb{font-size:12px;color:var(--muted);margin-bottom:6px}
+.crumb a{color:var(--brand-ink);text-decoration:none}
+.who{display:flex;align-items:center;gap:10px}
+.who .av{width:36px;height:36px;border-radius:50%;background:var(--brand-soft);color:var(--brand-ink);display:grid;place-items:center;font-weight:700}
+.who b{font-size:13.5px;display:block}
+.who span{font-size:11.5px;color:var(--muted)}
+.who span em{font-style:normal;color:var(--brand-ink);font-weight:600}
+.cyc{font-size:12px;color:var(--ink-2);padding:7px 12px;border:1px solid var(--rule);border-radius:9px;background:var(--card)}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:14px}
+@media(max-width:1000px){.g2{grid-template-columns:1fr}}
+.gv{display:grid;grid-template-columns:240px minmax(0,1fr);gap:18px}
+@media(max-width:800px){.gv{grid-template-columns:1fr}}
+.big{background:linear-gradient(135deg,var(--brand-soft),var(--card-2));border-radius:12px;padding:18px}
+.big .k{font-size:12.5px;color:var(--ink-2)}
+.big .v{font-size:44px;font-weight:700;color:var(--brand);font-family:var(--mono);line-height:1.15;margin:6px 0}
+.big .v small{font-size:14px;color:var(--muted);font-family:var(--sans)}
+.big .d{font-size:12px;color:var(--brand-ink)}
+.src-row{margin-bottom:12px}
+.src-row .t{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:5px}
+.src-row .t .dot{width:8px;height:8px;border-radius:50%}
+.src-row .t .sp{flex:1}
+.src-row .t b{font-family:var(--mono)}
+.src-row .t small{color:var(--muted);font-family:var(--mono);width:36px;text-align:right}
+.chart svg{width:100%;height:auto}
+.leg{display:flex;gap:14px;justify-content:center;font-size:11.5px;color:var(--ink-2);margin-top:4px;flex-wrap:wrap}
+.leg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.mini2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.mini2>div{border:1px solid var(--rule);border-radius:10px;padding:10px 12px}
+.mini2 .k{font-size:11.5px;color:var(--muted)}
+.mini2 .v{font-size:22px;font-weight:700;font-family:var(--mono)}
+.mini2 .v small{font-size:12px;font-family:var(--sans);color:var(--muted)}
+.donut{display:flex;gap:18px;align-items:center}
+.donut svg{width:150px;height:150px;flex:0 0 150px}
+.dl{flex:1;font-size:12.5px}
+.dl div{display:flex;align-items:center;gap:8px;padding:4px 0}
+.dl i{width:8px;height:8px;border-radius:50%}
+.dl span{flex:1}
+.gtype{font-size:11px;padding:2px 8px;border-radius:5px;white-space:nowrap}
+.dimrow{display:grid;grid-template-columns:90px 1fr 70px 70px;gap:10px;align-items:center;font-size:12.5px;margin:8px 0}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel"><div class="body" id="body"></div></div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+  var esc = TK.esc, S = TK.load();
+  var period = 'term', RF = { from: '', to: '', type: '' }, page = 1;
+  var TYPES = ['备课', '发布学习内容', '评价学生任务', '学生课程反馈'];
+  var COL = { '备课': '#3b82f6', '发布学习内容': '#10b981', '评价学生任务': '#f59e0b', '学生课程反馈': '#8b5cf6' };
+  var GT = { '备课': '备课成长', '发布学习内容': '发布成长', '评价学生任务': '评价成长', '学生课程反馈': '反馈成长' };
+  var RES_T = ['课件', '教案', '图片', '视频', '情景互动游戏'], RES_C = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
+  var DIMS = ['讲授内容', '教学方式', '互动体验', '学习收获'];
+  function teacherName() { try { return UI.currentIdentity(DEMO.getState()).account.name; } catch (e) { return '教师'; } }
+  function r2(n) { return Math.round(n * 100) / 100; }
+  function sum(list) { return r2(list.reduce(function (s, g) { return s + g.stars; }, 0)); }
+  function periodSeg() {
+    return '<span class="seg">' + [['week', '本周'], ['month', '本月'], ['term', '本学期'], ['year', '本学年']].map(function (p) { return '<button data-period="' + p[0] + '" aria-pressed="' + (period === p[0]) + '">' + p[1] + '</button>'; }).join('') + '</span>';
+  }
+  function head(title, back) {
+    var total = sum(S.growth);
+    return (back ? '<div class="crumb"><a href="#">返回成长中心</a> / ' + title + '</div>' : '<div class="crumb">教师成长中心</div>') +
+      '<div class="tk-h"><h2>' + title + '</h2><span class="sp"></span>' + periodSeg() + '</div>' +
+      '<div class="tk-h"><div class="who"><span class="av">' + esc(teacherName().slice(0, 1)) + '</span><div><b>' + esc(teacherName()) + '</b><span>累计成长值 <em>' + total + '</em> 星</span></div></div><span class="sp"></span><span class="cyc">当前周期　' + esc(TK.periodRange(period).label) + '</span></div>';
+  }
+  function inP(list) { var r = TK.periodRange(period); return list.filter(function (g) { return TK.inRange(g.at, r); }); }
+  function fbAll() { var a = []; S.courses.forEach(function (c) { c.feedbacks.forEach(function (f) { a.push({ c: c, f: f }); }); }); return a; }
+
+  /* ═══ 首页 ═══ */
+  function viewHome() {
+    var gs = inP(S.growth), tot = sum(gs);
+    var r = TK.periodRange(period), len = r.b - r.a, prev = { a: new Date(r.a - len), b: r.a };
+    var prevTot = sum(S.growth.filter(function (g) { return TK.inRange(g.at, prev); }));
+    var by = {}; TYPES.forEach(function (t) { by[t] = sum(gs.filter(function (g) { return g.type === t; })); });
+    var h = head('教师成长中心');
+    // 成长值
+    h += '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">成长值<span class="sp"></span><a class="lk" href="#records">查看成长记录 ›</a></div><div class="gv">' +
+      '<div class="big"><div class="k">' + ({ week: '本周', month: '本月', term: '本学期', year: '本学年' }[period]) + '成长星</div><div class="v">' + tot + '<small> 星</small></div><div class="d">' + (tot >= prevTot ? '↗ 较上期 +' : '↘ 较上期 ') + r2(tot - prevTot) + ' 星</div></div><div>' +
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">成长来源贡献</div>' + TYPES.map(function (t) {
+        var p = tot ? Math.round(by[t] / tot * 100) : 0;
+        return '<div class="src-row"><div class="t"><span class="dot" style="background:' + COL[t] + '"></span>' + t + '<span class="sp"></span><b style="color:' + COL[t] + '">' + by[t] + ' 星</b><small>' + p + '%</small></div><div class="prog"><i style="width:' + p + '%;background:' + COL[t] + '"></i></div></div>';
+      }).join('') + '</div></div></div>';
+    // 成长趋势
+    h += '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">成长趋势</div><div class="chart">' + trend() + '</div><div class="leg">' + TYPES.map(function (t) { return '<span><i style="background:' + COL[t] + '"></i>' + t + '</span>'; }).join('') + '</div></div>';
+    // 备课资源统计 + 课程反馈
+    var resG = gs.filter(function (g) { return g.type === '备课'; });
+    var byRes = RES_T.map(function (t) { return sum(resG.filter(function (g) { return g.target.indexOf(t) >= 0 || g.desc.indexOf(t) >= 0; }).map(function (g) { var n = (g.desc.match(/课件|教案|图片|视频|情景互动游戏/g) || []).length || 1; return { stars: g.stars / n }; })); });
+    var nFiles = S.resources.filter(function (x) { return TK.inRange(x.createdAt, r); }).reduce(function (s, x) { return s + x.files.length; }, 0);
+    var fb = fbAll().filter(function (x) { return TK.inRange(x.f.at, r); }), avg = function (k) { return fb.length ? fb.reduce(function (s, x) { return s + x.f.scores[k]; }, 0) / fb.length : 0; };
+    var all = fb.length ? DIMS.reduce(function (s, k) { return s + avg(k); }, 0) / DIMS.length : 0;
+    var weak = fb.length ? DIMS.filter(function (k) { return avg(k) < 3.5; }) : [];
+    h += '<div class="g2"><div class="card pad"><div class="blk-t">备课资源统计</div><div class="mini2"><div><div class="k">生成资源</div><div class="v" style="color:var(--brand)">' + nFiles + '<small> 个</small></div></div><div><div class="k">备课成长值</div><div class="v" style="color:#8b5cf6">' + by['备课'] + '<small> 星</small></div></div></div>' +
+      '<div class="donut">' + donut(byRes) + '<div class="dl">' + RES_T.map(function (t, i) { return '<div><i style="background:' + RES_C[i] + '"></i><span>' + t + '</span><b class="mono">' + r2(byRes[i]) + ' 星</b></div>'; }).join('') + '</div></div></div>' +
+      '<div class="card pad"><div class="blk-t">课程反馈与成长计划<span class="sp"></span><a class="lk" href="#feedback">查看详情 ›</a></div><div class="mini2"><div><div class="k">课程平均评分</div><div class="v">' + all.toFixed(2) + '</div></div><div><div class="k">薄弱维度</div><div class="v" style="font-size:14px;padding-top:6px">' + (weak.length ? '需优化：' + weak.join('、') : fb.length ? '暂无' : '暂无反馈') + '</div></div></div>' +
+      '<div class="ai-box">' + planText(weak, fb.length) + '</div></div></div>';
+    // 最近成长记录
+    var recent = S.growth.slice().sort(function (a, b) { return a.at < b.at ? 1 : -1; }).slice(0, 5);
+    h += '<div class="card pad"><div class="blk-t">最近成长记录<span class="sp"></span><a class="lk" href="#records">查看更多 ›</a></div>' + recent.map(recRow).join('') + '</div>';
+    return h;
+  }
+  function planText(weak, n) {
+    if (!n) return '暂无学生反馈，发布学习内容时开启「学生课程反馈」后，这里会根据反馈生成成长计划。';
+    if (!weak.length) return '<b>成长计划</b>　各维度评分均在 3.5 分以上，继续保持；可尝试在课堂中增加情景任务，提升学生参与。';
+    var tip = { '讲授内容': '梳理知识点之间的联系，每节课明确 2–3 个重点', '教学方式': '增加案例教学与小组讨论，减少单向讲授', '互动体验': '在课中设置提问、投票或情景互动游戏环节', '学习收获': '课后布置与岗位任务对应的练习，并及时反馈' };
+    return '<b>成长计划</b>　' + weak.map(function (k) { return k + '：' + tip[k]; }).join('；') + '。';
+  }
+  function recRow(g) {
+    return '<div class="rec"><span class="gtype" style="background:' + COL[g.type] + '22;color:' + COL[g.type] + '">' + GT[g.type] + '</span><div class="rt"><b>' + esc(g.desc) + '</b><span>' + esc(g.target) + '</span></div><span class="ra">' + esc(g.at) + '</span><span class="rs">+' + r2(g.stars) + ' 星</span></div>';
+  }
+  function trend() {
+    // 按月汇总（学期 9 月–次年 1 月；本学年 9 月–次年 8 月；本月 / 本周按天）
+    var r = TK.periodRange(period), pts = [], cur = new Date(r.a), byDay = period === 'week' || period === 'month';
+    while (cur < r.b) { pts.push(new Date(cur)); if (byDay) cur.setDate(cur.getDate() + 1); else cur.setMonth(cur.getMonth() + 1); }
+    var key = function (d) { return byDay ? TK.fmt(d, false) : TK.fmt(d, false).slice(0, 7); };
+    var series = TYPES.map(function (t) { return pts.map(function (p) { return sum(S.growth.filter(function (g) { return g.type === t && String(g.at).slice(0, byDay ? 10 : 7) === key(p); })); }); });
+    var max = Math.max(5, Math.ceil(Math.max.apply(null, series.map(function (s) { return Math.max.apply(null, s); }))));
+    var W = 900, H = 220, L = 34, B = 26, n = pts.length, x = function (i) { return L + (n > 1 ? i * (W - L - 12) / (n - 1) : (W - L) / 2); }, y = function (v) { return H - B - v / max * (H - B - 12); };
+    var g = '';
+    for (var k = 0; k <= 4; k++) { var v = max * k / 4; g += '<line x1="' + L + '" x2="' + (W - 8) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--rule)" stroke-dasharray="3 3"/><text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + r2(v) + '</text>'; }
+    var step = Math.ceil(n / 12);
+    pts.forEach(function (p, i) { if (i % step === 0) g += '<text x="' + x(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="var(--muted)">' + (byDay ? (p.getMonth() + 1) + '/' + p.getDate() : (p.getMonth() + 1) + '月') + '</text>'; });
+    series.forEach(function (s, si) {
+      g += '<polyline fill="none" stroke="' + COL[TYPES[si]] + '" stroke-width="2" points="' + s.map(function (v, i) { return x(i) + ',' + y(v); }).join(' ') + '"/>';
+      s.forEach(function (v, i) { if (v) g += '<circle cx="' + x(i) + '" cy="' + y(v) + '" r="3" fill="' + COL[TYPES[si]] + '"><title>' + TYPES[si] + ' ' + v + ' 星</title></circle>'; });
+    });
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="成长趋势">' + g + '</svg>';
+  }
+  function donut(vals) {
+    var tot = vals.reduce(function (a, b) { return a + b; }, 0), R = 60, C = 2 * Math.PI * R, off = 0, g = '';
+    if (!tot) return '<svg viewBox="0 0 150 150"><circle cx="75" cy="75" r="' + R + '" fill="none" stroke="var(--rule-2)" stroke-width="26"/></svg>';
+    vals.forEach(function (v, i) { if (!v) return; var l = v / tot * C; g += '<circle cx="75" cy="75" r="' + R + '" fill="none" stroke="' + RES_C[i] + '" stroke-width="26" stroke-dasharray="' + l + ' ' + (C - l) + '" stroke-dashoffset="' + (-off) + '" transform="rotate(-90 75 75)"/>'; off += l; });
+    return '<svg viewBox="0 0 150 150" role="img" aria-label="备课成长值构成">' + g + '</svg>';
+  }
+
+  /* ═══ 成长值明细记录 ═══ */
+  function viewRecords() {
+    var list = S.growth.filter(function (g) { return (!RF.type || g.type === RF.type) && (!RF.from || g.at.slice(0, 10) >= RF.from) && (!RF.to || g.at.slice(0, 10) <= RF.to); })
+      .sort(function (a, b) { return a.at < b.at ? 1 : -1; });
+    var per = 10, pages = Math.max(1, Math.ceil(list.length / per)); page = Math.min(page, pages);
+    var h = '<div class="crumb"><a href="#">返回成长中心</a> / 成长值明细记录</div>' +
+      '<div class="card filters"><label>时间范围<input type="date" class="inp" data-rf="from" value="' + RF.from + '"> — <input type="date" class="inp" data-rf="to" value="' + RF.to + '"></label>' +
+      '<label>成长类型<select class="sel" data-rf="type"><option value="">全部</option>' + TYPES.map(function (t) { return '<option' + (RF.type === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label></div>';
+    h += '<div class="card pad"><div class="blk-t">成长记录明细</div><table class="tbl2"><thead><tr><th>时间</th><th>成长类型</th><th>关联对象</th><th>说明</th><th>获得星数</th><th>操作</th></tr></thead><tbody>' +
+      (list.slice((page - 1) * per, page * per).map(function (g) {
+        return '<tr><td class="mono" style="font-size:11.5px;white-space:nowrap">' + esc(g.at) + '</td><td><span class="gtype" style="background:' + COL[g.type] + '22;color:' + COL[g.type] + '">' + g.type + '</span></td><td>' + esc(g.target) + '</td><td>' + esc(g.desc) + '</td><td class="mono" style="color:var(--good)">' + r2(g.stars) + ' 星</td>' +
+          '<td>' + (g.ref ? '<a class="lk" href="' + UI.link('teacher-tasks.html') + '&open=' + g.ref.kind + ':' + g.ref.id + '">查看</a>' : '<span style="color:var(--muted)">—</span>') + '</td></tr>';
+      }).join('') || '<tr><td colspan="6" class="empty2">没有符合条件的记录</td></tr>') + '</tbody></table>' +
+      '<div class="pager">共 ' + list.length + ' 条 · 合计 <b style="color:var(--good)">' + sum(list) + ' 星</b>　' +
+      (pages > 1 ? Array.apply(null, Array(pages)).map(function (_, i) { return '<button class="btn-s" data-page="' + (i + 1) + '"' + (page === i + 1 ? ' style="border-color:var(--brand);color:var(--brand-ink)"' : '') + '>' + (i + 1) + '</button>'; }).join('') : '') + '</div></div>';
+    return h;
+  }
+
+  /* ═══ 课程反馈与成长计划 ═══ */
+  function viewFeedback() {
+    var r = TK.periodRange(period), fb = fbAll().filter(function (x) { return TK.inRange(x.f.at, r); });
+    var avg = function (arr, k) { return arr.length ? arr.reduce(function (s, x) { return s + x.f.scores[k]; }, 0) / arr.length : 0; };
+    var all = fb.length ? DIMS.reduce(function (s, k) { return s + avg(fb, k); }, 0) / DIMS.length : 0;
+    var weak = fb.length ? DIMS.filter(function (k) { return avg(fb, k) < 3.5; }) : [];
+    var h = head('课程反馈与成长计划', true);
+    h += '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">课程单项评分明细</div><div class="gv"><div class="big" style="text-align:center"><div class="k">综合平均分</div><div class="v">' + all.toFixed(2) + '<small> 分</small></div><div class="d" style="color:var(--muted)">' + fb.length + ' 条反馈</div></div><div>' +
+      DIMS.map(function (k) { var v = avg(fb, k), w = weak.indexOf(k) >= 0; return '<div class="dimrow"><span>' + k + '</span><div class="prog"><i style="width:' + (v / 5 * 100) + '%;background:' + (w ? 'var(--warn)' : 'var(--brand)') + '"></i></div><span class="mono">' + v.toFixed(2) + '/5</span><span class="tag ' + (w ? 'w' : 'g') + '">' + (w ? '需优化' : fb.length ? '保持' : '—') + '</span></div>'; }).join('') + '</div></div></div>';
+    h += '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">成长计划</div><div class="ai-box">' + planText(weak, fb.length) + '</div></div>';
+    var byC = {}; fb.forEach(function (x) { (byC[x.c.id] = byC[x.c.id] || { c: x.c, l: [] }).l.push(x); });
+    h += '<div class="card pad"><div class="blk-t">课程评分记录</div><table class="tbl2"><thead><tr><th>课程</th>' + DIMS.map(function (k) { return '<th>' + k + '</th>'; }).join('') + '<th>课程平均</th><th>状态</th></tr></thead><tbody>' +
+      (Object.keys(byC).map(function (id) {
+        var x = byC[id], a = DIMS.reduce(function (s, k) { return s + avg(x.l, k); }, 0) / DIMS.length;
+        return '<tr><td>' + esc(x.c.name) + '<div style="font-size:11px;color:var(--muted)">' + x.l.length + ' 条反馈</div></td>' + DIMS.map(function (k) { return '<td class="mono">' + avg(x.l, k).toFixed(1) + '</td>'; }).join('') + '<td class="mono"><b>' + a.toFixed(2) + '</b></td><td><span class="tag ' + (a >= 3.5 ? 'g' : 'w') + '">' + (a >= 3.5 ? '良好' : '需关注') + '</span></td></tr>';
+      }).join('') || '<tr><td colspan="7" class="empty2">暂无课程评分记录</td></tr>') + '</tbody></table></div>';
+    return h;
+  }
+
+  function render() {
+    var v = location.hash.slice(1);
+    document.getElementById('body').innerHTML = v === 'records' ? viewRecords() : v === 'feedback' ? viewFeedback() : viewHome();
+    window.scrollTo(0, 0);
+  }
+  var body = document.getElementById('body');
+  body.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-period]'))) { period = t.getAttribute('data-period'); render(); }
+    if ((t = e.target.closest('[data-page]'))) { page = +t.getAttribute('data-page'); render(); }
+  });
+  body.addEventListener('change', function (e) { var k = e.target.getAttribute('data-rf'); if (k) { RF[k] = e.target.value; page = 1; render(); } });
+  window.addEventListener('hashchange', render);
+  UI.boot({ portal: 'teacher', active: 'growth' });
+  render();
+})();
+</script>
+</body>
+</html>

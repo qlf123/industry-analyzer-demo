@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>角色管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+/* 角色管理：左侧角色列表 + 右侧详情（基础信息 / 菜单权限） */
+.rl{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.rl{grid-template-columns:1fr}}
+.rl-list{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 150px);position:sticky;top:20px}
+.rl-tb{display:flex;gap:8px;padding:12px;border-bottom:1px solid var(--rule)}
+.rl-tb input{flex:1;min-width:0}
+.rl-items{overflow-y:auto}
+.ri{display:block;width:100%;text-align:left;padding:12px 14px;border:0;border-top:1px solid var(--rule-2);background:none;cursor:pointer;font:inherit}
+.ri:first-child{border-top:0}
+.ri:hover{background:var(--rule-2)}
+.ri.on{background:var(--brand-soft);box-shadow:inset 3px 0 0 var(--brand)}
+.ri .h{display:flex;align-items:center;gap:8px}
+.ri .n{font-size:13px;font-weight:600;color:var(--ink);flex:1}
+.ri .d{font-size:11.5px;color:var(--ink-2);margin-top:3px}
+.ri .m{font-size:11px;color:var(--muted);margin-top:4px}
+.rd{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden;min-height:420px}
+.rd-top{display:flex;align-items:center;gap:10px;padding:16px 18px;flex-wrap:wrap}
+.rd-top b{font-size:16px}
+.rd-top .sp{flex:1}
+.badge{font-size:11px;padding:1px 9px;border-radius:20px;background:var(--brand-soft);color:var(--brand-ink);border:1px solid var(--brand)}
+.rtabs{display:flex;gap:22px;padding:0 18px;border-bottom:1px solid var(--rule)}
+.rtabs button{border:0;background:none;font:inherit;font-size:13px;color:var(--ink-2);padding:8px 0;cursor:pointer;border-bottom:2px solid transparent}
+.rtabs button.on{color:var(--brand-ink);border-color:var(--brand);font-weight:500}
+.rpane{padding:18px}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px}
+.fg2 .full{grid-column:1/-1}
+.fg2 label{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
+.fg2 .ro{background:var(--card-2);border:1px solid var(--rule);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--ink-2);min-height:36px}
+.mt{border:1px solid var(--rule-2);border-radius:10px;overflow:hidden}
+.mt .g{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--card-2);font-size:13px;font-weight:600}
+.mt .i{display:flex;align-items:center;gap:8px;padding:8px 12px 8px 36px;font-size:12.5px;border-top:1px solid var(--rule-2)}
+.mt .i .why{margin-left:auto;font-size:11.5px;color:var(--muted)}
+.ck{width:15px;height:15px;border-radius:4px;display:inline-grid;place-items:center;font-size:10px;flex:none;border:1px solid var(--rule)}
+.ck.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.sec-t{font-size:13px;font-weight:600;margin:18px 0 8px}
+.ops2{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px}
+.ops2 .op{display:inline-flex;align-items:center;gap:6px;color:var(--ink-2)}
+.pmod{padding:8px 0;border-bottom:1px solid var(--rule-2)}
+.pmod:last-child{border:0}
+.pmod-h{font-size:12.5px;font-weight:600;margin-bottom:6px}
+.cfg label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer}
+.cfg input{accent-color:var(--brand)}
+.cfg .mt .i label{flex:1}
+.empty3{font-size:12.5px;color:var(--muted);padding:40px 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">角色管理</h1><div class="pt-d">维护角色和它能看到的菜单、能做的操作；给账号分配角色在「账号管理」</div></div></div></div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="js/mock-data.js"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/assess-data.js"></script>
+<script src="js/teacher-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'admin', active: 'role' });
+  var esc = TK.esc, ctx = DEMO.getState(), identity = UI.currentIdentity(ctx);
+  var F = { q: '', sel: null, tab: 'basic' };
+  var PORTAL = { admin: '管理后台', teacher: '教师端', student: '学生端' };
+  function role(id) { return ctx.roles.filter(function (r) { return r.id === id; })[0]; }
+  function save(action, obj, before, after) { DEMO.addAudit(ctx, identity.account.id, action, obj, before, after, '成功'); DEMO.saveState(ctx); }
+  function sys(r) { return r.type === '内置'; }
+  function permName(code) { var p = ctx.permissions.filter(function (x) { return x.code === code; })[0]; return p ? p.name : code; }
+  function userCount(r) { var s = {}; ctx.assignments.forEach(function (a) { if (a.roleId === r.id) s[a.accountId] = 1; }); return Object.keys(s).length; }
+
+  // 该角色在所属端能看到的菜单：不需要权限的菜单该端都能看到；需要权限的，角色有其中任一权限就能看到
+  function menuRows(r, granted) {
+    var m = UI.effectiveMenu(r.portal);
+    return m.groups.map(function (g) {
+      return { g: g, items: g.items.map(function (it) {
+        var need = it.perms || [];
+        return { it: it, need: need, on: !need.length || need.some(function (c) { return granted.indexOf(c) >= 0; }) };
+      }) };
+    });
+  }
+  function menuTree(r) {
+    var rows = menuRows(r, r.permissionIds || []);
+    return '<div class="mt">' + rows.map(function (x) {
+      var any = x.items.some(function (i) { return i.on; });
+      return (x.g.label ? '<div class="g"><span class="ck' + (any ? ' on' : '') + '">' + (any ? '✓' : '') + '</span>' + esc(x.g.name) + '</div>' : '') +
+        x.items.map(function (i) { return '<div class="i"' + (x.g.label ? '' : ' style="padding-left:12px"') + '><span class="ck' + (i.on ? ' on' : '') + '">' + (i.on ? '✓' : '') + '</span>' + esc(i.it.label) + '<span class="why">' + (i.need.length ? '需要：' + esc(i.need.map(permName).join(' / ')) : '该端都可见') + '</span></div>'; }).join('');
+    }).join('') + '</div>';
+  }
+  function opTree(r) {
+    var by = {}; ctx.permissions.forEach(function (p) { (by[p.module] = by[p.module] || []).push(p); });
+    var g = r.permissionIds || [];
+    return Object.keys(by).map(function (mod) {
+      return '<div class="pmod"><div class="pmod-h">' + esc(mod) + '</div><div class="ops2">' + by[mod].map(function (p) { var on = g.indexOf(p.code) >= 0; return '<span class="op"><span class="ck' + (on ? ' on' : '') + '">' + (on ? '✓' : '') + '</span>' + esc(p.name) + '</span>'; }).join('') + '</div></div>';
+    }).join('');
+  }
+
+  function render() {
+    if (!UI.hasPerm(ctx, identity, 'org:role:define')) { document.getElementById('body').innerHTML = '<div class="card"><div class="empty3">当前身份没有「角色定义」权限</div></div>'; return; }
+    var list = ctx.roles.filter(function (r) { return !F.q || r.name.indexOf(F.q) >= 0; });
+    if (!F.sel || !role(F.sel)) F.sel = (list[0] || ctx.roles[0] || {}).id;
+    var r = role(F.sel);
+    var h = '<div class="rl"><section class="rl-list"><div class="rl-tb"><input class="inp" data-q placeholder="搜索角色" value="' + esc(F.q) + '"><button class="btn" style="height:32px" data-add>+ 新增</button></div><div class="rl-items">' +
+      (list.map(function (x) {
+        return '<button class="ri' + (x.id === F.sel ? ' on' : '') + '" data-sel="' + esc(x.id) + '"><div class="h"><span class="n">' + esc(x.name) + '</span><span class="pill ' + (x.status === '启用' ? 'good' : 'crit') + '">' + esc(x.status) + '</span></div><div class="d">' + esc(x.description || '—') + '</div><div class="m">创建人：' + esc(x.createdBy || '—') + '　' + esc(x.createdAt || '') + '</div></button>';
+      }).join('') || '<div class="empty3">没有匹配的角色</div>') + '</div></section><section class="rd">';
+    if (r) {
+      var lock = sys(r);
+      h += '<div class="rd-top"><b>' + esc(r.name) + '</b><span class="badge">' + PORTAL[r.portal] + '</span><span class="sp"></span>' +
+        '<button class="btn-s" data-edit' + (lock ? ' disabled title="内置角色不能修改"' : '') + '>编辑</button><button class="btn-s" data-cfg' + (lock ? ' disabled title="内置角色拥有全部权限"' : '') + '>配置角色菜单</button><button class="btn-s" data-del style="color:var(--crit)"' + (lock ? ' disabled title="内置角色不能删除"' : '') + '>删除</button></div>' +
+        '<div class="rtabs"><button data-tab="basic" class="' + (F.tab === 'basic' ? 'on' : '') + '">基础信息</button><button data-tab="perm" class="' + (F.tab === 'perm' ? 'on' : '') + '">菜单权限</button></div><div class="rpane">';
+      if (F.tab === 'basic') h += '<div class="fg2"><label>角色名称<div class="ro">' + esc(r.name) + '</div></label><label>角色编码<div class="ro" style="font-family:var(--mono)">' + esc(r.code || r.id) + '</div></label>' +
+        '<label>所属端<div class="ro">' + PORTAL[r.portal] + '</div></label><label>状态<span style="display:flex;align-items:center;gap:8px;min-height:36px"><button type="button" class="sw" data-sw aria-pressed="' + (r.status === '启用') + '"' + (lock ? ' disabled' : '') + '></button><span style="font-size:12.5px;color:var(--ink-2)">' + (r.status === '启用' ? '开启' : '关闭') + '</span></span></label>' +
+        '<label class="full">角色说明<div class="ro">' + esc(r.description || '—') + '</div></label>' +
+        '<label>角色类型<div class="ro">' + esc(r.type) + '</div></label><label>已分配账号<div class="ro">' + userCount(r) + ' 个</div></label></div>';
+      else h += '<div class="sec-t" style="margin-top:0">可见菜单</div>' + menuTree(r) + '<div class="sec-t">操作权限</div>' + opTree(r);
+      h += '</div>';
+    } else h += '<div class="empty3">请选择角色</div>';
+    document.getElementById('body').innerHTML = h + '</section></div>';
+  }
+
+  function form(r) {
+    var m = TK.modal({ title: r ? '编辑角色' : '新增角色', width: 480, body: '<div class="fgrid">' +
+      '<div class="ff full"><span class="lh"><span class="req">角色名称</span></span><input data-k="name" value="' + esc(r ? r.name : '') + '" placeholder="请输入角色名称" maxlength="20"></div>' +
+      '<div class="ff full"><span class="lh"><span class="req">角色编码</span></span><input data-k="code" value="' + esc(r ? (r.code || r.id) : '') + '" placeholder="字母、数字或下划线"' + (r ? ' disabled' : '') + '>' + (r ? '<span style="font-size:11.5px;color:var(--muted)">创建后不能修改</span>' : '') + '</div>' +
+      '<div class="ff full"><span class="lh"><span class="req">所属端</span></span><select data-k="portal"' + (r ? ' disabled' : '') + '>' + Object.keys(PORTAL).map(function (k) { return '<option value="' + k + '"' + (r && r.portal === k ? ' selected' : '') + '>' + PORTAL[k] + '</option>'; }).join('') + '</select>' + (r ? '<span style="font-size:11.5px;color:var(--muted)">创建后不能修改</span>' : '') + '</div>' +
+      '<div class="ff full"><span class="lh"><span>角色说明</span></span><textarea data-k="desc" maxlength="200" placeholder="请输入角色说明">' + esc(r ? r.description || '' : '') + '</textarea></div></div>',
+      foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">保存</button>' });
+    var v = function (k) { return m.body.querySelector('[data-k="' + k + '"]').value.trim(); };
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () {
+      var name = v('name'), code = v('code');
+      if (!name) return TK.toast('请输入角色名称');
+      if (ctx.roles.some(function (x) { return x !== r && x.name === name; })) return TK.toast('角色名称已存在');
+      if (!r) {
+        if (!/^[A-Za-z0-9_-]+$/.test(code)) return TK.toast('角色编码只能包含字母、数字、下划线和短横线');
+        if (ctx.roles.some(function (x) { return (x.code || x.id) === code; })) return TK.toast('角色编码已存在');
+        var p = v('portal');
+        var nr = { id: 'R-' + code.toUpperCase(), code: code, key: p === 'admin' ? 'custom' : p, portal: p, name: name, type: '自定义', status: '启用', aiQuota: 0, description: v('desc'), createdBy: identity.account.name, createdAt: TK.fmt(new Date()), permissionIds: [] };
+        ctx.roles.push(nr); F.sel = nr.id; save('新增角色', name, null, { code: code, portal: p });
+        TK.toast('已新增角色，下一步配置角色菜单');
+      } else {
+        var b = { name: r.name, description: r.description }; r.name = name; r.description = v('desc');
+        save('编辑角色', name, b, { name: name, description: r.description }); TK.toast('已保存');
+      }
+      m.close(); render();
+    };
+  }
+
+  // 配置角色菜单：勾菜单 = 授予进入它所需的权限；取消 = 收回该菜单的全部权限。操作权限可单独勾选
+  function config(r) {
+    var g = (r.permissionIds || []).slice();
+    var m = TK.modal({ title: '配置角色菜单 · ' + r.name, width: 640, body: '<div class="cfg" data-cfgbody></div>', foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">保存</button>' });
+    function draw() {
+      var rows = menuRows(r, g), by = {};
+      ctx.permissions.forEach(function (p) { (by[p.module] = by[p.module] || []).push(p); });
+      m.body.querySelector('[data-cfgbody]').innerHTML = '<div class="sec-t" style="margin-top:0">菜单（' + PORTAL[r.portal] + '）</div><div class="mt">' + rows.map(function (x) {
+        return (x.g.label ? '<div class="g">' + esc(x.g.name) + '</div>' : '') + x.items.map(function (i) {
+          var fixed = !i.need.length;
+          return '<div class="i"' + (x.g.label ? '' : ' style="padding-left:12px"') + '><label><input type="checkbox" data-menu="' + esc(i.it.key) + '"' + (i.on ? ' checked' : '') + (fixed ? ' disabled' : '') + '>' + esc(i.it.label) + '</label><span class="why">' + (fixed ? '该端都可见' : '需要：' + esc(i.need.map(permName).join(' / '))) + '</span></div>';
+        }).join('');
+      }).join('') + '</div><div class="sec-t">操作权限</div>' + Object.keys(by).map(function (mod) {
+        return '<div class="pmod"><div class="pmod-h">' + esc(mod) + '</div><div class="ops2">' + by[mod].map(function (p) { return '<label><input type="checkbox" data-perm="' + esc(p.code) + '"' + (g.indexOf(p.code) >= 0 ? ' checked' : '') + '>' + esc(p.name) + '</label>'; }).join('') + '</div></div>';
+      }).join('');
+    }
+    draw();
+    m.body.addEventListener('change', function (e) {
+      var t = e.target, k;
+      if ((k = t.getAttribute('data-perm'))) { if (t.checked) { if (g.indexOf(k) < 0) g.push(k); } else g = g.filter(function (c) { return c !== k; }); }
+      else if ((k = t.getAttribute('data-menu'))) {
+        var it = null; UI.effectiveMenu(r.portal).groups.forEach(function (gr) { gr.items.forEach(function (x) { if (x.key === k) it = x; }); });
+        if (it && it.perms) { if (t.checked) { if (g.indexOf(it.perms[0]) < 0) g.push(it.perms[0]); } else g = g.filter(function (c) { return it.perms.indexOf(c) < 0; }); }
+      }
+      draw();
+    });
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () {
+      var b = (r.permissionIds || []).join(','); r.permissionIds = g;
+      save('配置角色菜单', r.name, { permissionIds: b }, { permissionIds: g.join(',') }); TK.toast('已保存，已分配该角色的账号重新进入后生效'); m.close(); render();
+    };
+  }
+
+  document.addEventListener('click', function (e) {
+    var t, r = role(F.sel);
+    if ((t = e.target.closest('[data-sel]'))) { F.sel = t.dataset.sel; render(); return; }
+    if ((t = e.target.closest('[data-tab]'))) { F.tab = t.dataset.tab; render(); return; }
+    if (e.target.closest('[data-add]')) { form(null); return; }
+    if (!r || sys(r)) return;
+    if (e.target.closest('[data-edit]')) form(r);
+    else if (e.target.closest('[data-cfg]')) config(r);
+    else if (e.target.closest('[data-sw]')) {
+      var n = userCount(r);
+      var go = function () { var b = r.status; r.status = r.status === '启用' ? '停用' : '启用'; save(r.status === '启用' ? '启用角色' : '停用角色', r.name, { status: b }, { status: r.status }); render(); };
+      if (r.status === '启用' && n) TK.confirm('该角色已分配给 ' + n + ' 个账号，停用后这些账号失去该角色的菜单和权限，确定停用吗？', go); else go();
+    }
+    else if (e.target.closest('[data-del]')) {
+      var n2 = userCount(r);
+      if (n2) { TK.toast('该角色已分配给 ' + n2 + ' 个账号，请先在账号管理中移除后再删除'); return; }
+      TK.confirm('确定删除角色「' + r.name + '」吗？删除后不可恢复。', function () { ctx.roles = ctx.roles.filter(function (x) { return x !== r; }); save('删除角色', r.name, { id: r.id }, null); F.sel = null; render(); });
+    }
+  });
+  document.addEventListener('input', function (e) { if (e.target.hasAttribute('data-q')) { F.q = e.target.value.trim(); var pos = e.target.selectionStart; render(); var i = document.querySelector('[data-q]'); i.focus(); i.setSelectionRange(pos, pos); } });
+  UI.onChange(function () { ctx = DEMO.getState(); identity = UI.currentIdentity(ctx); render(); });
+  render();
+})();
+</script>
+</body>
+</html>

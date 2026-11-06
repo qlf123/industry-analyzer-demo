@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>能力图谱｜专业图谱平台</title>
+<link rel="stylesheet" href="ability-graph.css" />
+  <link rel="stylesheet" href="design-tokens.css" />
+  <style>.user-switcher{height:28px;border:1px solid #dfe6ef;border-radius:6px;font-size:12px;color:#31425e;background:#fff;padding:0 4px;flex:1;min-width:0;max-width:150px;}</style>
+  <link rel="stylesheet" href="gc-shell.css" />
+</head>
+<body>
+<aside class="lnav gc-lnav" id="lnav"></aside>
+<!-- 左侧菜单与其它页面共用 ../js/common.js -->
+<script src="../js/mock-data.js"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js"></script>
+<script src="gc-shell.js"></script>
+<script>GC.boot('gc-ag');</script>
+<div class="platform-page">
+<main class="app-shell" id="listView">
+  <section class="page-heading">
+    <div><h1>能力图谱</h1></div>
+    <button class="task-button" id="createGraphButton" type="button">＋ 新增能力图谱</button>
+  </section>
+  <section class="graph-filter-bar">
+    <label>范围<select id="agScopeFilter"><option value="all">全部范围</option><option value="行业">行业</option><option value="子行业">子行业</option><option value="岗位">岗位</option></select></label>
+    <label>状态<select id="agStatusFilter"><option value="all">全部状态</option><option value="building">构建中</option><option value="built">构建完成</option><option value="build_failed">构建失败</option><option value="syncing">同步中</option><option value="synced">同步完成</option><option value="sync_failed">同步失败</option></select></label>
+    <label>归属<select id="agOwnerFilter"><option value="all">全部可见</option><option value="mine">我创建的</option><option value="shared">与我共享</option></select></label>
+    <input type="text" id="agSearchInput" placeholder="搜索能力图谱名称、描述..." />
+    <button class="primary-button" id="agSearchBtn" type="button">搜索</button>
+  </section>
+  <section class="graph-list" id="graphList"></section>
+</main>
+
+<div class="task-modal" id="createGraphModal" aria-hidden="true">
+  <div class="task-dialog" role="dialog" aria-modal="true">
+    <div class="task-dialog-head">
+      <div><h2>新增能力图谱</h2><p>选择起建层级，AI 将从该层级开始构建能力图谱。</p></div>
+      <button class="task-close" id="closeCreateGraph" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="task-form">
+      <label>范围<select id="newGraphScope" onchange="onGraphScopeChange()"><option value="行业">行业</option><option value="子行业">子行业</option><option value="岗位">岗位</option></select></label>
+      <label>名称<input id="newGraphName" type="text" maxlength="40" placeholder="请输入行业名称" /></label>
+      <label>描述<textarea id="newGraphDesc" rows="4" placeholder="描述图谱边界、核心岗位群与排除范围"></textarea></label>
+    </div>
+    <div class="task-dialog-actions">
+      <button class="ghost-button" id="cancelCreateGraph" type="button">取消</button>
+      <button class="ghost-button" id="manualCreateGraph" type="button" style="border-color:#5149e9;color:#5149e9;">手动创建</button>
+      <button class="primary-button" id="submitCreateGraph" type="button">确定 · AI自动构建</button>
+    </div>
+  </div>
+</div>
+
+<div class="task-modal" id="editGraphModal" aria-hidden="true">
+  <div class="task-dialog" role="dialog" aria-modal="true">
+    <div class="task-dialog-head">
+      <div><h2>编辑能力图谱</h2></div>
+      <button class="task-close" id="closeEditGraph" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="task-form">
+      <label>范围<select id="editGraphScope" disabled><option value="行业">行业</option><option value="子行业">子行业</option><option value="岗位">岗位</option></select></label>
+      <label>行业名称<input id="editGraphName" type="text" placeholder="如：旅游业、电商行业" /></label>
+      <label>行业描述<textarea id="editGraphDesc" rows="4" placeholder="描述行业边界、核心岗位群与排除范围"></textarea></label>
+    </div>
+    <div class="task-dialog-actions">
+      <button class="ghost-button" id="cancelEditGraph" type="button">取消</button>
+      <button class="primary-button" id="submitEditGraph" type="button">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="task-modal" id="graphSettingsModal" aria-hidden="true">
+  <div class="task-dialog" role="dialog" aria-modal="true">
+    <div class="task-dialog-head">
+      <div><h2>图谱设置</h2></div>
+      <button class="task-close" id="closeGraphSettings" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="task-form" id="settingsForm"></div>
+    <div class="task-dialog-actions">
+      <button class="ghost-button" id="cancelGraphSettings" type="button">取消</button>
+      <button class="primary-button" id="submitGraphSettings" type="button">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+</div>
+<script src="data.js"></script>
+<script src="ability-graph.js"></script>
+</body>
+</html>

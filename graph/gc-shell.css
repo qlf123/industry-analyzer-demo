@@ -1,0 +1,42 @@
+/* 图谱中心 · 左侧菜单（与 ../css/common.css 的侧栏一致，颜色变量只作用在侧栏内，不影响图谱页面） */
+.gc-lnav{
+  --plane:#f5f3f9; --card:#ffffff; --ink:#191524; --ink-2:#5c5670; --muted:#8e88a1;
+  --rule:#e7e3f0; --rule-2:#f0edf7; --brand:#5b3fd6; --brand-soft:#ede9fb; --brand-ink:#3d29a0; --crit:#d03b3b;
+  --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  position:fixed;top:0;left:0;bottom:0;width:206px;z-index:40;
+  background:var(--card);border-right:1px solid var(--rule);color:var(--ink);
+  display:flex;flex-direction:column;overflow-y:auto;font-family:var(--sans);font-size:13px;line-height:1.5}
+.gc-lnav *{box-sizing:border-box}
+.gc-lnav button{font:inherit;background:none;border:0;margin:0;cursor:pointer}
+.gc-lnav .lbrand{display:flex;align-items:center;gap:9px;padding:18px 18px 16px;border-bottom:1px solid var(--rule-2)}
+.gc-lnav .ldot{width:22px;height:22px;border-radius:7px;flex:0 0 22px;background:linear-gradient(140deg,#7b5cf0,#4a2fc4 60%,#6b3fd0)}
+.gc-lnav .lname{font-size:12.5px;font-weight:700;line-height:1.3}
+.gc-lnav .lgroup{padding:14px 10px 4px}
+.gc-lnav .lgt{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;color:var(--muted);padding:0 10px 7px}
+.gc-lnav .lmenu{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:8px 10px;border-radius:8px;
+  color:var(--ink-2);font-size:13px;text-decoration:none;transition:background .12s,color .12s}
+.gc-lnav button.lmenu{cursor:default}
+.gc-lnav .lmenu:hover{background:var(--rule-2);color:var(--ink)}
+.gc-lnav .lmenu.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
+.gc-lnav .lmenu i{width:15px;height:15px;flex:0 0 15px;display:block;opacity:.75;font-style:normal;line-height:15px}
+.gc-lnav .lmenu.on i{opacity:1}
+.gc-lnav .lfoot{margin-top:auto;padding:14px 18px 16px;border-top:1px solid var(--rule-2);font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.7}
+.platform-page{margin-left:206px !important}
+@media (max-width:1000px){
+  .gc-lnav{position:static;width:auto;height:auto;border-right:none;border-bottom:1px solid var(--rule)}
+  .gc-lnav .lgroup{display:flex;flex-wrap:wrap;gap:2px;padding:8px}.gc-lnav .lgt{display:none}.gc-lnav .lmenu{width:auto}
+  .gc-lnav .lfoot{display:none}
+  .platform-page{margin-left:0 !important}
+}
+
+/* 教师端只查看：知识图谱页的映射任务；他人创建的能力图谱 / 知识体系详情页的维护入口 */
+.gc-ro #createTaskButton,.gc-ro .remap-btn,
+.gc-ro #saveGraphBtn,.gc-ro #confirmGraphBtn,.gc-ro #checkUpdateBtn,.gc-ro #addNodeBtn,.gc-ro #contextMenu,
+.gc-ro #trResourceBtn,.gc-ro #ctxMenu,
+/* 知识库：他人创建的知识库详情页（添加文件、文档操作、知识点审核与挂载、编辑分段、设置保存） */
+.gc-ro [onclick^="goAddFiles"],.gc-ro .kbd-more,.gc-ro .kbd-tab[data-tab="settings"],
+.gc-ro [data-act="oneclick"],.gc-ro [data-act="suggApprove"],.gc-ro [data-act="suggReject"],.gc-ro [data-act="suggEdit"],
+.gc-ro [data-act="mountApprove"],.gc-ro [data-act="mountRemove"],.gc-ro [data-act="unlink"],.gc-ro [data-act="pkToggle"],
+.gc-ro [data-act="nodePkToggle"],.gc-ro [data-act="segEdit"],.gc-ro [data-act="rename"],.gc-ro [data-act="sprename"],
+.gc-ro [data-act="delete"],.gc-ro [data-act="reparse"],.gc-ro [data-act="drSave"]{display:none !important}

@@ -27,7 +27,8 @@ test('mock 数据引用一致', function () {
   const accountIds = new Set(c.accounts.map(function (a) { return a.id; }));
 
   c.orgs.forEach(function (o) { if (o.parentId) assert.ok(orgIds.has(o.parentId), '组织父节点存在 ' + o.id); });
-  c.majors.forEach(function (m) { assert.ok(orgIds.has(m.orgId), '专业组织存在 ' + m.id); });
+  c.majors.forEach(function (m) { assert.ok(!('orgId' in m), '专业不挂组织 ' + m.id); });
+  c.students.forEach(function (s) { assert.ok(orgIds.has(s.orgId), '学生所属组织存在 ' + s.id); });
   c.klasses.forEach(function (k) {
     assert.ok(majorIds.has(k.majorId), '班级专业存在 ' + k.id);
     assert.ok(gradeIds.has(k.gradeId), '班级年级存在 ' + k.id);
@@ -171,7 +172,7 @@ test('D-09 辅导员（组织+年级）只看到本范围本年级学生', funct
   visible.forEach(function (s) {
     const klass = c.klasses.find(function (k) { return k.id === s.klassId; });
     assert.ok(klass.gradeId === 'G-2026', '年级均为 2026');
-    assert.ok(tourTree.has(c.majors.find(function (m) { return m.id === klass.majorId; }).orgId), '组织均在旅游学院下级');
+    assert.ok(tourTree.has(s.orgId), '学生所属组织均在旅游学院下级');
   });
   assert.ok(!visible.some(function (s) { return s.klassId === 'K-T25-1'; }), '2025 级不可见');
 });
@@ -212,14 +213,32 @@ test('D-11 学工身份证：授权前脱敏、授权后全量，均写审计', 
   assert.ok(rec2.id, '审计有 id');
 });
 
-/* ── D-12 刘院管：删除挂有专业的节点被拒并列出阻塞 ── */
-test('D-12 删除挂有专业的节点被拒绝并列出阻塞对象', function () {
+/* ── D-12 刘院管：删除组织节点时，专业不再是阻塞对象（专业不挂组织） ── */
+test('D-12 删除组织节点：专业不挂组织，不作为阻塞对象', function () {
   const c = ctx();
   const liu = id(c, 'ACC-LIU');
   assert.equal(Perm.orgCanEdit(c, liu, c.orgs.find(function (o) { return o.id === 'ORG-GUIDE-ROOM'; })), true, '导游教研室在其可操作范围');
   const r = Perm.checkDeleteOrg(c, liu, 'ORG-GUIDE-ROOM');
-  assert.equal(r.allowed, false, '删除被拒绝');
-  assert.ok(r.blockers.some(function (b) { return b.type === '专业' && b.name === '导游'; }), '阻塞对象含导游专业');
+  assert.ok(!r.blockers.some(function (b) { return b.type === '专业'; }), '阻塞对象不含专业');
+});
+
+/* ── 组织只管人员：学生按本人所属组织隔离，班级不按组织隔离，授班级不受组织限制 ── */
+test('学生数据按学生本人所属组织隔离', function () {
+  const c = ctx();
+  const zhao = id(c, 'ACC-ZHAO');   // 旅游学院 + 2026 级
+  const stu = firstStudent(c, 'K-H26-1');   // 酒店 2026 级学生，所属组织为酒店学院
+  assert.ok(!Perm.check(c, zhao, 'student:info:view', stu, 'student').allowed, '酒店学院学生不可见');
+  stu.orgId = 'ORG-TOURISM';   // 学生所属组织改为旅游学院，班级、专业不变
+  assert.ok(Perm.check(c, zhao, 'student:info:view', stu, 'student').allowed, '按学生本人组织判断后可见');
+});
+
+test('班级、专业不按组织隔离；院管授班级不受组织限制', function () {
+  const c = ctx();
+  const liu = id(c, 'ACC-LIU');   // 旅游学院管理员
+  const hotelKlass = c.klasses.find(function (k) { return k.id === 'K-H26-1'; });
+  assert.equal(Perm.checkWithOrg(c, liu, 'major:assess:view', c.majors.find(function (m) { return m.id === 'MAJOR-HOTEL'; }), 'major', 'ORG-TOURISM').orgFiltered, false, '「当前组织」不过滤专业');
+  const grant = { roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [hotelKlass.id], courseIds: [] }, extraPermIds: [] };
+  assert.equal(Perm.canDelegate(c, liu, 'ACC-HE', grant).ok, true, '可授酒店学院学生所在班级的教学范围');
 });
 
 /* ── D-13 超管：停用节点后不可选，已有授权显示已停用且保持有效 ── */
@@ -626,7 +645,7 @@ test('member.js 移除角色：删除分配、可移除到零角色', function (
 });
 
 /* ── 能力测评（专业建设）：权限点与范围 ── */
-test('能力测评权限点：超管 / 组织管理员 / 教务可见，按组织范围看专业', function () {
+test('能力测评权限点：超管 / 组织管理员 / 教务可见，专业不按组织隔离', function () {
   const c = ctx();
   const codes = c.permissions.map(function (p) { return p.code; });
   assert.ok(codes.includes('major:assess:view') && codes.includes('major:assess:run'), '两个权限点已登记');
@@ -641,6 +660,6 @@ test('能力测评权限点：超管 / 组织管理员 / 教务可见，按组�
   const hotel = c.majors.find(function (m) { return m.id === 'MAJOR-HOTEL'; });
   assert.ok(Perm.check(c, id(c, 'ACC-ZHOU'), 'major:assess:view', guide, 'major').allowed, '教务（全校）可看导游专业');
   assert.ok(Perm.check(c, id(c, 'ACC-LIU'), 'major:assess:view', guide, 'major').allowed, '旅游学院管理员可看导游专业');
-  assert.ok(!Perm.check(c, id(c, 'ACC-LIU'), 'major:assess:view', hotel, 'major').allowed, '旅游学院管理员不可看酒店学院专业');
+  assert.ok(Perm.check(c, id(c, 'ACC-LIU'), 'major:assess:view', hotel, 'major').allowed, '专业不挂组织：旅游学院管理员也可看酒店专业');
   assert.ok(!Perm.check(c, id(c, 'ACC-HE'), 'major:assess:view', null, null).allowed, '教师无能力测评权限');
 });
