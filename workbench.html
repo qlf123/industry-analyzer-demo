@@ -653,7 +653,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       run.ksCount = ksSize(run.ks);
     }
     run.types = state.selected.slice();
-    if (fromMap()) { var pc = prepCounts(prep), rt = htRoot(JSON.parse(JSON.stringify(prep))), op = {}; htWalk(rt, '0', function (n, id) { if (n.anc || n.cur) op[id] = true; }); run.map = { root: rt, open: op, total: pc.total, counts: pc.counts }; }
+    if (prep && !prep.scope && (prep.tree || []).length) { var pc = prepCounts(prep), rt = htRoot(JSON.parse(JSON.stringify(prep))), op = {}; htWalk(rt, '0', function (n, id) { if (n.anc || n.cur) op[id] = true; }); run.map = { root: rt, open: op, total: pc.total, counts: pc.counts, title: fromMap() ? '带入的图谱树' : '知识体系', fromMap: fromMap() }; }
     run.steps = buildSteps(topic);
     if (run.ks) callGenPpt();
     $('#wbHero').hidden = true; $('#wbInput').hidden = true;
@@ -710,7 +710,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     run.steps.forEach(function (s, i) {
       if (s.status === 'idle') return;
       h += '<div class="fs">' + AV + '<div class="bd"><div class="hd">AIGC 智课 <span class="nm">' + esc(s.name) + '</span>' + tagOf(s) + '</div>';
-      if (s.confirm === 'kp') h += kpCard(s);
+      if (s.confirm === 'kp') h += run.map ? kpTreeCard(s) : kpCard(s);
       else if (s.map && run.map) h += msgBox(s, s.msgs.slice(0, s.shown), i) + mapTreeCard(run.map);
       else if (s.confirm === 'outline') h += s.status === 'wait' ? outlineCard() : msgBox(s, ['大纲已确认，共 ' + run.outline[0].kids.length + ' 个一级章节'], i);
       else if (s.confirm === 'script') h += s.status === 'wait' ? scriptCard() : msgBox(s, ['视频脚本已确认'], i);
@@ -742,11 +742,14 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     ov.id = 'rhtFull';
     ov.style.cssText = 'position:fixed;inset:0;z-index:2000;background:#fff;display:flex;flex-direction:column';
     function paint() {
-      ov.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid #eeecfb"><b style="font-size:15px">带入的图谱树</b><span style="flex:1"></span>' +
+      ov.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid #eeecfb"><b style="font-size:15px">' + esc(run.map.title || '带入的图谱树') + '</b><span style="flex:1"></span>' +
         '<button type="button" class="tb" data-fclose>✕ 退出全屏</button></div>' +
-        '<div class="htree" style="flex:1;max-height:none;border:0;border-radius:0;padding:24px 28px">' + htHTML(run.map.root, '0', run.map.open, 'data-fht') + '</div>';
+        '<div class="htree" style="flex:1;max-height:none;border:0;border-radius:0;padding:24px 28px"><div style="min-height:100%;display:flex;align-items:center">' + htHTML(run.map.root, '0', run.map.open, 'data-fht') + '</div></div>';
     }
-    function focusCur() { var bx = ov.querySelector('.htree'), cb = bx.querySelector('.ht-box.cur'); if (!cb) return; var A = bx.getBoundingClientRect(), B = cb.getBoundingClientRect(); bx.scrollLeft += (B.left - A.left) - 60; bx.scrollTop += (B.top - A.top) - bx.clientHeight / 2 + B.height / 2; }
+    // 带入 / 匹配的节点在可视区外时才滚动：放到左侧三分之一处；能完整显示时从最左边（链路起点）开始看
+    function focusCur() { var bx = ov.querySelector('.htree'), cb = bx.querySelector('.ht-box.cur'); if (!cb) return; var A = bx.getBoundingClientRect(), B = cb.getBoundingClientRect();
+      if (bx.scrollWidth <= bx.clientWidth) bx.scrollLeft = 0; else if (B.right > A.right - 40 || B.left < A.left) bx.scrollLeft += (B.left - A.left) - bx.clientWidth / 3;
+      if (B.top < A.top || B.bottom > A.bottom) bx.scrollTop += (B.top - A.top) - bx.clientHeight / 2 + B.height / 2; }
     function close() { document.removeEventListener('keydown', onKey); ov.remove(); run.edit = 'x'; render(); run.edit = null; }
     function onKey(e) { if (e.key === 'Escape') close(); }
     ov.addEventListener('click', function (e) {
@@ -767,6 +770,11 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     return '<div class="fbox fmsg"><ul>' + msgs.map(function (m, k) {
       return '<li' + (live && k === msgs.length - 1 ? ' class="live"' : '') + '>' + esc(m) + (k === 0 && !live ? ' <button class="tog" data-tog="' + i + '" type="button" style="display:inline">⌃</button>' : '') + '</li>';
     }).join('') + '</ul></div>';
+  }
+  // 直接输入匹配到知识体系时的确认：显示匹配到的知识体系树（专业 › 课程分类 › 课程 › 任务 › 技能 › 下级），与能力地图带入的树同一种展示，可全屏
+  function kpTreeCard(s) {
+    return '<div class="fbox"><div class="fcard-h"><b>知识点确认</b></div>' + mapTreeCard(run.map) +
+      (s.status === 'wait' ? '<div style="margin-top:8px;font-size:12px;color:#8a90a0">确认后按此知识体系检索资料并生成；范围不对可以修改需求后重新发送。</div><div class="fcard-f"><button class="btn-p" data-act="confirm" type="button">确认知识体系，继续生成</button></div>' : '') + '</div>';
   }
   function kpCard(s) {
     var kp = run.kp, n = kp.length, W = 560, H = 280, cx = W / 2, cy = H / 2;
@@ -862,7 +870,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     var waiting = run.steps.some(function (s) { return s.status === 'wait'; });
     var nodes = [
       { name: '需求分析', s: st('need'), sub: st('need') === 'done' ? ['已完成 ' + (run.types || state.selected).length + ' 个'].concat((run.types || state.selected).map(function (t) { return '《' + run.topic + '》' + RES_NAME[t]; })) : [] },
-      { name: run.map ? '能力地图' : '知识点确认', s: st('kp'), sub: [] }
+      { name: run.map && run.map.fromMap ? '能力地图' : '知识点确认', s: st('kp'), sub: [] }
     ];
     (run.types || state.selected).forEach(function (t) {
       var ss = run.steps.filter(function (x) { return x.res === t; });
@@ -1260,7 +1268,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
         if (!idx[ids[i]]) { idx[ids[i]] = { id: ids[i], type: type, name: seg[i], children: [] }; level.push(idx[ids[i]]); }
         level = idx[ids[i]].children;
       });
-      level.push({ id: id, type: '技能', name: x.s.name, children: [] });
+      level.push({ id: id, type: '技能', name: x.s.name, children: (x.s.kps || []).map(function (k) { return { id: k.id, type: '知识点', name: k.name, children: [] }; }) });
       idx[x.task.id].full = level.length === x.task.skills.length;   // 任务下技能不全时，不按整个任务带入
     });
     return majors;
