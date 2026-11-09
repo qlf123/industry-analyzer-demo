@@ -3,118 +3,80 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>第一阶段工作汇报</title>
+<title>第一阶段汇报</title>
 <style>
-:root{--ink:#1f2328;--ink-2:#4a5058;--muted:#7a818a;--rule:#e3e6ea;--paper:#ffffff;--bg:#f6f7f9;--accent:#2f6fd6;--head:#f2f4f7;
+:root{--ink:#1f2328;--ink-2:#4a5058;--muted:#7a818a;--rule:#e3e6ea;--paper:#ffffff;--bg:#f6f7f9;--accent:#2f6fd6;--head:#f2f4f7;--warn:#b06f1f;
 --cds-text-primary:#1f2328;--cds-text-secondary:#5f6670;--cds-chart-axis:#9aa1a9;--cds-chart-grid:#e3e6ea;--cds-chart-categorical-1:#2f6fd6;--cds-chart-categorical-2:#e0663a;--cds-chart-reference-tint:#eef0f3}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e7e9ec;--ink-2:#c3c8ce;--muted:#8d949c;--rule:#2f343a;--paper:#1b1e22;--bg:#121417;--accent:#6ea3ff;--head:#23272c;
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e7e9ec;--ink-2:#c3c8ce;--muted:#8d949c;--rule:#2f343a;--paper:#1b1e22;--bg:#121417;--accent:#6ea3ff;--head:#23272c;--warn:#e0a24a;
 --cds-text-primary:#e7e9ec;--cds-text-secondary:#a5abb3;--cds-chart-axis:#6b7280;--cds-chart-grid:#2f343a;--cds-chart-categorical-1:#6ea3ff;--cds-chart-categorical-2:#f08a5d;--cds-chart-reference-tint:#262a30}}
-:root[data-theme="dark"]{--ink:#e7e9ec;--ink-2:#c3c8ce;--muted:#8d949c;--rule:#2f343a;--paper:#1b1e22;--bg:#121417;--accent:#6ea3ff;--head:#23272c;
+:root[data-theme="dark"]{--ink:#e7e9ec;--ink-2:#c3c8ce;--muted:#8d949c;--rule:#2f343a;--paper:#1b1e22;--bg:#121417;--accent:#6ea3ff;--head:#23272c;--warn:#e0a24a;
 --cds-text-primary:#e7e9ec;--cds-text-secondary:#a5abb3;--cds-chart-axis:#6b7280;--cds-chart-grid:#2f343a;--cds-chart-categorical-1:#6ea3ff;--cds-chart-categorical-2:#f08a5d;--cds-chart-reference-tint:#262a30}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.8 "Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
-.doc{max-width:960px;margin:0 auto;padding:40px 24px 80px;background:var(--paper);min-height:100vh}
-h1{font-size:28px;line-height:1.35;margin:0 0 6px}
-h2{font-size:21px;margin:44px 0 12px;padding-top:18px;border-top:1px solid var(--rule)}
-h3{font-size:17px;margin:28px 0 8px}
+.doc{max-width:860px;margin:0 auto;padding:40px 24px 80px;background:var(--paper);min-height:100vh}
+h1{font-size:26px;line-height:1.35;margin:0 0 6px}
+h2{font-size:19px;margin:36px 0 10px;padding-top:16px;border-top:1px solid var(--rule)}
 p{margin:10px 0;color:var(--ink-2)} p b,li b{color:var(--ink)}
-.meta{font-size:13px;color:var(--muted);margin-bottom:22px}
+.meta{font-size:13px;color:var(--muted);margin-bottom:18px}
 a{color:var(--accent)}
-.tw{overflow-x:auto;margin:12px 0}
-table{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.65}
-th,td{border:1px solid var(--rule);padding:8px 10px;text-align:left;vertical-align:top}
-th{background:var(--head);font-weight:600;white-space:nowrap}
-ul,ol{padding-left:22px;color:var(--ink-2)} li{margin:4px 0}
-.tldr{margin:20px 0;padding:14px 18px;border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:10px;background:var(--head)}
-.tldr p{margin:6px 0}
-.story{margin:18px 0;padding:16px 20px;border:1px solid var(--rule);border-radius:12px;background:var(--head)}
-.story ol{padding-left:20px;margin:8px 0 4px}
-.story li{margin:8px 0}
-.story .where{color:var(--accent);font-size:12.5px}
+ul,ol{padding-left:22px;color:var(--ink-2)} li{margin:6px 0}
+.lead{font-size:16.5px;color:var(--ink);margin:16px 0;padding:14px 18px;border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:10px;background:var(--head)}
+.status{margin:14px 0;padding:4px 0}
+.status li{margin:9px 0;list-style:none}
+.ok{color:var(--accent);font-weight:600}
+.half{color:var(--warn);font-weight:600}
+.wait{color:var(--muted);font-weight:600}
 .fig{margin:18px 0;padding:12px;border:1px solid var(--rule);border-radius:10px;background:var(--paper)}
 .fig svg{display:block;width:100%;height:auto;font-family:inherit}
 .fig figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:6px}
-@media (max-width:640px){.doc{padding:24px 16px 60px}h1{font-size:23px}}
-@media print{body{background:#fff}.doc{max-width:none;padding:0}h2{break-before:auto}.fig,table,.story{break-inside:avoid}}
+@media (max-width:640px){.doc{padding:24px 16px 60px}h1{font-size:22px}}
+@media print{body{background:#fff}.doc{max-width:none;padding:0}.fig{break-inside:avoid}}
 </style>
 </head>
 <body>
 <div class="doc">
-<h1>AIGC 智慧课堂平台 · 第一阶段工作汇报</h1>
-<p class="meta">产品团队 · 面向公司管理层 · 2026-11-05 · 建议留 15 分钟，其中 8 分钟现场演示</p>
+<h1>AIGC 智慧课堂平台 · 第一阶段汇报</h1>
+<p class="meta">产品团队 · 2026-11-08 · 本页 2 分钟读完 · 平台演示约 10 分钟，可随时安排</p>
 
-<div class="tldr">
-<p><b>汇报要点</b></p>
-<p>· <b>方案设计完成，原型能跑</b>：第一阶段「教学闭环」设计收尾，关键流程已做成可点击的演示，今天现场走一遍「一节课从备课到改进」的全过程。</p>
-<p>· <b>不开发新模块</b>：把平台已有功能串成一条线，在一个专业、一门课里先跑通真实教学，为后面复制到更多专业打地基。</p>
-<p>· <b>生意上站得住</b>：学校为「评估有材料」买单，为「老师真省事」续费——这条闭环把两件事都变成产品里看得见的东西。</p>
-<p>· <b>投入可控</b>：八个环节，一个现成、五个改造、三个新建，原型已验证关键流程，剩下是工程化。</p>
-<p>· <b>建成标准很硬</b>：试点课完整跑一个学期，学生从「发现薄弱 → 补课 → 重新评价 → 达标」全程留痕可查。</p>
-<p>· <b>请各位三件事</b>：认可方向和建成标准；启动会定 5 条产品规则（都已备好建议方案）；批准选试点校启动。</p>
-</div>
+<p class="lead"><b>直接回答：现在可以拿去谈客户，还不能正式入校。</b>方案设计完成，关键流程已在可点击的原型里验证通过；离入校只差最后一步——把定稿的方案做成产品（工程化），没有技术上的不确定。</p>
 
-<h2>一、我们在做什么：一句话和一张图</h2>
-<p><b>平台一句话</b>：把行业岗位要求变成课堂教学内容，用学生的学习记录说明「学生到底学会了什么」。职业教育学校每年要面对专业评估和申报，最缺的就是这类材料；老师日常最缺的是备课和批改的时间。平台同时解决这两个问题。</p>
-<p>整个建设分三步走，每一步以「上一步在真实学校里跑通」为准入条件，不堆功能数量：</p>
-<figure class="fig"><svg viewBox='0 0 760 190' role='img' aria-label='先跑通教学闭环，再标准化复制，最后接入赛证'><defs><marker id='ph-a' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0 0L10 5L0 10z' fill='var(--cds-chart-axis)'/></marker></defs><text x='24' y='30' font-size='15' font-weight='600' fill='var(--cds-text-primary)'>先在一个专业跑通，再复制，再规模化</text><g><rect x='24' y='52' width='212' height='96' rx='8' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)' stroke-width='2'/><text x='40' y='76' font-size='11.5' fill='var(--cds-text-secondary)'>第一阶段（本次汇报）</text><text x='40' y='102' font-size='15' font-weight='600' fill='var(--cds-text-primary)'>教学闭环</text><text x='40' y='128' font-size='11.5' fill='var(--cds-text-primary)'>一个专业、一门课</text><text x='40' y='146' font-size='11.5' fill='var(--cds-text-primary)'>真实课堂里完整跑通</text></g><g><rect x='276' y='52' width='212' height='96' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='292' y='76' font-size='11.5' fill='var(--cds-text-secondary)'>第二阶段</text><text x='292' y='102' font-size='15' font-weight='600' fill='var(--cds-text-primary)'>标准化与复制</text><text x='292' y='128' font-size='11.5' fill='var(--cds-text-primary)'>标准体系完整</text><text x='292' y='146' font-size='11.5' fill='var(--cds-text-primary)'>复制到更多专业</text></g><g><rect x='528' y='52' width='212' height='96' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='544' y='76' font-size='11.5' fill='var(--cds-text-secondary)'>第三阶段</text><text x='544' y='102' font-size='15' font-weight='600' fill='var(--cds-text-primary)'>证书大赛与规模化</text><text x='544' y='128' font-size='11.5' fill='var(--cds-text-primary)'>打通赛、证</text><text x='544' y='146' font-size='11.5' fill='var(--cds-text-primary)'>多院校部署</text></g><g fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.5'><line x1='240' y1='100' x2='272' y2='100' marker-end='url(#ph-a)'/><line x1='492' y1='100' x2='524' y2='100' marker-end='url(#ph-a)'/></g><text x='255' y='174' text-anchor='middle' font-size='11.5' fill='var(--cds-text-secondary)'>进入第二阶段：试点课完整跑一个学期</text><text x='507' y='174' text-anchor='middle' font-size='11.5' fill='var(--cds-text-secondary)'>进入第三阶段：一个专业完成标准对接</text></svg><figcaption>三步走 · 每步以真实教学跑通为准入</figcaption></figure>
-<p><b>第一阶段做的事</b>：平台已有备课、任务、评价等功能，各自能用，但没连起来——评价结果不知道落在哪个能力上，教得怎么样也回不到下一轮备课。第一阶段就是补上这些连接，让一个班、一门课完整地转起来：</p>
-<figure class="fig"><svg viewBox='0 0 760 318' role='img' aria-label='一次课怎么走完一圈，改进回到下一次备课'><defs><marker id='lp-a' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0 0L10 5L0 10z' fill='var(--cds-chart-axis)'/></marker><marker id='lp-b' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0 0L10 5L0 10z' fill='var(--cds-chart-categorical-1)'/></marker></defs><text x='24' y='30' font-size='15' font-weight='600' fill='var(--cds-text-primary)'>一次课怎么走完一圈，改进回到下一次备课</text><g><rect x='24' y='48' width='708' height='44' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1' stroke-dasharray='4 3'/><text x='378' y='75' text-anchor='middle' font-size='12' fill='var(--cds-text-primary)'>准备（一次性）：确认专业岗位图谱 · 教务排好课程，每节课自动出现在老师的工作台</text><path d='M69 92V112' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.4' marker-end='url(#lp-a)'/></g><g fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.4'><line x1='116' y1='150' x2='125' y2='150' marker-end='url(#lp-a)'/><line x1='219' y1='150' x2='228' y2='150' marker-end='url(#lp-a)'/><line x1='322' y1='150' x2='331' y2='150' marker-end='url(#lp-a)'/><line x1='425' y1='150' x2='434' y2='150' marker-end='url(#lp-a)'/><line x1='528' y1='150' x2='537' y2='150' marker-end='url(#lp-a)'/><line x1='631' y1='150' x2='640' y2='150' marker-end='url(#lp-a)'/></g><g><rect x='24' y='118' width='90' height='64' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='69' y='143' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>01 备课</text><text x='69' y='161' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>AI 生成课件</text><text x='69' y='176' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>老师编辑</text></g><g><rect x='127' y='118' width='90' height='64' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='172' y='143' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>02 布置</text><text x='172' y='161' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>下发任务</text><text x='172' y='176' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>AI 出评价标准</text></g><g><rect x='230' y='118' width='90' height='64' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='275' y='143' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>03 学习</text><text x='275' y='161' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>学生学资源</text><text x='275' y='176' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>提交作业</text></g><g><rect x='333' y='118' width='90' height='64' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='378' y='143' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>04 评价</text><text x='378' y='161' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>AI 先评</text><text x='378' y='176' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>老师确认</text></g><g><rect x='436' y='118' width='90' height='64' rx='8' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)' stroke-width='2'/><text x='481' y='143' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>05 记录</text><text x='481' y='161' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>谁 · 学会了什么</text><text x='481' y='176' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>逐条留痕</text></g><g><rect x='539' y='118' width='90' height='64' rx='8' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)' stroke-width='2'/><text x='584' y='143' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>06 学情</text><text x='584' y='161' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>哪项薄弱</text><text x='584' y='176' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>哪些学生要补</text></g><g><rect x='642' y='118' width='90' height='64' rx='8' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)' stroke-width='2'/><text x='687' y='143' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>07 改进</text><text x='687' y='161' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>一键发起补课</text><text x='687' y='176' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>达标自动更新</text></g><g><path d='M687 182V216H69V188' fill='none' stroke='var(--cds-chart-categorical-1)' stroke-width='1.4' stroke-dasharray='6 4' marker-end='url(#lp-b)'/><text x='378' y='210' text-anchor='middle' font-size='11.5' font-weight='600' fill='var(--cds-chart-categorical-1)'>补课与课程改进，回到下一次备课</text></g><g><rect x='24' y='238' width='708' height='48' rx='8' fill='var(--cds-chart-reference-tint)'/><text x='378' y='259' text-anchor='middle' font-size='12.5' font-weight='600' fill='var(--cds-text-primary)'>一条线贯穿：这节课教的是什么技能</text><text x='378' y='277' text-anchor='middle' font-size='11.5' fill='var(--cds-text-secondary)'>备课选的、任务考的、记录里存的，是同一个技能——评估材料直接从这条线里出</text></g><g><rect x='24' y='296' width='20' height='12' rx='4' fill='none' stroke='var(--cds-chart-axis)'/><text x='50' y='306' font-size='11.5' fill='var(--cds-text-secondary)'>01–04 平台已有，打通即可</text><rect x='250' y='296' width='20' height='12' rx='4' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)'/><text x='276' y='306' font-size='11.5' fill='var(--cds-text-secondary)'>05–07 第一阶段新建</text></g></svg><figcaption>教学闭环 · 7 个环节，改进回到备课形成循环</figcaption></figure>
-
-<h2>二、今天就能看到的：一次课走完一圈</h2>
-<p>下面这个过程，平台演示原型已可完整走通（含演示数据），现场按这个顺序演示：</p>
-<div class="story">
-<p><b>示例：导游专业《旅行社产品管理》的「一日游线路设计」课</b></p>
-<ol>
-<li><b>排课即备课</b>：教务在管理端排好这节课，它自动出现在王老师的工作台。<span class="where">演示：管理端「课程计划」→ 教师端「任务中心」</span></li>
-<li><b>AI 备课</b>：王老师选定本次课要教的技能，AI 按学校自己的资料库生成课件和教案，她修改后确认。<span class="where">演示：教师端「工作台」</span></li>
-<li><b>布置任务</b>：发布「设计一条本地一日游线路并报价」，AI 按技能自动生成三条评价标准（行程安排、成本构成、报价），王老师确认后下发。学生提交前就知道按什么评。<span class="where">演示：课次「发布学习内容」</span></li>
-<li><b>AI 先评、老师把关</b>：学生提交方案，AI 逐项给出等级和理由，王老师逐项确认——有位学生报价缺成本明细，退回重做。<span class="where">演示：课次「情景任务评价」</span></li>
-<li><b>学情直接给出答案</b>：确认通过的结果自动变成每个学生的技能记录。学情页显示这个班「成本核算」没达标的学生较多，点进去就是原始作业。<span class="where">演示：任务中心「学情」</span></li>
-<li><b>一键补课</b>：王老师对这项技能发起补课，系统自动圈出没达标的学生；补课再评价通过后，达标状态自动更新。专业负责人在管理端能看到对应岗位能力的支撑情况变好。<span class="where">演示：「发起补训」→ 管理端「能力测评」</span></li>
-</ol>
-</div>
-<p>这一圈走完，学校评估要的三样东西都自然留下了：<b>教了什么有依据</b>（对应岗位图谱）、<b>学生学会没有有凭证</b>（可查到原始作业和老师评价）、<b>发现问题怎么处理有痕迹</b>（补课闭环）。</p>
-
-<h2>三、学校为什么买单：买得有理由，续得有理由</h2>
-<p><b>决定买不买</b>：专业评估、验收、申报需要过程材料。「岗位 → 能力 → 课程 → 技能」层层有记录、每个学生的达成都能追溯到原始作业——这些平时要老师手工整理的东西，在平台里是教学过程的自然产物。</p>
-<p><b>决定续不续</b>：老师真的省事才会一直用。备课 AI 出初稿、评价标准和初评 AI 先做，老师只做修改和确认；哪个技能没教好、哪些学生要补，学情页直接给出，不用自己拉表格统计。</p>
-<div class="tw"><table><thead><tr><th>谁在用</th><th>得到什么</th></tr></thead><tbody><tr><td>校领导 / 教务处</td><td>教学运行真实情况一目了然；评估、验收、申报有现成材料</td></tr><tr><td>专业负责人</td><td>岗位要求和课程的对应关系随时可查；缺口和薄弱点有清单</td></tr><tr><td>任课老师</td><td>备课、批改减负；班级学情清楚；补课有针对性</td></tr><tr><td>学生</td><td>交作业前知道按什么评，评完知道具体差在哪，能看到自己的能力成长</td></tr></tbody></table></div>
-
-<h2>四、学校的图谱资产：越用越准，沉淀下来</h2>
-<p>平台的核心数据是两张图：<b>岗位图谱</b>（这个行业、这些岗位需要什么能力）和<b>课程知识体系</b>（我们这门课教什么技能），两者建立对应关系。第一阶段让这两张图「活」起来：</p>
-<figure class="fig"><svg viewBox='0 0 760 320' role='img' aria-label='教师自建的成果经确认回流公开图谱，公开图谱只进已确认的数据'><defs><marker id='gf-a' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0 0L10 5L0 10z' fill='var(--cds-chart-axis)'/></marker><marker id='gf-b' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0 0L10 5L0 10z' fill='var(--cds-chart-categorical-1)'/></marker></defs><text x='24' y='30' font-size='15' font-weight='600' fill='var(--cds-text-primary)'>老师上课长出来的内容，经确认回到学校的图谱</text><g><rect x='24' y='52' width='200' height='68' rx='8' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)' stroke-width='1.5'/><text x='124' y='76' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>01 确认图谱</text><text x='124' y='96' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>专业负责人确认</text><text x='124' y='111' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>岗位图谱 · 课程体系 · 对应关系</text></g><g><rect x='280' y='52' width='200' height='68' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='380' y='76' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>02 教学使用</text><text x='380' y='96' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>老师为自己的课补充内容</text><text x='380' y='111' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>备课 · 上课 · 评价</text></g><g><rect x='536' y='52' width='200' height='68' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='636' y='76' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>03 学习记录</text><text x='636' y='96' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>评价确认后产生</text><text x='636' y='111' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>谁 · 学会了什么技能</text></g><g><rect x='536' y='168' width='200' height='68' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='636' y='192' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>04 缺口暴露</text><text x='636' y='212' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>学情里的薄弱技能</text><text x='636' y='227' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>测评发现没人教的能力</text></g><g><rect x='280' y='168' width='200' height='68' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='380' y='192' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>05 审核回流</text><text x='380' y='212' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>专业负责人逐条确认</text><text x='380' y='227' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>AI 建议 + 老师补充</text></g><g><rect x='24' y='168' width='200' height='68' rx='8' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)' stroke-width='1.5'/><text x='124' y='192' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>06 图谱更新</text><text x='124' y='212' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>确认的内容全校复用</text><text x='124' y='227' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>能力地图 · 测评 · 备课</text></g><g fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.4'><line x1='226' y1='86' x2='272' y2='86' marker-end='url(#gf-a)'/><line x1='482' y1='86' x2='528' y2='86' marker-end='url(#gf-a)'/><line x1='636' y1='122' x2='636' y2='160' marker-end='url(#gf-a)'/><line x1='528' y1='202' x2='482' y2='202' marker-end='url(#gf-a)'/></g><g fill='none' stroke='var(--cds-chart-categorical-1)' stroke-width='1.6'><line x1='272' y1='202' x2='228' y2='202' marker-end='url(#gf-b)'/></g><text x='250' y='222' text-anchor='middle' font-size='11' font-weight='600' fill='var(--cds-chart-categorical-1)'>回流</text><g fill='none' stroke='var(--cds-chart-categorical-1)' stroke-width='1.4' stroke-dasharray='6 4'><line x1='124' y1='166' x2='124' y2='126' marker-end='url(#gf-b)'/></g><text x='132' y='150' font-size='11' font-weight='600' fill='var(--cds-chart-categorical-1)'>回到教学，越用越准</text><g><rect x='24' y='260' width='712' height='42' rx='8' fill='var(--cds-chart-reference-tint)'/><text x='380' y='278' text-anchor='middle' font-size='12.5' font-weight='600' fill='var(--cds-text-primary)'>图谱只进经过确认的内容：老师的补充和 AI 的建议都不自动生效</text><text x='380' y='295' text-anchor='middle' font-size='11' fill='var(--cds-text-secondary)'>对外讲得清、评估用得上——图谱越用越准，而不是越用越散</text></g><g><rect x='24' y='310' width='20' height='12' rx='4' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)'/><text x='50' y='320' font-size='11.5' fill='var(--cds-text-secondary)'>学校已确认的图谱</text><rect x='190' y='310' width='20' height='12' rx='4' fill='none' stroke='var(--cds-chart-axis)'/><text x='216' y='320' font-size='11.5' fill='var(--cds-text-secondary)'>教学过程与审核</text></g></svg><figcaption>图谱闭环 · 教学使用 → 记录 → 缺口 → 审核回流 → 全校复用</figcaption></figure>
-<p>对学校的价值一句话：<b>老师日常教学沉淀出学校自己的数字资产</b>——图谱、课程覆盖、资源、学生成长记录都属于学校，评估申报直接取用，也是竞品短期内难以复制的一层。</p>
-
-<h2>五、要投入多少：大部分是改造，新建集中五件事</h2>
-<p>平台已有功能占了大头，第一阶段的新建工作集中在下面五件事，原型已验证关键流程，剩余工作是工程化，不涉及方案层面的不确定性：</p>
-<figure class="fig"><svg viewBox='0 0 760 150' role='img' aria-label='大部分工作是改造已有功能，全新建设集中在记录学情补课'><text x='24' y='28' font-size='15' font-weight='600' fill='var(--cds-text-primary)'>八个环节：一个现成，五个改造，三个新建</text><g><rect x='24' y='56' width='79' height='40' rx='6' fill='var(--cds-chart-reference-tint)' stroke='var(--cds-chart-axis)' stroke-width='1'/><text x='63.5' y='73' text-anchor='middle' font-size='11.5' font-weight='600' fill='var(--cds-text-primary)'>学习</text><text x='63.5' y='89' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>现成</text></g><g><rect x='103' y='56' width='396' height='40' rx='6' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1'/><text x='301' y='73' text-anchor='middle' font-size='11.5' font-weight='600' fill='var(--cds-text-primary)'>备课 · 布置 · 评价 · 底座 · 准备</text><text x='301' y='89' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>在已有功能上改造打通</text></g><g><rect x='499' y='56' width='237' height='40' rx='6' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)' stroke-width='1.5'/><text x='617.5' y='73' text-anchor='middle' font-size='11.5' font-weight='600' fill='var(--cds-text-primary)'>记录 · 学情 · 补课</text><text x='617.5' y='89' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>全新建设</text></g><text x='63.5' y='118' text-anchor='middle' font-size='11' fill='var(--cds-text-secondary)'>1 个环节直接可用</text><text x='301' y='118' text-anchor='middle' font-size='11' fill='var(--cds-text-secondary)'>5 项在已有功能上改造</text><text x='617.5' y='118' text-anchor='middle' font-size='11' fill='var(--cds-text-secondary)'>3 个环节全新建设</text><text x='24' y='140' font-size='11' fill='var(--cds-text-secondary)'>注：每节课的管理、评价标准生成也是新功能点，分别落在准备、布置环节内</text></svg><figcaption>建设盘子 · 按八个环节归类</figcaption></figure>
-<ul><li><b>每节课的管理</b>：教务排课自动生成一节课，老师围绕它备课、布置、评价；</li><li><b>评价标准</b>：AI 按技能生成「优秀 / 合格 / 需改进」三档标准，老师确认；</li><li><b>学习记录</b>：老师确认通过的结果自动记成「谁 × 哪项技能」，可查原始作业；</li><li><b>学情</b>：班级、学生的技能达成情况，薄弱项和待办直接列出；</li><li><b>补课</b>：对薄弱技能一键发起补课，自动圈出未达标学生。</li></ul>
-
-<h2>六、怎么算做成，什么时候算做成</h2>
-<p><b>建成标志</b>：一个技能能走完「发现薄弱 → 补课 → 重新评价 → 达标更新」的完整循环，每条记录能查到学生的原始作业。试点课完整跑一个学期，即满足进入第二阶段的条件。</p>
-<p><b>为什么不承诺具体日期</b>：准入条件是「真实教学跑一个完整周期」，周期由学校校历决定，不是我们能单方面压缩的；我们能控制的部分——开发、联调、培训——已经排在试点开课前完成。以「跑通」为里程碑，比按功能数量推进更扎实。</p>
-<p><b>试点校的三条硬条件</b>（选校时按这个谈）：</p>
-<ul><li>专业负责人愿意参与确认本校的岗位图谱和课程体系——这是记录可信的前提；</li><li>选定一门试点课和一个班，老师按新流程完整用一个学期；</li><li>校方在管理端维护好班级、学生和课程表（这部分是学校教务的常规数据）。</li></ul>
-
-<h2>七、请各位拍板和支持的三件事</h2>
-<ol>
-<li><b>认可方向和建成标准</b>：按第六节的标准推进，跑通再进入第二阶段。</li>
-<li><b>启动会定 5 条产品规则</b>——都已备好建议方案，会上 10 分钟能定完：
-<ul>
-<li>评价打分：<b>建议三档</b>（优秀/合格/需改进），不用百分制——与岗位能力等级对齐，学生一眼看懂差在哪；</li>
-<li>教与评挂在<b>技能</b>还是更大的「能力」上：<b>建议挂技能</b>——粒度最细，老师教得动、系统算得清；</li>
-<li>学生「学会了」按最近一次还是多次累计：<b>建议按最近一次</b>——代表当前真实水平，补课达标后能翻身；</li>
-<li>AI 备课怎么找到要讲的内容：<b>建议按名称精确匹配起步</b>，识别不准再升级；</li>
-<li>图谱更新后已建好的课程要不要自动跟着变：<b>建议暂不自动变</b>——老师备好的课不动，改动走下一轮。</li>
+<h2>现在到哪一步</h2>
+<ul class="status">
+<li><b>谈客户、做演示</b>——<span class="ok">现在就可以</span>：原型能完整演示一节课从 AI 备课、布置、批改到补课的全过程，方案文档齐备，销售带着就能讲。</li>
+<li><b>入校试点</b>——<span class="half">还差工程化</span>：八个环节里 1 个现成、4 个改造、3 个新建（平台底座另有补齐），功能清单已定到功能点，产品规则定稿即可开工。</li>
+<li><b>规模化推广</b>——<span class="wait">等试点验证</span>：试点校完整跑一个学期、闭环达标后，再复制到更多学校。</li>
 </ul>
-<p>这 5 条只影响实现细节，方案主体不受影响。</p></li>
-<li><b>批准选试点校启动</b>：按三条硬条件选校，确定后即可进入开发。</li>
-</ol>
-<p><b>两个风险，提前打招呼</b>：</p>
-<ul><li>试点校投入不到位，记录就立不住——所以把「专业负责人参与」作为选校硬条件，宁可选校慢一点；</li><li>「AI 先评、老师确认」改变了老师的批改习惯，试点期需要培训和陪跑，这部分成本已计入交付。</li></ul>
-<p><b>本阶段明确不做</b>（控制范围）：证书、大赛内容，人才培养方案生成，多院校部署——都排在第二、三阶段，本阶段只留好接口。</p>
 
-<p style="margin-top:32px;color:var(--muted);font-size:13px">详细设计（团队内部版）：《<a href="AIGC智慧课堂平台-整体架构与分阶段建设方案.html">AIGC 智慧课堂平台整体架构与分阶段建设方案</a>》《<a href="AIGC智慧课堂平台-第一阶段教学闭环设计.html">AIGC 智慧课堂平台第一阶段教学闭环设计</a>》</p>
+<figure class="fig"><svg viewBox='0 0 760 250' role='img' aria-label='一节课怎么走完一圈，改进回到下一次备课'><defs><marker id='lp-a' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0 0L10 5L0 10z' fill='var(--cds-chart-axis)'/></marker><marker id='lp-b' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0 0L10 5L0 10z' fill='var(--cds-chart-categorical-1)'/></marker></defs><text x='24' y='30' font-size='15' font-weight='600' fill='var(--cds-text-primary)'>产品要让一节课这样转一圈（原型已跑通）</text><g fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.4'><line x1='116' y1='94' x2='125' y2='94' marker-end='url(#lp-a)'/><line x1='219' y1='94' x2='228' y2='94' marker-end='url(#lp-a)'/><line x1='322' y1='94' x2='331' y2='94' marker-end='url(#lp-a)'/><line x1='425' y1='94' x2='434' y2='94' marker-end='url(#lp-a)'/><line x1='528' y1='94' x2='537' y2='94' marker-end='url(#lp-a)'/><line x1='631' y1='94' x2='640' y2='94' marker-end='url(#lp-a)'/></g><g><rect x='24' y='62' width='90' height='64' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='69' y='87' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>01 备课</text><text x='69' y='105' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>AI 生成课件</text><text x='69' y='120' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>老师编辑</text></g><g><rect x='127' y='62' width='90' height='64' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='172' y='87' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>02 布置</text><text x='172' y='105' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>下发任务</text><text x='172' y='120' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>AI 出标准</text></g><g><rect x='230' y='62' width='90' height='64' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='275' y='87' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>03 学习</text><text x='275' y='105' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>学生学资源</text><text x='275' y='120' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>提交作业</text></g><g><rect x='333' y='62' width='90' height='64' rx='8' fill='none' stroke='var(--cds-chart-axis)' stroke-width='1.25'/><text x='378' y='87' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>04 评价</text><text x='378' y='105' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>AI 先评</text><text x='378' y='120' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>老师确认</text></g><g><rect x='436' y='62' width='90' height='64' rx='8' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)' stroke-width='2'/><text x='481' y='87' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>05 记录</text><text x='481' y='105' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>谁 · 学会了什么</text><text x='481' y='120' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>逐条留痕</text></g><g><rect x='539' y='62' width='90' height='64' rx='8' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)' stroke-width='2'/><text x='584' y='87' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>06 学情</text><text x='584' y='105' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>哪项薄弱</text><text x='584' y='120' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>谁要补课</text></g><g><rect x='642' y='62' width='90' height='64' rx='8' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)' stroke-width='2'/><text x='687' y='87' text-anchor='middle' font-size='13' font-weight='600' fill='var(--cds-text-primary)'>07 改进</text><text x='687' y='105' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>一键发起补课</text><text x='687' y='120' text-anchor='middle' font-size='10.5' fill='var(--cds-text-secondary)'>达标自动更新</text></g><g><path d='M687 126V168H69V132' fill='none' stroke='var(--cds-chart-categorical-1)' stroke-width='1.4' stroke-dasharray='6 4' marker-end='url(#lp-b)'/><text x='378' y='162' text-anchor='middle' font-size='11.5' font-weight='600' fill='var(--cds-chart-categorical-1)'>补课与课程改进，回到下一次备课</text></g><g><rect x='24' y='188' width='708' height='40' rx='8' fill='var(--cds-chart-reference-tint)'/><text x='378' y='213' text-anchor='middle' font-size='12.5' font-weight='600' fill='var(--cds-text-primary)'>备课教的、作业考的、记录存的，是同一个技能——评估材料就从这条线里出</text></g><g><rect x='24' y='236' width='20' height='12' rx='4' fill='none' stroke='var(--cds-chart-axis)'/><text x='50' y='246' font-size='11.5' fill='var(--cds-text-secondary)'>01–04 平台已有，打通即可</text><rect x='250' y='236' width='20' height='12' rx='4' fill='var(--cds-chart-categorical-1)' fill-opacity='0.12' stroke='var(--cds-chart-categorical-1)'/><text x='276' y='246' font-size='11.5' fill='var(--cds-text-secondary)'>05–07 需要新建</text></g></svg><figcaption>教学闭环 · 01–04 已有功能打通，05–07 是入校前要新建的部分</figcaption></figure>
+
+<h2>这生意值得入校吗</h2>
+<ul>
+<li><b>买得有理由</b>：职业院校每年评估、验收、申报都要「教学过程材料」，平台在教学过程中自动留痕，材料随手可取。</li>
+<li><b>续得有理由</b>：备课、出标准、批改，AI 先出初稿、老师只做确认；哪个学生哪项技能要补，系统直接给名单。省的是老师每周实在的时间。</li>
+<li><b>壁垒在数据</b>：日常教学沉淀成学校自己的岗位图谱、课程体系和学生成长记录；老师上课补充的内容，经专业负责人确认回流进学校图谱，越用越准，竞品短期复制不走。</li>
+</ul>
+
+<h2>离入校还差什么</h2>
+<ol>
+<li><b>开发</b>：3 个新建（学习证据、学情、补训与改进）加 4 个改造（准备环节的排课与教务数据，备课、布置、评价挂上技能、知识点和评价标准），另有平台底座补齐（审计日志、停用保护、数据导出），已明确到功能点，无方案层面的不确定性；</li>
+<li><b>产品规则</b>：5 条（评价三档还是百分制、挂技能还是挂能力等）已备好建议方案，启动会 10 分钟定稿，不阻塞开工准备；</li>
+<li><b>排期</b>：功能清单已定，启动会上请研发给一版「到可入校」的排期；</li>
+<li><b>试点校</b>：按三条硬条件选——专业负责人参与确认图谱、一门课一个班跑整学期、校方维护基础教务数据；选校宁慢勿滥；</li>
+<li><b>陪跑</b>：新流程改变老师批改习惯，试点期培训陪跑成本已计入交付。</li>
+</ol>
+
+<h2>入校后怎么算成</h2>
+<p>试点校一门课、一个班，完整跑一个学期。硬标准只有一条：<b>一个技能能走完「发现薄弱 → 补课 → 重新评价 → 达标」，且全程可查</b>。跑通即进入第二阶段（标准化、复制更多学校）。不按功能数量推进、所以不在方案里承诺月份——但开发、联调、培训这些可控部分，都排在试点开课前完成。</p>
+
+<h2>请老板定三件事</h2>
+<ol>
+<li><b>认可节奏</b>：先拿原型谈试点、工程化、入校跑一学期、跑通再规模化——不跳步，每步有硬标准；</li>
+<li><b>批开发启动</b>：规则在启动会定稿，会上同时要研发的入校排期；</li>
+<li><b>定试点校打法</b>：目标校怎么选、谁去谈——我们出人出演示。</li>
+</ol>
+<p><b>两个风险提前说</b>：试点校投入不到位，过程记录就立不住（用选校硬条件把关）；老师用不惯新流程，续费逻辑就弱（培训陪跑已计入成本）。</p>
+
+<p style="margin-top:30px;color:var(--muted);font-size:13px">团队版详细设计备查：《<a href="AIGC智慧课堂平台-整体架构与分阶段建设方案.html">整体架构与分阶段建设方案</a>》《<a href="AIGC智慧课堂平台-第一阶段教学闭环设计.html">第一阶段教学闭环设计</a>》</p>
 </div>
 </body>
 </html>

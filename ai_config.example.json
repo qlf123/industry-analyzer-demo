@@ -2,5 +2,5 @@
   "type": "openai",
   "url": "https://api.deepseek.com/chat/completions",
   "model": "deepseek-chat",
-  "key": "sk-你的DeepSeekKey"
+  "_说明": "只用于预置接口类型、地址和模型；API Key 不要写在这里，构建脚本不会把 key 写进页面，使用者在能力地图「AI 设置」里自己填"
 }

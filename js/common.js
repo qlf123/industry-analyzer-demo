@@ -68,11 +68,11 @@
     admin: {
       title: 'AIGC 智慧课堂<br>教学平台 · 管理端',
       groups: [
-        // 数据概览、行业分析、能力测评为一级菜单（不分组）；能力地图只在教师端
+        // 数据概览、行业分析、专业建设测评为一级菜单（不分组）；能力地图只在教师端
         { label: '', items: [
           { key: 'dash', label: '数据概览', icon: '▤', href: 'dashboard.html' },
           { key: 'panorama', label: '行业分析', icon: '◎', href: 'panorama.html', external: true },
-          { key: 'assess', label: '能力测评', icon: '◈', href: 'assess.html',
+          { key: 'assess', label: '专业建设测评', icon: '◈', href: 'assess.html',
             perms: ['major:assess:view'], landing: false }
         ] },
         // 图谱中心：由原独立的图谱平台迁入（graph/ 目录），管理端可维护
@@ -109,7 +109,6 @@
         // 教学质量：课程计划执行后的结果（老师确认的课堂证据汇总）与课程改进建议的处理
         { label: '教学质量', items: [
           { key: 'tq-reach', label: '教学达成', icon: '▤', href: 'teach-quality.html?t=reach', perms: ['teach:quality:view'], landing: false },
-          { key: 'tq-kps', label: '知识点掌握', icon: '▤', href: 'teach-quality.html?t=kps', perms: ['teach:quality:view'], landing: false },
           { key: 'tq-improve', label: '课程改进建议', icon: '▤', href: 'teach-quality.html?t=improve', perms: ['teach:quality:view'], landing: false }
         ] },
         // 系统配置：组织管理、院校基础信息、字典、基础信息配置
@@ -130,8 +129,8 @@
         { key: 'top', label: '', items: [
           { key: 'workbench', label: '工作台', icon: '▤', href: 'workbench.html' },
           { key: 'kmap', label: '能力地图', icon: '◇', href: 'kmap.html', external: true },
-          // 备课中心暂不开放（teacher-resources.html 保留）；teacher-profile.html 为权限演示旧页，教师档案改用 teacher-file.html；我的班级不在菜单中显示
-          { key: 'resources', label: '备课中心', icon: '▤', empty: true },
+          // 备课中心隐藏（teacher-resources.html 保留，菜单管理页可重新启用）；teacher-profile.html 为权限演示旧页，教师档案改用 teacher-file.html；我的班级不在菜单中显示
+          { key: 'resources', label: '备课中心', icon: '▤', empty: true, hidden: true },
           { key: 'tasks', label: '任务中心', icon: '▤', href: 'teacher-tasks.html' }
         ] },
         // 图谱中心：教师端可新建，自己创建的可维护、他人创建的仅查看；不含映射审核
@@ -160,6 +159,69 @@
     }
   };
 
+  /* ── 菜单语义图标（单色线性 SVG，随主题 currentColor 变色）。
+   *   按菜单 key 匹配；端间 key 冲突（tasks/growth）用 portal 前缀区分。
+   *   没匹配到的（菜单管理新增的自定义项等）回退到原 icon 字符。 ── */
+  function svgI(inner) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+  }
+  var ICONS = {
+    // 管理端 · 顶栏
+    dash: svgI('<path d="M5 20v-7"/><path d="M11 20V5"/><path d="M17 20v-10"/><path d="M3.5 20h17"/>'),
+    panorama: svgI('<circle cx="12" cy="12" r="8"/><path d="M12 12V4"/><path d="M12 12l5.5 5.7"/>'),
+    assess: svgI('<path d="M4.5 17a8 8 0 1 1 15 0"/><path d="M12 15l3.5-5"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/>'),
+    // 图谱中心
+    'gc-kg': svgI('<circle cx="5.5" cy="6" r="2.3"/><circle cx="18.5" cy="6" r="2.3"/><circle cx="12" cy="18" r="2.3"/><path d="M6.9 7.6l3.9 8.6"/><path d="M17.1 7.6l-3.9 8.6"/><path d="M7.8 6h8.4"/>'),
+    'gc-ag': svgI('<path d="M12 2.8l7.5 4.3v9.8L12 21.2l-7.5-4.3V7.1z"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>'),
+    'gc-ks': svgI('<path d="M12 6.5C10 5 7.5 4.5 4.5 4.5v13c3 0 5.5.5 7.5 2 2-1.5 4.5-2 7.5-2v-13c-3 0-5.5.5-7.5 2z"/><path d="M12 6.5v13"/>'),
+    'gc-mr': svgI('<rect x="3" y="4" width="8" height="8" rx="1.5"/><rect x="13" y="12" width="8" height="8" rx="1.5"/><path d="M11 8.5h4v3.5"/>'),
+    'gc-sr': svgI('<path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8L3.5 9.7l5.9-.9z"/>'),
+    'gc-kb': svgI('<ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13"/><path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>'),
+    // 管理端 · 账号与角色
+    account: svgI('<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5c.7-3.2 2.9-4.8 5.5-4.8s4.8 1.6 5.5 4.8"/><circle cx="17" cy="9" r="2.3"/><path d="M16.2 14.9c2.4.4 3.9 1.8 4.4 4.3"/>'),
+    role: svgI('<path d="M12 3l7.5 2.6v5.9c0 4.7-3.1 7.5-7.5 9-4.4-1.5-7.5-4.3-7.5-9V5.6z"/><path d="M9.2 11.5l2 2 3.8-4"/>'),
+    menu: svgI('<path d="M4 7h8.9"/><path d="M17.5 7H20"/><circle cx="15.2" cy="7" r="2.3"/><path d="M4 17h2.9"/><path d="M11.5 17H20"/><circle cx="9.2" cy="17" r="2.3"/>'),
+    // 管理端 · 教务基础数据
+    'edu-major': svgI('<path d="M2.5 9.5L12 5l9.5 4.5L12 14z"/><path d="M6.5 12v4c0 1.3 2.4 2.5 5.5 2.5s5.5-1.2 5.5-2.5v-4"/><path d="M21.5 9.5v4.5"/>'),
+    'edu-grade': svgI('<path d="M5 21V4"/><path d="M5 5c4-1.8 8 1.8 14 0v8c-6 1.8-10-1.8-14 0"/>'),
+    'edu-class': svgI('<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>'),
+    'edu-student': svgI('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.4-5.2 7-5.2s6.2 1.6 7 5.2"/>'),
+    'edu-term': svgI('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/>'),
+    'edu-course': svgI('<rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M8.5 3.5v17"/><path d="M12 9h4.5"/><path d="M12 13h4.5"/>'),
+    'edu-lab': svgI('<path d="M21 8.2L12 3.8 3 8.2v7.6l9 4.4 9-4.4z"/><path d="M3 8.2l9 4.4 9-4.4"/><path d="M12 12.6v8"/>'),
+    plan: svgI('<rect x="5" y="4.5" width="14" height="16.5" rx="2"/><rect x="9" y="2.7" width="6" height="3.6" rx="1"/><path d="M9 11h6"/><path d="M9 14.5h6"/><path d="M9 18h4"/>'),
+    // 管理端 · 教学质量
+    'tq-reach': svgI('<path d="M3.5 17.5l5.5-5.5 3.5 3.5 7.5-8"/><path d="M15.5 7.5H20V12"/>'),
+    'tq-kps': svgI('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.3"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>'),
+    'tq-improve': svgI('<path d="M9.5 18h5"/><path d="M10.5 21h3"/><path d="M12 3a6.2 6.2 0 0 1 3.8 11.1c-.7.6-1.1 1.4-1.2 2.4H9.4c-.1-1-.5-1.8-1.2-2.4A6.2 6.2 0 0 1 12 3z"/>'),
+    // 管理端 · 系统配置
+    system: svgI('<rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v3.5"/><path d="M6 13.5h12"/><path d="M6 13.5V16"/><path d="M18 13.5V16"/>'),
+    college: svgI('<path d="M4 11l8-7.5L20 11"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5.5h4V20"/>'),
+    dict: svgI('<rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9.5 3.5v17"/><path d="M13 8.5h3.5"/><path d="M13 12.5h3.5"/>'),
+    sysconf: svgI('<path d="M4 7h8.6"/><path d="M17.4 7H20"/><circle cx="15.1" cy="7" r="2.3"/><path d="M4 17h2.6"/><path d="M11.4 17H20"/><circle cx="8.9" cy="17" r="2.3"/>'),
+    audit: svgI('<path d="M14 3H7a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V7.5z"/><path d="M14 3v4.5h4.5"/><path d="M9 12h6"/><path d="M9 15.5h4"/>'),
+    // 教师端
+    workbench: svgI('<path d="M4 11l8-7.5L20 11"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5.5h4V20"/>'),
+    kmap: svgI('<path d="M3.5 6.2L9 4.5l6 1.5 5.5-1.7v13L15 19l-6-1.5-5.5 1.7z"/><path d="M9 4.5v13"/><path d="M15 6v13"/>'),
+    resources: svgI('<path d="M4 20l1.2-4.5L16.5 4.2a2 2 0 0 1 2.8 2.8L8 18.3z"/><path d="M13.8 6.9l2.8 2.8"/>'),
+    'teacher.tasks': svgI('<rect x="5" y="4.5" width="14" height="16.5" rx="2"/><rect x="9" y="2.7" width="6" height="3.6" rx="1"/><path d="M9 13.5l2.2 2.2 4-4.5"/>'),
+    'teacher.growth': svgI('<circle cx="12" cy="8.7" r="4.6"/><path d="M9 12.5L7.3 21l4.7-2.8L16.7 21 15 12.5"/>'),
+    profile: svgI('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.8" r="2"/><path d="M5.8 16c.5-1.6 1.5-2.4 2.7-2.4s2.2.8 2.7 2.4"/><path d="M14.5 9.5h4"/><path d="M14.5 13h3"/>'),
+    // 学生端
+    'student.tasks': svgI('<rect x="5" y="4.5" width="14" height="16.5" rx="2"/><rect x="9" y="2.7" width="6" height="3.6" rx="1"/><path d="M9 11h6"/><path d="M9 14.5h6"/>'),
+    'student.growth': svgI('<path d="M12 21.5V13"/><path d="M12 13C12 9 9 6.8 4.5 6.8c0 4.5 3 6.2 7.5 6.2z"/><path d="M12 13c0-4 3-6.2 7.5-6.2 0 4.5-3 6.2-7.5 6.2z"/>'),
+    mine: svgI('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="9.8" r="2.8"/><path d="M6.2 18.6c1.2-2.5 3.3-3.8 5.8-3.8s4.6 1.3 5.8 3.8"/>')
+  };
+  /* 一级菜单（分组标题）图标：按分组名匹配，与子项图标同一套风格 */
+  var GICONS = {
+    '图谱中心': svgI('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4.4-4.4 2 2-4.4z"/>'),
+    '账号与角色': svgI('<circle cx="8" cy="15" r="3.2"/><path d="M10.3 12.7L20 3"/><path d="M16.5 6.5L19 9"/><path d="M13.8 9.2l2 2"/>'),
+    '教务基础数据': svgI('<rect x="3.5" y="4" width="17" height="4.5" rx="1"/><path d="M5.3 8.5V19a1.5 1.5 0 0 0 1.5 1.5h10.4a1.5 1.5 0 0 0 1.5-1.5V8.5"/><path d="M10 13h4"/>'),
+    '课程计划管理': svgI('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M8.8 14.5l2.2 2.2 4.2-4.7"/>'),
+    '教学质量': svgI('<circle cx="12" cy="12" r="8.5"/><path d="M8.4 12.4l2.5 2.5 4.7-5.6"/>'),
+    '系统配置': svgI('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.8"/><path d="M12 18.7v2.8"/><path d="M2.5 12h2.8"/><path d="M18.7 12h2.8"/><path d="M5.3 5.3l2 2"/><path d="M16.7 16.7l2 2"/><path d="M18.7 5.3l-2 2"/><path d="M7.3 16.7l-2 2"/>')
+  };
+
   /* ── 菜单管理的改动（localStorage menuConf.v1）：改名、图标、排序、禁用隐藏，以及新增的占位菜单 ──
    *   { <portal>: { items: { <key>: {label, icon, order, hidden} }, groups: { <分组名>: {label, order, hidden} }, added: [{key, label, icon, group, order, hidden}] } } */
   var MENU_CONF_KEY = 'menuConf.v1';
@@ -173,8 +235,8 @@
       var items = g.items.map(function (it, ii) {
         var x = {}, k; for (k in it) x[k] = it[k];
         var ov = io[it.key] || {};
-        if (ov.label) x.label = ov.label; if (ov.icon) x.icon = ov.icon;
-        x.order = ov.order != null ? ov.order : ii + 1; x.hidden = !!ov.hidden; x.builtin = true; x.group = gid;
+        if (ov.label) x.label = ov.label; if (ov.icon) { x.icon = ov.icon; x.iconOverride = true; }
+        x.order = ov.order != null ? ov.order : ii + 1; x.hidden = ov.hidden != null ? !!ov.hidden : !!it.hidden; x.builtin = true; x.group = gid;
         return x;
       });
       (c.added || []).filter(function (a) { return a.group === gid; }).forEach(function (a) {
@@ -286,7 +348,11 @@
   var FOLD_KEY = 'navFold.v1';
   function foldState() { try { return JSON.parse(localStorage.getItem(FOLD_KEY)) || {}; } catch (e) { return {}; } }
   function saveFold(s) { try { localStorage.setItem(FOLD_KEY, JSON.stringify(s)); } catch (e) {} }
-  var LUSER_CSS = FOLD_CSS + '.luser{margin-top:auto;display:flex;align-items:center;gap:9px;padding:12px 14px 12px 18px;border-top:1px solid var(--rule-2)}' +
+  var LUSER_CSS = FOLD_CSS +
+    // 菜单语义图标（SVG）：铺满 .lmenu i / .lgt i 的图标盒，颜色随 currentColor 走主题
+    '.lmenu i svg,.lgt.lfold i svg{width:100%;height:100%;display:block}' +
+    '#lnav .lgt.lfold i{width:15px;height:15px;flex:0 0 15px;display:block;opacity:.75}' +
+    '.luser{margin-top:auto;display:flex;align-items:center;gap:9px;padding:12px 14px 12px 18px;border-top:1px solid var(--rule-2)}' +
     '.luser+.lfoot{margin-top:0}' +
     '.luser .lav{width:28px;height:28px;flex:0 0 28px;border-radius:50%;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-ink);font-size:12.5px;font-weight:600}' +
     '.luser .lwho{flex:1;min-width:0;font-size:12.5px;line-height:1.35}' +
@@ -315,13 +381,14 @@
       var fk = portal + '|' + group.label, hasOn = group.items.some(function (it) { return it.key === active; });
       var closed = group.label && !hasOn && fold[fk] !== 'open';
       html += '<div class="lgroup' + (group.label ? ' lg-fold' : '') + (closed ? ' closed' : '') + (hasOn ? ' has-on' : '') + '">';
-      if (group.label) html += '<button type="button" class="lgt lfold" data-fold="' + esc(fk) + '" aria-expanded="' + !closed + '"><span class="lfn">' + esc(group.name || group.label) + '</span><span class="lfc" aria-hidden="true">▾</span></button><div class="litems">';
+      if (group.label) html += '<button type="button" class="lgt lfold" data-fold="' + esc(fk) + '" aria-expanded="' + !closed + '"><i>' + (GICONS[group.name] || GICONS[group.label] || '') + '</i><span class="lfn">' + esc(group.name || group.label) + '</span><span class="lfc" aria-hidden="true">▾</span></button><div class="litems">';
       group.items.forEach(function (it) {
         var vis = itemVisible(ctx, identity, it);
         if (!vis) return;
         var on = it.key === active;
         var cls = 'lmenu' + (on ? ' on' : '');
-        var inner = '<i>' + esc(it.icon) + '</i>' + esc(it.label);
+        var ic = !it.iconOverride && (ICONS[portal + '.' + it.key] || ICONS[it.key]);
+        var inner = '<i>' + (ic || esc(it.icon)) + '</i>' + esc(it.label);
         if (it.href) {
           html += '<a class="' + cls + '" href="' + esc(link(abs(it.href), it.external ? portal : '')) + '"' + (on ? ' aria-current="page"' : '') + '>' + inner + '</a>';
         } else {
@@ -333,8 +400,8 @@
     // 当前登录人 + 退出登录（回到登录页，地址里不再带身份）
     var name = identity.account ? identity.account.name : '';
     html += '<div class="luser"><span class="lav" aria-hidden="true">' + esc(name.slice(0, 1)) + '</span><span class="lwho"><b>' + esc(name) + '</b><span>' + esc(portalName(portal)) + '</span></span>' +
-      '<button type="button" class="lout" data-logout>退出登录</button></div>';
-    html += '<div class="lfoot" id="lfoot">权限管理升级 · V2.1</div>';
+      '<button type="button" class="lout" data-logout>退出登录</button></div>' +
+      '<div class="lfoot" id="lfoot"></div>';
     nav.innerHTML = html;
     nav.onclick = function (e) {
       var b = e.target.closest('[data-fold]'); if (!b) return;

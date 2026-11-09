@@ -32,7 +32,7 @@
     if (fb && !fb.overall) fb = Object.assign({ overall: Math.round((fb.scores['讲授内容'] + fb.scores['教学方式'] + fb.scores['互动体验'] + fb.scores['学习收获']) / 4), tags: [] }, fb);
     var pl = (S.plans || []).find(function (x) { return x.id === c.planId; });
     return { id: c.id, course: c.name, plan: pl ? pl.course : '', major: c.major, teacher: (pl && pl.teacher) || S.teacher || '老师', publishAt: p.at, due: sub ? p.task.due : '', status: st,
-      task: sub ? { name: p.task.name, desc: p.task.desc, modes: p.task.modes, criteria: p.task.criteria || [], skillIds: p.task.skillIds || [] } : null, files: files, submissions: subs,
+      task: sub ? { name: p.task.name, desc: p.task.desc, modes: p.task.modes, criteria: p.task.criteria || [], skillIds: p.task.skillIds || [], kpIds: p.task.kpIds || [], kpCrit: p.task.kpCrit || null, aiReq: p.task.aiReq || '' } : null, files: files, submissions: subs,
       evalSeen: !sub || sub.evalSeen !== false, feedbackOn: !!p.feedback, feedback: fb || null };
   }
   /* 当前学生的视图：{ name, klass, tasks, growth } */
@@ -73,27 +73,32 @@
   /* 知识点掌握统计（学生端）：与老师端学情口径一致——
      按每个技能取本人最近一次老师确认的评价（含退回的那次），看技能下各知识点是否体现；
      只用于学习参考，不进证据、不汇总到技能达成 */
+  /* 知识点掌握：只看发布时勾选的考查知识点（task.kpIds；存量任务没有则视为全部），
+     取每个技能最近一次老师确认的评价（含退回），只用于学情展示，不进证据 */
   function kpView(S, who) {
     var K = TK.kn(), last = {};
     S.courses.forEach(function (c) {
       if (!mine(S, c, who) || !c.publish.task) return;
+      var t = c.publish.task, allow = (t.kpIds && t.kpIds.length) ? t.kpIds : null;
       (c.submissions || []).forEach(function (sb) {
         if (sb.student !== who || !sb.teacher) return;
         (sb.teacher.items || []).forEach(function (it) {
-          var ks = ((K.skill[it.sid] || {}).kps) || []; if (!ks.length) return;
+          var ks = ((K.skill[it.sid] || {}).kps) || [];
+          if (allow) ks = ks.filter(function (k) { return allow.indexOf(k.id) >= 0; });
+          if (!ks.length) return;
           if (!last[it.sid] || sb.teacher.at >= last[it.sid].at)
-            last[it.sid] = { at: sb.teacher.at, marks: TK.itemKps(it, who), tid: c.id, task: c.publish.task.name, course: c.name };
+            last[it.sid] = { at: sb.teacher.at, marks: TK.itemKps(it, who, allow), ks: ks, tid: c.id, task: t.name, course: c.name };
         });
       });
     });
     var list = Object.keys(last).map(function (sid) {
       var x = K.skill[sid], l = last[sid];
-      var kps = x.kps.map(function (k) { return { id: k.id, name: k.name, type: k.type, core: k.core, miss: l.marks[k.id] === 'miss' }; });
-      return { sid: sid, name: x.name, kps: kps, ok: kps.filter(function (k) { return !k.miss; }).length, miss: kps.filter(function (k) { return k.miss; }).length,
+      var kps = l.ks.map(function (k) { return { id: k.id, name: k.name, type: k.type, core: k.core, miss: l.marks[k.id] === 'miss', none: l.marks[k.id] !== 'miss' && l.marks[k.id] !== 'ok' }; });
+      return { sid: sid, name: x.name, kps: kps, ok: kps.filter(function (k) { return !k.miss && !k.none; }).length, miss: kps.filter(function (k) { return k.miss; }).length,
         at: l.at, tid: l.tid, task: l.task, course: l.course };
     }).sort(function (a, b) { return a.at < b.at ? 1 : -1; });
     var all = list.reduce(function (a, x) { return a.concat(x.kps); }, []);
-    return { list: list, total: all.length, ok: all.filter(function (k) { return !k.miss; }).length, miss: all.filter(function (k) { return k.miss; }).length };
+    return { list: list, total: all.length, ok: all.filter(function (k) { return !k.miss && !k.none; }).length, miss: all.filter(function (k) { return k.miss; }).length };
   }
 
   /* ── 学生操作（写回共用数据） ── */

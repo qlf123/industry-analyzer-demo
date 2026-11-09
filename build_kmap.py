@@ -205,13 +205,13 @@ DATA = {"industry": {**dict(K.INDUSTRY), "detail": industry_detail}, "subIndustr
         "selfCheckRules": selfcheck_rules}
 payload = json.dumps(DATA, ensure_ascii=False, separators=(",", ":"))
 
-# AI 预置配置：ai_config.json 存在则注入（部署时把 Key 写在这里），不存在则空配置（保持现状，需使用者自填）
+# AI 预置配置：ai_config.json 存在则只注入接口类型 / 地址 / 模型；API Key 一律不写进页面，由使用者在「AI 设置」里自己填（只存本机浏览器）
 AI_CFG_PATH = os.path.join(HERE, "ai_config.json")
 ai_cfg = {}
 if os.path.exists(AI_CFG_PATH):
     try:
         raw_cfg = json.load(open(AI_CFG_PATH, encoding="utf-8"))
-        for k in ("type", "url", "model", "key"):
+        for k in ("type", "url", "model"):   # 不注入 key
             if k in raw_cfg and isinstance(raw_cfg[k], str):
                 ai_cfg[k] = raw_cfg[k]
     except Exception as e:
@@ -236,7 +236,4 @@ print(f"子行业 {sum(1 for s in subs if s['built'])}（共 {len(subs)}）· �
       f"下级节点 {len(nodes)}（技能 → 下级节点 {len(SKILL_CHILD_SRC)}）")
 print(f"自检规则 {len(selfcheck_rules)} 字（来自 .claude/skills/kmap-ai-selfcheck/SKILL.md）")
 print(f"输出 {out_path}（{len(payload)/1024:.0f} KB 数据）")
-if ai_cfg.get("key"):
-    print(f"AI 预置配置：已注入 {ai_cfg.get('type', '')} / {ai_cfg.get('model', '')}")
-else:
-    print("AI 预置配置：Key 为空（未提供 ai_config.json 或其中 key 为空），AI 功能需使用者自填 Key")
+print("AI 预置配置：" + (f"接口 {ai_cfg.get('type', '')} / {ai_cfg.get('model', '')}，" if ai_cfg else "") + "页面不含 API Key，使用者在「AI 设置」里自填")

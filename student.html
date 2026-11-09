@@ -13,8 +13,11 @@
 .sec-h{font-size:12.5px;font-weight:700;margin:16px 0 8px}
 .gradtip{display:flex;align-items:center;gap:8px;margin:0 6px 8px;padding:9px 13px;border:1px solid var(--rule);
   border-radius:9px;background:var(--warn-bg);color:var(--warn-ink);font-size:12.5px}
-.hw{display:grid;grid-template-columns:minmax(150px,1.6fr) 80px minmax(90px,auto);gap:0 12px;align-items:center;padding:9px 14px;border-top:1px solid var(--rule-2);font-size:12.5px}
+.hw{display:grid;grid-template-columns:minmax(200px,2.2fr) minmax(118px,1fr) minmax(128px,1fr) 66px minmax(108px,auto);gap:0 12px;align-items:center;padding:9px 14px;border-top:1px solid var(--rule-2);font-size:12.5px}
 .hw:first-child{border-top:0}
+.hw .ds{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+.hw .dt-num{white-space:nowrap}
+.hw .due-late{color:var(--crit)}
 .gh{background:var(--card-2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
 </style>
 </head>
@@ -110,15 +113,25 @@
       + '<div><div class="kk">家庭住址</div><div class="vv">' + esc(m.address.value == null ? '—' : m.address.value) + '</div></div>'
       + '</div></div>';
 
+    var now = (function () { var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); })();
     var rows = homeworks.map(function (h) {
+      var late = !h.submitted && h.due && h.due < now;
       var st = h.submitted ? '<span class="pill good">已交</span>' : '<span class="pill warn">未交</span>';
-      var btn = (!h.submitted && canSubmit) ? '<button class="btn-s" data-submit="' + esc(h.id) + '">提交</button>' : '';
-      return '<div class="hw"><div class="cell-t"><b>' + esc(h.title) + '</b></div><div>' + st + '</div><div class="dt-num">' + btn + '</div></div>';
+      var act = '';
+      if (!graduated && canSubmit) {
+        if (!h.submitted) act = '<button class="btn-s" data-submit="' + esc(h.id) + '">提交</button>';
+        else act = '<button class="lk" data-undo="' + esc(h.id) + '" title="撤回后可重新提交">撤销提交</button>';
+      }
+      return '<div class="hw"><div><b>' + esc(h.title) + '</b><div class="ds">' + esc(h.desc || '') + '</div></div>'
+        + '<div class="mono dt-num' + (late ? ' due-late' : '') + '">' + esc(h.due || '—') + (late ? '<span class="ds">已过截止</span>' : '') + '</div>'
+        + '<div class="mono dt-num">' + esc(h.submittedAt || '—') + '</div>'
+        + '<div>' + st + '</div>'
+        + '<div class="dt-num">' + act + '</div></div>';
     }).join('');
 
     html += '<div class="sec-h">本人作业（' + homeworks.length + '）</div>'
       + '<div class="card"><div class="dtable">'
-      + '<div class="hw gh"><div>作业</div><div>状态</div><div class="dt-num">操作</div></div>'
+      + '<div class="hw gh"><div>作业</div><div>截止时间</div><div>提交时间</div><div>状态</div><div class="dt-num">操作</div></div>'
       + (rows || '<div class="empty">暂无作业</div>')
       + '</div></div>';
 
@@ -127,16 +140,22 @@
 
   function bindEvents() {
     $('#body').addEventListener('click', function (e) {
-      var el = e.target.closest('[data-submit]');
+      var el = e.target.closest('[data-submit]') || e.target.closest('[data-undo]');
       if (!el) return;
-      var h = byId('homeworks', el.getAttribute('data-submit'));
+      var h = byId('homeworks', el.getAttribute('data-submit') || el.getAttribute('data-undo'));
       if (!h) return;
-      var before = h.submitted;
-      h.submitted = true;
-      audit('提交作业', h.title, { submitted: before }, { submitted: true }, '成功', homeworkOrgId(h));
-      toast('已提交「' + h.title + '」');
+      var undo = !!el.getAttribute('data-undo');
+      var before = { submitted: h.submitted, submittedAt: h.submittedAt || null };
+      if (undo) { h.submitted = false; h.submittedAt = ''; }
+      else { h.submitted = true; h.submittedAt = nowText(); }
+      audit(undo ? '撤销作业提交' : '提交作业', h.title, before, { submitted: h.submitted, submittedAt: h.submittedAt || null }, '成功', homeworkOrgId(h));
+      toast(undo ? '已撤销「' + h.title + '」的提交' : '已提交「' + h.title + '」');
       render();
     });
+  }
+  function nowText() {
+    var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
   }
 
   var c0 = DEMO.getState();

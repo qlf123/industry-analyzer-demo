@@ -171,16 +171,17 @@
       document.getElementById('cancelTaskButton').onclick=closeTaskModal;
       taskModal.onclick=function(e){if(e.target===taskModal)closeTaskModal()};
 
-      // --- Task list ---
-      var KEY='kg_tasks_v5';
+      // --- Task list ---（localStorage 跨 tab 共享，与 pano-tasks.js 同 key）
+      var KEY='kg_tasks_v7';
       var tasks=[];
-      try{tasks=JSON.parse(sessionStorage.getItem(KEY)||'[]')}catch(e){tasks=[]}
+      try{tasks=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){tasks=[]}
 
       // Seed sample data if empty
       if(!tasks.length){
         tasks=PanoTasks.load();
-        sessionStorage.setItem(KEY,JSON.stringify(tasks));
+        PanoTasks.save(tasks);
       }
+      function saveTasks(){PanoTasks.save(tasks)}
 
       function renderIndustryCards(){
         // Group completed tasks by industry
@@ -204,7 +205,6 @@
           
           +'</div>'
           +'<div class="panorama-industry-card-body">'
-          +'<div class="panorama-industry-card-row"><span class="task-card-label">说明</span><span class="task-card-value">查看平台大图谱：各专业当前已发布版本的合集，不单独发版本</span></div>'
           +'</div>'
           +'<div class="panorama-industry-card-footer">'
           +'<span class="task-card-time">所有行业</span>'
@@ -237,10 +237,16 @@
           }else{
             btnHtml='<button class="remap-btn" disabled style="opacity:.5;cursor:not-allowed;">重新映射</button>';
           }
-          return '<div class="panorama-industry-card" onclick="'+(st==='done'?'viewIndustry(\''+ind.industry+'\')':'')+'">'
+          var cardClick=st==='done'?'viewIndustry(\''+ind.industry+'\')'
+            :st==='failed'?'toast(\''+ind.industry+' 映射失败，可点「重新映射」重试或右上角 ··· 删除\')'
+            :'toast(\''+ind.industry+' 正在映射中，完成后自动更新\')';
+          return '<div class="panorama-industry-card" onclick="event.stopPropagation();'+cardClick+'">'
             +'<div class="panorama-industry-card-head">'
             +'<div class="panorama-industry-card-title">'+ind.industry+'</div>'
+            +'<span style="display:flex;gap:4px;align-items:center;">'
             +'<span class="task-status-badge '+badgeCls+'">'+badgeText+'</span>'
+            +'<button class="kg-corner-btn kg-corner-more" title="更多操作" onclick="toggleKgMenu(event,\''+ind.industry+'\',this)">···</button>'
+            +'</span>'
             +'</div>'
             +'<div class="panorama-industry-card-body">'
             +'<div class="panorama-industry-card-row"><span class="task-card-label">能力图谱</span><span class="task-card-value">'+ind.graph+'</span><span class="task-scope-tag">'+(ind.graphScope||'')+'</span></div>'
@@ -287,14 +293,14 @@
         if(related.some(function(t){return t.status==='generating'}))return toast('生成中的任务不可删除');
         if(!confirm('确认删除「'+industry+'」的映射任务？此操作不可撤销。'))return;
         tasks=tasks.filter(function(t){return t.industry!==industry});
-        sessionStorage.setItem(KEY,JSON.stringify(tasks));
+        saveTasks();
         renderIndustryCards();
         toast('已删除');
       }
 
       // 卡片操作菜单（··· 查看 / 删除）
       var kgMenuEl=null, kgMenuId=null;
-      function toggleKgMenu(e, industry){
+      function toggleKgMenu(e, industry, btn){
         e.stopPropagation();
         if(kgMenuEl && kgMenuId===industry){ hideKgMenu(); return; }
         hideKgMenu();
@@ -305,7 +311,7 @@
           +'<div class="kg-action-item" data-act="view">查看</div>'
           +'<div class="kg-action-item danger" data-act="delete">删除</div>';
         document.body.appendChild(kgMenuEl);
-        var rect=e.currentTarget.getBoundingClientRect();
+        var rect=(btn||e.currentTarget).getBoundingClientRect();
         kgMenuEl.style.top=(rect.bottom+4)+'px';
         kgMenuEl.style.left=Math.min(rect.right-kgMenuEl.offsetWidth, window.innerWidth-kgMenuEl.offsetWidth-8)+'px';
         kgMenuEl.addEventListener('click', function(ev){
@@ -351,7 +357,7 @@
         if(t.status==='generating')return toast('生成中的任务不可删除');
         if(!confirm('确认删除任务「'+t.name+'」？'))return;
         tasks=tasks.filter(function(x){return x.id!==id});
-        sessionStorage.setItem(KEY,JSON.stringify(tasks));
+        saveTasks();
         renderIndustryCards();
         toast('任务已删除');
       }
@@ -416,7 +422,7 @@
         knowledgeInputs.forEach(function(input){if(input.checked){majors.push({name:input.dataset.name||input.parentElement.textContent.trim(),scope:input.dataset.scope||'专业'});}});
         if(!majors.length)return toast('请至少选择一个专业知识体系');
         var newTask={
-          id:'T'+String(tasks.length+1).padStart(3,'0'),
+          id:'T'+Date.now().toString(36),   // 时间戳，删除任务后不会与历史 id 撞车
           name:name,
           graph:graphName,
           industry:industry,
@@ -428,23 +434,30 @@
           createdAt:formatTime()
         };
         tasks.unshift(newTask);
-        sessionStorage.setItem(KEY,JSON.stringify(tasks));
+        saveTasks();
         renderIndustryCards();
         closeTaskModal();
         toast('任务「'+name+'」已创建，正在生成候选映射');
       };
 
-      // 图谱中心：映射任务约 4 秒后完成，生成候选映射进入「映射审核」
+      // 图谱中心：映射任务约 4 秒后完成，生成候选映射进入「映射审核」；演示口径下小概率失败，可用「重新映射」重试
       function settleTasks(){
+        if(!tasks.some(function(t){return t.status==='generating'&&t.readyAt}))return;   // 无生成中任务时轮询直接返回
         var now=Date.now(), changed=false;
         tasks.forEach(function(t){
           if(t.status==='generating'&&t.readyAt&&t.readyAt<=now){
-            t.status='done'; delete t.readyAt; changed=true;
-            var c=GCF.genCands(t); GCF.addCands(c);
-            toast('任务「'+t.name+'」映射完成，生成 '+c.length+' 条候选映射，请到「映射审核」确认');
+            delete t.readyAt;changed=true;
+            if(Math.random()<0.85){
+              t.status='done';
+              var c=GCF.genCands(t); GCF.addCands(c);
+              toast('任务「'+t.name+'」映射完成，生成 '+c.length+' 条候选映射，请到「映射审核」确认');
+            }else{
+              t.status='failed';
+              toast('任务「'+t.name+'」映射失败，可在卡片或映射任务列表中重新映射');
+            }
           }
         });
-        if(changed){ sessionStorage.setItem(KEY,JSON.stringify(tasks)); renderIndustryCards(); if(allTasksModal&&allTasksModal.classList.contains('open')) renderAllTasksList(); }
+        if(changed){ saveTasks(); renderIndustryCards(); if(allTasksModal&&allTasksModal.classList.contains('open')) renderAllTasksList(); }
       }
       setInterval(settleTasks,1000);
 
@@ -476,7 +489,7 @@
           else if(t.status==='failed')badge='<span class="task-status-badge task-status-failed">映射失败</span>';
           var action='';
           if(t.status==='failed')action='<button class="remap-btn" onclick="remapTask(\''+t.id+'\')">重新映射</button>';
-          else if(t.status==='done')action='';
+          else if(t.status==='done')action='<button class="remap-btn" style="color:#5149e9;border-color:#5149e9;" onclick="viewTask(\''+t.id+'\')">查看图谱</button>';
           var majorNames=(t.majors||[]).map(function(m){return typeof m==='string'?m:m.name;}).join('、');
           return '<tr>'
             +'<td class="col-name">'+t.name+'</td>'
@@ -498,7 +511,7 @@
         t.status='generating';
         t.readyAt=Date.now()+4000;
         t.createdAt=formatTime();
-        sessionStorage.setItem(KEY,JSON.stringify(tasks));
+        saveTasks();
         renderAllTasksList();
         renderIndustryCards();
         toast('任务「'+t.name+'」已重新提交映射');

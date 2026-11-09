@@ -43,7 +43,28 @@
       var cn = add(c.id, '课程', c.name, { src: 'ks' }), tn = add(t.id, '任务', t.name, { src: 'ks' });
       link(cn.id, tn.id); link(tn.id, idOf[k]);
     });
-    return { nodes: nodes, links: links, res: [] };
+    // 资源：不是节点，挂在节点上的记录（实时生效、不进全景版本）。按真实存在的节点动态挂载，
+    // 挂不到的（技能没有上级任务等）自动跳过，保证「找资源 / 资源角标 / 显示资源」都有内容。
+    var res = [];
+    function parentsOf(id) { return links.filter(function (l) { return l.target === id; }).map(function (l) { return l.source; }); }
+    function taskOf(n) { return parentsOf(n.id).map(function (i) { return nodes[i]; }).filter(function (p) { return p.type === '任务'; })[0] || null; }
+    function ablOf(n) { return links.filter(function (l) { return l.kind === 'map' && l.target === n.id; }).map(function (l) { return nodes[l.source]; })[0] || null; }
+    function mount(r, n, loc) { if (!n) return; r.mounts.push({ node: n.id, loc: loc || '' }); (n.res = n.res || []).push({ r: r, loc: loc || '' }); }
+    function mkRes(name, kind, by) { var r = { id: res.length, name: name, kind: kind, by: by, mounts: [] }; res.push(r); return r; }
+    nodes.filter(function (n) { return n.type === '技能'; }).slice(0, 6).forEach(function (s, i) {
+      var t = taskOf(s), a = ablOf(s);
+      mount(mkRes(s.name + ' 单元课件.pptx', '课件', '生成时自动挂载'), t, i % 2 ? '' : '第 1–12 页');
+      mount(mkRes(s.name + ' 教案.docx', '教案', '手动'), a, '');
+      if (i < 3) mount(mkRes(s.name + ' 实训视频.mp4', '教学视频', '手动'), s, '00:00–0' + (8 + i) + ':20');
+    });
+    nodes.filter(function (n) { return n.type === '知识点'; }).slice(0, 5).forEach(function (k, i) {
+      mount(mkRes(k.name + ' 资料汇编.pdf', '知识库资料', 'AI 建议后确认'), k, i % 2 ? '第 2 段' : '第 1–4 段');
+      if (i < 2) mount(mkRes(k.name + ' 配套题组', '题目', '手动'), k, '');
+    });
+    // 没挂上任何节点的资源不保留（避免「挂在 0 个节点」的死资源）
+    for (var ri = res.length - 1; ri >= 0; ri--) if (!res[ri].mounts.length) res.splice(ri, 1);
+    res.forEach(function (r, i) { r.id = i; });
+    return { nodes: nodes, links: links, res: res };
   }
 
   /* ── 我的补充 ── */

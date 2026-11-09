@@ -107,7 +107,14 @@
     current:function(major){var st=load(major);return {cur:st.cur,manifest:st.versions.filter(function(v){return v.v===st.cur})[0].manifest}},
     nodeSource:function(n){
       var major=n.major||'酒店管理',c=this.current(major);
-      return {source:srcName('ks',major),sourceType:'知识体系',sourceVer:c.manifest.ks,panoVer:major+' '+c.cur+'（已发布）',href:'knowledge-system-detail.html'};
+      // 所属来源按节点真实 src 显示：ag=能力图谱 / ks=知识体系 / comp=赛项 / cert=证书 / self=全景自建
+      var src=n.src||'ks';
+      function ver(x){return x===NONE?'未接入':x}
+      if(src==='ag')return {source:srcName('ag',major),sourceType:'能力图谱',sourceVer:ver(c.manifest.ag),panoVer:major+' '+c.cur+'（已发布）',href:'ability-graph.html'};
+      if(src==='comp')return {source:srcName('comp',major),sourceType:'标准库 · 赛项',sourceVer:ver(c.manifest.comp),panoVer:major+' '+c.cur+'（已发布）',href:''};
+      if(src==='cert')return {source:srcName('cert',major),sourceType:'标准库 · 证书',sourceVer:ver(c.manifest.cert),panoVer:major+' '+c.cur+'（已发布）',href:''};
+      if(src==='self')return {source:'全景自建（老师补充，随全景版本发布）',sourceType:'能力地图',sourceVer:'—',panoVer:major+' '+c.cur+'（已发布）',href:'ability-graph.html'};
+      return {source:srcName('ks',major),sourceType:'知识体系',sourceVer:ver(c.manifest.ks),panoVer:major+' '+c.cur+'（已发布）',href:'knowledge-system-detail.html'};
     }
   };
   if(!document.getElementById('pvBar'))return;
@@ -136,7 +143,8 @@
     var cur=S.versions.filter(function(v){return v.v===S.cur})[0];
     var h='<label class="pv-major" title="版本按专业发布；行业只是筛选入口">专业 <select id="pvMajor">'+majors.map(function(m){return '<option'+(m===MAJOR?' selected':'')+'>'+esc(m)+'</option>'}).join('')+'</select></label>';
     h+='<span class="pv-chip ver" title="已发布版本只读；使用方引用的是已发布版本">当前版本 <b>'+S.cur+'</b> · 已发布'+(isLatestCur()?'':'（已回滚）')+'</span>';
-    h+=SOURCES.map(function(s){
+    // 顶部只显示标准库来源 chips；能力图谱 / 知识体系作为平台统一名称不在全景图谱顶部露出
+    h+=SOURCES.filter(function(s){return s.id!=='ag'&&s.id!=='ks'}).map(function(s){
       var sv=cur.manifest[s.id],lt=S.latest[s.id];
       if(lt===NONE)return '<span class="pv-chip src off" title="该专业尚未接入此来源">'+s.layer+' 未接入</span>';
       var newer=sv!==lt,inDraft=S.draft&&S.draft.sources[s.id];
@@ -145,7 +153,6 @@
     }).join('');
     if(S.draft)h+='<span class="pv-chip draft" id="pvDraftChip">草稿 · '+draftPending()+' 项待处理</span>';
     if(S.orphans.length)h+='<span class="pv-chip orphan" id="pvOrphanChip">悬挂资源 '+S.orphans.length+'</span>';
-    h+='<span class="pv-tip" title="知识库资料、教学资源实时挂载在节点上，不随全景版本变化">ⓘ 资源实时挂载，不随版本</span>';
     h+='<span class="pv-spacer"></span>';
     var n=newerOf(S).length;
     h+='<button class="pv-btn" id="pvHistBtn" type="button">版本记录</button>';
@@ -158,9 +165,15 @@
   function on(id,fn){var el=document.getElementById(id);if(el)el.onclick=fn}
 
   // 「全部」：平台大图谱 = 各专业当前已发布版本的合集，不单独发版本
+  // 口径与列表页映射任务一致：只统计「映射完成」行业的专业（PanoTasks 提供行业状态）
   function allRows(){
-    var rows=[];
-    Object.keys(MAJORS).forEach(function(ind){MAJORS[ind].forEach(function(m){var st=load(m);rows.push({ind:ind,major:m,st:st,newer:newerOf(st)})})});
+    var done={};
+    if(window.PanoTasks)PanoTasks.industries().forEach(function(g){if(g.latestStatus==='done')done[g.industry]=true});
+    var rows=[],hasFilter=window.PanoTasks&&Object.keys(done).length>0;
+    Object.keys(MAJORS).forEach(function(ind){
+      if(hasFilter&&!done[ind])return;
+      MAJORS[ind].forEach(function(m){var st=load(m);rows.push({ind:ind,major:m,st:st,newer:newerOf(st)})});
+    });
     return rows;
   }
   function renderAllBar(bar){
@@ -169,7 +182,6 @@
       +'<span class="pv-chip src"><b>'+rows.length+'</b> 个专业已发布</span>'
       +(sync?'<span class="pv-chip draft" id="pvAllSync">'+sync+' 个专业有可同步更新</span>':'')
       +(draft?'<span class="pv-chip draft">'+draft+' 个专业有草稿</span>':'')
-      +'<span class="pv-tip">ⓘ 各专业当前已发布版本的合集，不单独发版本；版本在各专业内同步与发布</span>'
       +'<span class="pv-spacer"></span><button class="pv-btn" id="pvAllVer" type="button">各专业版本</button>';
     on('pvAllVer',openAllVersions);on('pvAllSync',openAllVersions);
   }
@@ -181,7 +193,7 @@
         +'<div class="pv-manifest" style="margin-top:6px">'+SOURCES.map(function(s){return man[s.id]===NONE?'':'<span>'+s.layer+' '+esc(man[s.id])+'</span>'}).join('')+'</div></div>'
         +'<div class="meta">'+(r.st.draft?'有草稿 · ':'')+(r.newer.length?'<span style="color:#dc6803">'+r.newer.map(function(s){return s.layer}).join('、')+' 可同步</span>':'来源均已同步')+'</div></div>';
     }).join('');
-    open(head('各专业版本','平台大图谱由各专业当前已发布版本组成，没有单独的版本号；同步、草稿、发布都在专业内进行。<br>同行业的专业只读引用同一个能力图谱，允许短期停在不同的能力图谱版本上。')
+    open(head('各专业版本','同行业的专业只读引用同一个能力图谱，允许短期停在不同的能力图谱版本上。')
       +'<div class="pv-body"><div class="pv-sec">'+h+'</div></div>'
       +'<div class="pv-foot"><span class="pv-spacer"></span><button class="pv-btn" data-close>关闭</button></div>');
   }
@@ -289,7 +301,7 @@
     return '<div class="pv-sec"><h3>发布前校验 <span class="cnt">'+(c.block?c.block+' 项阻止发布':'可以发布')+'</span></h3><div class="pv-sec-desc">覆盖率、孤立节点、能力点无知识点会阻止发布；需回到映射审核台或来源图谱补充后再发布。</div>'+cov+iso+nk+warn+'</div>';
   }
   function bindChecks(d){
-    mask.querySelectorAll('[data-fix]').forEach(function(b){b.onclick=function(){d.fixed[b.dataset.fix]=true;save();toast('已在映射审核台补充映射（演示）');openDraft()}});
+    mask.querySelectorAll('[data-fix]').forEach(function(b){b.onclick=function(){d.fixed[b.dataset.fix]=true;save();toast('已在映射审核台补充映射');openDraft()}});
     on('pvThr',function(){
       confirmBox('调整覆盖率阈值','<div>「'+esc(MAJOR)+'」发布前的映射覆盖率阈值：</div><div style="margin-top:8px"><input id="pvThrIn" type="number" min="50" max="100" value="'+S.threshold+'" style="width:80px;height:30px;border:1px solid #c9c2ef;border-radius:6px;padding:0 8px"> %</div><div class="pv-note info" style="margin-top:10px">默认 80%，按专业配置；调整会记入操作日志。</div>','保存',function(){
         var v=parseInt(document.getElementById('pvThrIn').value,10);if(v>=50&&v<=100){S.threshold=v;save()}openDraft();

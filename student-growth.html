@@ -59,15 +59,6 @@
 .plan .h b{font-size:13px}
 .plan .row{display:grid;grid-template-columns:70px 1fr;gap:8px;margin:4px 0;line-height:1.7}
 .plan .row span:first-child{color:var(--muted)}
-.kp-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.kp-chips .kp{display:inline-block;border:1px solid var(--rule);border-radius:7px;padding:2px 9px;font-size:12.5px;background:var(--card-2);color:var(--ink-2)}
-.kp-chips .kp small{color:var(--muted);margin-left:4px;font-size:11px}
-.kp-chips .kp.miss{border-color:#fecaca;background:#fef2f2;color:var(--crit)}
-.kp-tip{font-size:12.5px;color:var(--ink-2);background:var(--card-2);border-radius:9px;padding:8px 12px;margin-top:10px;line-height:1.7}
-.kp-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.kp-h .mut{font-size:11.5px;color:var(--muted)}
-.kp-g{padding:12px 2px;border-bottom:1px solid var(--rule-2)}
-.kp-g:last-child{border-bottom:0;padding-bottom:2px}
 </style>
 </head>
 <body>
@@ -86,7 +77,7 @@
   'use strict';
   var esc = TK.esc, S = SK.view();
   var period = 'term', off = 0, page = 1;
-  var RF = { from: '', to: '', type: '' }, EF = { from: '', to: '', grade: '' }, LF = { from: '', to: '', type: '' };
+  var RF = { from: '', to: '', type: '' }, EF = { from: '', to: '', grade: '' }, LF = { from: '', to: '', type: '' }, KPF = { st: '' };
   var T4 = SK.GTYPES, COL = SK.GCOL;
   var RES_T = ['课件', '视频', '图片', '教案', '情景互动游戏'], RES_C = ['#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
   var GR = ['优秀', '合格', '需改进', '退回'], GR_C = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
@@ -115,8 +106,7 @@
     var r = R(), gs = S.growth.filter(function (g) { return inR(g.at, r); }), tot = sum(gs), prev = sum(S.growth.filter(function (g) { return inR(g.at, SK.periodRange(period, off - 1)); }));
     var by = {}; T4.forEach(function (t) { by[t] = sum(gs.filter(function (g) { return g.type === t; })); });
     var h = head('学生成长中心');
-    h += skillCard();
-    h += kpCard();
+    h += '<div class="g2">' + skillCard() + kpCard() + '</div>';
     // 成长值概览
     h += '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">成长值概览<span class="sp"></span><a class="lk" href="#records">查看成长记录 ›</a></div><div class="gv">' +
       '<div class="big"><div class="k">本期成长星</div><div class="v">' + tot + '<small> 星</small></div><div class="d">' + (tot >= prev ? '↗ 较上期 +' : '↘ 较上期 ') + (tot - prev) + ' 星</div></div><div>' +
@@ -186,28 +176,31 @@
   var GC = { '优秀': 'g', '合格': '', '需改进': 'w' };
   function skillCard() {
     var sv = S.skills, ok = sv.list.filter(function (x) { return x.ok; }).length;
-    return '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">技能达成<span style="font-size:11.5px;font-weight:400;color:var(--muted);margin-left:8px">只看老师确认通过的评价，和成长星分开计算</span><span class="sp"></span><a class="lk" href="#skills">查看详情 ›</a></div>' +
-      (sv.list.length ? '<div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap"><div><div style="font-size:12px;color:var(--muted)">已评价技能</div><div style="font-size:28px;font-weight:700;font-family:var(--mono)">' + sv.list.length + '</div></div>' +
-        '<div><div style="font-size:12px;color:var(--muted)">已达成</div><div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--good)">' + ok + '</div></div>' +
-        '<div><div style="font-size:12px;color:var(--muted)">未达成</div><div style="font-size:28px;font-weight:700;font-family:var(--mono);color:#d97706">' + (sv.list.length - ok) + '</div></div>' +
-        '<div style="flex:1;min-width:260px;font-size:12.5px;line-height:1.9">' + sv.list.slice(0, 4).map(function (x) { return '<div>' + esc(x.name) + ' <span class="tag ' + GC[x.grade] + '">' + x.grade + '</span></div>'; }).join('') + '</div></div>'
+    return '<div class="card pad"><div class="blk-t">技能达成<span style="font-size:11.5px;font-weight:400;color:var(--muted);margin-left:8px">只看老师确认通过的评价</span><span class="sp"></span><a class="lk" href="#skills">查看详情 ›</a></div>' +
+      (sv.list.length ? '<div class="tiles t3">' +
+        '<div style="background:var(--card-2)"><div class="k">已评价技能</div><div class="v">' + sv.list.length + '<small>个</small></div></div>' +
+        '<div style="background:#d1fae5"><div class="k">已达成</div><div class="v" style="color:#059669">' + ok + '<small>个</small></div></div>' +
+        '<div style="background:#ffedd5"><div class="k">未达成</div><div class="v" style="color:#ea580c">' + (sv.list.length - ok) + '<small>个</small></div></div></div>' +
+        '<div style="margin-top:12px;font-size:12.5px;line-height:2">' + sv.list.slice(0, 4).map(function (x) { return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span>' + esc(x.name) + '</span><span class="tag ' + GC[x.grade] + '">' + x.grade + '</span></div>'; }).join('') +
+        (sv.list.length > 4 ? '<a class="lk" href="#skills">等共 ' + sv.list.length + ' 项 ›</a>' : '') + '</div>'
         : '<div class="empty2">还没有老师确认的评价，完成情景任务并通过评价后，这里会显示技能达成情况</div>') + '</div>';
   }
   /* 知识点掌握：按最近一次老师确认的评价判断每个知识点是否体现，与老师端学情口径一致，不计入技能达成 */
   function kpCard() {
     var kv = S.kps, weak = [];
     kv.list.forEach(function (g) { g.kps.forEach(function (k) { if (k.miss) weak.push({ s: g.name, k: k.name }); }); });
-    return '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">知识点掌握<span style="font-size:11.5px;font-weight:400;color:var(--muted);margin-left:8px">按最近一次老师确认的评价判断，不计入技能达成</span><span class="sp"></span><a class="lk" href="#kps">查看详情 ›</a></div>' +
-      (kv.list.length ? '<div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap"><div><div style="font-size:12px;color:var(--muted)">考查知识点</div><div style="font-size:28px;font-weight:700;font-family:var(--mono)">' + kv.total + '</div></div>' +
-        '<div><div style="font-size:12px;color:var(--muted)">已掌握</div><div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--good)">' + kv.ok + '</div></div>' +
-        '<div><div style="font-size:12px;color:var(--muted)">未掌握</div><div style="font-size:28px;font-weight:700;font-family:var(--mono);color:#d97706">' + kv.miss + '</div></div>' +
-        '<div style="flex:1;min-width:260px;font-size:12.5px;line-height:1.9">' + (weak.length ? '待补的知识点：' + weak.slice(0, 4).map(function (x) { return '<span style="color:var(--crit)">' + esc(x.k) + '</span><span style="color:var(--muted)">（' + esc(x.s) + '）</span>'; }).join('、') + (weak.length > 4 ? ' 等 ' + weak.length + ' 个' : '') : '已评价的知识点都掌握了，继续保持。') + '</div></div>'
+    return '<div class="card pad"><div class="blk-t">知识点掌握<span class="sp"></span><a class="lk" href="#kps">查看详情 ›</a></div>' +
+      (kv.list.length ? '<div class="tiles t3">' +
+        '<div style="background:var(--brand-soft)"><div class="k">考查知识点</div><div class="v" style="color:var(--brand)">' + kv.total + '<small>个</small></div></div>' +
+        '<div style="background:#d1fae5"><div class="k">已掌握</div><div class="v" style="color:#059669">' + kv.ok + '<small>个</small></div></div>' +
+        '<div style="background:#ffedd5"><div class="k">未掌握</div><div class="v" style="color:#ea580c">' + kv.miss + '<small>个</small></div></div></div>' +
+        '<div style="margin-top:12px;font-size:12.5px;line-height:2">' + (weak.length ? '待补知识点：' + weak.slice(0, 3).map(function (x) { return '<span style="color:var(--crit)">' + esc(x.k) + '</span>'; }).join('、') + (weak.length > 3 ? '<span style="color:var(--muted);white-space:nowrap">…共 ' + weak.length + ' 个</span>' : '') : '已评价的知识点都掌握了，继续保持。') + '</div>'
       : '<div class="empty2">还没有老师确认的评价，完成情景任务并通过评价后，这里会显示知识点掌握情况</div>') + '</div>';
   }
   function viewKps() {
     var kv = S.kps;
     var h = '<div class="crumb"><a href="#">返回成长中心</a> / 知识点掌握</div>';
-    h += '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">知识点掌握概览</div><div style="font-size:12px;color:var(--muted);margin-bottom:10px">按你最近一次老师确认的评价（含退回的那次）判断每个知识点是否体现，与老师端学情口径一致；只用于学习参考，不计入技能达成。</div>' +
+    h += '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">知识点掌握概览</div>' +
       (kv.list.length ? '<div class="tiles">' +
         '<div style="background:var(--brand-soft)"><div class="k">考查知识点</div><div class="v" style="color:var(--brand)">' + kv.total + '<small>个</small></div></div>' +
         '<div style="background:#d1fae5"><div class="k">已掌握</div><div class="v" style="color:#059669">' + kv.ok + '<small>个</small></div></div>' +
@@ -215,14 +208,34 @@
         '<div style="background:var(--card-2)"><div class="k">掌握率</div><div class="v">' + pct(kv.ok, kv.total) + '<small>%</small></div></div></div>'
       : '<div class="empty2">暂无知识点评价。完成情景任务、老师确认评价后，这里会显示每个技能下知识点的掌握情况</div>') + '</div>';
     if (kv.list.length) {
-      h += '<div class="card pad"><div class="blk-t">分技能明细</div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">每个技能取最近一次老师确认的评价；悬停知识点可看核心内容。✓ 已体现　✗ 未体现。</div>' +
-        kv.list.map(function (g) {
-          return '<div class="kp-g"><div class="kp-h"><b style="font-weight:600">' + esc(g.name) + '</b><span class="mut">' + esc(g.course) + ' · ' + esc(g.task) + ' · ' + esc(g.at) + '</span><span class="sp" style="flex:1"></span><a class="lk" href="' + taskLink(g.tid) + '">去看任务 ›</a></div>' +
-            '<div class="kp-chips">' + g.kps.map(function (k) {
-              return '<span class="kp' + (k.miss ? ' miss' : '') + '" title="' + esc(k.core || '') + '">' + (k.miss ? '✗ ' : '✓ ') + esc(k.name) + (k.type ? '<small>' + esc(k.type) + '</small>' : '') + '</span>';
-            }).join('') + '</div>' +
-            (g.miss ? '<div class="kp-tip">这个技能有 ' + g.miss + ' 个知识点未体现：回看《' + esc(g.task) + '》的学习资源，对照老师评语逐项补一补，下次同类任务重点体现。</div>' : '') + '</div>';
-        }).join('') + '</div>';
+      // 以知识点为主：每个知识点一行（同一条在多次评价中出现时取最近一次），未掌握排前
+      var seen = {}, rows = [];
+      kv.list.forEach(function (g) {
+        g.kps.forEach(function (k) {
+          if (seen[k.id]) return; seen[k.id] = 1;
+          rows.push({ k: k, skill: g.name, course: g.course, task: g.task, at: g.at, tid: g.tid });
+        });
+      });
+      var cnt = { ok: 0, miss: 0, none: 0 };
+      rows.forEach(function (r) { cnt[r.k.miss ? 'miss' : r.k.none ? 'none' : 'ok']++; });
+      var stName = { ok: '已掌握', miss: '未掌握', none: '未考查' };
+      var stPill = function (r) {
+        return r.k.miss ? '<span class="tag w" style="background:#ffedd5;color:#ea580c;border-color:#fdba74">✗ 未掌握</span>'
+          : r.k.none ? '<span class="tag" style="background:var(--card-2);color:var(--muted);border-style:dashed">– 未考查</span>'
+          : '<span class="tag g">✓ 已掌握</span>';
+      };
+      var ord = { miss: 0, none: 1, ok: 2 };
+      var shown = rows.filter(function (r) { return !KPF.st || (KPF.st === 'miss' ? r.k.miss : KPF.st === 'none' ? r.k.none : !r.k.miss && !r.k.none); })
+        .sort(function (a, b) { return ord[a.k.miss ? 'miss' : a.k.none ? 'none' : 'ok'] - ord[b.k.miss ? 'miss' : b.k.none ? 'none' : 'ok'] || (a.at < b.at ? 1 : -1); });
+      var chip = function (key, n) { return '<button type="button" class="btn-s" data-kpf="' + key + '"' + (KPF.st === key ? ' style="border-color:var(--brand);color:var(--brand-ink)"' : '') + '>' + (key ? stName[key] : '全部') + ' ' + n + '</button>'; };
+      h += '<div class="card pad"><div class="blk-t">知识点明细<span class="sp"></span><span style="display:flex;gap:6px">' + chip('', rows.length) + chip('miss', cnt.miss) + chip('none', cnt.none) + chip('ok', cnt.ok) + '</span></div>' +
+        '<table class="tbl2"><thead><tr><th style="width:32%">知识点</th><th>掌握情况</th><th>所属技能</th><th>来自任务</th><th>评价时间</th><th>操作</th></tr></thead><tbody>' +
+        (shown.map(function (r) {
+          return '<tr><td><b style="font-weight:600">' + esc(r.k.name) + '</b>' + (r.k.type ? ' <small style="color:var(--muted)">' + esc(r.k.type) + '</small>' : '') +
+            (r.k.core ? '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">' + esc(r.k.core) + '</div>' : '') + '</td>' +
+            '<td>' + stPill(r) + '</td><td>' + esc(r.skill) + '</td><td style="font-size:12px">' + esc(r.course) + '<div style="font-size:11.5px;color:var(--muted)">' + esc(r.task) + '</div></td>' +
+            '<td class="mono" style="font-size:11.5px;white-space:nowrap">' + esc(r.at) + '</td><td><a class="lk" href="' + taskLink(r.tid) + '">去看任务 ›</a></td></tr>';
+        }).join('') || '<tr><td colspan="6" class="empty2">没有符合筛选条件的知识点</td></tr>') + '</tbody></table></div>';
     }
     return h;
   }
@@ -323,6 +336,7 @@
     if ((t = e.target.closest('[data-period]'))) { period = t.getAttribute('data-period'); off = 0; render(); }
     if ((t = e.target.closest('[data-off]')) && !t.disabled) { var o = +t.getAttribute('data-off'); off = o === 0 ? 0 : off + o; render(); }
     if ((t = e.target.closest('[data-page]'))) { page = +t.getAttribute('data-page'); render(); }
+    if ((t = e.target.closest('[data-kpf]'))) { KPF.st = t.getAttribute('data-kpf'); render(); }
   });
   body.addEventListener('change', function (e) {
     var m = { rf: RF, ef: EF, lf: LF };

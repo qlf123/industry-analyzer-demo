@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>能力测评</title>
+<title>专业建设测评</title>
 <link rel="stylesheet" href="css/common.css">
 <style>
 /* 能力测评（专业建设评估）页面布局 */
@@ -209,6 +209,10 @@
 .rs-det .sug{padding-left:0;padding-right:0}
 /* 标准未覆盖 */
 .nostd{font-size:13px;line-height:1.9;margin:0;padding-left:18px}
+.nostd li{margin-bottom:10px}
+.nostd .ns-sug,.nostd .ns-lv{font-size:12.5px;color:var(--ink-2);margin-top:2px;line-height:1.7}
+.nostd .ns-lv{color:var(--muted)}
+.nostd .k{display:inline-block;font-size:11px;color:var(--brand-ink);background:var(--brand-soft);border-radius:4px;padding:0 6px;margin-right:6px;line-height:1.6}
 .nostd .sep{color:var(--rule);margin:0 10px}
 /* 导出报告预览层 */
 #docov{position:fixed;inset:0;z-index:95;background:rgba(20,16,32,.55);display:flex;flex-direction:column}
@@ -225,7 +229,7 @@
     <div class="ptop">
       <div class="ptop-r">
         <div class="pt-l">
-          <h1 class="pt-t">能力测评</h1>
+          <h1 class="pt-t">专业建设测评</h1>
           <div class="pt-d">对照行业岗位能力要求，评估本校专业的课程支撑与实训资源</div>
         </div>
       </div>
@@ -279,11 +283,19 @@
     var E = (window.TK && TK.load().edu) || {};
     return (E.labs || []).filter(function (l) { return l.status === '启用'; }).map(function (l) { return { name: l.name, kind: '校内', conds: (l.conds || []).slice(), seats: l.seats === '' || l.seats == null ? null : +l.seats, status: '在用', reg: true }; });
   }
+  // 本校开设的专业课程统一读管理端「教务基础数据 › 课程管理」：启用、且已关联到本专业知识体系课程的，算开设
+  function eduByKs() {
+    var E = (window.TK && TK.load().edu) || {}, out = {};
+    (E.courses || []).forEach(function (c) { if (c.status === '启用' && c.ks) out[c.ks] = c; });
+    return out;
+  }
   function planOf(mid) {
     var base = clone(D.plans[mid]);
     var p = store.plans[mid] ? clone(store.plans[mid]) : base;
     var ext = (p.labs || base.labs || []).filter(function (l) { return l.kind === '校外'; });
     p.labs = regLabs().concat(ext);
+    var ek = eduByKs();
+    p.courses = (base.courses || []).map(function (c) { var e = ek[c.kc]; return { name: c.name, category: c.category, kc: c.kc, opened: !!e, edu: e ? e.name : '' }; });
     return p;
   }
   /* 实训条件字典与数量标准（标准为空时，不显示任何数量） */
@@ -467,6 +479,9 @@
     var majors = visibleMajors();
     var h = '';
     if (!majors.length) return '<div class="card empty">当前身份可见范围内没有专业。</div>';
+    // 可测评的专业（已收录知识体系）排前面做卡片；未收录的收成一行
+    var noK = majors.filter(function (m) { return !hasKnowledge(m.id); });
+    majors = majors.filter(function (m) { return hasKnowledge(m.id); });
     h += '<div class="mgrid">' + majors.map(function (m) {
       var cat = D.catalog[m.id] || {};
       var hasK = hasKnowledge(m.id);
@@ -480,17 +495,14 @@
         '<div class="mcard-h"><span class="mcard-t">' + esc(m.name) + '</span>' +
           (cat.code ? '<span class="mcard-code">' + esc(cat.code) + '</span>' : '') +
           (cat.stage ? '<span class="pill k">' + esc(cat.stage) + '</span>' : '') + '</div>' +
-        '<div class="mcard-meta">' +
-          (hasK ? '知识体系：' + K.courses.length + ' 门专业课 · ' + nSkill + ' 个技能 · 已确认映射 ' + cc.ok + ' 条' +
-              (cc.pending ? '（另有待确认 ' + cc.pending + ' 条，不计入测评）' : '')
-            : '<span style="color:var(--muted)">平台尚未收录该专业知识体系，暂不能测评</span>') + '</div>' +
         (last ? '<div class="mcard-last"><span>最近测评 ' + esc(last.createdAt.slice(0, 10)) + '</span>' +
             '<span>' + esc(gapBrief(last)) + '</span></div>' : '') +
         '<div class="mcard-acts">' +
           (runOk ? '<a class="btn" href="#new/' + m.id + '" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">新建测评</a>' : '') +
           (last ? '<a class="btn ghost" href="#report/' + last.id + '" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">查看报告</a>' : '') +
         '</div></div>';
-    }).join('') + '</div>';
+    }).join('') + '</div>' +
+      (noK.length ? '<div class="note" style="margin:10px 2px 0">以下专业平台尚未收录知识体系，暂不能测评：' + noK.map(function (m) { return esc(m.name); }).join('、') + '</div>' : '');
 
     var reps = store.reports.filter(function (r) { var m = majorById(r.majorId); return m && majorVisible(m); }).slice().reverse();
     h += '<div class="sec-h"><h2>测评记录</h2><span class="sub">' + reps.length + ' 次</span></div>';
@@ -517,7 +529,7 @@
     }).join('') + '</div>';
   }
   function viewNew() {
-    if (!can(PERM_RUN)) return '<div class="card empty">当前身份没有「发起能力测评」权限。</div>';
+    if (!can(PERM_RUN)) return '<div class="card empty">当前身份没有「发起专业建设测评」权限。</div>';
     var h = stepper();
     if (draft.step === 1) {
       h += '<div class="card pad"><div class="sub-h">选择要测评的专业</div><div class="radio-list">' +
@@ -536,13 +548,14 @@
     if (draft.step === 2) {
       var nOpen = plan.courses.filter(function (c) { return c.opened; }).length;
       h += '<div class="card pad">' +
-        '<div class="hint" style="margin-bottom:14px">核对 <b>' + esc(m.name) + '</b> 专业的职业面向、开设的专业课程与实训资源。如与实际不符，请直接修改；修改会保存在本机，下次测评沿用。</div>' +
+        '<div class="hint" style="margin-bottom:14px">核对 <b>' + esc(m.name) + '</b> 专业的职业面向、开设的专业课程与实训资源。开设课程读「课程管理」，校内实训资源读「实训资源管理」，与实际不符请到对应页面调整；职业面向和校外基地在这里修改，下次测评沿用。</div>' +
         '<div class="sub-h">职业面向（' + plan.positions.length + ' 个岗位）</div>' + positionChips(plan.positions) +
-        '<div class="sub-h">开设的专业课程 <span class="note" style="font-weight:400">· 知识体系中的 ' + plan.courses.length + ' 门专业课，本校开设 ' + nOpen + ' 门</span></div>' +
-        '<div class="tbl-wrap"><table class="tbl" style="max-width:640px"><thead><tr><th>开设</th><th>课程</th><th>类别</th></tr></thead><tbody>' +
-        plan.courses.map(function (c, i) {
-          return '<tr class="' + (c.opened ? '' : 'off') + '"><td><input type="checkbox" data-c="' + i + '" data-f="opened"' + (c.opened ? ' checked' : '') + '></td>' +
-            '<td>' + esc(c.name) + '</td><td class="note">' + esc(c.category) + '</td></tr>';
+        '<div class="sub-h">开设的专业课程 <span class="note" style="font-weight:400">· 知识体系中的 ' + plan.courses.length + ' 门专业课，本校开设 ' + nOpen + ' 门；读「课程管理」中已启用并关联知识体系的课程</span>' +
+          (can('edu:base:manage') ? ' <a href="' + esc(UI.link('edu-base.html?t=course', 'admin')) + '" style="font-size:12px;font-weight:400;color:var(--brand-ink)">去课程管理调整 ›</a>' : '') + '</div>' +
+        '<div class="tbl-wrap"><table class="tbl" style="max-width:640px"><thead><tr><th>课程</th><th>类别</th><th>本校</th></tr></thead><tbody>' +
+        plan.courses.map(function (c) {
+          return '<tr class="' + (c.opened ? '' : 'off') + '"><td>' + esc(c.name) + '</td><td class="note">' + esc(c.category) + '</td>' +
+            '<td>' + (c.opened ? '<span class="pill good">已开设</span>' : '<span class="pill k">未开设</span>') + '</td></tr>';
         }).join('') + '</tbody></table></div>' +
         labSection(plan) +
         '<div class="stepacts"><button class="btn-s" data-act="resetPlan">恢复为原始数据</button><span style="flex:1"></span>' + runNote(draft.mid) +
@@ -642,10 +655,22 @@
   /* ═══ 视图：报告 ═══ */
   var gapOnly = false;
   function statusPill(r) {
-    if (r.status === 'nostd') return '<span class="pill k">标准数据暂不支持</span>';
+    if (r.status === 'nostd') return '<span class="pill k">课程待完善</span>';
     if (r.status === 'none') return '<span class="pill crit">本校未覆盖</span>';
     if (r.status === 'low') return '<span class="pill warn">低于要求</span>' + (r.partialOnly ? ' <span class="pill k">仅部分支撑</span>' : '');
     return '<span class="pill good">达到要求</span>' + (r.partialOnly ? ' <span class="pill k">仅部分支撑</span>' : '');
+  }
+  /* 课程待完善的建议：只用已确认映射和能力定义，不指定没有依据的课程
+     没有任何课程支撑 → 在专业课程中补充达到要求等级的教学内容；
+     有课程支撑但等级不够 → 完善支撑它的课程（列出课程与技能），使其达到要求等级 */
+  function nostdSug(mid, x) {
+    var ix = knIndex(mid), ab = ABL[x.abl] || {}, desc = (ab.levels || {})['L' + x.need] || '';
+    var ms = (D.mappings[mid] || []).filter(function (m) { return m.abl === x.abl && D.countedTypes.indexOf(m.type) >= 0 && m.level && isConfirmed(m); });
+    var top = ms.filter(function (m) { return parseInt(String(m.level).slice(1), 10) === x.std; });
+    if (!x.std || !top.length) return { state: '现有专业课程中没有对应内容', text: '在专业课程中补充支撑「' + ab.name + '」的教学内容，使学生达到 L' + x.need + '。', desc: desc };
+    var parts = top.map(function (m) { var k = ix.skillById[m.skill]; return k ? '《' + k.c.name + '》的「' + k.s.name + '」（' + m.type + ' L' + x.std + '）' : ''; }).filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+    var cs = top.map(function (m) { var k = ix.skillById[m.skill]; return k ? '《' + k.c.name + '》' : ''; }).filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+    return { state: '现有专业课程最多教到 L' + x.std, text: '目前由' + parts.join('、') + '支撑。建议完善' + cs.join('、') + '，把相关教学内容和要求提升到 L' + x.need + '。', desc: desc };
   }
   function knIndex(mid) {
     var courseById = {}, skillById = {};
@@ -666,7 +691,7 @@
     return { avg: avg, cmp: cmp, ok: ok, high: high, concl: concl,
       trOk: R.training ? R.training.ok : null, trN: R.training ? R.training.required.length : 0 };
   }
-  function repName(rep) { return majorById(rep.majorId).name + '专业 · 能力测评报告'; }
+  function repName(rep) { return majorById(rep.majorId).name + '专业 · 专业建设测评报告'; }
   function dataScope(rep) { return '对标：' + G.industry.name + '能力图谱 · ' + D.knowledge[rep.majorId].name + ' 知识体系'; }
   /* 目标岗位要求的能力：合并去重（取最高要求等级），结论 nostd / ok / low / none */
   function mergedAbl(R) {
@@ -699,26 +724,28 @@
       P.push('<b>实训条件</b>　已开设课程必需的 ' + A.conds.length + ' 项中，本校具备 ' + (A.conds.length - miss.length) + ' 项' +
         (miss.length ? '，缺 ' + miss.length + ' 项：' + esc(nameList(miss.map(function (c) { return c.x.name; }))) : '') + '。');
     }
-    if (nostd.length) P.push('<b>标准数据暂不支持</b>　' + esc(nameList(nostd.map(function (x) { return ABL[x.abl].name; }))) + '：专业知识体系的课程本身教不到岗位要求，不计入本校差距，需完善知识体系。');
+    if (nostd.length) P.push('<b>课程待完善</b>　' + esc(nameList(nostd.map(function (x) { return ABL[x.abl].name; }))) + '：现有专业课程都教不到岗位要求，不计入本校差距，需完善课程。');
     return P;
   }
   function gapBrief(rep) {
-    var R = rep.result, A = actions(R), T = R.training, s = ['能力差距 ' + R.gap.length + ' 条'];
+    var R = rep.result, A = actions(R), T = R.training, s = [];
+    if (R.gap.length) s.push('能力差距 ' + R.gap.length + ' 条');
     if (A.courses.length) s.push('待开设课程 ' + A.courses.length + ' 门');
-    if (T && T.used.total) s.push('缺必需实训条件 ' + A.conds.filter(function (c) { return c.x.status !== '具备'; }).length + ' 项');
-    return s.join(' · ');
+    var miss = T && T.used.total ? A.conds.filter(function (c) { return c.x.status !== '具备'; }).length : 0;
+    if (miss) s.push('缺必需实训条件 ' + miss + ' 项');
+    return s.length ? s.join(' · ') : '对照标准没有差距';
   }
-  /* 某岗位的一句话说明：要求几条、达到几条、差在哪、怎么补、哪些标准数据暂不支持 */
+  /* 某岗位的一句话说明：要求几条、达到几条、差在哪、怎么补、哪些课程待完善 */
   function posSentence(t, R, A) {
     var gaps = t.rows.filter(function (r) { return r.status === 'low' || r.status === 'none'; }), ns = t.rows.filter(function (r) { return r.status === 'nostd'; });
     var s = POS[t.pos].name + '要求 ' + t.total + ' 条能力，本校达到 ' + t.ok + ' 条。';
     if (gaps.length) s += '差距：' + gaps.map(function (r) { var c = courseFor(A, r.abl);
       return ABL[r.abl].name + (ABL[r.abl].core ? '★' : '') + '（本校 ' + (r.got ? 'L' + r.got : '未覆盖') + '，要求 ' + r.need + (c ? '；开设《' + c + '》可补齐' : '') + '）'; }).join('；') + '。';
     else if (t.comparable) s += '标准能教到要求的能力全部达到。';
-    if (ns.length) s += '另有 ' + ns.length + ' 条标准数据暂不支持：' + ns.map(function (r) { return ABL[r.abl].name; }).join('、') + '。';
+    if (ns.length) s += '另有 ' + ns.length + ' 条课程待完善：' + ns.map(function (r) { return ABL[r.abl].name; }).join('、') + '。';
     return s;
   }
-  /* 岗位能力雷达图：轴 = 该岗位要求的能力，刻度 L0–L3；两层 = 岗位要求 / 本校达到；标准数据暂不支持的能力标签置灰 */
+  /* 岗位能力雷达图：轴 = 该岗位要求的能力，刻度 L0–L3；两层 = 岗位要求 / 本校达到；课程待完善的能力标签置灰 */
   var RADAR_PAGE = { ink: 'var(--ink)', ink2: 'var(--ink-2)', muted: 'var(--muted)', rule: 'var(--rule)', brand: 'var(--brand)', crit: 'var(--crit)', font: 'inherit' };
   var RADAR_DOC = { ink: '#191524', ink2: '#5c5670', muted: '#8e88a1', rule: '#d9d4e6', brand: '#5b3fd6', crit: '#c0392b', font: '"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif' };
   function radar(t, C, mini) {   // mini：岗位卡片里的缩略图，不画文字
@@ -740,7 +767,7 @@
       var gap = r.status === 'low' || r.status === 'none', p = pt(i, r.got);
       h += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (gap ? 4 : mini ? 2 : 2.6) + '" fill="' + (gap ? C.crit : C.brand) + '"/>';
       if (mini) return;
-      // 标签：每行 7 字，完整显示；差距标红，标准数据暂不支持置灰
+      // 标签：每行 7 字，完整显示；差距标红，课程待完善置灰
       var a = ABL[r.abl], name = (a.core ? '★' : '') + a.name, lines = [];
       for (var k0 = 0; k0 < name.length; k0 += 7) lines.push(name.slice(k0, k0 + 7));
       var ang = -Math.PI / 2 + i * 2 * Math.PI / n, cos = Math.cos(ang), sin = Math.sin(ang), lp = pt(i, 3.3);
@@ -748,7 +775,7 @@
       var col = gap ? C.crit : r.status === 'nostd' ? C.muted : C.ink2;
       var y0 = sin > 0.6 ? lp[1] + 9 : sin < -0.6 ? lp[1] - (lines.length - 1) * 12 - 3 : lp[1] - (lines.length - 1) * 6 + 4;
       h += '<text x="' + lp[0].toFixed(1) + '" y="' + y0.toFixed(1) + '" font-size="11" text-anchor="' + anchor + '" fill="' + col + '"' + (gap ? ' font-weight="600"' : '') + '><title>' +
-        esc(a.name + '：要求 ' + r.need + '，本校 ' + (r.got ? 'L' + r.got : '未覆盖') + (r.status === 'nostd' ? '（标准数据暂不支持）' : '')) + '</title>' +
+        esc(a.name + '：要求 ' + r.need + '，本校 ' + (r.got ? 'L' + r.got : '未覆盖') + (r.status === 'nostd' ? '（课程待完善）' : '')) + '</title>' +
         lines.map(function (l, k) { return '<tspan x="' + lp[0].toFixed(1) + '" dy="' + (k ? 12 : 0) + '">' + esc(l) + '</tspan>'; }).join('') + '</text>';
     });
     return h + '</svg>';
@@ -758,7 +785,7 @@
       '<span><i style="border:1.4px dashed ' + C.ink + '"></i>岗位要求</span>' +
       '<span><i style="background:' + C.brand + ';opacity:.5;border:2px solid ' + C.brand + '"></i>本校达到</span>' +
       '<span><i style="width:8px;height:8px;border-radius:50%;background:' + C.crit + '"></i>本校差距（红字）</span>' +
-      (t.nostd ? '<span style="color:' + C.muted + '">灰字：标准数据暂不支持，不计入差距</span>' : '') + '</div>';
+      (t.nostd ? '<span style="color:' + C.muted + '">灰字：课程待完善，不计入差距</span>' : '') + '</div>';
   }
   function courseList(ix, courses) { return Object.keys(courses).map(function (cid) { return ix.courseById[cid].name; }); }
   /* 报告页：先结论、再图、明细按需展开 */
@@ -806,7 +833,7 @@
     var tp = R.targets.find(function (t) { return t.pos === selPos; });
     var h = '<div class="rsheet">';
     // 头部
-    h += '<div class="rs-head"><div><div class="rs-t">' + esc(m.name) + ' 专业 · 能力测评报告</div>' +
+    h += '<div class="rs-head"><div><div class="rs-t">' + esc(m.name) + ' 专业 · 专业建设测评报告</div>' +
       '<div class="rs-m">' + esc(cat.code ? cat.code + ' · ' : '') + '测评时间 ' + esc(rep.createdAt) + ' · 发起人 ' + esc(rep.by) + '<br>' + esc(dataScope(rep)) + '</div></div>' +
       '<div class="acts"><a class="btn ghost" href="#" style="height:32px;display:inline-flex;align-items:center;text-decoration:none">返回</a>' +
       '<button class="btn ghost" data-act="export" data-rep="' + rep.id + '" style="height:32px">导出报告</button>' +
@@ -819,7 +846,7 @@
     if (T && T.used.total && miss.length) hl.push('必需实训条件缺 ' + miss.length + ' 项');
     h += '<section class="rs-sec rs-over">' +
       '<div class="ov-l"><div class="ov-t">' + (hl.length ? '对照标准，本校差距：' + hl.join(' · ') : '对照标准，本校没有差距') + '</div>' +
-        '<ul class="ov-pts">' + keyPoints(rep).map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>' +
+        (R.nostd.length ? '<div class="note" style="margin-top:6px">另有 ' + R.nostd.length + ' 条能力现有专业课程都教不到岗位要求，不计入本校差距，需完善课程，见 03。</div>' : '') + '</div>' +
       '<div class="ov-stats">' +
         ostat('sec-pos', R.gap.length, '条能力未达要求', coreGap ? '其中核心能力 ' + coreGap + ' 条' : '', R.gap.length ? 'crit' : 'good') +
         ostat('sec-act', A.courses.length, '门标准课程待开设', A.courses.length ? '开设后可补齐能力差距' : '', A.courses.length ? 'warn' : 'good') +
@@ -836,7 +863,7 @@
           (gaps.length ? '<span class="pr-g">' + gaps.map(function (r) { return '<span class="gtag">' + esc(ABL[r.abl].name) + ' ' + (r.got ? 'L' + r.got : '无') + '→' + r.need + '</span>'; }).join('') + '</span>' : '') +
           '</button>';
       }).join('') + '</div>' +
-      '<div class="pradar">' + (tp ? '<div class="pd-t">' + esc(POS[tp.pos].name) + '<span class="note">要求 ' + tp.total + ' 条 · 达到 ' + tp.ok + ' · 差距 ' + tp.gap + (tp.nostd ? ' · 标准数据暂不支持 ' + tp.nostd : '') + '</span></div>' +
+      '<div class="pradar">' + (tp ? '<div class="pd-t">' + esc(POS[tp.pos].name) + '<span class="note">要求 ' + tp.total + ' 条 · 达到 ' + tp.ok + ' · 差距 ' + tp.gap + (tp.nostd ? ' · 课程待完善 ' + tp.nostd : '') + '</span></div>' +
         (radar(tp, RADAR_PAGE) || '<div class="note">要求的能力少于 3 条，不绘制雷达图。</div>') + radarLegend(tp, RADAR_PAGE) +
         '<p class="pd-s">' + esc(posSentence(tp, R, A)) + '</p>' : '') + '</div></div>' +
       (tp ? '<div class="rs-more"><button class="lnk" data-ptbl type="button">' + (showTbl ? '收起逐条明细 ▴' : '展开「' + esc(POS[tp.pos].name) + '」逐条明细 ▾') + '</button></div>' + (showTbl ? posTable(tp, R, ix) : '') : '') +
@@ -880,9 +907,12 @@
 
     // 标准未覆盖
     if (R.nostd.length) {
-      h += '<section class="rs-sec" id="sec-nostd"><div class="rs-h"><span class="no">03</span><h2>标准数据暂不支持</h2><span class="sub">岗位有要求，但专业知识体系的全部课程本身教不到要求等级，属于标准数据的缺口，需完善知识体系；不计入本校差距</span></div>' +
+      h += '<section class="rs-sec" id="sec-nostd"><div class="rs-h"><span class="no">03</span><h2>课程待完善</h2><span class="sub">岗位有要求，但现有专业课程都教不到要求等级；不计入本校差距，需完善课程</span></div>' +
         '<ul class="nostd">' + R.nostd.map(function (x) {
-          return '<li><b>' + esc(ABL[x.abl].name) + '</b>：' + esc(uniqNames(x.pos).join('、')) + ' 要求 L' + x.need + '，知识体系' + (x.std ? '最多教到 L' + x.std : '中没有对应内容') + '</li>';
+          var g = nostdSug(rep.majorId, x);
+          return '<li><b>' + esc(ABL[x.abl].name) + '</b>：' + esc(uniqNames(x.pos).join('、')) + ' 要求 L' + x.need + '，' + esc(g.state) +
+            '<div class="ns-sug"><span class="k">建议</span>' + esc(g.text) + '</div>' +
+            (g.desc ? '<div class="ns-lv"><span class="k">L' + x.need + ' 要求</span>' + esc(g.desc) + '</div>' : '') + '</li>';
         }).join('') + '</ul></section>';
     }
     return h + '</div>';
@@ -997,7 +1027,7 @@
   ].join('\n');
   function stCls(r) { return r.status === 'ok' ? 'ok' : r.status === 'low' ? 'low' : r.status === 'none' ? 'none' : 'muted'; }
   function stTxt(r) {
-    return { ok: '达到要求', low: '低于要求', none: '本校未覆盖', nostd: '标准数据暂不支持' }[r.status] + (r.partialOnly && (r.status === 'ok' || r.status === 'low') ? '（仅部分支撑）' : '');
+    return { ok: '达到要求', low: '低于要求', none: '本校未覆盖', nostd: '课程待完善' }[r.status] + (r.partialOnly && (r.status === 'ok' || r.status === 'low') ? '（仅部分支撑）' : '');
   }
   function docHTML(rep) {
     var R = rep.result, m = majorById(rep.majorId), cat = D.catalog[rep.majorId] || {};
@@ -1043,14 +1073,14 @@
     var cmpN = M.length - gNs.length;
     h += '<h3>图 1　' + esc(tNames) + '的 ' + M.length + ' 条能力要求：本校教到了哪一级</h3><div class="fig">' +
       '<div class="lvr lvh"><div>能力' + (multi ? '（要求它的目标岗位及等级）' : '') + '</div><div class="lvbar-h"><span>L1</span><span>L2</span><span>L3</span></div><div>本校情况</div></div>' +
-      lvGroup(gNone, '尚未覆盖') + lvGroup(gLow, '已有课程，但没教到岗位要求的等级') + lvGroup(gOk, '已达到要求') + lvGroup(gNs, '标准数据暂不支持，不计入差距') +
+      lvGroup(gNone, '尚未覆盖') + lvGroup(gLow, '已有课程，但没教到岗位要求的等级') + lvGroup(gOk, '已达到要求') + lvGroup(gNs, '课程待完善，不计入差距') +
       '<div class="legend"><span><i style="background:#4a3aa7"></i>已教到，达到要求</span><span><i style="background:#8f78e0"></i>已教到，但低于要求</span>' +
       '<span><i style="border:1.5px dashed #c0392b;background:#fff"></i>岗位要求、本校还没教到</span>' +
-      (gNs.length ? '<span><i style="border:1.5px dashed #b4adc6;background:#f6f5fa"></i>知识体系本身教不到</span>' : '') +
+      (gNs.length ? '<span><i style="border:1.5px dashed #b4adc6;background:#f6f5fa"></i>现有课程教不到</span>' : '') +
       '<span><i style="background:#f1eff6"></i>超出岗位要求</span></div></div>' +
       '<p class="figtxt"><b>说明</b>　' + M.length + ' 条要求中，标准能教到要求的 ' + cmpN + ' 条，本校达到 <b>' + gOk.length + '</b> 条' +
       (gLow.length ? '；<b>' + gLow.length + '</b> 条有课程在教，但没教到要求的等级' : '') + (gNone.length ? '；<b>' + gNone.length + '</b> 条还没有课程覆盖' : '') + '。' +
-      (gNs.length ? '另有 <b>' + gNs.length + '</b> 条在专业知识体系中本身就教不到要求（灰色虚线格），属于标准数据缺口，不计入本校差距。' : '') + '</p>';
+      (gNs.length ? '另有 <b>' + gNs.length + '</b> 条现有专业课程都教不到要求（灰色虚线格），需完善课程，不计入本校差距。' : '') + '</p>';
     var pr = R.targets.filter(function (t) { return t.rate != null; }).sort(function (a, b) { return b.rate - a.rate; });
     if (pr.length) {
       var lo = pr[pr.length - 1], hi = pr[0];
@@ -1061,19 +1091,19 @@
       h += '<h3>图 2　各目标岗位的达标率</h3><div class="fig">' + pr.map(function (t) {
         return '<div class="pbr"><span>' + esc(POS[t.pos].name) + '</span><div class="hbar"><i style="width:' + Math.min(100, t.rate) + '%"></i></div>' +
           '<span class="pbr-v"><b class="' + (t.rate >= 80 ? 'ok' : t.rate >= 60 ? 'low' : 'none') + '">' + t.rate + '%</b>' + t.ok + '/' + t.comparable + '</span></div>';
-      }).join('') + '</div><p class="figtxt"><b>说明</b>　' + esc(f2) + '达标率 = 本校达到的条数 ÷ 标准能教到要求的条数，标准数据暂不支持的不计入。</p>';
+      }).join('') + '</div><p class="figtxt"><b>说明</b>　' + esc(f2) + '达标率 = 本校达到的条数 ÷ 标准能教到要求的条数，课程待完善的不计入。</p>';
     }
     var topItems = acs.filter(function (c) { return c.pri === '高'; }).map(function (c) { return '开设《' + c.name + '》，补齐' + c.fx.map(function (f) { return ABL[f.abl].name; }).join('、'); })
       .concat(cmiss.filter(function (c) { return c.pri === '高'; }).map(function (c) { return '建设实训条件「' + c.x.name + '」（' + c.x.courses.length + ' 门课需要）'; }));
     if (topItems.length) h += '<h3>建设重点（优先 ' + topItems.length + ' 项，完整清单见第三部分）</h3><ol class="tight">' + topItems.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ol>';
 
     // ── 一、岗位能力 ──
-    h += '<h2 class="pb">二、岗位能力</h2><p>本校 ' + R.targets.length + ' 个面向岗位对照标准的情况。雷达图中虚线为岗位要求，紫色为本校达到，红点为差距，灰字为标准数据暂不支持。逐条对照见附录一。</p>' +
+    h += '<h2 class="pb">二、岗位能力</h2><p>本校 ' + R.targets.length + ' 个面向岗位对照标准的情况。雷达图中虚线为岗位要求，紫色为本校达到，红点为差距，灰字为课程待完善。逐条对照见附录一。</p>' +
       '<div class="pgrid">' + R.targets.map(function (t) {
         var gaps = t.rows.filter(function (r) { return r.status === 'low' || r.status === 'none'; });
         var line = posSentence(t, R, AC);
         return '<div class="pbox"><div class="pb-h"><b>' + esc(POS[t.pos].name) + '</b><span class="' + (t.rate == null ? '' : t.rate >= 80 ? 'ok' : t.rate >= 60 ? 'low' : 'none') + '">达标率 ' + rateTxt(t.rate) + '</span></div>' +
-          '<div class="muted">' + esc(SUB[POS[t.pos].sub].name) + ' · 要求 ' + t.total + ' 条，本校达到 ' + t.ok + ' 条' + (t.gap ? '，差距 ' + t.gap + ' 条' : '') + (t.nostd ? '，标准数据暂不支持 ' + t.nostd + ' 条' : '') + '</div>' +
+          '<div class="muted">' + esc(SUB[POS[t.pos].sub].name) + ' · 要求 ' + t.total + ' 条，本校达到 ' + t.ok + ' 条' + (t.gap ? '，差距 ' + t.gap + ' 条' : '') + (t.nostd ? '，课程待完善 ' + t.nostd + ' 条' : '') + '</div>' +
           (radar(t, RADAR_DOC) || '') + '<p class="pline">' + esc(line) + '</p></div>';
       }).join('') + '</div><p class="muted">★ 为核心能力。</p>';
 
@@ -1154,17 +1184,17 @@
         }).join('') + '</tbody></table>';
     }
     if (R.nostd.length) {
-      h += '<h2>附录' + ax[ai++] + '　标准数据暂不支持的能力</h2><p>以下能力岗位有要求，但专业知识体系的全部课程本身教不到要求等级，属于标准数据的缺口，不计入本校差距与达标率，需完善专业知识体系或映射。</p>' +
-        '<table><thead><tr><th>能力</th><th class="n">要求</th><th class="n">知识体系最多可达</th><th>涉及岗位</th></tr></thead><tbody>' +
+      h += '<h2>附录' + ax[ai++] + '　课程待完善的能力</h2><p>以下能力岗位有要求，但现有专业课程都教不到要求等级，不计入本校差距与达标率，需完善课程。</p>' +
+        '<table><thead><tr><th>能力</th><th class="n">要求</th><th class="n">现有课程最多可达</th><th>涉及岗位</th><th>建议</th></tr></thead><tbody>' +
         R.nostd.map(function (x) {
-          return '<tr><td>' + esc(ABL[x.abl].name) + '</td><td class="n">L' + x.need + '</td><td class="n">' + (x.std ? 'L' + x.std : '—') + '</td><td>' + esc(uniqNames(x.pos).join('、')) + '</td></tr>';
+          return '<tr><td>' + esc(ABL[x.abl].name) + '</td><td class="n">L' + x.need + '</td><td class="n">' + (x.std ? 'L' + x.std : '—') + '</td><td>' + esc(uniqNames(x.pos).join('、')) + '</td><td>' + esc(nostdSug(rep.majorId, x).text) + '</td></tr>';
         }).join('') + '</tbody></table>';
     }
     h += '<h2>附录' + ax[ai] + '　数据来源与计算口径</h2><ul>' +
       '<li>测评方法：本校情况对比标准，差距即需要建设或提升的内容。标准只计入人工确认（已审核、已调整）的数据，待确认的数据不计入。</li>' +
       '<li>岗位能力要求：' + esc(G.industry.name + ' ' + G.industry.version) + '，' + G.positions.length + ' 个岗位、' + G.abilities.length + ' 条能力，每条能力含 L1–L3 三级行为要求。</li>' +
       '<li>专业知识体系：' + esc(D.knowledge[rep.majorId].name) + '，专业 → 课程 → 任务 → 技能。</li>' +
-      '<li>课程—能力映射：只计已确认的「直接支撑」「部分支撑」映射。本校达到等级取已开设课程的最高映射等级，与岗位要求等级比较；知识体系全部课程的最高映射等级仍低于岗位要求的，列为「标准数据暂不支持」，不计入差距与达标率。只有部分支撑的标注「仅部分支撑」。</li>' +
+      '<li>课程—能力映射：只计已确认的「直接支撑」「部分支撑」映射。本校达到等级取已开设课程的最高映射等级，与岗位要求等级比较；全部专业课程的最高映射等级仍低于岗位要求的，列为「课程待完善」，不计入差距与达标率。只有部分支撑的标注「仅部分支撑」。</li>' +
       '<li>本校数据：职业面向 ' + rep.plan.positions.length + ' 个岗位；开设知识体系中的专业课程 ' + rep.plan.courses.filter(function (c) { return c.opened; }).length + ' 门（共 ' + rep.plan.courses.length + ' 门）' +
         (rep.plan.labs ? '；登记实训资源 ' + rep.plan.labs.length + ' 项' : '') + '。</li>' +
       (T ? '<li>实训需求：按专业知识体系中技能的达成结果与操作步骤推导「需要哪类实训条件」，经人工确认后计入，不是国家标准规定的实训条件；' +
@@ -1256,7 +1286,8 @@
   function render() {
     reload();
     var body = $('#body');
-    if (!can(PERM_VIEW)) { body.innerHTML = '<div class="card empty">当前身份没有「能力测评查看」权限。</div>'; return; }
+    if (!can(PERM_VIEW)) { body.innerHTML = '<div class="card empty">当前身份没有「专业建设测评查看」权限。</div>'; return; }
+    seedReport();
     var r = route();
     if (r.name === 'new') {
       if (!draft || (r.arg && draft.mid !== r.arg && draft.step !== 1)) startDraft(r.arg && hasKnowledge(r.arg) ? r.arg : null);
@@ -1270,6 +1301,23 @@
       body.innerHTML = '<div class="sec-h" style="margin-top:0"><h2>专业</h2><span class="sub">当前身份可见范围内的专业</span><span class="sp"></span>' +
         (can(PERM_RUN) ? '<a class="btn" href="#new" style="height:34px;display:inline-flex;align-items:center;text-decoration:none">新建测评</a>' : '') + '</div>' + viewList();
     }
+  }
+
+  // 首次打开时，按当前数据为导游专业生成一份测评报告，换浏览器演示时列表不为空
+  function seedReport() {
+    if (store.seeded) return;
+    store.seeded = true;
+    var mid = 'MAJOR-GUIDE';
+    if (hasKnowledge(mid) && !store.reports.some(function (r) { return r.majorId === mid; })) {
+      var plan = planOf(mid);
+      if (plan.positions.length && plan.courses.some(function (c) { return c.opened; })) {
+        var result = compute(mid, plan);
+        var rated = result.targets.filter(function (x) { return x.rate != null; });
+        store.reports.push({ id: 'R-SEED-GUIDE', majorId: mid, createdAt: '2026-11-02 10:30', by: '周教务', plan: clone(plan), result: result,
+          summary: { rate: rated.length ? Math.round(rated.reduce(function (a, x) { return a + x.rate; }, 0) / rated.length * 10) / 10 : null, high: result.sugs.filter(function (x) { return x.pri === '高'; }).length } });
+      }
+    }
+    saveStore();
   }
 
   function savePlanDraft() { store.plans[draft.mid] = clone(draft.plan); saveStore(); }
@@ -1309,7 +1357,7 @@
       else if (act === 'resetPlan') { delete store.plans[draft.mid]; saveStore(); draft.plan = planOf(draft.mid); toast('已恢复为原始数据'); render(); }
       else if (act === 'run') {
         if (!draft.plan.positions.length) { toast('请至少选择一个职业面向岗位'); return; }
-        if (!draft.plan.courses.some(function (c) { return c.opened; })) { toast('请至少开设一门专业课程'); return; }
+        if (!draft.plan.courses.some(function (c) { return c.opened; })) { toast('课程管理里还没有本专业已关联知识体系的课程'); return; }
         var result = compute(draft.mid, draft.plan);
         var rated = result.targets.filter(function (x) { return x.rate != null; });
         var rate = rated.length ? Math.round(rated.reduce(function (s, x) { return s + x.rate; }, 0) / rated.length * 10) / 10 : null;

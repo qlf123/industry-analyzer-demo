@@ -147,13 +147,17 @@
     var cs = COURSES.filter(function (c) { return c.majorId === k.majorId; }).slice(0, 3);
     var graduated = GRADES.find(function (g) { return g.id === k.gradeId; }).graduated;
     cs.forEach(function (c, ci) {
+      var submitted = graduated ? true : ((i + ci) % 3 !== 0);
       HOMEWORKS.push({
         id: 'HW-' + pad(i + 1, 4) + '-' + ci,
         studentId: s.id,
         klassId: k.id,
         courseId: c.id,
         title: c.name + ' · 第' + (ci + 1) + '次作业',
-        submitted: graduated ? true : ((i + ci) % 3 !== 0)
+        desc: '结合《' + c.name + '》本次课内容，完成课后练习并整理学习小结。',
+        due: '2026-11-' + pad(10 + ci * 7, 2) + ' 23:59',
+        submitted: submitted,
+        submittedAt: submitted ? '2026-11-0' + (ci + 1) + ' 1' + (i % 9) + ':' + pad((i * 7 + ci * 13) % 60, 2) : ''
       });
     });
   });
@@ -180,8 +184,8 @@
     { id: 'P-SCHOOLPUB-VIEW',    code: 'resource:schoolpub:view',  name: '校本资源库查看复制', module: '资源', resource: '校本资源库', action: '查看复制' },
     { id: 'P-MEMBER-MANAGE',     code: 'org:member:manage',        name: '组织成员管理',   module: '组织', resource: '成员', action: '管理' },
     { id: 'P-ACCOUNT-CREATE',    code: 'account:account:create',   name: '账号新建',       module: '组织', resource: '账号', action: '新建' },
-    { id: 'P-ASSESS-VIEW',       code: 'major:assess:view',        name: '能力测评查看',   module: '专业建设', resource: '能力测评', action: '查看' },
-    { id: 'P-ASSESS-RUN',        code: 'major:assess:run',         name: '发起能力测评',   module: '专业建设', resource: '能力测评', action: '发起' },
+    { id: 'P-ASSESS-VIEW',       code: 'major:assess:view',        name: '专业建设测评查看', module: '专业建设', resource: '专业建设测评', action: '查看' },
+    { id: 'P-ASSESS-RUN',        code: 'major:assess:run',         name: '发起专业建设测评', module: '专业建设', resource: '专业建设测评', action: '发起' },
     { id: 'P-EDU-MANAGE',        code: 'edu:base:manage',          name: '教务基础数据与课程计划维护', module: '教务', resource: '教务基础数据', action: '维护' },
     { id: 'P-TEACH-QUALITY',     code: 'teach:quality:view',       name: '教学质量查看与改进处理', module: '教学质量', resource: '教学达成 / 课程改进建议', action: '查看处理' },
     { id: 'P-LAB-MANAGE',        code: 'edu:lab:manage',           name: '实训资源维护',   module: '教务', resource: '实训资源', action: '维护' },

@@ -12,6 +12,7 @@
 @media(max-width:640px){.stats6{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .stat.on{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand-soft)}
 .stat{cursor:pointer}
+.ccard{cursor:pointer}
 .ccard .bar.s-待提交{background:linear-gradient(90deg,#f59e0b,#f97316)}
 .ccard .bar.s-已提交{background:linear-gradient(90deg,#3b82f6,#6366f1)}
 .ccard .bar.s-已退回{background:linear-gradient(90deg,#ef4444,#f43f5e)}
@@ -126,15 +127,26 @@
     late: function (t) { return t.status === '待提交' && SK.overdue(t); }, eval: function (t) { return t.status === '已评价' && !t.evalSeen; },
     ret: function (t) { return t.status === '已退回'; }, unl: function (t) { return SK.learned(t) < t.files.length; }
   };
+  // 待办优先排序：已退回 > 待提交(已超时) > 待提交(即将超时) > 待提交 > 新评价 > 已提交 > 已评价 > 仅学习资源；同级内按发布时间倒序
+  function prio(t) {
+    if (t.status === '已退回') return 0;
+    if (t.status === '待提交') return SK.overdue(t) ? 1 : SK.soon(t) ? 2 : 3;
+    if (t.status === '已评价') return t.evalSeen ? 6 : 4;
+    if (t.status === '已提交') return 5;
+    return 7;
+  }
   function filtered() {
     return S.tasks.filter(function (t) {
       return (!F.q || (t.course + (t.task ? t.task.name : '')).indexOf(F.q) >= 0) && (!F.status || t.status === F.status) && (!F.major || t.major === F.major) &&
         (!F.from || t.publishAt.slice(0, 10) >= F.from) && (!F.to || t.publishAt.slice(0, 10) <= F.to) && (!F.stat || STAT_FN[F.stat](t));
-    }).sort(function (a, b) { return a.publishAt < b.publishAt ? 1 : -1; });
+    }).sort(function (a, b) {
+      var d = prio(a) - prio(b);
+      return d !== 0 ? d : (a.publishAt < b.publishAt ? 1 : -1);
+    });
   }
   function viewList() {
     var majors = S.tasks.map(function (t) { return t.major; }).filter(function (m, i, a) { return a.indexOf(m) === i; });
-    var h = '<div class="tk-h"><h2>我的任务</h2></div><div class="stats6">' + stats().map(function (s) {
+    var h = '<div class="tk-h"><h2>我的任务</h2><span style="font-size:11.5px;color:var(--muted);margin-left:10px">已按待办优先排序：退回、待交、新评价在前</span></div><div class="stats6">' + stats().map(function (s) {
       return '<div class="stat' + (F.stat === s[0] ? ' on' : '') + '" data-stat="' + s[0] + '" title="点击筛选"><div class="k">' + s[1] + '</div><div class="v" style="color:' + s[3] + '">' + s[2] + '</div><span class="ic" style="background:' + s[3] + '">' + s[4] + '</span></div>';
     }).join('') + '</div>';
     h += '<div class="card filters"><input class="inp search" data-f="q" placeholder="搜索课程或任务名称" value="' + esc(F.q) + '">' +
@@ -186,8 +198,9 @@
       }).join('') + '</div>';
     // 情景任务
     if (t.task) h += '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">情景任务</div><div class="taskbox"><b>' + esc(t.task.name) + '</b><p>' + esc(t.task.desc) + '</p><div class="m">提交方式：' + t.task.modes.join('、') + '　·　截止时间：' + esc(t.due) + '</div></div>' +
-      ((t.task.skillIds || []).length ? '<div class="blk-t" style="margin-top:12px">考查的技能和知识点</div>' + '<div style="font-size:12.5px;margin-bottom:6px">' + t.task.skillIds.map(function (id) { return '<span class="tag">' + esc(TK.skillName(id)) + '</span>'; }).join(' ') + '</div>' + TK.kpHTML(t.task.skillIds) : '') +
-      (t.task.criteria.length ? '<div class="blk-t" style="margin-top:12px">评价标准<span style="font-size:11.5px;font-weight:400;color:var(--muted);margin-left:8px">老师会按下面每一项评价，每项对应一个技能</span></div><table class="crit"><thead><tr><th style="width:18%">评价项（技能）</th><th>优秀</th><th>合格</th><th>需改进</th></tr></thead><tbody>' +
+      ((t.task.skillIds || []).length ? '<div class="blk-t" style="margin-top:12px">考查的技能和知识点</div>' + '<div style="font-size:12.5px;margin-bottom:6px">' + t.task.skillIds.map(function (id) { return '<span class="tag">' + esc(TK.skillName(id)) + '</span>'; }).join(' ') + '</div>' + TK.kpHTML(t.task.skillIds, t.task.kpIds) + (TK.kpCritHTML(t.task) ? '<details style="margin-top:6px"><summary style="font-size:12.5px;color:var(--brand-ink);cursor:pointer">知识点怎样算掌握</summary>' + TK.kpCritHTML(t.task) + '</details>' : '') : '') +
+      (t.task.aiReq ? '<div class="blk-t" style="margin-top:12px">评价要求</div><div style="font-size:12.5px;line-height:1.8;white-space:pre-wrap;color:var(--ink-2)">' + esc(t.task.aiReq) + '</div>' : '') +
+      (!t.task.aiReq && t.task.criteria.length ? '<div class="blk-t" style="margin-top:12px">评价标准<span style="font-size:11.5px;font-weight:400;color:var(--muted);margin-left:8px">老师会按下面每一项评价，每项对应一个技能</span></div><table class="crit"><thead><tr><th style="width:18%">评价项（技能）</th><th>优秀</th><th>合格</th><th>需改进</th></tr></thead><tbody>' +
         t.task.criteria.map(function (x) { return '<tr><td class="sn">' + esc(x.name) + '</td><td>' + esc(x.levels['优秀']) + '</td><td>' + esc(x.levels['合格']) + '</td><td>' + esc(x.levels['需改进']) + '</td></tr>'; }).join('') + '</tbody></table>' : '') + '</div>';
     // 提交与评价记录
     if (t.task) {
@@ -215,9 +228,10 @@
     if (!items || !items.length) return '';
     var nm = {}; t.task.criteria.forEach(function (x) { nm[x.sid] = x.name; });
     var who = (function () { try { return UI.currentIdentity(DEMO.getState()).account.name; } catch (e) { return ''; } })();
-    // 每项后面列出没体现的知识点（老师确认的），方便学生对照补
+    // 每项后面列出没体现的知识点（老师确认的，限本次发布勾选的考查知识点），方便学生对照补
+    var allow = (t.task.kpIds && t.task.kpIds.length) ? t.task.kpIds : null;
     return '<div class="items">' + items.map(function (x) {
-      var mk = TK.itemKps(x, who), miss = ((TK.kn().skill[x.sid] || {}).kps || []).filter(function (k) { return mk[k.id] === 'miss'; }).map(function (k) { return k.name; });
+      var mk = TK.itemKps(x, who, allow), miss = ((TK.kn().skill[x.sid] || {}).kps || []).filter(function (k) { return mk[k.id] === 'miss' && (!allow || allow.indexOf(k.id) >= 0); }).map(function (k) { return k.name; });
       return '<span>' + esc(nm[x.sid] || TK.skillName(x.sid)) + ' <span class="tag ' + GRADEC[x.grade] + '">' + x.grade + '</span>' + (miss.length ? '<small style="color:var(--crit);margin-left:6px">未掌握：' + esc(miss.join('、')) + '</small>' : '') + '</span>';
     }).join('') + '</div>';
   }
@@ -306,11 +320,11 @@
     }
     m.body.addEventListener('click', function (e) {
       if (ro) return;
-      var x;
-      if ((x = e.target.closest('[data-st]'))) { var p = x.getAttribute('data-st').split(':'); if (p[0] === 'overall') v.overall = +p[1]; else v.scores[p[0]] = +p[1]; paint(); }
-      else if ((x = e.target.closest('[data-tag]'))) { var i = v.tags.indexOf(x.textContent); if (i >= 0) v.tags.splice(i, 1); else v.tags.push(x.textContent); x.setAttribute('aria-pressed', i < 0); }
+      var x, tip = m.foot.querySelector('[data-tip]');
+      if ((x = e.target.closest('[data-st]'))) { var p = x.getAttribute('data-st').split(':'); if (p[0] === 'overall') v.overall = +p[1]; else v.scores[p[0]] = +p[1]; if (tip) tip.textContent = ''; paint(); }
+      else if ((x = e.target.closest('[data-tag]'))) { var i = v.tags.indexOf(x.textContent); if (i >= 0) v.tags.splice(i, 1); else v.tags.push(x.textContent); x.setAttribute('aria-pressed', i < 0); if (tip) tip.textContent = ''; }
     });
-    m.body.addEventListener('input', function (e) { if (e.target.hasAttribute('data-fbt')) { v.text = e.target.value; m.body.querySelector('[data-cnt]').textContent = v.text.length + ' / 500'; } });
+    m.body.addEventListener('input', function (e) { if (e.target.hasAttribute('data-fbt')) { v.text = e.target.value; m.body.querySelector('[data-cnt]').textContent = v.text.length + ' / 500'; var tip = m.foot.querySelector('[data-tip]'); if (tip) tip.textContent = ''; } });
     m.foot.querySelector('[data-c]').onclick = m.close;
     if (!ro) m.foot.querySelector('[data-ok]').onclick = function () {
       if (!v.overall || DIMS.some(function (k) { return !v.scores[k]; })) { m.foot.querySelector('[data-tip]').textContent = '请完成整体评分和 4 个单项评分'; return; }
@@ -339,7 +353,9 @@
     if ((x = e.target.closest('[data-dl]'))) { TK.toast('已开始下载'); return; }
     if (e.target.closest('[data-dlall]')) { TK.toast('已开始打包下载'); return; }
     if ((x = e.target.closest('[data-item]'))) { var p = x.getAttribute('data-item').split(':'); previewItem(t.submissions.find(function (s) { return s.n === +p[0]; }).items[+p[1]]); return; }
-    if ((x = e.target.closest('[data-fold]'))) { var c = x.nextElementSibling; c.hidden = !c.hidden; x.lastElementChild.textContent = c.hidden ? '展开 ▾' : '收起 ▴'; }
+    if ((x = e.target.closest('[data-fold]'))) { var c = x.nextElementSibling; c.hidden = !c.hidden; x.lastElementChild.textContent = c.hidden ? '展开 ▾' : '收起 ▴'; return; }
+    // 整卡可点：点卡片空白区等同「查看」（按钮类操作已在上面分支处理并 return）
+    if ((x = e.target.closest('.ccard'))) { var b = x.querySelector('[data-open]'); if (b) location.hash = 'task/' + b.getAttribute('data-open'); }
   });
   body.addEventListener('input', function (e) { if (e.target.getAttribute('data-f') === 'q') { F.q = e.target.value.trim(); page = 1; var pos = e.target.selectionStart; render(); var i = body.querySelector('[data-f="q"]'); i.focus(); i.setSelectionRange(pos, pos); } });
   body.addEventListener('change', function (e) { var k = e.target.getAttribute('data-f'); if (k && k !== 'q') { F[k] = e.target.value; page = 1; render(); } });

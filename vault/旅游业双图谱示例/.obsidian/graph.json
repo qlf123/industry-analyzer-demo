@@ -1,0 +1,93 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "tag:#能力图谱/行业 OR tag:#能力图谱/子行业",
+      "color": {
+        "a": 1,
+        "rgb": 14701138
+      }
+    },
+    {
+      "query": "tag:#能力图谱/岗位",
+      "color": {
+        "a": 1,
+        "rgb": 15570212
+      }
+    },
+    {
+      "query": "tag:#能力图谱/能力项",
+      "color": {
+        "a": 1,
+        "rgb": 15895379
+      }
+    },
+    {
+      "query": "tag:#知识图谱/专业 OR tag:#知识图谱/课程",
+      "color": {
+        "a": 1,
+        "rgb": 2201331
+      }
+    },
+    {
+      "query": "tag:#知识图谱/模块 OR tag:#知识图谱/任务 OR tag:#知识图谱/操作流程 OR tag:#知识图谱/操作步骤",
+      "color": {
+        "a": 1,
+        "rgb": 4304050
+      }
+    },
+    {
+      "query": "tag:#知识图谱/知识点 OR tag:#知识图谱/技能规范",
+      "color": {
+        "a": 1,
+        "rgb": 6737151
+      }
+    },
+    {
+      "query": "tag:#知识图谱/标准 OR tag:#知识图谱/案例",
+      "color": {
+        "a": 1,
+        "rgb": 9819076
+      }
+    },
+    {
+      "query": "tag:#映射层/待复核",
+      "color": {
+        "a": 1,
+        "rgb": 16766720
+      }
+    },
+    {
+      "query": "tag:#覆盖/未覆盖",
+      "color": {
+        "a": 1,
+        "rgb": 15277667
+      }
+    },
+    {
+      "query": "tag:#索引",
+      "color": {
+        "a": 1,
+        "rgb": 8355711
+      }
+    }
+  ],
+  "collapse-display": false,
+  "showArrow": true,
+  "textFadeMultiplier": -0.5,
+  "nodeSizeMultiplier": 1.1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": false,
+  "centerStrength": 0.5,
+  "repelStrength": 12,
+  "linkStrength": 0.8,
+  "linkDistance": 220,
+  "scale": 0.5,
+  "close": false
+}

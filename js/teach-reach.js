@@ -43,5 +43,44 @@
       skills: Object.keys(bySkill).length, abilities: abilities };
   }
   function rate(ok, n) { return n ? Math.round(ok * 100 / n) : null; }
-  root.TR = { compute: compute, rate: rate };
+  /* 知识点掌握（与教师端学情同口径）：每个学生取某技能最近一次老师确认的评价（含退回），只看发布时勾选的考查知识点；
+     asOf / from：只算这个时间段内的评价（用于趋势和周期统计）。返回 {plans, groups, rows, noEv}；不计入证据、不汇总到能力 */
+  function kpsAgg(S, plans, asOf, from) {
+    var TK = root.TK, bySid = {}, order = [], tdate = function (x) { return new Date(String(x).replace(' ', 'T')); };
+    plans.forEach(function (p) {
+      S.courses.filter(function (c) { return c.planId === p.id && c.publish && c.publish.task && c.publish.task.on; }).forEach(function (c) {
+        var t = c.publish.task, kpIds = (t.kpIds && t.kpIds.length) ? t.kpIds : null;
+        (((t || {}).criteria) || []).forEach(function (x) {
+          var sid = x.sid; if (!sid) return;
+          var g = bySid[sid];
+          if (!g) { g = bySid[sid] = { sid: sid, name: TK.skillName(sid), courses: {}, kps: ((TK.kn().skill[sid] || {}).kps) || [], allow: null, last: {} }; order.push(g); }
+          g.courses[c.id] = 1;
+          if (kpIds) { g.allow = g.allow || []; kpIds.forEach(function (id) { if (g.allow.indexOf(id) < 0) g.allow.push(id); }); }
+          (c.submissions || []).forEach(function (sb) {
+            var it = sb.teacher && (sb.teacher.items || []).filter(function (y) { return y.sid === sid; })[0];
+            if (it && (!asOf || tdate(sb.teacher.at) < asOf) && (!from || tdate(sb.teacher.at) >= from) && (!g.last[sb.student] || sb.teacher.at >= g.last[sb.student].at)) g.last[sb.student] = { at: sb.teacher.at, marks: TK.itemKps(it, sb.student, kpIds) };
+          });
+        });
+      });
+    });
+    order.forEach(function (g) {
+      if (g.allow) g.kps = g.kps.filter(function (k) { return g.allow.indexOf(k.id) >= 0; });
+      g.stus = Object.keys(g.last).length; g.cnt = {}; g.ok = 0; g.miss = 0;
+      g.kps.forEach(function (k) {
+        var c = { ok: 0, miss: 0, who: [] };
+        Object.keys(g.last).forEach(function (st) {
+          if (g.last[st].marks[k.id] === 'miss') { c.miss++; c.who.push(st); }
+          else if (g.last[st].marks[k.id] === 'ok') c.ok++;   // 最近一次评价未考查的（发布时未勾选）不计入
+        });
+        g.cnt[k.id] = c; g.ok += c.ok; g.miss += c.miss;
+      });
+    });
+    var groups = order.filter(function (g) { return g.kps.length && g.stus; });
+    var rows = [];
+    groups.forEach(function (g) { g.kps.forEach(function (k) { rows.push({ g: g, k: k, c: g.cnt[k.id] }); }); });
+    rows.sort(function (a, b) { return b.c.miss - a.c.miss || a.c.ok - b.c.ok; });
+    return { plans: plans, groups: groups, rows: rows, noEv: order.filter(function (g) { return g.kps.length && !g.stus; }) };
+  }
+  function kpRate(A) { var t = 0, o = 0; A.rows.forEach(function (r) { t += r.c.ok + r.c.miss; o += r.c.ok; }); return { t: t, o: o, r: rate(o, t) }; }
+  root.TR = { compute: compute, rate: rate, kpsAgg: kpsAgg, kpRate: kpRate };
 })(typeof window !== 'undefined' ? window : this);

@@ -22,7 +22,7 @@
 .sec-h .no{font-family:var(--mono);font-size:11px;color:var(--brand);font-weight:600}
 
 /* 雷达图 */
-.sa-side svg{width:100%;height:auto;max-width:440px;display:block;margin:0 auto}
+.sa-side svg{width:100%;height:auto;max-width:470px;display:block;margin:0 auto}
 .radar-leg{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11.5px;color:var(--muted);justify-content:center;margin-top:6px}
 .radar-leg i{display:inline-block;width:16px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 
@@ -40,7 +40,6 @@
 .abl-req .tgt{font-size:11px;font-family:var(--mono);font-weight:600;color:var(--brand-ink);background:var(--brand-soft);
   border-radius:6px;padding:2px 7px}
 .abl-req .pos{font-size:11px;color:var(--ink-2);background:var(--card-2);border:1px solid var(--rule);border-radius:6px;padding:2px 7px}
-.abl-req .pos.core{color:var(--brand-ink);background:var(--brand-soft);border-color:transparent}
 .abl-act{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .self{display:inline-flex;gap:4px}
 .self button{min-width:40px;padding:5px 9px;font-size:11.5px;font-family:var(--mono);border-radius:7px;
@@ -48,6 +47,7 @@
 .self button:hover{border-color:var(--brand);color:var(--brand-ink)}
 .self button.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
 .gap-pill{font-size:11px;font-family:var(--mono);padding:3px 9px;border-radius:20px;min-width:56px;text-align:center}
+.sug-b a{color:var(--brand-ink);text-decoration:none;border-bottom:1px solid currentColor}
 .gap-pill.good{background:var(--good-bg);color:var(--good)}
 .gap-pill.crit{background:var(--crit-bg);color:var(--crit)}
 .gap-pill.wait{background:var(--card-2);color:var(--muted);border:1px solid var(--rule)}
@@ -124,7 +124,7 @@
       <div class="ptop-r">
         <div class="pt-l">
           <h1 class="pt-t">能力测评</h1>
-          <div class="pt-d">对照专业对口岗位的能力要求，查看本人能力达成度。「我的自评」是自己逐项评的，仅供自己参考；「老师评价」由老师确认通过的技能换算到能力。两者分开统计，各自给出结论。</div>
+          <div class="pt-d">对照岗位能力要求查看达成度：先选岗位，再逐项自评（L0–L3）；「老师评价」由老师确认的技能换算，两者分开统计。</div>
         </div>
       </div>
     </div>
@@ -143,7 +143,8 @@
 (function () {
   'use strict';
 
-  /* ── 专业 → 对口岗位（能力图谱 19 岗位版；酒店专业未纳入能力图谱，见页面提示） ── */
+  /* ── 专业 → 对口岗位（能力图谱 19 岗位版；酒店专业未纳入能力图谱，见页面提示）
+     core 仅决定默认选中岗位（core[0]）与卡片排序，不再展示「核心」标签 ── */
   var MAJOR_POSITIONS = {
     'MAJOR-GUIDE':    { core: ['POS-09', 'POS-10'], related: ['POS-12', 'POS-06'] },
     'MAJOR-TOURISM':  { core: ['POS-06', 'POS-08', 'POS-09'], related: ['POS-07', 'POS-10', 'POS-15', 'POS-17'] },
@@ -279,7 +280,7 @@
       var on = r.abl === focus, col = on ? brand : gap ? crit : ink2;
       if (on) { var fp = pt(i, Math.max(r.got, 0.15)); h += '<circle cx="' + fp[0].toFixed(1) + '" cy="' + fp[1].toFixed(1) + '" r="8" fill="none" stroke="' + brand + '" stroke-width="2"/>'; }
       var y0 = sin > 0.6 ? lp[1] + 9 : sin < -0.6 ? lp[1] - (lines.length - 1) * 12 - 3 : lp[1] - (lines.length - 1) * 6 + 4;
-      h += '<text data-axis="' + esc(r.abl) + '" x="' + lp[0].toFixed(1) + '" y="' + y0.toFixed(1) + '" font-size="11" text-anchor="' + anchor + '" fill="' + col + '"' + (gap || on ? ' font-weight="600"' : '') + '><title>' + esc(a ? a.name : r.abl) + '：点击定位到左侧</title>' +
+      h += '<text data-axis="' + esc(r.abl) + '" x="' + lp[0].toFixed(1) + '" y="' + y0.toFixed(1) + '" font-size="11.5" text-anchor="' + anchor + '" fill="' + col + '"' + (gap || on ? ' font-weight="600"' : '') + '><title>' + esc(a ? a.name : r.abl) + '：点击定位到左侧</title>' +
         lines.map(function (l, k) { return '<tspan x="' + lp[0].toFixed(1) + '" dy="' + (k ? 12 : 0) + '">' + esc(l) + '</tspan>'; }).join('') + '</text>';
     });
     return h + '</svg>';
@@ -287,10 +288,10 @@
 
   function radarLegend() {
     return '<div class="radar-leg">' +
-      '<span><i style="border:1.4px dashed var(--ink)"></i>岗位要求（L1–L3）</span>' +
-      '<span><i style="background:var(--brand);opacity:.5;border:2px solid var(--brand)"></i>' + (mode === 'self' ? '本人自评（L0–L3）' : '老师评价（暂无评价按 0 画）') + '</span>' +
-      '<span><i style="width:8px;height:8px;border-radius:50%;background:var(--crit)"></i>未达标（红字）</span>' +
-      (mode === 'self' ? '<span><i style="width:9px;height:9px;border-radius:50%;border:2px solid var(--brand)"></i>刚自评的能力</span>' : '') + '</div>';
+      '<span><i style="border:1.4px dashed var(--ink)"></i>岗位要求</span>' +
+      '<span><i style="background:var(--brand);opacity:.5;border:2px solid var(--brand)"></i>' + (mode === 'self' ? '我的自评' : '老师评价') + '</span>' +
+      '<span><i style="width:8px;height:8px;border-radius:50%;background:var(--crit)"></i>未达标</span>' +
+      (mode === 'self' ? '<span><i style="width:9px;height:9px;border-radius:50%;border:2px solid var(--brand)"></i>刚自评</span>' : '') + '</div>';
   }
 
   /* ── 渲染 ── */
@@ -315,23 +316,23 @@
 
     // 学生信息 + 概览
     var html = '<div class="mode-tabs" role="tablist"><button data-mode="self" aria-selected="' + (mode === 'self') + '">我的自评</button><button data-mode="teacher" aria-selected="' + (mode === 'teacher') + '">老师评价</button></div>' +
-      '<div class="mode-note">' + (mode === 'self' ? '自己对照能力定义逐项选择 L0–L3，下面的统计、图谱和结论都只按自评计算。' : '由老师确认通过的技能（优秀 / 合格）经能力—技能映射换算到能力，只读；下面的统计、图谱和结论都只按老师评价计算。') + '</div>' +
+      '<div class="mode-note">' + (mode === 'self' ? '统计、图谱、结论均按自评计算' : '由老师确认的技能换算，只读；统计、图谱、结论均按老师评价计算') + '。</div>' +
       '<div class="sa-band">' +
       '<div class="sa-who"><div class="nm">' + esc(model.student.name) + '</div>' +
       '<div class="sub">' + esc(model.student.sno) + ' · ' + esc(model.klass.name) + '</div></div>' +
-      '<div class="sa-stats">' +
+      '<div class="sa-stats" title="统计为全部对口岗位去重后的总口径；下方「02」区只显示当前选中岗位的能力项">' +
       '<div class="sa-stat"><b>' + total + '</b><span>能力项</span></div>' +
       '<div class="sa-stat"><b>' + scored + '</b><span>' + wd().did + '</span></div>' +
       '<div class="sa-stat"><b>' + ok + '</b><span>已达标</span></div>' +
-      '<div class="sa-stat"><b class="' + rateCls + '">' + rate + '%</b><span>达成率（达标 / 全部）</span></div>' +
+      '<div class="sa-stat"><b class="' + rateCls + '">' + rate + '%</b><span title="达标项 / 全部能力项">达成率</span></div>' +
       '</div>' +
       (mode === 'self' ? '<button class="btn ghost" id="sa-reset">重新测评</button>' : '') + '</div>';
 
     // 左：逐项自评；右：能力图谱（随自评实时变化）/ 结论与建议
     if (!curPos || model.posIds.indexOf(curPos) < 0) curPos = model.mapping.core[0];
-    html += '<div class="sec-h" style="margin-top:4px"><span class="no">01</span>选择岗位，逐个测评<span style="font-weight:400;color:var(--muted);margin-left:6px">核心岗位排在前面' + (mode === 'self' ? '；同一项能力在不同岗位里只需评一次' : '') + '</span></div>' +
+    html += '<div class="sec-h" style="margin-top:4px"><span class="no">01</span>选择岗位</div>' +
       '<div class="pos-steps" id="sa-steps">' + stepsHTML(model, scores) + '</div>';
-    html += '<div class="sa-grid"><div class="sa-main"><div class="sec-h" id="sa-self" style="margin-top:0"><span class="no">02</span><span id="sa-ptitle">' + esc(POS[curPos].name) + '</span>' + (mode === 'self' ? '的能力自评（右侧图谱实时变化）' : '的老师评价') + '</div>' +
+    html += '<div class="sa-grid"><div class="sa-main"><div class="sec-h" id="sa-self" style="margin-top:0"><span class="no">02</span><span id="sa-ptitle">' + esc(POS[curPos].name) + '</span>' + (mode === 'self' ? '的能力自评' : '的老师评价') + '</div>' +
       '<div id="sa-list">' + renderList(model, scores) + '</div></div>' +
       '<div class="sa-side" id="sa-side">' + sideHTML(model, scores) + '</div></div>';
 
@@ -347,7 +348,7 @@
   function stepsHTML(model, scores) {
     return orderedPos(model).map(function (p) {
       var st = posStat(p, scores), done = st.done === st.n;
-      return '<button class="pos-step' + (done ? ' done' : '') + '" data-pos="' + p + '" aria-current="' + (p === curPos) + '"><span class="pn">' + esc(POS[p].name) + (model.mapping.core.indexOf(p) >= 0 ? ' · 核心' : '') + '</span>' +
+      return '<button class="pos-step' + (done ? ' done' : '') + '" data-pos="' + p + '" aria-current="' + (p === curPos) + '"><span class="pn">' + esc(POS[p].name) + '</span>' +
         '<span class="pp">' + (mode === 'teacher' ? '有评价 ' + st.done + '/' + st.n + ' · 达标 ' + st.ok : done ? '✓ 已测完 · 达标 ' + st.ok + '/' + st.n : '已评 ' + st.done + '/' + st.n) + '</span><span class="bar"><i style="width:' + Math.round(st.done / st.n * 100) + '%"></i></span></button>';
     }).join('');
   }
@@ -380,14 +381,15 @@
     else if (got >= need) gapHtml = '<span class="gap-pill good">已达标</span>';
     else gapHtml = '<span class="gap-pill crit">未达标</span>';
 
-    // 目标取当前岗位的要求；其他岗位也要求这项时一并列出（评一次，各岗位共用）
+    // 目标取当前岗位的要求（岗位名见 02 标题）；其他岗位也要求此项时收敛为一枚提示，悬停看岗位名单与「评一次共用」说明
     var others = rec.reqs.filter(function (r) { return r.pos !== curPos; });
-    var reqHtml = '<span class="tgt">' + esc(POS[curPos].name) + '要求 L' + need + '</span>' + (others.length ? '<span class="shared">也是</span>' + others.map(function (r) {
-      return '<span class="pos ' + (r.kind === 'core' ? 'core' : '') + '">' + esc(POS[r.pos].name) + ' L' + r.lv + '</span>';
-    }).join('') + '<span class="shared">' + (mode === 'self' ? '的要求，评一次即可' : '的要求') + '</span>' : '');
+    var reqHtml = '<span class="tgt">要求 L' + need + '</span>' + (others.length ? '<span class="shared" title="' +
+      esc(others.map(function (r) { return POS[r.pos].name + ' L' + r.lv; }).join('、')) + ' 也要求此项；同一项能力评一次，各岗位共用">' +
+      '＋' + others.length + ' 岗位也要求</span>' : '');
 
     var btn = function (lv) {
-      return '<button data-abl="' + esc(ablId) + '" data-lv="' + lv + '" class="' + (got === lv ? 'on' : '') + '">L' + lv + '</button>';
+      var def = (a.levels || {})['L' + lv] || '';
+      return '<button data-abl="' + esc(ablId) + '" data-lv="' + lv + '" class="' + (got === lv ? 'on' : '') + '" title="L' + lv + ' ' + LV_NAME[lv] + (lv ? '：' + esc(def) : '') + '">L' + lv + '</button>';
     };
 
     return '<div class="abl-item" data-row="' + esc(ablId) + '">' +
@@ -397,7 +399,7 @@
       '<div class="abl-req">' + reqHtml + '</div></div>' +
       '<div class="abl-act">' + (mode === 'self' ? '<div class="self">' + [0, 1, 2, 3].map(btn).join('') + '</div>' : tchHTML(ablId)) + gapHtml + '</div></div>' +
       '<div class="abl-def" data-def="' + esc(ablId) + '">' +
-      '<button class="def-toggle" data-toggle="' + esc(ablId) + '">查看能力定义（L1 / L2 / L3）</button>' +
+      '<button class="def-toggle" data-toggle="' + esc(ablId) + '">能力定义</button>' +
       '<div class="def-body">' + defBody(a) + '</div></div></div>';
   }
 
@@ -423,8 +425,8 @@
   }
   function tchHTML(ablId) {
     var t = teacherLv(ablId);
-    if (!t) return '<div class="tch-basis">还没有老师确认的相关技能</div>';
-    if (t.partial) return '<div class="tch-basis">「' + esc(t.by.name) + '」' + t.by.grade + '，只部分支撑这项能力，不换算等级</div>';
+    if (!t) return '';   // 空态由状态 pill「暂无评价」表达，不重复
+    if (t.partial) return '<div class="tch-basis">「' + esc(t.by.name) + '」' + t.by.grade + '，仅部分支撑，不换算等级</div>';
     return '<div class="tch-basis"><span class="tv">L' + t.lv + '</span><br>依据「' + esc(t.by.name) + '」' + t.by.grade + '（' + esc(t.by.session) + '）</div>';
   }
 
@@ -447,19 +449,19 @@
       return { abl: r.abl, need: parseInt(r.level.slice(1), 10), got: scores[r.abl] == null ? 0 : scores[r.abl], has: scores[r.abl] != null };
     });
     var okCount = rows.filter(function (r) { return r.has && r.got >= r.need; }).length, done = rows.filter(function (r) { return scores[r.abl] != null; }).length;
-    h += '<div style="font-size:13px;font-weight:600;margin-bottom:4px">' + esc(POS[curPos].name) + (model.mapping.core.indexOf(curPos) >= 0 ? ' <span class="pill core">核心对口</span>' : '') + '</div>';
+    h += '<div style="font-size:13px;font-weight:600;margin-bottom:4px">' + esc(POS[curPos].name) + '</div>';
     if (mode === 'self' && focusAbl && ABL[focusAbl]) {
       var fr = rows.find(function (r) { return r.abl === focusAbl; });
-      if (fr) h += '<div class="focus-tip">刚自评：' + esc(ABL[focusAbl].name) + ' L' + fr.got + '（' + esc(POS[curPos].name) + '要求 L' + fr.need + '，' + (fr.got >= fr.need ? '已达标' : '未达标') + '）</div>';
+      if (fr) h += '<div class="focus-tip">刚自评：' + esc(ABL[focusAbl].name) + ' L' + fr.got + '，' + (fr.got >= fr.need ? '✓ 达标' : '未达标（要求 L' + fr.need + '）') + '</div>';
     }
     h += (radar(rows, POS[curPos].name, focusAbl) || '<div class="empty-note">该岗位要求的能力少于 3 项，不绘制雷达图。</div>') + radarLegend() +
-      '<div class="side-note">' + esc(POS[curPos].name) + '：要求 ' + rows.length + ' 项 · ' + wd().did + ' ' + done + ' · 达标 ' + okCount + '　点击图上的能力名可定位到左侧</div>';
+      '<div class="side-note">' + esc(POS[curPos].name) + '：要求 ' + rows.length + ' 项 · ' + wd().did + ' ' + done + ' · 达标 ' + okCount + '</div>';
     return h;
   }
 
-  /* ── 测评结论与学习建议 ──
-     规则生成：自评对照岗位要求找出差距；差距能力经已确认的能力—技能映射找到知识体系里的课程技能；
-     再参考老师已确认的技能评价和本人待完成的任务给出建议。结论基于自评，仅供参考 */
+  /* ── 测评结论与学习建议（只针对当前选中岗位） ──
+     规则生成：对照当前岗位的要求找出差距；差距能力经已确认的能力—技能映射找到知识体系里的课程技能；
+     再参考老师已确认的技能评价和本人待完成的任务给出建议。其他对口岗位的达标情况看岗位卡片（评一次共用） */
   var showAllSug = false;
   function learnCtx() {
     var K = TK.kn(), sv = SK.view(), TS = TK.load();
@@ -468,39 +470,45 @@
     var ev = {}; sv.skills.list.forEach(function (x) { ev[x.sid] = x; });
     var bySkill = {};   // 能力 → 支撑技能（已确认映射，直接 / 部分支撑）
     Object.keys(K.map).forEach(function (sid) { K.map[sid].forEach(function (m) { (bySkill[m.abl] = bySkill[m.abl] || []).push({ sid: sid, type: m.type }); }); });
-    return { K: K, sv: sv, opened: opened, ev: ev, bySkill: bySkill };
+    // 知识课程 id → 已发布给本人班级的课次 id（经课程计划中转：计划.courseId = 知识课程 id，任务.plan = 计划.course）
+    var cid2task = {};
+    TS.plans.forEach(function (p) {
+      if (p.classId !== k.id || cid2task[p.courseId]) return;
+      var t = sv.tasks.find(function (v) { return v.plan === p.course; });
+      if (t) cid2task[p.courseId] = t.id;
+    });
+    return { K: K, sv: sv, opened: opened, ev: ev, bySkill: bySkill, cid2task: cid2task };
   }
   function skillInfo(L, sid) {
     var x = L.K.skill[sid] || {}, t = L.K.task[x.taskId] || {}, c = L.K.course[t.courseId] || {};
-    return { sid: sid, name: x.name || sid, task: t.name || '', course: c.name || '', open: L.opened.indexOf(t.courseId) >= 0 };
+    return { sid: sid, cid: t.courseId || '', name: x.name || sid, task: t.name || '', course: c.name || '', open: L.opened.indexOf(t.courseId) >= 0 };
+  }
+  function curPosRows(scores) {
+    return G.require.filter(function (r) { return r.pos === curPos; }).map(function (r) {
+      var g = scores[r.abl];
+      return { abl: r.abl, need: parseInt(r.level.slice(1), 10), got: g, has: g != null, reqs: [{ pos: curPos, lv: parseInt(r.level.slice(1), 10) }] };
+    });
   }
   function adviceHTML(model, scores) {
-    var total = model.abilities.length, scored = model.abilities.filter(function (a) { return scores[a.abl] != null; });
-    if (!scored.length && mode === 'teacher') return '<div class="adv"><div class="empty-note" style="padding:14px">还没有老师确认的相关技能。完成课次任务、老师评价通过后，这里会按老师评价给出结论和学习建议。</div></div>';
-    if (!scored.length) return '<div class="adv"><div class="empty-note" style="padding:14px">还没有自评。在下方<a href="#sa-self">「能力自评」</a>里对照能力定义逐项选择 L0–L3，这里会给出测评结论和学习建议。</div></div>';
+    var rows = curPosRows(scores), P = POS[curPos];
+    var scored = rows.filter(function (a) { return a.has; });
+    if (!scored.length && mode === 'teacher') return '<div class="adv"><div class="empty-note" style="padding:14px">暂无老师确认的技能。课次任务通过评价后，这里会给出「' + esc(P.name) + '」岗位的结论与建议。</div></div>';
+    if (!scored.length) return '<div class="adv"><div class="empty-note" style="padding:14px">还没有自评。在左侧逐项选择 L0–L3 后，这里会给出「' + esc(P.name) + '」岗位的结论与建议。</div></div>';
     var L = lctx();
-    var gaps = scored.filter(function (a) { return scores[a.abl] < a.need; }), oks = scored.filter(function (a) { return scores[a.abl] >= a.need; });
-    var isCore = function (a) { return a.reqs.some(function (r) { return r.kind === 'core'; }); };
-    // 差距排序：核心岗位要求的优先，其次差距大的，再次被更多岗位要求的
-    gaps.sort(function (x, y) { return (isCore(y) - isCore(x)) || ((y.need - scores[y.abl]) - (x.need - scores[x.abl])) || (y.reqs.length - x.reqs.length); });
-    // 各对口岗位按自评的达标情况
-    var pos = model.posIds.filter(function (p) { return POS[p]; }).map(function (pid) {
-      var rq = G.require.filter(function (r) { return r.pos === pid; });
-      var ok = rq.filter(function (r) { var g = scores[r.abl]; return g != null && g >= parseInt(r.level.slice(1), 10); }).length;
-      return { pid: pid, name: POS[pid].name, n: rq.length, ok: ok, core: model.mapping.core.indexOf(pid) >= 0 };
-    });
-    var best = pos.slice().sort(function (a, b) { return b.ok / b.n - a.ok / a.n; })[0];
-    var coreGap = gaps.filter(isCore).length;
+    var gaps = scored.filter(function (a) { return a.got < a.need; }).sort(function (x, y) { return (y.need - y.got) - (x.need - x.got); });
+    var oks = scored.filter(function (a) { return a.got >= a.need; });
+    var core = function (a) { return ABL[a.abl] && ABL[a.abl].core; };
+    var strong = oks.filter(core).concat(oks.filter(function (a) { return !core(a); })).slice(0, 5);
     var h = '<div class="adv"><div class="adv-sum">' +
-      '对照 <b>' + model.posIds.length + '</b> 个对口岗位的 <b>' + total + '</b> 项能力，' + wd().did + ' <b>' + scored.length + '</b> 项：达标 <b style="color:var(--good)">' + oks.length + '</b> 项，未达标 <b style="color:var(--crit)">' + gaps.length + '</b> 项' + (gaps.length ? '（其中核心岗位要求的 ' + coreGap + ' 项）' : '') + '。' +
-      (best && best.ok ? '按' + wd().who + '，你目前最接近「<b>' + esc(best.name) + '</b>」岗位的要求（达标 ' + best.ok + '/' + best.n + ' 项）。' : '') +
-      (scored.length < total ? '<br><span class="note">还有 ' + (total - scored.length) + ' 项' + wd().rest + (mode === 'self' ? '，完成全部自评后结论更完整' : '，这些能力不计入达标或未达标') + '。</span>' : '') +
-      '<br><span class="note">' + (mode === 'self' ? '结论只基于你的自评，仅供参考。' : '结论只基于老师评价：由老师确认通过的技能换算到能力。') + '</span></div>' +
-      '<div class="adv-cols"><div><div class="k">各对口岗位（按' + wd().who + '达标）</div>' + pos.map(function (p) { return esc(p.name) + (p.core ? '（核心）' : '') + '：达标 ' + p.ok + '/' + p.n; }).join('<br>') + '</div>' +
-      '<div><div class="k">相对强项</div>' + (oks.length ? oks.filter(isCore).concat(oks.filter(function (a) { return !isCore(a); })).slice(0, 5).map(function (a) { return esc(ABL[a.abl].name) + ' L' + scores[a.abl]; }).join('<br>') : '暂无达标的能力') + '</div></div></div>';
-    if (!gaps.length) return h + '<div class="adv" style="font-size:12.5px;color:var(--ink-2)">' + (mode === 'self' ? '已自评的能力都达到了岗位要求，可以对照 L3 的描述继续提升。' : '有老师评价的能力都达到了岗位要求，可以对照 L3 的描述继续提升。') + '</div>';
+      '对照「<b>' + esc(P.name) + '</b>」岗位要求的 <b>' + rows.length + '</b> 项能力，' + wd().did + ' <b>' + scored.length + '</b> 项：达标 <b style="color:var(--good)">' + oks.length + '</b>，未达标 <b style="color:var(--crit)">' + gaps.length + '</b>。' +
+      (scored.length < rows.length ? '还有 ' + (rows.length - scored.length) + ' 项' + wd().rest + '。' : '') +
+      (model.posIds.length > 1 ? '<span title="同一项能力评一次，各岗位共用">其他岗位达标情况见岗位卡片</span>。' : '') +
+      '<br><span class="note">' + (mode === 'self' ? '结论基于自评，仅供参考' : '结论由老师确认的技能换算') + '</span></div>' +
+      '<div class="adv-cols" style="grid-template-columns:1fr"><div><div class="k">相对强项（' + esc(P.name) + '）</div>' +
+      (strong.length ? strong.map(function (a) { return esc(ABL[a.abl].name) + ' L' + a.got + '（要求 L' + a.need + '）'; }).join('<br>') : '暂无达标的能力') + '</div></div></div>';
+    if (!gaps.length) return h + '<div class="adv" style="font-size:12.5px;color:var(--ink-2)">' + (mode === 'self' ? '自评能力均达标，可对照 L3 描述继续提升。' : '有评价的能力均达标，可对照 L3 描述继续提升。') + '</div>';
     var list = showAllSug ? gaps : gaps.slice(0, 5);
-    h += list.map(function (a) { return sugHTML(L, a, scores[a.abl]); }).join('');
+    h += list.map(function (a) { return sugHTML(L, a, a.got); }).join('');
     if (gaps.length > 5) h += '<button class="sug-more" data-sugmore>' + (showAllSug ? '收起' : '查看全部 ' + gaps.length + ' 项学习建议') + '</button>';
     return h;
   }
@@ -512,20 +520,30 @@
     var tips = [];
     if (mode === 'teacher') sk.forEach(function (x) {
       var e = L.ev[x.sid];
-      if (e && e.ok) { var mm = (L.K.map[x.sid] || []).find(function (y) { return y.abl === a.abl; }) || {}; tips.push('「' + esc(x.name) + '」老师评价已达成（' + e.grade + '），' + (x.type === '直接支撑' ? '按映射支撑到这项能力的 ' + (mm.level || 'L1') : '只部分支撑这项能力') + '；要到 L' + a.need + '，还需要在支撑等级更高的技能上通过老师评价。'); }
-      if (e && !e.ok) tips.push('「' + esc(x.name) + '」最近一次老师评价为需改进，先按老师评语补练：<a href="' + UI.link('student-tasks.html') + '&open=' + e.tid + '">查看《' + esc(e.session) + '》</a>。');
+      if (e && e.ok) { var mm = (L.K.map[x.sid] || []).find(function (y) { return y.abl === a.abl; }) || {}; tips.push('「' + esc(x.name) + '」已达成（' + e.grade + '）' + (x.type === '直接支撑' ? '，支撑到 ' + (mm.level || 'L1') : '，仅部分支撑') + '；要到 L' + a.need + '，还需支撑等级更高的技能通过评价。'); }
+      if (e && !e.ok) tips.push('「' + esc(x.name) + '」评价为需改进，按评语补练：<a href="' + UI.link('student-tasks.html') + '&open=' + e.tid + '">查看《' + esc(e.session) + '》</a>。');
     });
     var todo = L.sv.tasks.filter(function (t) { return SK.canSubmit(t) && (t.task.criteria || []).some(function (c) { return sk.some(function (x) { return x.sid === c.sid; }); }); });
     todo.forEach(function (t) { tips.push('完成任务「' + esc(t.task.name) + '」' + (t.due ? '（截止 ' + esc(t.due) + '）' : '') + '：<a href="' + UI.link('student-tasks.html') + '&open=' + t.id + '">去提交</a>。'); });
     var openSk = sk.filter(function (x) { return x.open && (mode === 'self' || !L.ev[x.sid]); });
-    if (openSk.length) tips.push('本学期在学的' + openSk.map(function (x) { return '《' + esc(x.course) + '》「' + esc(x.task) + '」'; }).filter(function (v, i, arr) { return arr.indexOf(v) === i; }).join('、') + '会练到这项能力，认真完成相关课次的任务。');
-    if (sk.length && !sk.some(function (x) { return x.open; })) tips.push('本学期课程暂未覆盖，可以自学' + sk.slice(0, 2).map(function (x) { return '《' + esc(x.course) + '》「' + esc(x.task) + '」'; }).join('、') + '的内容。');
-    if (!sk.length) tips.push('知识体系里暂时没有对应的课程技能，可以向老师了解相关的实训或实习机会。');
+    if (openSk.length) tips.push('本学期在学的' + openSk.map(function (x) { return '《' + esc(x.course) + '》「' + esc(x.task) + '」'; }).filter(function (v, i, arr) { return arr.indexOf(v) === i; }).join('、') + '会练到这项能力。');
+    if (sk.length && !sk.some(function (x) { return x.open; })) tips.push('本学期课程未覆盖，可自学' + sk.slice(0, 2).map(function (x) { return '《' + esc(x.course) + '》「' + esc(x.task) + '」'; }).join('、') + '。');
+    if (!sk.length) tips.push('暂无对应课程技能，可向老师了解相关的实训或实习机会。');
+    // 学习资源直达：相关技能的知识课程若已开课并有发布给本人的课次，给「我的任务」课次详情（内含学习资源）的链接
+    var resLinks = [];
+    sk.forEach(function (x) {
+      if (!x.cid || resLinks.some(function (r) { return r.course === x.course; })) return;
+      var tid = L.cid2task[x.cid];
+      if (tid) resLinks.push({ cid: tid, course: x.course });
+    });
+    var resHtml = resLinks.length ? '<div style="margin-top:4px"><span class="k">学习资源：</span>' +
+      resLinks.map(function (r) { return '<a href="' + UI.link('student-tasks.html') + '&open=' + r.cid + '" title="打开课次查看并学习资源">《' + esc(r.course) + '》学习资源 ›</a>'; }).join('　') + '</div>' : '';
     return '<div class="sug"><div class="sug-h">' + (ab.core ? '<span style="color:var(--brand)">★</span>' : '') + '<b>' + esc(ab.name) + '</b><span class="lvup">' + wd().who + ' L' + got + ' → 目标 L' + a.need + '</span>' +
       a.reqs.map(function (r) { return '<span class="pos">' + esc(POS[r.pos].name) + ' L' + r.lv + '</span>'; }).join('') + '</div>' +
-      '<div class="sug-b"><div><span class="k">要达到的水平（L' + a.need + '）：</span>' + esc((ab.levels || {})['L' + a.need] || '—') + '</div>' +
+      '<div class="sug-b"><div><span class="k">目标水平（L' + a.need + '）：</span>' + esc((ab.levels || {})['L' + a.need] || '—') + '</div>' +
       (sk.length ? '<div style="margin-top:4px"><span class="k">对应的课程技能：</span>' + shownSk(sk).map(function (x) { var e = L.ev[x.sid]; return '<span class="skc' + (x.open ? ' on' : '') + '" title="' + esc(x.type) + '">' + esc(x.name) + '《' + esc(x.course) + '》' + (x.open ? ' · 本学期在学' : '') + (mode === 'teacher' && e ? ' · 老师评价 ' + e.grade : '') + '</span>'; }).join('') + (sk.length > shownSk(sk).length ? '<span style="font-size:11.5px;color:var(--muted)">等 ' + sk.length + ' 个技能</span>' : '') + '</div>' : '') +
-      '<div style="margin-top:4px"><span class="k">学习建议：</span><ul>' + tips.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul></div></div></div>';
+      '<div style="margin-top:4px"><span class="k">学习建议：</span><ul>' + tips.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul></div>' +
+      resHtml + '</div></div>';
   }
 
   /* ── 局部刷新 ── */

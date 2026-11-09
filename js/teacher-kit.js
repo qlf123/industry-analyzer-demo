@@ -39,20 +39,42 @@
   /* 知识点掌握（只用于学情分析和补训，不进证据、不汇总到能力）：
      演示用 AI 标注——按该技能的评价等级和提交内容，标出没体现的知识点；老师确认评价时可改。 */
   function hash(str) { var h = 0; for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; return Math.abs(h); }
-  function aiKpMarks(sid, grade, student) {
+  function aiKpMarks(sid, grade, student, allowIds) {
     var x = kn().skill[sid], ks = (x && x.kps) || [], out = {};
+    if (allowIds && allowIds.length) ks = ks.filter(function (k) { return allowIds.indexOf(k.id) >= 0; });
     ks.forEach(function (k, i) {
       var miss = grade === '需改进' ? (hash(student + k.id) % 2 === 0 || i === 0) : grade === '合格' ? (ks.length > 1 && hash(student + k.id) % 3 === 0) : false;
       out[k.id] = miss ? 'miss' : 'ok';
     });
     return out;
   }
-  // 一次老师评价里，某技能下各知识点的结果：老师确认过的优先，没有则用 AI 标注（存量数据）
-  function itemKps(item, student) { return (item && item.kps) || (item ? aiKpMarks(item.sid, item.grade, student) : {}); }
-  function kpCount(skillIds) { return kpsOf(skillIds).reduce(function (a, g) { return a + g.kps.length; }, 0); }
-  // 考查知识点展示：每个技能一行，知识点标类型，悬停看核心内容
-  function kpHTML(skillIds) {
+  // 一次老师评价里，某技能下各知识点的结果：老师确认过的优先，没有则用 AI 标注（存量数据）；
+  // allowIds：本次任务发布时勾选的考查知识点（kpIds），有则只保留这些（不传 = 全部，兼容存量数据）
+  function itemKps(item, student, allowIds) {
+    var m = (item && item.kps) || (item ? aiKpMarks(item.sid, item.grade, student) : {});
+    if (!allowIds || !allowIds.length) return m;
+    var out = {}; Object.keys(m).forEach(function (k) { if (allowIds.indexOf(k) >= 0) out[k] = m[k]; }); return out;
+  }
+  function kpCount(skillIds, kpIds) { return kpIds && kpIds.length ? kpIds.length : kpsOf(skillIds).reduce(function (a, g) { return a + g.kps.length; }, 0); }
+  // 知识点判定依据：发布时为每个考查知识点定一条「体现了什么算掌握」，默认取知识体系里该知识点的核心内容，老师可改；
+  // 任务里存了（task.kpCrit）以任务为准，存量任务没有则用默认
+  function kpCritDefault(k) { return k.core ? '作答中体现：' + k.core : '作答中能正确运用「' + k.name + '」'; }
+  function kpCrit(task, k) { return (task && task.kpCrit && task.kpCrit[k.id]) || kpCritDefault(k); }
+  // 判定依据列表（只读）：按技能分组，每个知识点一行
+  function kpCritHTML(task) {
+    var gs = kpsOf((task && task.skillIds) || []), ids = task && task.kpIds && task.kpIds.length ? task.kpIds : null;
+    if (ids) gs = gs.map(function (g) { var k2 = g.kps.filter(function (k) { return ids.indexOf(k.id) >= 0; }); return k2.length ? { skill: g.skill, kps: k2 } : null; }).filter(function (g) { return g; });
+    if (!gs.length) return '';
+    return gs.map(function (g) {
+      return '<div style="font-size:12px;color:var(--muted);margin-top:6px">' + esc(g.skill) + '</div>' + g.kps.map(function (k) {
+        return '<div style="font-size:12.5px;line-height:1.7;padding:2px 0 2px 10px;border-left:2px solid var(--rule)"><b style="font-weight:600">' + esc(k.name) + '</b>：<span style="color:var(--ink-2)">' + esc(kpCrit(task, k)) + '</span></div>';
+      }).join('');
+    }).join('');
+  }
+  // 考查知识点展示：每个技能一行，知识点标类型，悬停看核心内容；kpIds = 发布时勾选的，有则只显示勾选的
+  function kpHTML(skillIds, kpIds) {
     var gs = kpsOf(skillIds);
+    if (kpIds && kpIds.length) gs = gs.map(function (g) { var k2 = g.kps.filter(function (k) { return kpIds.indexOf(k.id) >= 0; }); return k2.length ? { sid: g.sid, skill: g.skill, kps: k2 } : null; }).filter(function (g) { return g; });
     if (!gs.length) return '<span style="color:var(--muted);font-size:12px">' + ((skillIds || []).length ? '所选技能下没有知识点' : '未挂技能，没有考查知识点') + '</span>';
     return gs.map(function (g) {
       return '<div style="font-size:12.5px;line-height:1.9"><span style="color:var(--muted)">' + esc(g.skill) + '：</span>' + g.kps.map(function (k) {
@@ -612,6 +634,6 @@
     periodRange: periodRange, inRange: inRange, addGrowth: addGrowth, addStuGrowth: addStuGrowth, STU_STAR: STU_STAR, toast: toast, drawer: drawer, modal: modal, confirm: confirmBox,
     formHTML: formHTML, bindForm: bindForm, readForm: readForm, fileRow: fileRow, FT_COLOR: FT_COLOR,
     PERIODS: PERIODS, periodOf: periodOf,
-    kn: kn, skillName: skillName, kpsOf: kpsOf, kpCount: kpCount, kpHTML: kpHTML, aiKpMarks: aiKpMarks, itemKps: itemKps, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs,
+    kn: kn, skillName: skillName, kpsOf: kpsOf, kpCount: kpCount, kpHTML: kpHTML, kpCrit: kpCrit, kpCritDefault: kpCritDefault, kpCritHTML: kpCritHTML, aiKpMarks: aiKpMarks, itemKps: itemKps, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs,
     syncRoster: syncRoster, syncSessions: syncSessions, fillSkillsFromRes: fillSkillsFromRes, studentHasRecords: studentHasRecords, majorPath: majorPath, majorTop: majorTop, majorSubIds: majorSubIds, majorTree: majorTree, majorChain: majorChain, GRADES: GRADES, genCriteria: genCriteria, overall: overall, addEvidence: addEvidence };
 })(window);

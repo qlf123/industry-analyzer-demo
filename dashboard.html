@@ -350,23 +350,61 @@ svg text{font-family:inherit}
       '<div class="panel2"><div class="don">' + donut(srcParts, '排课总数', 120) + rows(srcParts) + '</div><div style="font-size:11.5px;color:var(--muted)">教务排课：管理端排课自动生成的课次；教师自建：老师另建的额外课次和补训课次</div></div>' +
       '</div></div>';
 
-    // 6 教学质量（摘要）：老师确认的课堂证据达成情况 + 待处理的课程改进建议，明细到「教学质量」
+    // 6 教学质量：老师确认的课堂证据 / 评价，本周期达成与掌握、趋势、课程对比、薄弱能力、待处理建议；明细到「教学质量 › 教学达成」
+    // 技能看证据，知识点看最近一次老师确认的评价（含退回），两个维度分开显示
     if (UI.hasPerm(DEMO.getState(), UI.currentIdentity(DEMO.getState()), 'teach:quality:view')) {
-      var tq = TR.compute(S, scopedPlans(), r), tqp = TR.compute(S, scopedPlans(), pr), tr = TR.rate(tq.ok, tq.pairs), trp = TR.rate(tqp.ok, tqp.pairs);
+      var CS = '#4f7cff', CK = '#f59e0b', SP = scopedPlans();
+      var tq = TR.compute(S, SP, r), tqp = TR.compute(S, SP, pr), tr = TR.rate(tq.ok, tq.pairs), trp = TR.rate(tqp.ok, tqp.pairs);
+      var kq = TR.kpRate(TR.kpsAgg(S, SP, r.b, r.a)), kqp = TR.kpRate(TR.kpsAgg(S, SP, pr.b, pr.a));
       var mNames = F.scope ? TK.majorSubIds(E, F.scope).map(function (id) { return (E.majors.filter(function (m) { return m.id === id; })[0] || {}).name; }) : null;
       var imps = (S.improves || []).filter(function (x) { return x.status === '待处理' && (!mNames || mNames.indexOf(x.major) >= 0); });
-      var weak = tq.abilities.filter(function (a) { return a.no; }).slice(0, 5);
+      var weak = tq.abilities.filter(function (a) { return a.pairs; }).map(function (a) { return { n: a.name, r: TR.rate(a.ok, a.pairs), no: a.no }; }).sort(function (a, b) { return a.r - b.r; }).slice(0, 5);
       var go = function (q, txt) { return '<a class="lk" href="' + esc(UI.link('teach-quality.html?' + q, 'admin')) + '">' + txt + ' ›</a>'; };
+      // 趋势：本周期内按刻度，累计到每个刻度末的达成率 / 掌握率，和每个刻度新增的评价人次
+      var tb = buckets(r), now0 = new Date();
+      var sv = tb.map(function (b) { if (b.a > now0) return null; var x = TR.compute(S, SP, { a: r.a, b: b.b }); return x.pairs ? TR.rate(x.ok, x.pairs) : null; });
+      var kv = tb.map(function (b) { if (b.a > now0) return null; var x = TR.kpRate(TR.kpsAgg(S, SP, b.b, r.a)); return x.t ? x.r : null; });
+      var bv = tb.map(function (b) { return TR.compute(S, SP, { a: b.a, b: b.b }).pairs; });
+      var tW = 520, tL = 32, tR = 70, n0 = tb.length, xi = function (i) { return tL + (n0 <= 1 ? (tW - tL - tR) / 2 : (tW - tL - tR) * i / (n0 - 1)); };
+      var line = function () {
+        var H = 170, T = 10, B = 22, ih = H - T - B, y = function (v) { return T + ih * (1 - v / 100); };
+        var g = '<svg viewBox="0 0 ' + tW + ' ' + H + '" style="width:100%;height:auto" role="img" aria-label="达成率趋势">';
+        [0, 50, 100].forEach(function (v) { g += '<line x1="' + tL + '" x2="' + (tW - tR) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--rule-2)"/><text x="' + (tL - 5) + '" y="' + (y(v) + 4) + '" font-size="10" text-anchor="end" fill="var(--muted)">' + v + '%</text>'; });
+        var st = Math.max(1, Math.ceil(n0 / 8)); tb.forEach(function (b, i) { if (i % st === 0 || i === n0 - 1) g += '<text x="' + xi(i) + '" y="' + (H - 6) + '" font-size="10" text-anchor="middle" fill="var(--muted)">' + esc(b.l) + '</text>'; });
+        [[sv, CS, '技能'], [kv, CK, '知识点']].forEach(function (S2) {
+          var pts = S2[0].map(function (v, i) { return v == null ? null : [xi(i), y(v), v, i]; }).filter(Boolean);
+          if (pts.length > 1) g += '<polyline points="' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '" fill="none" stroke="' + S2[1] + '" stroke-width="2"/>';
+          pts.forEach(function (p) { g += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="' + S2[1] + '" stroke="#fff" stroke-width="2"><title>' + esc(tb[p[3]].l) + ' · ' + S2[2] + ' ' + p[2] + '%</title></circle>'; });
+          var lp = pts[pts.length - 1]; if (lp) g += '<text x="' + (lp[0] + 7) + '" y="' + (lp[1] + 4) + '" font-size="11" fill="var(--ink-2)">' + S2[2] + ' ' + lp[2] + '%</text>';
+        });
+        return g + '</svg>';
+      };
+      var bars = function () {
+        var H = 90, T = 12, B = 6, ih = H - T - B, mx = Math.max.apply(null, bv.concat([1])), bw = Math.max(4, Math.min(20, (tW - tL - tR) / n0 - 6));
+        var g = '<svg viewBox="0 0 ' + tW + ' ' + H + '" style="width:100%;height:auto" role="img" aria-label="新增评价人次"><line x1="' + tL + '" x2="' + (tW - tR) + '" y1="' + (T + ih) + '" y2="' + (T + ih) + '" stroke="var(--rule)"/>';
+        bv.forEach(function (v, i) { var bh = v ? Math.max(3, ih * v / mx) : 0; if (bh) g += '<rect x="' + (xi(i) - bw / 2).toFixed(1) + '" y="' + (T + ih - bh).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="3" fill="' + CS + '" fill-opacity=".75"><title>' + esc(tb[i].l) + ' · 新增评价 ' + v + ' 人次</title></rect><text x="' + xi(i).toFixed(1) + '" y="' + (T + ih - bh - 3).toFixed(1) + '" font-size="10" text-anchor="middle" fill="var(--ink-2)">' + v + '</text>'; });
+        return g + '</svg>';
+      };
+      // 各课程对比（本周期）
+      var crs = SP.filter(function (p) { return tq.byPlan[p.id]; }).map(function (p) { var b = tq.byPlan[p.id], k = TR.kpRate(TR.kpsAgg(S, [p], r.b, r.a)); return { n: p.course + ' · ' + cls(p.classId).name, s: TR.rate(b.pairs - b.no, b.pairs), k: k.r }; });
+      var hbar = function (v, c) { return '<span style="flex:1;height:9px;background:var(--card);border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:' + (v || 0) + '%;background:' + c + ';border-radius:4px"></i></span><span style="width:38px;text-align:right;font-size:11.5px;color:var(--ink-2)">' + (v == null ? '—' : v + '%') + '</span>'; };
+      var lg = function (c, t) { return '<span style="font-size:11.5px;font-weight:400;color:var(--ink-2);display:inline-flex;align-items:center;gap:5px"><i style="width:8px;height:8px;border-radius:2px;background:' + c + '"></i>' + t + '</span>'; };
       h += '<div class="db-sec"><div class="db-st"><span class="no">6</span>教学质量<span class="sp"></span>' + go('t=reach', '进入教学达成') + '</div>' +
-        '<div class="db-sub">来自老师在任务中心确认的课堂证据（学生自评不计入）；每个「学生 × 技能」取最近一次评价，需改进为未达成</div><div class="kpis">' +
-        kpi('🎯', '#ecfdf5', '本' + UNIT[F.p] + '教学达成率', tr == null ? '—' : tr, tr == null ? '' : '%', tr != null && trp != null ? delta(tr, trp, ' 个百分点') : '') +
+        '<div class="db-sub">技能看老师确认通过的证据，知识点看最近一次老师确认的评价（含退回）；两个维度分开统计，学生自评不计入</div><div class="kpis">' +
+        kpi('🎯', '#eef2ff', '本' + UNIT[F.p] + '技能达成率', tr == null ? '—' : tr, tr == null ? '' : '%', tr != null && trp != null ? delta(tr, trp, ' 个百分点') : '') +
+        kpi('📘', '#fff7ed', '本' + UNIT[F.p] + '知识点掌握率', kq.r == null ? '—' : kq.r, kq.r == null ? '' : '%', kq.r != null && kqp.r != null ? delta(kq.r, kqp.r, ' 个百分点') : '') +
         kpi('📝', '#eef2ff', '学生 × 技能 评价', tq.pairs, '次', delta(tq.pairs, tqp.pairs)) +
-        kpi('⚠️', '#fff7ed', '未达成', tq.no, '次') +
         kpi('💬', '#f3e8ff', '待处理改进建议', imps.length, '条') + '</div>' +
-        '<div class="grid2"><div class="panel2"><div class="ph2">未达成较多的能力<span class="sp"></span>' + go('t=reach', '查看全部') + '</div>' +
-          (weak.length ? '<div class="hb">' + weak.map(function (a) { var rr = TR.rate(a.ok, a.pairs); return '<div><span class="nm" title="' + esc(a.name) + '" style="flex:1;width:auto;text-align:left">' + esc(a.name) + '</span><span style="font-size:12px;color:var(--crit);white-space:nowrap;flex:none">未达成 ' + a.no + ' 次</span><span style="font-size:12px;color:var(--muted);margin-left:10px;white-space:nowrap;flex:none">达成率 ' + rr + '%</span></div>'; }).join('') + '</div>' : '<div class="empty3">' + (tq.pairs ? '本' + UNIT[F.p] + '评价过的能力都已达成' : '本' + UNIT[F.p] + '还没有课堂证据') + '</div>') + '</div>' +
-        '<div class="panel2"><div class="ph2">待处理的课程改进建议<span class="sp"></span>' + go('t=improve', '去处理') + '</div>' +
-          (imps.length ? imps.slice(0, 4).map(function (x) { return '<div style="font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--rule-2)"><b>' + esc(x.type) + '</b> · 《' + esc(x.course) + '》<span style="color:var(--muted);margin-left:6px">' + esc(x.from + ' · ' + x.at.slice(0, 10)) + '</span><div style="color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(x.text) + '</div></div>'; }).join('') : '<div class="empty3">没有待处理的建议</div>') + '</div></div></div>';
+        '<div class="grid2">' +
+          '<div class="panel2"><div class="ph2">达成趋势（累计）<span class="sp"></span>' + lg(CS, '技能达成率') + lg(CK, '知识点掌握率') + '</div>' +
+            (sv.some(function (v) { return v != null; }) ? line() + '<div style="font-size:11.5px;color:var(--muted);margin:4px 0 2px">每' + ({ week: '天', month: '周', term: '月', year: '月' }[F.p]) + '新增评价（学生 × 技能，人次）</div>' + bars() : '<div class="empty3">本' + UNIT[F.p] + '还没有课堂证据</div>') + '</div>' +
+          '<div class="panel2"><div class="ph2">各课程达成对比<span class="sp"></span>' + lg(CS, '技能') + lg(CK, '知识点') + '</div>' +
+            (crs.length ? crs.map(function (c) { return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px"><span style="width:150px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--brand-ink)" title="' + esc(c.n) + '">' + esc(c.n) + '</span>' + hbar(c.s, CS) + hbar(c.k, CK) + '</div>'; }).join('') : '<div class="empty3">本' + UNIT[F.p] + '还没有课堂证据</div>') + '</div>' +
+          '<div class="panel2"><div class="ph2">达成率最低的能力<span class="sp"></span>' + go('t=reach', '查看全部') + '</div>' +
+            (weak.length ? weak.map(function (w) { return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px"><span style="width:150px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--brand-ink)" title="' + esc(w.n) + '">' + esc(w.n) + '</span>' + hbar(w.r, w.r < 70 ? '#ef4444' : CS) + '<span style="width:58px;text-align:right;font-size:11.5px;color:var(--muted)">未达成 ' + w.no + '</span></div>'; }).join('') : '<div class="empty3">本' + UNIT[F.p] + '还没有课堂证据</div>') + '</div>' +
+          '<div class="panel2"><div class="ph2">待处理的课程改进建议<span class="sp"></span>' + go('t=improve', '去处理') + '</div>' +
+            (imps.length ? imps.slice(0, 4).map(function (x) { return '<div style="font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--rule-2)"><b>' + esc(x.type) + '</b> · 《' + esc(x.course) + '》<span style="color:var(--muted);margin-left:6px">' + esc(x.from + ' · ' + x.at.slice(0, 10)) + '</span><div style="color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(x.text) + '</div></div>'; }).join('') : '<div class="empty3">没有待处理的建议</div>') + '</div>' +
+        '</div></div>';
     }
     document.getElementById('body').innerHTML = h;
   }

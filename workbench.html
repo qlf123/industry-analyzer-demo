@@ -50,6 +50,10 @@
 .wb-prep .sum b{color:#6366f1;font-weight:600}
 .sum-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .sum-row .sum{flex:1;margin:0}
+[data-rhtfull].rht-full{position:absolute;top:8px;right:10px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:rgba(255,255,255,.9);color:#4f6ef7;cursor:pointer;padding:0}
+[data-rhtfull].rht-full:hover{background:#f4f2ff}
+#rhtFull .tb{white-space:nowrap;flex:none;font:inherit;font-size:12px;color:#6366f1;background:#fff;border:1px solid #e3e0fb;border-radius:6px;padding:3px 10px;cursor:pointer}
+#rhtFull .tb:hover{background:#f4f2ff}
 .sum-row .tb{font-size:11.5px;color:#6366f1;background:none;border:none;cursor:pointer;padding:0 2px}
 /* 横版树状图：上级链路 → 当前节点 → 下级各层，自左向右展开 */
 .htree{overflow:auto;max-height:340px;background:#fff;border:1px solid #eeecfb;border-radius:8px;padding:12px 14px}
@@ -422,6 +426,13 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     if (apiCtl) apiCtl.abort();
     apiCtl = window.AbortController ? new AbortController() : null;
     var api = run.api = { status: 'pending', url: '', err: '' }, myRun = run;
+    // 接口约 2–3 分钟返回；超过 5 分钟仍无结果按失败处理
+    var tmo = setTimeout(function () { if (api.status === 'pending' && apiCtl) { api.timeout = true; apiCtl.abort(); } }, 5 * 60 * 1000);
+    // 先探测服务能否连通（6 秒）：连不上（如不在内网）就不再等接口，直接给出本地结果
+    var probeCtl = window.AbortController ? new AbortController() : null, probeT = setTimeout(function () { if (probeCtl) probeCtl.abort(); }, 6000);
+    fetch(new URL(GEN_PPT_API).origin + '/', { mode: 'no-cors', cache: 'no-store', signal: probeCtl ? probeCtl.signal : undefined })
+      .then(function () { clearTimeout(probeT); })
+      .catch(function () { clearTimeout(probeT); if (api.status === 'pending' && apiCtl) { api.timeout = true; apiCtl.abort(); } });
     fetch(GEN_PPT_API, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: apiCtl ? apiCtl.signal : undefined,
       body: JSON.stringify({ author: currentUserName(), knowledge_system: run.ks, theme: run.theme, desc: run.desc })
@@ -431,9 +442,12 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       if (j && j.code === 200 && j.data) { api.status = 'ok'; api.url = j.data; }
       else throw new Error((j && j.message) || '接口未返回课件链接');
     }).catch(function (e) {
-      if (e && e.name === 'AbortError') return;
-      api.status = 'error'; api.err = e && e.message === 'Failed to fetch' ? '无法连接课件生成服务' : (e && e.message) || '生成失败';
+      if (e && e.name === 'AbortError' && !api.timeout) return;
+      // 接口调用失败（连不上、超时、返回异常）：不报错，直接给出本地生成的课件
+      api.status = 'mock'; api.err = e && e.message === 'Failed to fetch' ? '无法连接课件生成服务' : (e && e.message) || '生成失败';
+      try { console.warn('课件生成接口失败，已改用本地结果：', api.err); } catch (x) {}
     }).then(function () {
+      clearTimeout(tmo);
       if (run === myRun && run.api === api) { var s = cur(); if (s && s.api) advance(); else render(); }
     });
   }
@@ -580,13 +594,15 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     ])];
   }
   function step(key, name, msgs, opt) { return Object.assign({ key: key, name: name, msgs: msgs || [], shown: 0, status: 'idle', open: true }, opt || {}); }
+  function fromMap() { return !!(prep && !prep.auto && !prep.session && (prep.ks || (prep.tree || []).length)); }
   function buildSteps(topic) {
     var resTxt = state.selected.map(function (t) { return t; }).join('、');
     var hasRef = state.files.length;
     var s = [
       step('start', '启动', ['备课工作台已启动']),
       step('need', '需求分析', ['正在智能分析您的教学内容...', '正在为您细化各任务的配置要求...', '已识别到教学主题「' + topic + '」，准备为您生成 ' + resTxt + ' 等备课资源', '正在为您创建备课任务...', '备课任务创建完成', '需求分析任务完成']),
-      step('kp', '知识体系', [], { confirm: 'kp', doneTag: '已确认' }),
+      // 从能力地图带着图谱树来的（老师已在图谱上选定节点和子树）不再确认知识点；工作台直接输入匹配到的、课次带入的仍需确认
+      fromMap() ? step('kp', '能力地图', ['已带入能力地图选定的' + (prep.multi ? ' ' + (prep.selected || []).length + ' 个节点' : '「' + ((prep.current && prep.current.name) || topic) + '」') + '及下级节点，按选定范围生成'], { doneTag: '已带入', map: true }) : step('kp', '知识体系', [], { confirm: 'kp', doneTag: '已确认' }),
       step('search', '知识检索', ['正在为您检索相关知识点...', '已为您检索到 ' + run.kp.length * 3 + ' 条相关知识点，共 ' + (run.kp.length * 1260).toLocaleString() + ' 个字符', '知识检索完成']),
       step('ref', '参考文件解析', hasRef ? ['开始执行'].concat(state.files.map(function (f) { return '正在解析《' + f.name + '》...'; }), ['已解析 ' + state.files.length + ' 个参考文件', '参考文件解析完成']) : ['开始执行', '无参考文件，跳过', '参考文件解析完成（无文件）'])
     ];
@@ -637,6 +653,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       run.ksCount = ksSize(run.ks);
     }
     run.types = state.selected.slice();
+    if (fromMap()) { var pc = prepCounts(prep), rt = htRoot(JSON.parse(JSON.stringify(prep))), op = {}; htWalk(rt, '0', function (n, id) { if (n.anc || n.cur) op[id] = true; }); run.map = { root: rt, open: op, total: pc.total, counts: pc.counts }; }
     run.steps = buildSteps(topic);
     if (run.ks) callGenPpt();
     $('#wbHero').hidden = true; $('#wbInput').hidden = true;
@@ -663,7 +680,8 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     if (s.api && s.shown >= s.msgs.length - 1) {
       if (run.api.status === 'pending') { s.shown = s.msgs.length - 1; render(); return; }   // 等接口返回
       if (run.api.status === 'error') { s.status = 'fail'; render(); return; }
-      if (!s.out.length) s.out = [{ name: fileNameOf(run.api.url, run.theme + '.pptx'), url: run.api.url }];
+      if (!s.out.length) s.out = run.api.status === 'mock' ? ['《' + run.theme + '》课件.pptx', '《' + run.theme + '》课件讲稿.docx']
+        : [{ name: fileNameOf(run.api.url, run.theme + '.pptx'), url: run.api.url }];
     }
     if (s.shown < s.msgs.length) { s.shown++; render(); timer = setTimeout(advance, 650); return; }
     s.status = 'done'; s.open = !!(s.pack);
@@ -693,6 +711,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       if (s.status === 'idle') return;
       h += '<div class="fs">' + AV + '<div class="bd"><div class="hd">AIGC 智课 <span class="nm">' + esc(s.name) + '</span>' + tagOf(s) + '</div>';
       if (s.confirm === 'kp') h += kpCard(s);
+      else if (s.map && run.map) h += msgBox(s, s.msgs.slice(0, s.shown), i) + mapTreeCard(run.map);
       else if (s.confirm === 'outline') h += s.status === 'wait' ? outlineCard() : msgBox(s, ['大纲已确认，共 ' + run.outline[0].kids.length + ' 个一级章节'], i);
       else if (s.confirm === 'script') h += s.status === 'wait' ? scriptCard() : msgBox(s, ['视频脚本已确认'], i);
       else if (s.pack && s.status === 'done') h += msgBox(s, s.msgs, i) + '<div style="height:10px"></div>' + packCard();
@@ -700,8 +719,45 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       h += '</div></div>';
     });
     $('#wbFlow').innerHTML = h;
+    // 带入的图谱树：第一次显示时滚到当前节点（与带入面板一致），之后保持老师自己的滚动位置
+    var rb = document.querySelector('[data-rhtbox]');
+    if (rb && run.map) {
+      if (run.map.sl == null) { var cb = rb.querySelector('.ht-box.cur'); if (cb) { var A = rb.getBoundingClientRect(), B = cb.getBoundingClientRect(); run.map.sl = Math.max(0, B.left - A.left - 40); run.map.st = Math.max(0, (B.top - A.top) - rb.clientHeight / 2 + B.height / 2); } }
+      rb.scrollLeft = run.map.sl || 0; rb.scrollTop = run.map.st || 0;
+      rb.onscroll = function () { run.map.sl = rb.scrollLeft; run.map.st = rb.scrollTop; };
+    }
     renderProg(); if (!run.ro) saveTask();
     var c = $('#wbCenter'); if (!run.edit) c.scrollTop = c.scrollHeight;
+  }
+  // 从能力地图带入的图谱树：根 = 选定节点（多选时为各选中节点），默认展开一层，可逐级展开
+  // 从能力地图带入的图谱树：与带入面板同样的横向树（上级链路虚线框、当前节点高亮，可展开 / 收起）
+  function mapTreeCard(m) {
+    if (!m.root) return '';
+    return '<div style="margin-top:8px;position:relative"><div class="htree" data-rhtbox>' + htHTML(m.root, '0', m.open, 'data-rht') + '</div><button type="button" class="rht-full" data-rhtfull title="全屏查看" aria-label="全屏查看"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4"/></svg></button></div>';
+  }
+  // 全屏查看带入的图谱树：同一份展开状态，可全部展开 / 收起到带入节点，Esc 或关闭按钮退出
+  function openMapFull() {
+    if (!run.map) return;
+    var ov = document.createElement('div');
+    ov.id = 'rhtFull';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2000;background:#fff;display:flex;flex-direction:column';
+    function paint() {
+      ov.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid #eeecfb"><b style="font-size:15px">带入的图谱树</b><span style="flex:1"></span>' +
+        '<button type="button" class="tb" data-fclose>✕ 退出全屏</button></div>' +
+        '<div class="htree" style="flex:1;max-height:none;border:0;border-radius:0;padding:24px 28px">' + htHTML(run.map.root, '0', run.map.open, 'data-fht') + '</div>';
+    }
+    function focusCur() { var bx = ov.querySelector('.htree'), cb = bx.querySelector('.ht-box.cur'); if (!cb) return; var A = bx.getBoundingClientRect(), B = cb.getBoundingClientRect(); bx.scrollLeft += (B.left - A.left) - 60; bx.scrollTop += (B.top - A.top) - bx.clientHeight / 2 + B.height / 2; }
+    function close() { document.removeEventListener('keydown', onKey); ov.remove(); run.edit = 'x'; render(); run.edit = null; }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    ov.addEventListener('click', function (e) {
+      var t;
+      if (e.target.closest('[data-fclose]')) { close(); return; }
+      if (e.target.closest('[data-fall]')) { htWalk(run.map.root, '0', function (n, id) { if ((n.children || []).length) run.map.open[id] = true; }); paint(); focusCur(); return; }
+      if (e.target.closest('[data-fdef]')) { run.map.open = {}; htWalk(run.map.root, '0', function (n, id) { if (n.anc || n.cur) run.map.open[id] = true; }); paint(); focusCur(); return; }
+      if ((t = e.target.closest('[data-fht]'))) { var id = t.getAttribute('data-fht'), bx = ov.querySelector('.htree'), sl = bx.scrollLeft, st = bx.scrollTop; run.map.open[id] = !run.map.open[id]; paint(); var nb = ov.querySelector('.htree'); nb.scrollLeft = sl; nb.scrollTop = st; }
+    });
+    document.addEventListener('keydown', onKey);
+    paint(); document.body.appendChild(ov); focusCur();
   }
   function msgBox(s, msgs, i) {
     if (s.status === 'fail') return '<div class="fbox fmsg"><ul>' + msgs.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join('') +
@@ -806,7 +862,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     var waiting = run.steps.some(function (s) { return s.status === 'wait'; });
     var nodes = [
       { name: '需求分析', s: st('need'), sub: st('need') === 'done' ? ['已完成 ' + (run.types || state.selected).length + ' 个'].concat((run.types || state.selected).map(function (t) { return '《' + run.topic + '》' + RES_NAME[t]; })) : [] },
-      { name: '知识点确认', s: st('kp'), sub: [] }
+      { name: run.map ? '能力地图' : '知识点确认', s: st('kp'), sub: [] }
     ];
     (run.types || state.selected).forEach(function (t) {
       var ss = run.steps.filter(function (x) { return x.res === t; });
@@ -911,6 +967,8 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
   // 时间线交互
   $('#wbFlow').addEventListener('click', function (e) {
     var t;
+    if (e.target.closest('[data-rhtfull]')) { openMapFull(); return; }
+    if ((t = e.target.closest('[data-rht]')) && run.map) { var rid = t.getAttribute('data-rht'); run.map.open[rid] = !run.map.open[rid]; run.edit = 'x'; render(); run.edit = null; return; }
     if ((t = e.target.closest('[data-tog]'))) { var s = run.steps[+t.getAttribute('data-tog')]; s.open = !s.open; run.edit = 'x'; render(); run.edit = null; return; }
     if ((t = e.target.closest('[data-kp]'))) { var st = cur(); if (!st || st.confirm !== 'kp') return; var k = run.kp[+t.getAttribute('data-kp')]; k.on = !k.on; run.edit = 'x'; render(); run.edit = null; return; }
     if ((t = e.target.closest('[data-ol-open]'))) { var n = nodeAt(t.getAttribute('data-ol-open')); n.open = !n.open; keep(); return; }
@@ -987,13 +1045,14 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
   }
   function htWalk(n, id, fn) { fn(n, id); (n.children || []).forEach(function (k, i) { htWalk(k, id + '.' + i, fn); }); }
   function htDefault(root) { htOpen = {}; htWalk(root, '0', function (n, id) { if (n.anc || n.cur) htOpen[id] = true; }); }
-  function htHTML(n, id) {
-    var kids = n.children || [], open = htOpen[id] && kids.length;
+  function htHTML(n, id, om, attr) {
+    om = om || htOpen; attr = attr || 'data-ht-id';
+    var kids = n.children || [], open = om[id] && kids.length;
     var col = TYPE_COLOR[n.type] || '#94a3b8';
-    var box = '<span class="ht-box' + (n.cur ? ' cur' : n.anc ? ' anc' : '') + (kids.length && !n.anc ? ' has' : '') + '"' + (kids.length && !n.anc ? ' data-ht-id="' + id + '"' : '') + ' title="' + esc(n.type + '：' + n.name) + '">' +
+    var box = '<span class="ht-box' + (n.cur ? ' cur' : n.anc ? ' anc' : '') + (kids.length && !n.anc ? ' has' : '') + '"' + (kids.length && !n.anc ? ' ' + attr + '="' + id + '"' : '') + ' title="' + esc(n.type + '：' + n.name) + '">' +
       (n.type ? '<em style="background:' + (n.cur ? 'rgba(255,255,255,.28)' : col) + '">' + esc(n.type) + '</em>' : '') + '<span class="n">' + esc(n.name) + '</span>' +
       (kids.length && !n.anc ? '<span class="tg">' + (open ? '−' : '+' + kids.length) + '</span>' : '') + '</span>';
-    return '<div class="ht-node">' + box + (open ? '<div class="ht-kids">' + kids.map(function (k, i) { return htHTML(k, id + '.' + i); }).join('') + '</div>' : '') + '</div>';
+    return '<div class="ht-node">' + box + (open ? '<div class="ht-kids">' + kids.map(function (k, i) { return htHTML(k, id + '.' + i, om, attr); }).join('') + '</div>' : '') + '</div>';
   }
   var htRootNode = null;
   function renderHT() { $('#wbPrepTree').innerHTML = htHTML(htRootNode, '0'); }

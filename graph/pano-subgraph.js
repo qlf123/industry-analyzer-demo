@@ -58,6 +58,9 @@
     Object.keys(vis).forEach(function(id){(a[id]||[]).forEach(function(nb){if(!vis[nb]&&!perm[nb])hidden[nb]=true})});
     lastVis=vis;
     var full=rule.kind==='all'&&!ROLES[role].majors;
+    // 页面标题直接体现数据权限范围，不再只靠顶部提示条
+    var tEl=document.getElementById('graphTitle');
+    if(tEl){if(!tEl.dataset.base)tEl.dataset.base=tEl.textContent;tEl.textContent=tEl.dataset.base+(ROLES[role].majors?' · '+ROLES[role].majors.join('、'):'')}
     G.setVisible(full?null:vis);
     var hn=Object.keys(hidden).length,msgs=[];
     if(ROLES[role].majors)msgs.push('按数据权限显示（'+ROLES[role].majors.join('、')+'）'+(hn?'，另有 <b>'+hn+'</b> 个关联节点无权限查看':''));
@@ -102,7 +105,7 @@
 
   function pickCourse(){
     var courses=G.nodes.filter(function(n){return n.type==='课程'}),perm=permSet();
-    open(head('场景子图 · 课程图谱','从一门课程出发，沿「课程 → 章节 / 知识点 → 技能」取出相关节点。子图只保存这条规则，打开时实时取数。')
+    open(head('场景子图 · 课程图谱','从一门课程出发，沿「课程 → 章节 / 知识点 → 技能」取出相关节点。')
       +'<div class="pv-body"><div class="pv-sec">'+courses.map(function(c){
         return '<label class="pv-src-row"><input type="radio" name="sgCourse" value="'+c.id+'"><span>'+esc(c.name)+'</span><span class="layer">'+esc(c.major)+'</span>'+(perm[c.id]?'':'<span class="latest">无权限，仅显示有权限的关联节点</span>')+'</label>';
       }).join('')+'</div></div>'
@@ -116,7 +119,7 @@
   function openSave(){
     var lock=currentLock(lastVis||{});
     var lockTxt=Object.keys(lock).map(function(m){return esc(m)+' '+lock[m]}).join('、')||'—';
-    open(head('保存为子图','保存的是规则，不是数据副本：'+esc(describe(rule))+(ROLES[role].majors?'（打开时再按查看人的权限过滤）':'')+'。子图不能编辑节点和关系。')
+    open(head('保存为子图', esc(describe(rule))+(ROLES[role].majors?'（打开时按查看人的权限过滤）':''))
       +'<div class="pv-body"><div class="pv-sec">'
       +'<div style="font-size:13px;color:#41536f;margin-bottom:6px">名称</div><input id="sgName" class="pv-input" value="'+esc(rule.kind==='course'?byId(rule.courseId).name+' 备课范围':'我的视图')+'">'
       +'<div style="font-size:13px;color:#41536f;margin:14px 0 6px">版本</div>'

@@ -67,7 +67,7 @@
     'class': { key: 'edu-class', title: '班级管理', desc: '班级归属专业和年级；学生在「学生管理」中维护，班级名单只算在读学生' },
     student: { key: 'edu-student', title: '学生管理', desc: '学生档案按班级维护；班级名单和老师发布任务只算在读学生；转班后从下一次发布的任务开始跟新班级走，已有记录不动；有学习记录的学生不能删除，只能改学籍状态' },
     term: { key: 'edu-term', title: '学期与学年管理', desc: '课程计划按学年学期建立；停用的学期不能新建课程计划' },
-    lab: { key: 'edu-lab', title: '实训资源管理', desc: '本校校内实训资源（实训室、设备、软件）及其能提供的实训条件；课程需要哪些实训条件，按知识体系里审核通过的实训需求汇总；能力测评的实训条件差距读这里的登记。校外基地第一阶段不在这里登记' },
+    lab: { key: 'edu-lab', title: '实训资源管理', desc: '本校校内实训资源（实训室、设备、软件）及其能提供的实训条件；课程需要哪些实训条件，按知识体系里审核通过的实训需求汇总；专业建设测评的实训条件差距读这里的登记。校外基地第一阶段不在这里登记' },
     course: { key: 'edu-course', title: '课程管理', desc: '课程分专业课和公共基础课，公共基础课默认不计入技能达成；课程与知识体系的关联一般由专业负责人在图谱中心建知识体系时完成' }
   };
   var view = (location.search.match(/[?&]t=(\w+)/) || [])[1];
@@ -263,16 +263,16 @@
     var sids = {}; kc.tasks.forEach(function (t) { t.skills.forEach(function (k) { sids[k.id] = 1; }); });
     var out = {};
     ((TD.reqs || {})['MAJOR-GUIDE'] || []).forEach(function (r) {
-      if (r.status !== '已审核' || !sids[r.skill]) return;
+      if ((r.status !== '已审核' && r.status !== '已调整') || !sids[r.skill]) return;
       var x = out[r.cond] = out[r.cond] || { cond: r.cond, level: '建议', skills: {} };
       if (r.level === '必需') x.level = '必需'; x.skills[TK.skillName(r.skill)] = 1;
     });
     return Object.keys(out).map(function (k) { return out[k]; }).sort(function (a, b) { return (a.level === '必需' ? 0 : 1) - (b.level === '必需' ? 0 : 1); });
   }
-  // 开设课程（有课程计划的）需要的实训条件
+  // 开设课程（课程管理中启用、且关联了知识体系的课程，与专业建设测评口径一致）需要的实训条件
   function openedConds() {
     var out = {};
-    E.courses.filter(function (c) { return S.plans.some(function (p) { return p.eduCourseId === c.id; }); }).forEach(function (c) {
+    E.courses.filter(function (c) { return c.status === '启用' && c.ks; }).forEach(function (c) {
       courseConds(c).forEach(function (x) { var y = out[x.cond] = out[x.cond] || { cond: x.cond, level: '建议', courses: [] }; if (x.level === '必需') y.level = '必需'; y.courses.push(c.name); });
     });
     return Object.keys(out).map(function (k) { return out[k]; }).sort(function (a, b) { return (a.level === '必需' ? 0 : 1) - (b.level === '必需' ? 0 : 1); });
@@ -487,7 +487,7 @@
     else if (act === 'acct') openAccounts([x.id]);
     else if (act === 'toggle') {
       var to = x.status === '启用' ? '停用' : '启用';
-      var tip = to === '停用' ? ({ lab: '停用后不再算作本校已具备的实训条件（能力测评的实训条件差距同步变化）', major: '停用后新建班级、课程时不能再选这个专业', grade: '停用后新建班级时不能再选这个年级', 'class': '停用后不能再为这个班级新建课程计划', term: '停用后不能再在这个学期新建课程计划', course: '停用后不能再用这门课新建课程计划' }[view]) : '启用后可正常使用';
+      var tip = to === '停用' ? ({ lab: '停用后不再算作本校已具备的实训条件（专业建设测评的实训条件差距同步变化）', major: '停用后新建班级、课程时不能再选这个专业', grade: '停用后新建班级时不能再选这个年级', 'class': '停用后不能再为这个班级新建课程计划', term: '停用后不能再在这个学期新建课程计划', course: '停用后不能再用这门课新建课程计划' }[view]) : '启用后可正常使用';
       var subs = [];
       if (view === 'major') {
         var up = x.parentId ? byId(E.majors, x.parentId) : null;
