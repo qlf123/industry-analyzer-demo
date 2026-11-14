@@ -68,37 +68,19 @@
     admin: {
       title: 'AIGC 智慧课堂<br>教学平台 · 管理端',
       groups: [
-        // 数据概览、行业分析、专业建设测评为一级菜单（不分组）；能力地图只在教师端
-        { label: '', items: [
-          { key: 'dash', label: '数据概览', icon: '▤', href: 'dashboard.html' },
-          { key: 'panorama', label: '行业分析', icon: '◎', href: 'panorama.html', external: true },
-          { key: 'assess', label: '专业建设测评', icon: '◈', href: 'assess.html',
-            perms: ['major:assess:view'], landing: false }
+        // 一级菜单顺序：数据概览 → 教务管理 → 课程计划管理 → 教学质量 → 专业建设测评 → 图谱中心 → 行业分析 → 账号与角色 → 系统配置
+        // （先放教务日常，再放专业建设与图谱，最后是平台管理）；不分组的一级菜单用各自的 key 区分
+        { key: 'top', label: '', items: [
+          { key: 'dash', label: '数据概览', icon: '▤', href: 'dashboard.html' }
         ] },
-        // 图谱中心：由原独立的图谱平台迁入（graph/ 目录），管理端可维护
-        { label: '图谱中心', items: [
-          { key: 'gc-kg', label: '知识图谱', icon: '◇', href: 'graph/knowledge-graph.html', external: true },
-          { key: 'gc-ag', label: '能力图谱', icon: '◇', href: 'graph/ability-graph.html', external: true },
-          { key: 'gc-ks', label: '知识体系', icon: '◇', href: 'graph/knowledge-system.html', external: true },
-          { key: 'gc-mr', label: '映射审核', icon: '◇', href: 'graph/mapping-review.html', external: true },
-          // 标准图谱建议：老师在能力地图里提交的个人节点，管理员 / 专业负责人审核、发布
-          { key: 'gc-sr', label: '标准图谱建议', icon: '◇', href: 'graph/suggest-review.html', perms: ['graph:suggest:review'], landing: false },
-          { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true }
-        ] },
-        // 账号与角色：和参考系统一致
-        { label: '账号与角色', items: [
-          { key: 'account', label: '账号管理', icon: '▤', href: 'account-v1.html',
-            perms: ['org:account:view', 'org:member:manage', 'account:account:create', 'org:account:edit'] },
-          { key: 'role', label: '角色管理', icon: '▤', href: 'role.html', landing: false, perms: ['org:role:define'] },
-          { key: 'menu', label: '菜单管理', icon: '▤', href: 'menu.html', landing: false, perms: ['org:role:define'] }
-        ] },
-        // 教务基础数据 / 课程计划管理：课程计划与教师端任务中心共用数据（teacher-kit.js）
-        { label: '教务基础数据', items: [
+        // 教务管理 / 课程计划管理：课程计划与教师端任务中心共用数据（teacher-kit.js）
+        { key: '教务基础数据', label: '教务管理', items: [
           { key: 'edu-major', label: '专业管理', icon: '▤', href: 'edu-base.html?t=major', perms: ['edu:base:manage'], landing: false },
           { key: 'edu-grade', label: '年级管理', icon: '▤', href: 'edu-base.html?t=grade', perms: ['edu:base:manage'], landing: false },
           { key: 'edu-class', label: '班级管理', icon: '▤', href: 'edu-base.html?t=class', perms: ['edu:base:manage'], landing: false },
           { key: 'edu-student', label: '学生管理', icon: '▤', href: 'edu-base.html?t=student', perms: ['edu:base:manage'], landing: false },
-          { key: 'edu-term', label: '学期与学年管理', icon: '▤', href: 'edu-base.html?t=term', perms: ['edu:base:manage'], landing: false },
+          { key: 'edu-term', label: '学年学期管理', icon: '▤', href: 'edu-base.html?t=term', perms: ['edu:base:manage'], landing: false },
+          { key: 'edu-period', label: '节次时间管理', icon: '▤', href: 'edu-base.html?t=period', perms: ['edu:base:manage'], landing: false },
           { key: 'edu-course', label: '课程管理', icon: '▤', href: 'edu-base.html?t=course', perms: ['edu:base:manage'], landing: false },
           // 实训资源：管理员维护（权限「实训资源维护」，可在角色管理里配给其他角色）
           { key: 'edu-lab', label: '实训资源管理', icon: '▤', href: 'edu-base.html?t=lab', perms: ['edu:lab:manage'], landing: false }
@@ -111,34 +93,66 @@
           { key: 'tq-reach', label: '教学达成', icon: '▤', href: 'teach-quality.html?t=reach', perms: ['teach:quality:view'], landing: false },
           { key: 'tq-improve', label: '课程改进建议', icon: '▤', href: 'teach-quality.html?t=improve', perms: ['teach:quality:view'], landing: false }
         ] },
-        // 系统配置：组织管理、院校基础信息、字典、基础信息配置
+        { key: 'top-assess', label: '', items: [
+          { key: 'assess', label: '专业建设测评', icon: '◈', href: 'assess.html',
+            perms: ['major:assess:view'], landing: false }
+        ] },
+        // 图谱中心：由原独立的图谱平台迁入（graph/ 目录），管理端可维护；按建图谱的先后排：知识库 → 能力图谱 → 知识体系 → 映射审核 → 知识图谱 → 图谱建议审核
+        { label: '图谱中心', items: [
+          { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true },
+          { key: 'gc-ag', label: '能力图谱', icon: '◇', href: 'graph/ability-graph.html', external: true },
+          { key: 'gc-ks', label: '知识体系', icon: '◇', href: 'graph/knowledge-system.html', external: true },
+          { key: 'gc-mr', label: '映射审核', icon: '◇', href: 'graph/mapping-review.html', external: true },
+          { key: 'gc-kg', label: '知识图谱', icon: '◇', href: 'graph/knowledge-graph.html', external: true },
+          // 图谱建议审核：老师在能力地图里提交的个人节点，管理员 / 专业负责人审核、发布
+          { key: 'gc-sr', label: '图谱建议审核', icon: '◇', href: 'graph/suggest-review.html', perms: ['graph:suggest:review'], landing: false }
+        ] },
+        { key: 'top-pano', label: '', items: [
+          { key: 'panorama', label: '行业分析', icon: '◎', href: 'panorama.html', external: true }
+        ] },
+        // 账号与角色：和参考系统一致
+        { label: '账号与角色', items: [
+          { key: 'account', label: '账号管理', icon: '▤', href: 'account-v1.html',
+            perms: ['org:account:view', 'org:member:manage', 'account:account:create', 'org:account:edit'] },
+          { key: 'role', label: '角色管理', icon: '▤', href: 'role.html', landing: false, perms: ['org:role:define'] },
+          { key: 'menu', label: '菜单管理', icon: '▤', href: 'menu.html', landing: false, perms: ['org:role:define'] }
+        ] },
+        // 系统配置：院校信息、组织管理、字典、平台品牌配置、操作日志
         { label: '系统配置', items: [
+          { key: 'college', label: '院校信息', icon: '▤', href: 'college.html', landing: false, perms: ['org:node:edit'] },
           { key: 'system', label: '组织管理', icon: '▤', href: 'system.html',
             perms: ['org:node:view'] },
-          { key: 'college', label: '院校基础信息管理', icon: '▤', href: 'college.html', landing: false, perms: ['org:node:edit'] },
           { key: 'dict', label: '字典管理', icon: '▤', href: 'dict.html', landing: false, perms: ['org:node:edit'] },
-          { key: 'sysconf', label: '基础信息配置', icon: '▤', href: 'sysconf.html', landing: false, perms: ['org:node:edit'] },
+          { key: 'sysconf', label: '平台品牌配置', icon: '▤', href: 'sysconf.html', landing: false, perms: ['org:node:edit'] },
           { key: 'audit', label: '操作日志', icon: '▤', href: 'audit.html', perms: ['org:audit:view'], landing: false }
         ] }
       ]
     },
     teacher: {
       title: 'AIGC 智慧课堂<br>教学平台 · 教师端',
-      // 顺序：工作台 → 能力地图 → 备课中心 → 任务中心 → 图谱中心 → 教师成长中心 → 教师档案；不分组的一级菜单用 key 区分
+      // 顺序：工作台 → 能力地图 → 智慧课堂（课堂首页 / 我的课程 / 我的课表 / 作业评价 / 备课资源）→ 图谱中心 → 教师成长中心 → 教师档案
+      // 登录落地页是「课堂首页」（工作台 landing:false，仍放在最上面一键可达）
       groups: [
         { key: 'top', label: '', items: [
-          { key: 'workbench', label: '工作台', icon: '▤', href: 'workbench.html' },
+          { key: 'workbench', label: '工作台', icon: '▤', href: 'workbench.html', landing: false },
           { key: 'kmap', label: '能力地图', icon: '◇', href: 'kmap.html', external: true },
           // 备课中心隐藏（teacher-resources.html 保留，菜单管理页可重新启用）；teacher-profile.html 为权限演示旧页，教师档案改用 teacher-file.html；我的班级不在菜单中显示
           { key: 'resources', label: '备课中心', icon: '▤', empty: true, hidden: true },
-          { key: 'tasks', label: '任务中心', icon: '▤', href: 'teacher-tasks.html' }
         ] },
-        // 图谱中心：教师端可新建，自己创建的可维护、他人创建的仅查看；不含映射审核
+        // 智慧课堂：跨课程的入口拆成二级菜单；按一门课做事在「我的课程」里进入课程空间
+        { label: '智慧课堂', items: [
+          { key: 'tasks', label: '课堂首页', icon: '▤', href: 'teacher-tasks.html' },
+          { key: 'cr-courses', label: '我的课程', icon: '▤', href: 'teacher-tasks.html?t=courses' },
+          { key: 'cr-tt', label: '我的课表', icon: '▤', href: 'teacher-tasks.html?t=tt' },
+          { key: 'cr-eval', label: '作业评价', icon: '▤', href: 'teacher-tasks.html?t=eval' },
+          { key: 'cr-res', label: '备课资源', icon: '▤', href: 'teacher-tasks.html?t=res' }
+        ] },
+        // 图谱中心：教师端可新建，自己创建的可维护、他人创建的仅查看；不含映射审核；顺序同管理端
         { label: '图谱中心', items: [
-          { key: 'gc-kg', label: '知识图谱', icon: '◇', href: 'graph/knowledge-graph.html', external: true },
+          { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true },
           { key: 'gc-ag', label: '能力图谱', icon: '◇', href: 'graph/ability-graph.html', external: true },
           { key: 'gc-ks', label: '知识体系', icon: '◇', href: 'graph/knowledge-system.html', external: true },
-          { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true }
+          { key: 'gc-kg', label: '知识图谱', icon: '◇', href: 'graph/knowledge-graph.html', external: true }
         ] },
         { key: 'bottom', label: '', items: [
           { key: 'growth', label: '教师成长中心', icon: '▤', href: 'teacher-growth.html' },
@@ -151,9 +165,9 @@
       groups: [
         { label: '', items: [
           { key: 'tasks', label: '我的任务', icon: '▤', href: 'student-tasks.html' },
+          { key: 'assess', label: '能力测评', icon: '◈', href: 'student-assess.html' },
           { key: 'growth', label: '学生成长中心', icon: '▤', href: 'student-growth.html' },
-          { key: 'mine', label: '我的信息', icon: '▤', href: 'student.html' },
-          { key: 'assess', label: '能力测评', icon: '◈', href: 'student-assess.html' }
+          { key: 'mine', label: '我的信息', icon: '▤', href: 'student.html' }
         ] }
       ]
     }
@@ -181,11 +195,12 @@
     account: svgI('<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5c.7-3.2 2.9-4.8 5.5-4.8s4.8 1.6 5.5 4.8"/><circle cx="17" cy="9" r="2.3"/><path d="M16.2 14.9c2.4.4 3.9 1.8 4.4 4.3"/>'),
     role: svgI('<path d="M12 3l7.5 2.6v5.9c0 4.7-3.1 7.5-7.5 9-4.4-1.5-7.5-4.3-7.5-9V5.6z"/><path d="M9.2 11.5l2 2 3.8-4"/>'),
     menu: svgI('<path d="M4 7h8.9"/><path d="M17.5 7H20"/><circle cx="15.2" cy="7" r="2.3"/><path d="M4 17h2.9"/><path d="M11.5 17H20"/><circle cx="9.2" cy="17" r="2.3"/>'),
-    // 管理端 · 教务基础数据
+    // 管理端 · 教务管理
     'edu-major': svgI('<path d="M2.5 9.5L12 5l9.5 4.5L12 14z"/><path d="M6.5 12v4c0 1.3 2.4 2.5 5.5 2.5s5.5-1.2 5.5-2.5v-4"/><path d="M21.5 9.5v4.5"/>'),
     'edu-grade': svgI('<path d="M5 21V4"/><path d="M5 5c4-1.8 8 1.8 14 0v8c-6 1.8-10-1.8-14 0"/>'),
     'edu-class': svgI('<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>'),
     'edu-student': svgI('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.4-5.2 7-5.2s6.2 1.6 7 5.2"/>'),
+    'edu-period': svgI('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
     'edu-term': svgI('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/>'),
     'edu-course': svgI('<rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M8.5 3.5v17"/><path d="M12 9h4.5"/><path d="M12 13h4.5"/>'),
     'edu-lab': svgI('<path d="M21 8.2L12 3.8 3 8.2v7.6l9 4.4 9-4.4z"/><path d="M3 8.2l9 4.4 9-4.4"/><path d="M12 12.6v8"/>'),
@@ -204,7 +219,12 @@
     workbench: svgI('<path d="M4 11l8-7.5L20 11"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5.5h4V20"/>'),
     kmap: svgI('<path d="M3.5 6.2L9 4.5l6 1.5 5.5-1.7v13L15 19l-6-1.5-5.5 1.7z"/><path d="M9 4.5v13"/><path d="M15 6v13"/>'),
     resources: svgI('<path d="M4 20l1.2-4.5L16.5 4.2a2 2 0 0 1 2.8 2.8L8 18.3z"/><path d="M13.8 6.9l2.8 2.8"/>'),
-    'teacher.tasks': svgI('<rect x="5" y="4.5" width="14" height="16.5" rx="2"/><rect x="9" y="2.7" width="6" height="3.6" rx="1"/><path d="M9 13.5l2.2 2.2 4-4.5"/>'),
+    'teacher.tasks': svgI('<path d="M4 11l8-7.5L20 11"/><path d="M6 9.5V20h12V9.5"/><path d="M10 15h4"/>'),
+    'cr-courses': svgI('<path d="M4 5.5h6.5a2 2 0 0 1 2 2V20a1.8 1.8 0 0 0-1.8-1.8H4z"/><path d="M20 5.5h-6.5a2 2 0 0 0-2 2V20a1.8 1.8 0 0 1 1.8-1.8H20z"/>'),
+    'cr-tt': svgI('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M8 14h3"/><path d="M13 14h3"/><path d="M8 17h3"/>'),
+    'cr-eval': svgI('<path d="M4 20l1.2-4.5L16.5 4.2a2 2 0 0 1 2.8 2.8L8 18.3z"/><path d="M13.8 6.9l2.8 2.8"/>'),
+    'cr-res': svgI('<path d="M3.5 7.5l8.5-4 8.5 4-8.5 4z"/><path d="M3.5 12l8.5 4 8.5-4"/><path d="M3.5 16.5l8.5 4 8.5-4"/>'),
+    'teacher.tasks.old': svgI('<rect x="5" y="4.5" width="14" height="16.5" rx="2"/><rect x="9" y="2.7" width="6" height="3.6" rx="1"/><path d="M9 13.5l2.2 2.2 4-4.5"/>'),
     'teacher.growth': svgI('<circle cx="12" cy="8.7" r="4.6"/><path d="M9 12.5L7.3 21l4.7-2.8L16.7 21 15 12.5"/>'),
     profile: svgI('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.8" r="2"/><path d="M5.8 16c.5-1.6 1.5-2.4 2.7-2.4s2.2.8 2.7 2.4"/><path d="M14.5 9.5h4"/><path d="M14.5 13h3"/>'),
     // 学生端
@@ -216,8 +236,9 @@
   var GICONS = {
     '图谱中心': svgI('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4.4-4.4 2 2-4.4z"/>'),
     '账号与角色': svgI('<circle cx="8" cy="15" r="3.2"/><path d="M10.3 12.7L20 3"/><path d="M16.5 6.5L19 9"/><path d="M13.8 9.2l2 2"/>'),
-    '教务基础数据': svgI('<rect x="3.5" y="4" width="17" height="4.5" rx="1"/><path d="M5.3 8.5V19a1.5 1.5 0 0 0 1.5 1.5h10.4a1.5 1.5 0 0 0 1.5-1.5V8.5"/><path d="M10 13h4"/>'),
+    '教务管理': svgI('<rect x="3.5" y="4" width="17" height="4.5" rx="1"/><path d="M5.3 8.5V19a1.5 1.5 0 0 0 1.5 1.5h10.4a1.5 1.5 0 0 0 1.5-1.5V8.5"/><path d="M10 13h4"/>'),
     '课程计划管理': svgI('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M8.8 14.5l2.2 2.2 4.2-4.7"/>'),
+    '智慧课堂': svgI('<rect x="3" y="4.5" width="18" height="12" rx="1.8"/><path d="M8 20.5h8"/><path d="M12 16.5v4"/><path d="M8.5 12l2.2-2.8 2 1.8 2.8-3.5"/>'),
     '教学质量': svgI('<circle cx="12" cy="12" r="8.5"/><path d="M8.4 12.4l2.5 2.5 4.7-5.6"/>'),
     '系统配置': svgI('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.8"/><path d="M12 18.7v2.8"/><path d="M2.5 12h2.8"/><path d="M18.7 12h2.8"/><path d="M5.3 5.3l2 2"/><path d="M16.7 16.7l2 2"/><path d="M18.7 5.3l-2 2"/><path d="M7.3 16.7l-2 2"/>')
   };
@@ -251,7 +272,7 @@
     if (sc && portal !== 'admin' && sc[portal] && sc[portal].logoName) title = esc(sc[portal].logoName) + '<br>' + (portal === 'teacher' ? '教师端' : '学生端');
     return { title: title, groups: withHidden ? groups : groups.filter(function (g) { return !g.hidden; }) };
   }
-  /* 基础信息配置（localStorage sysConf.v1）里启用的版本：教师端 / 学生端 Logo 名称显示在侧栏顶部 */
+  /* 平台品牌配置（localStorage sysConf.v1）里启用的版本：教师端 / 学生端 Logo 名称显示在侧栏顶部 */
   function sysConfActive() {
     try { var c = JSON.parse(localStorage.getItem('sysConf.v1')); return c && c.versions ? c.versions[c.active] : null; } catch (e) { return null; }
   }
@@ -342,7 +363,12 @@
     '#lnav .lgt.lfold .lfc{font-size:13px;line-height:1;color:var(--muted);transition:transform .15s}' +
     '#lnav .lg-fold.closed .lfc{transform:rotate(-90deg)}' +
     '#lnav .lg-fold.has-on>.lgt.lfold{color:var(--brand-ink)}' +
-    '#lnav .lg-fold .lmenu{padding-left:26px}' +
+    // 二级菜单的图标对齐一级菜单的文字起点（一级：图标 15px + 间距 8px）
+    '#lnav .lg-fold .lmenu{padding-left:33px;gap:8px}' +
+    // 没有下级的一级菜单（数据概览、工作台等）和有下级的一级菜单同样式：字号、字重、颜色、间距一致
+    '#lnav .lgroup.lg-top{padding:2px 10px}' +
+    '#lnav .lg-top .lmenu{font-weight:600;color:var(--ink);gap:8px}' +
+    '#lnav .lg-top .lmenu.on{color:var(--brand-ink)}' +
     '#lnav .lg-fold.closed .litems{display:none}' +
     '@media (max-width:1000px){#lnav .lgt.lfold{display:none}#lnav .litems{display:contents!important}#lnav .lg-fold .lmenu{padding-left:10px}}';
   var FOLD_KEY = 'navFold.v1';
@@ -380,7 +406,7 @@
       // 有分组名的作为一级菜单，可展开 / 收起：当前页所在的分组总是展开；其余按上次的选择，默认收起
       var fk = portal + '|' + group.label, hasOn = group.items.some(function (it) { return it.key === active; });
       var closed = group.label && !hasOn && fold[fk] !== 'open';
-      html += '<div class="lgroup' + (group.label ? ' lg-fold' : '') + (closed ? ' closed' : '') + (hasOn ? ' has-on' : '') + '">';
+      html += '<div class="lgroup' + (group.label ? ' lg-fold' : ' lg-top') + (closed ? ' closed' : '') + (hasOn ? ' has-on' : '') + '">';
       if (group.label) html += '<button type="button" class="lgt lfold" data-fold="' + esc(fk) + '" aria-expanded="' + !closed + '"><i>' + (GICONS[group.name] || GICONS[group.label] || '') + '</i><span class="lfn">' + esc(group.name || group.label) + '</span><span class="lfc" aria-hidden="true">▾</span></button><div class="litems">';
       group.items.forEach(function (it) {
         var vis = itemVisible(ctx, identity, it);

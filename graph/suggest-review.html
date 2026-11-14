@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>标准图谱建议｜图谱中心</title>
+<title>图谱建议审核｜图谱中心</title>
 <link rel="stylesheet" href="../css/common.css">
 <link rel="stylesheet" href="../css/teacher.css">
 <style>
-/* 标准图谱建议：老师从能力地图提交的个人节点，管理员 / 专业负责人审核、发布 */
+/* 图谱建议审核：老师从能力地图提交的个人节点，管理员 / 专业负责人审核、发布 */
 .sr-tabs{display:flex;gap:6px;margin-bottom:12px}
 .sr-tabs button{border:1px solid var(--rule);background:var(--card);border-radius:8px;padding:6px 14px;font:inherit;font-size:13px;color:var(--ink-2);cursor:pointer}
 .sr-tabs button[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
@@ -43,7 +43,7 @@
 <div class="app">
   <aside class="lnav" id="lnav"></aside>
   <div class="panel">
-    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">标准图谱建议</h1><div class="pt-d">老师在能力地图里提交的个人节点。采纳后进入待发布，发布后并入标准图谱，全校老师在能力地图里都能看到，并标注贡献人</div></div></div></div>
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">图谱建议审核</h1><div class="pt-d">老师在能力地图里提交的个人节点。采纳后进入待发布，发布后并入标准图谱，全校老师在能力地图里都能看到，并标注贡献人</div></div></div></div>
     <div class="body" id="body"></div>
   </div>
 </div>
@@ -69,7 +69,7 @@
   function treeHTML(t) { return '<li>' + esc(t.name) + ' <span class="tg">' + esc(t.kind || { sub: '子行业', pos: '岗位', abl: '能力项', skl: '技能', ai: '细分节点' }[t.type] || '') + '</span>' + (t.children && t.children.length ? '<ul>' + t.children.map(treeHTML).join('') + '</ul>' : '') + '</li>'; }
 
   function render() {
-    if (!canReview()) { document.getElementById('body').innerHTML = '<div class="card"><div class="empty3">当前身份没有「标准图谱建议审核」权限</div></div>'; return; }
+    if (!canReview()) { document.getElementById('body').innerHTML = '<div class="card"><div class="empty3">当前身份没有「图谱建议审核」权限</div></div>'; return; }
     var all = GSuggest.list();
     var cnt = {}; TABS.forEach(function (t) { cnt[t] = all.filter(function (r) { return r.status === t; }).length; });
     var people = all.map(function (r) { return r.by; }).filter(function (v, i, a) { return a.indexOf(v) === i; });

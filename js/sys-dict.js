@@ -20,7 +20,7 @@
       cat('所在地区', 'Region', 'DM_DQ', [['北京市', 'Beijing', '110000', [['北京市', 'Beijing', '110100']]], ['浙江省', 'Zhejiang', '330000', [['杭州市', 'Hangzhou', '330100'], ['宁波市', 'Ningbo', '330200']]], ['广东省', 'Guangdong', '440000', [['广州市', 'Guangzhou', '440100'], ['深圳市', 'Shenzhen', '440300']]], ['四川省', 'Sichuan', '510000', [['成都市', 'Chengdu', '510100']]]]),
       cat('教师职称', 'Title', 'DM_ZC', [['正高级', 'Senior', 'ZGJ'], ['副高级', 'Associate Senior', 'FGJ'], ['中级', 'Intermediate', 'ZJ'], ['初级', 'Junior', 'CJ']]),
       cat('学历', 'Education', 'DM_XL', [['博士', 'Doctor', 'BS'], ['硕士', 'Master', 'SS'], ['本科', 'Bachelor', 'BK'], ['其他', 'Other', 'QT']]),
-      cat('课程类型', 'Course Type', 'DM_KCLX', [['专业课', 'Major Course', 'ZYK'], ['公共基础课', 'General Course', 'GGJCK']]),
+      cat('课程类型', 'Course Type', 'DM_KCLX', [['公共基础课程', 'General Course', 'GGJCKC'], ['专业基础课程', 'Major Foundation Course', 'ZYJCKC'], ['专业核心课程', 'Major Core Course', 'ZYHXKC'], ['专业拓展课程', 'Major Extension Course', 'ZYTZKC'], ['其他', 'Others', 'QT']]),
       cat('备课资源类型', 'Resource Type', 'DM_ZYLX', [['课件', 'Courseware', 'KJ'], ['教案', 'Lesson Plan', 'JA'], ['图片', 'Image', 'TP'], ['视频', 'Video', 'SP'], ['情景互动游戏', 'Scenario Game', 'QJYX']]),
       cat('学籍状态', 'Student Status', 'DM_XJZT', [['在读', 'Enrolled', 'ZD'], ['休学', 'Suspended', 'XX'], ['毕业', 'Graduated', 'BY']])
     ] };

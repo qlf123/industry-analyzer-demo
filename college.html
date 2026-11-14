@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>院校基础信息</title>
+<title>院校信息</title>
 <link rel="stylesheet" href="css/common.css">
 <link rel="stylesheet" href="css/teacher.css">
 <style>
-/* 院校基础信息：本校档案，查看 / 编辑 */
+/* 院校信息：本校档案，查看 / 编辑 */
 .cp{background:var(--card);border:1px solid var(--rule);border-radius:13px;padding:18px 22px;max-width:1080px}
 .cp-h{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;padding-bottom:12px;border-bottom:1px solid var(--rule-2);margin-bottom:16px}
 .cp-h .sp{flex:1}
@@ -23,7 +23,7 @@
 <div class="app">
   <aside class="lnav" id="lnav"></aside>
   <div class="panel">
-    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">院校基础信息管理</h1><div class="pt-d">本校的基本档案；办学类型、办学性质、所在地区的选项在「字典管理」中维护</div></div></div></div>
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">院校信息</h1><div class="pt-d">本校的基本档案；办学类型、办学性质、所在地区的选项在「字典管理」中维护</div></div></div></div>
     <div class="body"><div class="cp" id="cp"></div></div>
   </div>
 </div>
@@ -49,7 +49,7 @@
   function render() {
     var types = withCur(SysDict.opts('DM_BXLX'), '');
     C.type.forEach(function (t) { if (types.indexOf(t) < 0) types.push(t); });
-    var h = '<div class="cp-h">院校基础信息<span class="sp"></span>' + (editing ? '<button class="btn-s" data-cancel>取消</button><button class="btn" style="height:32px" data-save>保存</button>' : '<button class="btn" style="height:32px" data-edit>编辑</button>') + '</div><div class="fgrid">' +
+    var h = '<div class="cp-h">院校信息<span class="sp"></span>' + (editing ? '<button class="btn-s" data-cancel>取消</button><button class="btn" style="height:32px" data-save>保存</button>' : '<button class="btn" style="height:32px" data-edit>编辑</button>') + '</div><div class="fgrid">' +
       ff('院校名称', 1, inp('name', C.name, '请输入院校全称', 40)) + ff('院校简称', 0, inp('short', C.short, '请输入', 20)) +
       ff('院校编码', 1, inp('code', C.code, '如：教育部院校代码', 20)) +
       ff('办学类型', 1, '<div class="chips2" data-k="type">' + types.map(function (t) { return '<button type="button" aria-pressed="' + (C.type.indexOf(t) >= 0) + '"' + (editing ? '' : ' disabled') + '>' + esc(t) + '</button>'; }).join('') + '</div>') +

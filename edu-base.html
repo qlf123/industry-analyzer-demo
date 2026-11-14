@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>教务基础数据</title>
+<title>教务管理</title>
 <link rel="stylesheet" href="css/common.css">
 <link rel="stylesheet" href="css/teacher.css">
 <style>
-/* 教务基础数据：专业 / 年级 / 班级 / 学期与学年 / 课程 */
+/* 教务管理：专业 / 年级 / 班级 / 学生 / 学年学期 / 节次时间 / 课程 / 实训资源 */
 .eb-card{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden}
 .eb-tw{overflow-x:auto}
 .tbl2{min-width:960px}
@@ -39,7 +39,7 @@
     <div class="ptop">
       <div class="ptop-r">
         <div class="pt-l">
-          <h1 class="pt-t" id="pgTitle">教务基础数据</h1>
+          <h1 class="pt-t" id="pgTitle">教务管理</h1>
           <div class="pt-d" id="pgDesc"></div>
         </div>
         <div class="pt-actions" id="pgActs"></div>
@@ -66,19 +66,20 @@
     grade: { key: 'edu-grade', title: '年级管理', desc: '入学年级；停用后才能删除，被班级使用的不能删除' },
     'class': { key: 'edu-class', title: '班级管理', desc: '班级归属专业和年级；学生在「学生管理」中维护，班级名单只算在读学生' },
     student: { key: 'edu-student', title: '学生管理', desc: '学生档案按班级维护；班级名单和老师发布任务只算在读学生；转班后从下一次发布的任务开始跟新班级走，已有记录不动；有学习记录的学生不能删除，只能改学籍状态' },
-    term: { key: 'edu-term', title: '学期与学年管理', desc: '课程计划按学年学期建立；停用的学期不能新建课程计划' },
+    term: { key: 'edu-term', title: '学年学期管理', desc: '课程计划按学年学期建立；停用的学期不能新建课程计划' },
+    period: { key: 'edu-period', title: '节次时间管理', desc: '全校统一的上课节次和每节起止时间；排课按「第几节到第几节」选择，班级课表、教师课表按这里的节次显示。修改后，未发布课次的上课时间跟着更新，已发布的不变' },
     lab: { key: 'edu-lab', title: '实训资源管理', desc: '本校校内实训资源（实训室、设备、软件）及其能提供的实训条件；课程需要哪些实训条件，按知识体系里审核通过的实训需求汇总；专业建设测评的实训条件差距读这里的登记。校外基地第一阶段不在这里登记' },
-    course: { key: 'edu-course', title: '课程管理', desc: '课程分专业课和公共基础课，公共基础课默认不计入技能达成；课程与知识体系的关联一般由专业负责人在图谱中心建知识体系时完成' }
+    course: { key: 'edu-course', title: '课程管理', desc: '课程类型分公共基础课程、专业基础课程、专业核心课程、专业拓展课程、其他，公共基础课程默认不计入技能达成；课程与知识体系的关联由专业负责人在图谱中心维护，这里只读展示' }
   };
   var view = (location.search.match(/[?&]t=(\w+)/) || [])[1];
   if (!VIEWS[view]) view = 'major';
   var V = VIEWS[view];
   document.title = V.title;
   UI.boot({ portal: 'admin', active: V.key });
-  // 教务基础数据、课程计划只给有「教务基础数据与课程计划维护」权限的身份（专业负责人等看不到）
-  (function () { var c = DEMO.getState(), id = UI.currentIdentity(c); var need = view === 'lab' ? ['edu:lab:manage', '实训资源维护'] : ['edu:base:manage', '教务基础数据与课程计划维护']; if (!UI.hasPerm(c, id, need[0])) { document.querySelector('.panel').innerHTML = '<div class="body"><div class="card" style="padding:40px;text-align:center;color:var(--muted)">当前身份没有「' + need[1] + '」权限</div></div>'; throw new Error('no-perm'); } })();
+  // 教务管理、课程计划只给有「教务管理与课程计划维护」权限的身份（专业负责人等看不到）
+  (function () { var c = DEMO.getState(), id = UI.currentIdentity(c); var need = view === 'lab' ? ['edu:lab:manage', '实训资源维护'] : ['edu:base:manage', '教务管理与课程计划维护']; if (!UI.hasPerm(c, id, need[0])) { document.querySelector('.panel').innerHTML = '<div class="body"><div class="card" style="padding:40px;text-align:center;color:var(--muted)">当前身份没有「' + need[1] + '」权限</div></div>'; throw new Error('no-perm'); } })();
 
-  var S = TK.load(), E = S.edu, F = {}, SEL = {};
+  var S = TK.load(), E = S.edu, F = {}, SEL = {}, PD = null;
   var preCl = (location.search.match(/[?&]cl=([^&]+)/) || [])[1];
   if (preCl) F.cl = decodeURIComponent(preCl);
   // 组织只用来管人员：学生的所属组织取组织架构
@@ -115,9 +116,16 @@
   /* ── 筛选条 ── */
   function filterHTML(items) {
     return items.map(function (it) {
+      if (it.type === 'daterange') return '<label>' + it.label + '<input type="date" class="inp" style="width:140px" data-flt="' + it.k + 'From" value="' + esc(F[it.k + 'From'] || '') + '"><span class="muted">至</span><input type="date" class="inp" style="width:140px" data-flt="' + it.k + 'To" value="' + esc(F[it.k + 'To'] || '') + '"></label>';
       if (it.type === 'select') return '<label>' + it.label + '<select class="sel" data-flt="' + it.k + '"><option value="">' + it.all + '</option>' + it.options.map(function (o) { return '<option' + (F[it.k] === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></label>';
       return '<label>' + it.label + '<input class="inp search" data-flt="' + it.k + '" placeholder="' + it.ph + '" value="' + esc(F[it.k] || '') + '"></label>';
-    }).join('') + '<span style="flex:1"></span><button class="btn-s" type="button" data-reset>重置</button>';
+    }).join('') + '<button class="btn-s" type="button" data-reset>重置</button>' + actsHTML();
+  }
+  // 新增 / 导入 / 导出：和筛选放在同一块，靠右
+  function actsHTML() {
+    if (view === 'period') return '<span style="margin-left:auto"><button class="btn" type="button" data-padd style="height:32px">＋ 添加一节</button></span>';
+    return '<span style="display:flex;gap:8px;margin-left:auto">' + (view === 'class' || view === 'student' ? '<button class="btn-s" type="button" data-io="导入">导入</button><button class="btn-s" type="button" data-io="导出">导出</button>' : '') +
+      '<button class="btn" type="button" data-add style="height:32px">＋ 新增</button></span>';
   }
   var STATUS = { type: 'select', k: 'st', label: '状态', all: '全部状态', options: ['启用', '停用'] };
 
@@ -180,6 +188,20 @@
           (x.account ? '' : opsLink('acct', x.id, '开通账号')) + opsLink('del', x.id, '删除', rec, '已有学习记录，不能删除；可以改学籍状态') + '</td></tr>';
       }), list.length);
     },
+    period: function () {
+      $('#filters').innerHTML = actsHTML();
+      if (!PD) PD = TK.periods(S).map(function (x) { return { start: x.start, end: x.end }; });
+      var mins = function (t) { var a = String(t || '').split(':'); return a.length === 2 ? +a[0] * 60 + +a[1] : NaN; };
+      table(['节次', '开始时间', '结束时间', '时长', '操作'], PD.map(function (x, i) {
+        var d = mins(x.end) - mins(x.start);
+        return '<tr><td style="font-weight:600">第' + (i + 1) + '节</td>' +
+          '<td><input type="time" style="height:30px;border:1px solid var(--rule);border-radius:6px;padding:0 8px;font:inherit;background:var(--card);color:var(--ink)" data-pt="' + i + '" data-k="start" value="' + esc(x.start) + '"></td>' +
+          '<td><input type="time" style="height:30px;border:1px solid var(--rule);border-radius:6px;padding:0 8px;font:inherit;background:var(--card);color:var(--ink)" data-pt="' + i + '" data-k="end" value="' + esc(x.end) + '"></td>' +
+          '<td class="mono">' + (d > 0 ? d + ' 分钟' : '<span style="color:var(--bad)">时间有误</span>') + '</td>' +
+          '<td><button class="lk" data-pdel="' + i + '"' + (PD.length <= 1 ? ' disabled' : '') + '>删除</button></td></tr>';
+      }), PD.length);
+      $('#foot').innerHTML = '<span>共 ' + PD.length + ' 节；节次按开始时间排序，保存时自动排好</span><span style="display:flex;gap:8px"><button class="btn-s" data-preset>撤销修改</button><button class="btn" data-psave style="height:30px">保存</button></span>';
+    },
     term: function () {
       $('#filters').innerHTML = filterHTML([{ type: 'select', k: 'yr', label: '学年', all: '全部学年', options: E.terms.map(function (t) { return t.year; }).filter(function (v, i, a) { return a.indexOf(v) === i; }) },
         { type: 'select', k: 'tm', label: '学期', all: '全部学期', options: ['第一学期', '第二学期'] }, STATUS]);
@@ -209,16 +231,19 @@
     },
     course: function () {
       $('#filters').innerHTML = filterHTML([{ k: 'q', label: '课程名称', ph: '请输入课程名称' },
-        { type: 'select', k: 'ty', label: '课程类型', all: '全部类型', options: ['专业课', '公共基础课'] },
-        { type: 'select', k: 'mj', label: '所属专业', all: '全部专业', options: majorOpts(false) },
-        { type: 'select', k: 'ks', label: '知识体系', all: '全部', options: ['已关联', '未关联（需关联）', '不计入技能达成'] }, STATUS]);
-      var list = E.courses.filter(function (c) { return (!F.q || c.name.indexOf(F.q) >= 0) && (!F.ty || c.type === F.ty) && inMajor(c.majorId, F.mj) && (!F.ks || ksState(c) === F.ks) && (!F.st || c.status === F.st); });
-      var need = E.courses.filter(function (c) { return ksState(c) === '未关联（需关联）' && S.plans.some(function (p) { return p.eduCourseId === c.id; }); });
-      setBanner(need.length ? '有 <b>' + need.length + '</b> 门专业课已有课程计划但还没关联知识体系（' + esc(need.map(function (c) { return c.name; }).join('、')) + '）。这些课可以照常上课，但无法统计课程技能覆盖；请专业负责人在图谱中心为它们建知识体系并关联。' : '');
-      table(['课程名称', '课程类型', '课程编码', '所属专业', '知识体系', '课程计划', '状态', '操作'], list.map(function (c) {
+        { type: 'select', k: 'ty', label: '课程类型', all: '全部类型', options: COURSE_TYPES },
+        { type: 'select', k: 'mj', label: '所属专业', all: '全部专业', options: majorOpts(false) }, STATUS,
+        { type: 'daterange', k: 'at', label: '创建时间' }]);
+      var day = function (c) { return String(c.at || '').slice(0, 10); };
+      var list = E.courses.filter(function (c) { return (!F.q || c.name.indexOf(F.q) >= 0) && (!F.ty || c.type === F.ty) && inMajor(c.majorId, F.mj) && (!F.st || c.status === F.st) &&
+        (!F.atFrom || day(c) >= F.atFrom) && (!F.atTo || day(c) <= F.atTo); });
+      table(['课程名称', '课程类型', '课程编码', '所属专业', '知识体系', '课程计划', '状态', '创建人', '创建时间', '操作'], list.map(function (c) {
         var np = S.plans.filter(function (p) { return p.eduCourseId === c.id; }).length, ks = ksOf(c), st = ksState(c);
-        return '<tr><td>' + esc(c.name) + '</td><td>' + (c.type === '公共基础课' ? '<span class="pill k">公共基础课</span>' : '<span class="pill core">专业课</span>') + '</td><td class="mono">' + esc(c.code || '—') + '</td><td>' + esc(majorPath(c.majorId)) + '</td>' +
-          '<td>' + (ks ? '<span class="ks-tag">● ' + esc(ks.label) + '</span><div class="muted" style="font-size:11px">' + esc(viaText(c)) + '</div>' : st === '不计入技能达成' ? '<span class="muted" style="font-size:12px">— 不计入技能达成</span>' : '<span class="ks-tag no">○ 未关联（需关联）</span>') + '</td><td>' + np + '</td><td>' + pill(c.status) + '</td>' +
+        return '<tr><td>' + esc(c.name) + '</td><td>' + (isPublicCourse(c.type) ? '<span class="pill k">公共基础课程</span>' : '<span class="pill core">' + esc(c.type || '专业核心课程') + '</span>') + '</td><td class="mono">' + esc(c.code || '—') + '</td><td>' + esc(majorPath(c.majorId)) + '</td>' +
+          '<td>' + (ks ? '<span class="ks-tag">● ' + esc(ks.label) + '</span><div class="muted" style="font-size:11px">' + esc(viaText(c)) + '</div>' : st === '不计入技能达成' ? '<span class="muted" style="font-size:12px">— 不计入技能达成</span>' : '<span class="ks-tag no">○ 未关联（需关联）</span>') + '</td>' +
+          // 课程计划数：点击到「课程计划」并带上本课程的筛选
+          '<td>' + (np ? '<a class="lk" href="' + esc(UI.link('course-plan.html?ec=' + encodeURIComponent(c.id))) + '" title="查看使用该课程的课程计划">' + np + '</a>' : '<span class="muted">0</span>') + '</td><td>' + pill(c.status) + '</td>' +
+          '<td>' + esc(c.by || '—') + '</td><td class="muted">' + esc(c.at || '—') + '</td>' +
           '<td class="ops">' + opsLink('view', c.id, '详情') + opsLink('edit', c.id, '编辑') + toggleLink(c) + (c.status === '停用' ? opsLink('del', c.id, '删除', np > 0, '已有课程计划使用该课程，不能删除') : '') + '</td></tr>';
       }), list.length);
     }
@@ -232,14 +257,18 @@
     var b = $('#banner'); if (!b) { $('#filters').insertAdjacentHTML('afterend', '<div class="scbar" id="banner" style="margin:0 0 12px"></div>'); b = $('#banner'); }
     b.hidden = !html; b.innerHTML = html;
   }
-  // 课程的知识体系状态：已关联 / 未关联（专业课需关联）/ 不计入技能达成（公共基础课默认）
-  function ksState(c) { return c.ks ? '已关联' : c.type === '公共基础课' ? '不计入技能达成' : '未关联（需关联）'; }
-  function viaText(c) { return c.ksVia === '预置' ? '预置知识体系' : (c.ksVia ? c.ksVia : '') + (c.ksBy ? ' · ' + c.ksBy : '') + (c.ksAt ? ' · ' + c.ksAt : ''); }
+  // 课程类型五分类及口径：公共基础课程默认不计入技能达成；专业基础/核心/拓展必须归属专业
+  var COURSE_TYPES = ['公共基础课程', '专业基础课程', '专业核心课程', '专业拓展课程', '其他'];
+  function isPublicCourse(t) { return t === '公共基础课程' || t === '公共基础课'; }   // 兼容旧值
+  function isMajorCourse(t) { return t === '专业基础课程' || t === '专业核心课程' || t === '专业拓展课程' || t === '专业课'; }
+  // 课程的知识体系状态：已关联 / 未关联（专业课程需关联）/ 不计入技能达成（公共基础课程默认）
+  function ksState(c) { return c.ks ? '已关联' : isPublicCourse(c.type) ? '不计入技能达成' : '未关联（需关联）'; }
+  function viaText(c) { return c.ksVia === '预置' ? '专业知识体系' : c.ksVia === '专业知识体系' ? '专业知识体系' + (c.ksBy ? ' · ' + c.ksBy : '') + (c.ksAt ? ' · ' + c.ksAt.slice(0, 10) : '') : (c.ksVia ? c.ksVia : '') + (c.ksBy ? ' · ' + c.ksBy : '') + (c.ksAt ? ' · ' + c.ksAt : ''); }
   function usedMajor(id) { return S.classes.some(function (c) { return c.majorId === id; }) || E.courses.some(function (c) { return c.majorId === id; }); }
 
   /* ── 课程关联的知识体系课程：预置知识体系的课程，或图谱中心为该课程建的课程知识体系 ── */
   function ksOptions() {
-    var K = TK.kn(), out = Object.keys(K.course).filter(function (id) { return id.indexOf('GKS-') !== 0; }).map(function (id) { return { v: id, label: '导游（540102）· ' + K.course[id].name }; });
+    var K = TK.kn(), out = Object.keys(K.course).filter(function (id) { return id.indexOf('GKS-') !== 0; }).map(function (id) { return { v: id, label: '旅游类-导游 › ' + K.course[id].name }; });
     var list = []; try { list = JSON.parse(sessionStorage.getItem('ks_systems_v2') || '[]'); } catch (e) {}
     list.filter(function (s) { return s.range === '课程'; }).forEach(function (s) { out.push({ v: 'GKS-' + s.id, label: '图谱中心 · ' + s.name }); });
     E.courses.forEach(function (c) { if (c.ks && c.ksName && !out.some(function (o) { return o.v === c.ks; })) out.push({ v: c.ks, label: '图谱中心 · ' + c.ksName }); });
@@ -320,8 +349,8 @@
     },
     course: function () {
       return [{ k: 'name', label: '课程名称', req: true, full: true, ph: '请输入课程名称' },
-        { k: 'type', label: '课程类型', type: 'select', req: true, options: ['专业课', '公共基础课'] },
-        { k: 'major', label: '所属专业（公共基础课可不选）', type: 'select', options: majorOpts(true) },
+        { k: 'type', label: '课程类型', type: 'select', req: true, options: COURSE_TYPES },
+        { k: 'major', label: '所属专业', type: 'select', options: majorOpts(true) },
         { k: 'code', label: '课程编码', ph: '数字、字母或符号，不填则自动生成' },
         { k: 'desc', label: '课程说明', type: 'textarea', full: true, ph: '请输入课程说明' }];
     }
@@ -342,11 +371,14 @@
     if (view === 'term' && !x) title = '新增学期';
     var extra = '';
     if (view === 'course') {
-      if (!x) v.type = '专业课';
-      var opts = ksOptions(), taken = function (o) { return E.courses.some(function (y) { return y !== x && y.ks === o.v; }); };
-      extra = '<div class="fgrid" style="margin-top:4px"><div class="ff full"><span class="lh"><span>知识体系（补选）</span></span><select data-ks><option value="">不关联</option>' +
-        opts.map(function (o) { var tk = taken(o); return '<option value="' + esc(o.v) + '"' + (x && x.ks === o.v ? ' selected' : '') + (tk ? ' disabled' : '') + '>' + esc(o.label) + (tk ? '（已被其他课程关联）' : '') + '</option>'; }).join('') + '</select>' +
-        '<span style="font-size:11.5px;color:var(--muted)">一般由专业负责人在图谱中心建知识体系时选择课程完成关联，这里可补选或更正。专业课关联后才能统计课程技能覆盖；公共基础课默认不计入技能达成，关联了知识体系则按专业课统计</span></div></div>';
+      if (!x) v.type = '专业核心课程';
+      // 关联知识体系在图谱中心由专业负责人维护（一课一体系），课程侧只读展示、不再提供编辑
+      var ksLabel = x && x.ks ? (ksOptions().filter(function (o) { return o.v === x.ks; })[0] || { label: x.ksName || x.ks }).label : '';
+      extra = '<div class="fgrid" style="margin-top:4px"><div class="ff full"><span class="lh"><span>关联知识体系</span></span>' +
+        (x && x.ks
+          ? '<div style="font-size:13px;padding:8px 10px;border:1px solid var(--rule-2);border-radius:8px"><b>' + esc(ksLabel) + '</b><span style="color:var(--muted);font-size:12px;margin-left:8px">来源：' + esc(viaText(x)) + '</span></div>'
+          : '<div style="font-size:12.5px;color:var(--muted);padding:2px 2px 0">未关联。关联由专业负责人在图谱中心维护：建课程级知识体系时选择本课程，或用「匹配课程」批量关联' + (isPublicCourse(x ? x.type : v.type) ? '；公共基础课程默认不计入技能达成，可不关联' : '') + '。<a class="lk" href="' + esc(UI.link('graph/knowledge-system.html', 'admin')) + '">去图谱中心 ›</a></div>') +
+        '</div></div>';
     }
     var m = TK.modal({ title: title, width: 560, body: (parent ? '<div class="scbar" style="margin:0 0 10px">上级专业：<b>' + esc(TK.majorPath(E, parent.id)) + '</b></div>' : '') + TK.formHTML(fields, v) + extra,
       foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">保存</button>' });
@@ -378,14 +410,13 @@
       }
       if (view === 'term') { rec.year = d.year; rec.term = d.term; rec.start = d.start; rec.end = d.end; }
       if (view === 'course') {
-        if (d.type === '专业课' && !d.major) { TK.toast('专业课请选择所属专业'); return; }
-        var nks = m.body.querySelector('[data-ks]').value;
-        if (nks !== (rec.ks || '')) { rec.ksVia = nks ? '管理端补选' : ''; rec.ksBy = nks ? me() : ''; rec.ksAt = nks ? now() : ''; rec.ksName = nks.indexOf('GKS-') === 0 ? (ksOptions().filter(function (o) { return o.v === nks; })[0] || { label: '' }).label.replace('图谱中心 · ', '') : ''; }
-        rec.name = d.name; rec.type = d.type; rec.majorId = d.major ? majorByOpt(d.major).id : ''; rec.desc = d.desc; rec.ks = nks;
+        if (isMajorCourse(d.type) && !d.major) { TK.toast('专业课程请选择所属专业'); return; }
+        // 关联知识体系由图谱中心维护，课程编辑不改 ks
+        rec.name = d.name; rec.type = d.type; rec.majorId = d.major ? majorByOpt(d.major).id : ''; rec.desc = d.desc;
         rec.code = d.code || rec.code || 'COURSE' + ('00' + (E.courses.length + 1)).slice(-3);
       }
       if (!x) list.push(rec);
-      // 同步到已有课程计划：课程改名 / 改关联、学期改名、班级改名
+      // 同步到已有课程计划：课程改名 / 学期改名 / 班级改名
       if (view === 'course') S.plans.forEach(function (p) { if (p.eduCourseId === rec.id) { p.course = rec.name; p.courseId = rec.ks || ''; } });
       if (view === 'term') { var nl = termLabel(rec); if (oldTerm && oldTerm !== nl) { S.plans.forEach(function (p) { if (p.term === oldTerm) p.term = nl; }); S.courses.forEach(function (c) { if (c.term === oldTerm) c.term = nl; }); } syncTerms(); }
       if (view === 'class' && oldName && oldName !== rec.name) { /* 班级名称由各页面按 id 读取，无需同步 */ }
@@ -396,18 +427,14 @@
 
   /* ── 详情 ── */
   function courseDetail(c) {
-    var ks = ksOf(c), K = TK.kn(), kc = c.ks ? (K.course[c.ks] || null) : null;
-    var nTask = kc ? kc.tasks.length : 0, nSkill = kc ? kc.tasks.reduce(function (a, t) { return a + t.skills.length; }, 0) : 0;
-    var plans = S.plans.filter(function (p) { return p.eduCourseId === c.id; });
+    var ks = ksOf(c);
     var d = TK.drawer({ title: c.name, sub: '课程详情', width: 520 });
     d.body.innerHTML = '<div class="dr-s"><div class="dr-st">基础信息</div><div class="kvd">' +
       [['课程名称', c.name], ['课程类型', c.type || '专业课'], ['课程编码', c.code || '—'], ['所属专业', majorPath(c.majorId)], ['状态', '已' + c.status], ['课程说明', c.desc || '—'], ['创建人', c.by + ' · ' + c.at]].map(function (x) { return '<div class="k">' + x[0] + '</div><div>' + esc(x[1]) + '</div>'; }).join('') + '</div></div>' +
-      '<div class="dr-s"><div class="dr-st">知识体系</div>' + (ks ? '<div style="font-size:13px">' + esc(ks.label) + '</div><div style="font-size:12px;color:var(--muted);margin-top:4px">' + esc(viaText(c)) + (kc ? ' · ' + nTask + ' 个任务 · ' + nSkill + ' 个技能，老师建课次时可选' : '') + '</div>'
-        : c.type === '公共基础课' ? '<div style="font-size:12.5px;color:var(--muted)">公共基础课，默认不计入技能达成：老师照常建课次、备课、布置和评价，任务按整体等级评价，不记学习证据。</div>'
-        : '<div style="font-size:12.5px;color:var(--warn-ink)">专业课，还没关联知识体系。老师可以照常上课，发布任务时从备课资源确认技能；关联后才能统计课程技能覆盖。</div>') +
-      '<a class="lk" style="display:inline-block;margin-top:8px" href="' + esc(UI.link('graph/knowledge-system.html', 'admin')) + '">去图谱中心查看知识体系 ›</a></div>' +
-      (c.ks ? '<div class="dr-s"><div class="dr-st">需要的实训条件（' + courseConds(c).length + '）</div>' + (courseConds(c).length ? '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">按知识体系里审核通过的实训需求汇总，对照本校「实训资源管理」的登记</div>' + condRows(courseConds(c), false) : '<div style="font-size:12.5px;color:var(--muted)">知识体系里这门课的技能还没有审核通过的实训需求</div>') + '</div>' : '') +
-      '<div class="dr-s"><div class="dr-st">使用该课程的课程计划（' + plans.length + '）</div>' + (plans.length ? plans.map(function (p) { var cl = byId(S.classes, p.classId) || {}; return '<div style="font-size:12.5px;padding:6px 0;border-bottom:1px solid var(--rule-2)">' + esc(p.term + ' · ' + (cl.name || '') + ' · ' + p.teacher) + '</div>'; }).join('') : '<div class="empty" style="padding:10px 0">暂无</div>') + '</div>';
+      '<div class="dr-s"><div class="dr-st">知识体系</div>' + (ks ? '<div style="font-size:13px">' + esc(ks.label) + '</div>'
+        : isPublicCourse(c.type) ? '<div style="font-size:12.5px;color:var(--muted)">公共基础课程，默认不计入技能达成：老师照常建课次、备课、布置和评价，任务按整体等级评价，不记学习证据。</div>'
+        : '<div style="font-size:12.5px;color:var(--warn-ink)">' + esc(c.type || '专业核心课程') + '，还没关联知识体系。老师可以照常上课，发布任务时从备课资源确认技能；关联后才能统计课程技能覆盖。</div>') +
+      '<a class="lk" style="display:inline-block;margin-top:8px" href="' + esc(UI.link('graph/knowledge-system.html', 'admin')) + '">去图谱中心查看知识体系 ›</a></div>';
   }
   function classStudents(c) {
     var stus = E.students.filter(function (x) { return x.classId === c.id; }), nIn = stus.filter(function (x) { return x.status === '在读'; }).length;
@@ -442,17 +469,56 @@
     TK.confirm('为 ' + stus.length + ' 名学生开通账号？开通后学生用学号登录学生端。', function () { stus.forEach(function (x) { x.account = true; }); save(); SEL = {}; render(); TK.toast('已开通 ' + stus.length + ' 个账号'); });
   }
 
+  /* ── 节次时间 ── */
+  function periodClick(t) {
+    if (t.closest('[data-padd]')) {
+      var last = PD[PD.length - 1], m = last ? last.end.split(':') : ['07', '15'], st = new Date(2000, 0, 1, +m[0], +m[1] + 10), en = new Date(st.getTime() + 45 * 60000);
+      var hm = function (d) { return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); };
+      PD.push({ start: hm(st), end: hm(en) }); R.period(); return;
+    }
+    var del = t.closest('[data-pdel]'); if (del && !del.disabled) { PD.splice(+del.dataset.pdel, 1); R.period(); return; }
+    if (t.closest('[data-preset]')) { PD = null; R.period(); TK.toast('已恢复为当前生效的节次时间'); return; }
+    if (t.closest('[data-psave]')) savePeriods();
+  }
+  document.addEventListener('change', function (e) {
+    var x = e.target.closest('[data-pt]'); if (!x || view !== 'period') return;
+    PD[+x.dataset.pt][x.dataset.k] = x.value; R.period();
+  });
+  function savePeriods() {
+    var np = PD.map(function (x) { return { start: x.start, end: x.end }; });
+    if (!np.length) { TK.toast('至少保留一节'); return; }
+    var bad = np.filter(function (x) { return !/^\d\d:\d\d$/.test(x.start) || !/^\d\d:\d\d$/.test(x.end) || x.end <= x.start; })[0];
+    if (bad) { TK.toast('第' + (PD.indexOf(bad) + 1) + '节：结束时间需晚于开始时间'); return; }
+    np.sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+    for (var i = 1; i < np.length; i++) if (np[i].start < np[i - 1].end) { TK.toast('第' + i + '节和第' + (i + 1) + '节时间重叠，请调整'); return; }
+    // 已有排课按当前节次认定「第几节到第几节」，再按新时间换算；已发布课次对应的排课不动
+    var pub = {}; S.courses.forEach(function (c) { if (c.slotId && c.status === '已发布') pub[c.slotId] = 1; });
+    var need = 0, todo = [];
+    S.plans.forEach(function (p) { (p.slots || []).forEach(function (sl) {
+      if (pub[sl.id]) return;
+      var sp = sl.pa ? [sl.pa, sl.pb] : TK.periodSpan(S, sl.start, sl.end);
+      need = Math.max(need, sp[1]); todo.push({ sl: sl, sp: sp });
+    }); });
+    if (need > np.length) { TK.toast('未发布的排课用到了第' + need + '节，节次不能少于 ' + need + ' 节'); return; }
+    var fake = { edu: { periods: np } }, moved = todo.filter(function (x) { var t = TK.periodTime(fake, x.sl.start.slice(0, 10), x.sp[0], x.sp[1]); x.t = t; return t.start !== x.sl.start || t.end !== x.sl.end; });
+    var go = function () {
+      todo.forEach(function (x) { x.sl.pa = x.sp[0]; x.sl.pb = x.sp[1]; x.sl.start = x.t.start; x.sl.end = x.t.end; });
+      E.periods = np; PD = null; TK.syncSessions(S); TK.save(S); R.period();
+      TK.toast('已保存' + (moved.length ? '，' + moved.length + ' 次未发布的排课已改为新时间' : ''));
+    };
+    if (moved.length) TK.confirm('保存后，' + moved.length + ' 次未发布的排课（及教师端对应课次）改为新的节次时间；已发布的课次不变。确定保存？', go); else go();
+  }
+
   /* ── 事件 ── */
   function render() {
     if ($('#banner')) $('#banner').hidden = true;
-    $('#pgTitle').textContent = V.title; $('#pgDesc').textContent = V.desc;
-    $('#pgActs').innerHTML = (view === 'class' || view === 'student' ? '<button class="btn-s" type="button" data-io="导入">导入</button><button class="btn-s" type="button" data-io="导出">导出</button>' : '') +
-      '<button class="btn" type="button" data-add style="height:32px">＋ 新增</button>';
+    $('#pgTitle').textContent = V.title; $('#pgDesc').hidden = true; $('#pgActs').innerHTML = '';   // 标题下不显示说明；新增 / 导入 / 导出放在筛选区右侧
     R[view]();
   }
   document.addEventListener('click', function (e) {
     var t = e.target;
     if (t.closest('[data-add]')) { openForm(null, null); return; }
+    if (view === 'period') { periodClick(t); return; }
     var io = t.closest('[data-io]');
     if (io) {
       if (view === 'student') TK.toast(io.dataset.io === '导入' ? '导入：按模板填写学号、姓名、班级、所属组织后上传，可选同时开通账号，正式版接入' : '已按当前筛选导出学生名单');
@@ -501,13 +567,13 @@
       TK.confirm('确定删除「' + (x.name || termLabel(x)) + '」？删除后不可恢复。', function () { var l = listOf(); l.splice(l.indexOf(x), 1); if (view === 'term') syncTerms(); if (view === 'student') { delete SEL[x.id]; TK.syncRoster(S); } save(); render(); TK.toast('已删除'); });
     }
   });
-  document.addEventListener('input', function (e) { var f = e.target.closest('[data-flt]'); if (f && f.tagName === 'INPUT') { F[f.dataset.flt] = f.value.trim(); R[view](); var el = document.querySelector('[data-flt="' + f.dataset.flt + '"]'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
+  document.addEventListener('input', function (e) { var f = e.target.closest('[data-flt]'); if (f && f.tagName === 'INPUT' && f.type !== 'date') { F[f.dataset.flt] = f.value.trim(); R[view](); var el = document.querySelector('[data-flt="' + f.dataset.flt + '"]'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
   document.addEventListener('change', function (e) {
     var sc = e.target.closest('[data-sel]');
     if (sc) { if (sc.checked) SEL[sc.dataset.sel] = 1; else delete SEL[sc.dataset.sel]; R[view](); return; }
     if (e.target.closest('[data-selall]')) { var on = e.target.checked; [].forEach.call(document.querySelectorAll('[data-sel]'), function (c) { if (on) SEL[c.dataset.sel] = 1; else delete SEL[c.dataset.sel]; }); R[view](); }
   });
-  document.addEventListener('change', function (e) { var f = e.target.closest('[data-flt]'); if (f && f.tagName === 'SELECT') { F[f.dataset.flt] = f.value; R[view](); } });
+  document.addEventListener('change', function (e) { var f = e.target.closest('[data-flt]'); if (f && (f.tagName === 'SELECT' || f.type === 'date')) { F[f.dataset.flt] = f.value; R[view](); } });
   render();
 })();
 </script>

@@ -306,7 +306,7 @@
     var fb = []; S.courses.forEach(function (c) { fb = fb.concat(c.feedbacks); });
     var avg = fb.length ? fb.reduce(function (s, f) { return s + (f.scores['讲授内容'] + f.scores['教学方式'] + f.scores['互动体验'] + f.scores['学习收获']) / 4; }, 0) / fb.length : 0;
     var st = function (k, v, s, col, href) { return '<a class="tstat" style="border-top-color:' + col + ';text-decoration:none;color:inherit"' + (href ? ' href="' + href + '"' : '') + '><div class="k">' + k + (href ? ' ›' : '') + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></a>'; };
-    return '<div class="tstats">' + st('备课记录', S.resources.length, '来自备课中心', '#3b82f6', UI.link('teacher-tasks.html')) + st('课程发布记录', S.courses.filter(function (c) { return c.publish; }).length, '来自任务中心', '#7f63d8', UI.link('teacher-tasks.html')) +
+    return '<div class="tstats">' + st('备课记录', S.resources.length, '来自备课中心', '#3b82f6', UI.link('teacher-tasks.html')) + st('课程发布记录', S.courses.filter(function (c) { return c.publish; }).length, '来自智慧课堂', '#7f63d8', UI.link('teacher-tasks.html')) +
       st('课程反馈均分', avg.toFixed(2), '来自学生反馈', '#ec4899', UI.link('teacher-growth.html') + '#feedback') + st('课程开发文档', list('teach', 'doc').length, '手动维护', '#f59e0b') + st('教学改革项目', list('teach', 'reform').length, '手动维护', '#10b981') + '</div>';
   }
   function render() {

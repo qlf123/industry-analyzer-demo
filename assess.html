@@ -230,7 +230,6 @@
       <div class="ptop-r">
         <div class="pt-l">
           <h1 class="pt-t">专业建设测评</h1>
-          <div class="pt-d">对照行业岗位能力要求，评估本校专业的课程支撑与实训资源</div>
         </div>
       </div>
     </div>
@@ -283,7 +282,7 @@
     var E = (window.TK && TK.load().edu) || {};
     return (E.labs || []).filter(function (l) { return l.status === '启用'; }).map(function (l) { return { name: l.name, kind: '校内', conds: (l.conds || []).slice(), seats: l.seats === '' || l.seats == null ? null : +l.seats, status: '在用', reg: true }; });
   }
-  // 本校开设的专业课程统一读管理端「教务基础数据 › 课程管理」：启用、且已关联到本专业知识体系课程的，算开设
+  // 本校开设的专业课程统一读管理端「教务管理 › 课程管理」：启用、且已关联到本专业知识体系课程的，算开设
   function eduByKs() {
     var E = (window.TK && TK.load().edu) || {}, out = {};
     (E.courses || []).forEach(function (c) { if (c.status === '启用' && c.ks) out[c.ks] = c; });

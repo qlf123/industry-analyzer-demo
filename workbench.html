@@ -95,6 +95,29 @@
 .sc-row .m{font-size:11px;color:#99a1af;flex:0 0 auto}
 .sc-row mark{background:#fff3c4;color:inherit;padding:0}
 .sc-empty{padding:16px;text-align:center;font-size:12px;color:#99a1af}
+/* 备课范围引导：按输入和老师自己的课给几个建议，点一个就生成 */
+.sg-list{display:flex;flex-direction:column;gap:6px}
+.sg-opt{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:#fff;border:1px solid #eeecfb;border-radius:10px;cursor:pointer;text-align:left;font:inherit;width:100%}
+.sg-opt:hover{border-color:#c7c4f7;background:#fbfaff}
+.sg-opt[aria-pressed="true"]{border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.12)}
+.sg-opt .rd{width:14px;height:14px;border-radius:50%;border:1.5px solid #c3c0ef;flex:0 0 auto;margin-top:2px}
+.sg-opt[aria-pressed="true"] .rd{border:4px solid #6366f1}
+.sg-opt .tx{flex:1;min-width:0}
+.sg-opt .t1{font-size:13px;color:#1e2939;line-height:1.5}
+.sg-opt .t1 small{color:#62748e;font-size:12px;margin-left:4px}
+.sg-opt .t2{font-size:12px;color:#62748e;line-height:1.5;margin-top:1px}
+.sg-opt .why{flex:0 0 auto;font-size:11.5px;color:#6366f1;background:#f1f0ff;border-radius:10px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.sg-opt.plain .why{color:#62748e;background:#f3f4f6}
+.sg-none{font-size:12px;color:#99a1af;padding:4px 2px 2px}
+.sg-q{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:#62748e}
+.sg-q input{flex:1;height:30px;border:1px solid #e6e4fb;border-radius:8px;padding:0 10px;font-size:12.5px;outline:none;background:#fff}
+.sg-q input:focus{border-color:#a5a1f5}
+.sg-res{margin-top:6px;background:#fff;border:1px solid #eeecfb;border-radius:8px;overflow:hidden}
+.sg-res button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 12px;font:inherit;font-size:12.5px;color:#364153;cursor:pointer;border-top:1px solid #f3f2fd}
+.sg-res button:first-child{border-top:0}
+.sg-res button:hover{background:#f7f6ff}
+.sg-res button small{color:#99a1af;margin-left:6px}
+.sg-res button em{font-style:normal;font-size:10px;border-radius:3px;padding:0 4px;line-height:16px;color:#fff;margin-right:6px}
 .sc-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:10px}
 .sc-foot .tip{flex:1;font-size:11.5px;color:#99a1af}
 .sc-ok{height:30px;padding:0 16px;border-radius:8px;border:none;background:#6366f1;color:#fff;font-size:12.5px;cursor:pointer}
@@ -602,7 +625,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       step('start', '启动', ['备课工作台已启动']),
       step('need', '需求分析', ['正在智能分析您的教学内容...', '正在为您细化各任务的配置要求...', '已识别到教学主题「' + topic + '」，准备为您生成 ' + resTxt + ' 等备课资源', '正在为您创建备课任务...', '备课任务创建完成', '需求分析任务完成']),
       // 从能力地图带着图谱树来的（老师已在图谱上选定节点和子树）不再确认知识点；工作台直接输入匹配到的、课次带入的仍需确认
-      fromMap() ? step('kp', '能力地图', ['已带入能力地图选定的' + (prep.multi ? ' ' + (prep.selected || []).length + ' 个节点' : '「' + ((prep.current && prep.current.name) || topic) + '」') + '及下级节点，按选定范围生成'], { doneTag: '已带入', map: true }) : step('kp', '知识体系', [], { confirm: 'kp', doneTag: '已确认' }),
+      run.direct ? step('kp', '备课范围', ['不关联知识体系，按需求「' + topic + '」直接生成'], { doneTag: '直接生成' }) : run.nomatch ? step('kp', '备课范围', ['没有匹配到知识体系里的内容，按需求「' + topic + '」直接生成'], { doneTag: '直接生成' }) : prep && prep.picked && !fromMap() ? step('kp', '备课范围', ['已按你选择的「' + prep.pickName + '」生成，包含其下的技能和知识点'], { doneTag: '已选定', map: true }) : fromMap() ? step('kp', '能力地图', ['已带入能力地图选定的' + (prep.multi ? ' ' + (prep.selected || []).length + ' 个节点' : '「' + ((prep.current && prep.current.name) || topic) + '」') + '及下级节点，按选定范围生成'], { doneTag: '已带入', map: true }) : step('kp', '知识体系', [], { confirm: 'kp', doneTag: '已确认' }),
       step('search', '知识检索', ['正在为您检索相关知识点...', '已为您检索到 ' + run.kp.length * 3 + ' 条相关知识点，共 ' + (run.kp.length * 1260).toLocaleString() + ' 个字符', '知识检索完成']),
       step('ref', '参考文件解析', hasRef ? ['开始执行'].concat(state.files.map(function (f) { return '正在解析《' + f.name + '》...'; }), ['已解析 ' + state.files.length + ' 个参考文件', '参考文件解析完成']) : ['开始执行', '无参考文件，跳过', '参考文件解析完成（无文件）'])
     ];
@@ -640,7 +663,8 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     var bare = prep && prep.session && !prep.ks && !(prep.tree || []).length;
     if ((!prep || bare) && !skipMatch && state.selected.indexOf('课件生成') >= 0) {
       var m = matchScope(text), keep = bare ? prep.session : null;
-      if (m && keep) m.session = keep;
+      if (m && keep) { m.session = keep; m.bare = prep; }
+      if (!m && bare) m = sessScope(prep);   // 课次只关联了课程：按这门课给备课范围建议
       if (m && m.scope) { prep = m; renderPrep(prep); renderSend(); return; }
       if (m) { prep = m; renderPrep(prep); }
     }
@@ -653,7 +677,9 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       run.ksCount = ksSize(run.ks);
     }
     run.types = state.selected.slice();
-    if (prep && !prep.scope && (prep.tree || []).length) { var pc = prepCounts(prep), rt = htRoot(JSON.parse(JSON.stringify(prep))), op = {}; htWalk(rt, '0', function (n, id) { if (n.anc || n.cur) op[id] = true; }); run.map = { root: rt, open: op, total: pc.total, counts: pc.counts, title: fromMap() ? '带入的图谱树' : '知识体系', fromMap: fromMap() }; }
+    if (sgDirect) { run.direct = true; sgDirect = false; }
+    else if (!prep || (prep.session && !prep.ks && !(prep.tree || []).length)) run.nomatch = true;   // 匹配不到知识体系：按需求直接生成，不确认知识点
+    if (prep && !prep.scope && (prep.tree || []).length) { var pc = prepCounts(prep), rt = htRoot(JSON.parse(JSON.stringify(prep))), op = {}; htWalk(rt, '0', function (n, id) { if (n.anc || n.cur) op[id] = true; }); run.map = { root: rt, open: op, total: pc.total, counts: pc.counts, title: fromMap() ? '带入的图谱树' : '知识体系', fromMap: fromMap(), picked: !!prep.picked }; }
     run.steps = buildSteps(topic);
     if (run.ks) callGenPpt();
     $('#wbHero').hidden = true; $('#wbInput').hidden = true;
@@ -833,7 +859,10 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     var S = TK.load(), c = ss ? S.courses.find(function (x) { return x.id === ss.id; }) : null;
     if (ss && !c) return;
     var files = outFiles().map(function (f) { return { id: TK.uid('F'), type: RES_TYPE[f.res] || '课件', name: f.name, size: sizeOf(f.name), url: f.url || '' }; });
-    var sk = c && (c.skillIds || []).length ? c.skillIds : prepSkillIds();   // 课次没挂技能（课程未关联知识体系）时，记下备课内容里的技能，发布时由老师确认
+    // 资源记下本次备课内容里的技能（课次不选任务：课次的技能由关联的资源带上，发布时老师确认）
+    var sk = prepSkillIds();
+    // 排课生成的默认名称（老师没改过）：按这次备课选定的任务命名
+    if (c && c.autoName && c.status !== '已发布' && prep && prep.pickTask) { c.name = prep.pickTask; c.autoName = false; }
     var r = { id: TK.uid('RES'), name: '《' + (c ? c.name : run.topic) + '》备课资源包', status: '已完成', createdAt: TK.fmt(new Date()), owner: currentUserName(), skillIds: sk.slice(),
       knowledge: sk.map(TK.skillName).join(' › '), files: files };
     S.resources.unshift(r);
@@ -858,8 +887,8 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
         return '<div class="pk-row">' + extTag(f.name) + '<span class="nm" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="sz">' + sizeOf(f.name) + '</span>' +
           '<button class="a" data-act="preview" data-f="' + esc(f.name) + '" type="button">预览</button><button class="a" data-act="dl" data-f="' + esc(f.name) + '" type="button">下载</button></div>';
       }).join('') + '</div>' +
-      (run.linked ? '<div class="pk-tip" style="color:#2ba954">已关联到课次「' + esc(run.linked.name) + '」，记录了来源技能。<a href="' + esc(UI.link('teacher-tasks.html')) + '&open=course:' + esc(run.linked.id) + '">去任务中心发布 ›</a></div>' : '') +
-      (run.saved ? '<div class="pk-tip" style="color:#2ba954">已存入备课资源，暂未关联课次，可在任务中心的课次里「关联备课资源」。<a href="' + esc(UI.link('teacher-tasks.html')) + '">去任务中心 ›</a></div>' : '') +
+      (run.linked ? '<div class="pk-tip" style="color:#2ba954">已关联到课次「' + esc(run.linked.name) + '」，记录了来源技能。<a href="' + esc(UI.link('teacher-tasks.html')) + '&open=course:' + esc(run.linked.id) + '">去智慧课堂发布 ›</a></div>' : '') +
+      (run.saved ? '<div class="pk-tip" style="color:#2ba954">已存入备课资源，暂未关联课次，可在智慧课堂的课次里「关联备课资源」。<a href="' + esc(UI.link('teacher-tasks.html')) + '">去智慧课堂 ›</a></div>' : '') +
       (fs.some(function (f) { return f.url && expiresMin(f.url); }) ? '<div class="pk-tip">课件下载链接 ' + expiresMin(fs.find(function (f) { return f.url; }).url) + ' 分钟内有效</div>' : '') + '</div>';
   }
 
@@ -870,7 +899,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     var waiting = run.steps.some(function (s) { return s.status === 'wait'; });
     var nodes = [
       { name: '需求分析', s: st('need'), sub: st('need') === 'done' ? ['已完成 ' + (run.types || state.selected).length + ' 个'].concat((run.types || state.selected).map(function (t) { return '《' + run.topic + '》' + RES_NAME[t]; })) : [] },
-      { name: run.map && run.map.fromMap ? '能力地图' : '知识点确认', s: st('kp'), sub: [] }
+      { name: run.map && run.map.fromMap ? '能力地图' : (run.map && run.map.picked) || run.direct || run.nomatch ? '备课范围' : '知识点确认', s: st('kp'), sub: [] }
     ];
     (run.types || state.selected).forEach(function (t) {
       var ss = run.steps.filter(function (x) { return x.res === t; });
@@ -1091,50 +1120,167 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     var k = n.skills.filter(function (s) { return sc.sel[s]; }).length;
     return !k ? 0 : k === n.skills.length ? 2 : 1;
   }
-  function scHit(n, q) {
-    if (!q) return true;
-    if (n.name.indexOf(q) >= 0) return true;
-    return n.type !== '技能' && (n.children || []).some(function (k) { return scHit(k, q); });
+  /* 备课范围引导（不再列整棵知识体系树）：按老师的输入和老师自己的课，给最多 3 条建议 + 「不关联知识体系，直接生成」；
+     建议来源依次为：已选 / 带入的课次 → 7 天内还没备课的课次 → 任教课程里和输入最相关的任务 → 接着上次备到的下一个任务；
+     都不是可以搜索任务或技能（先搜任教课程，再搜本专业）。选中后直接生成，不再确认知识点 */
+  var SG = null;   // { p, opts, pick, q, res }
+  var sgDirect = false;   // 选了「不关联知识体系，按需求直接生成」：本次生成不确认知识点
+  var SG_STOP = ['帮我', '给我', '请你', '我想', '需要', '做一个', '做一份', '做个', '一个', '一份', '一下', '课件', '教案', '生成', '讲讲', '关于', '介绍', '什么', '怎么', '课程', '一节', '这节', '内容', '相关'];
+  function sgCls(S, id) { return (S.classes.find(function (k) { return k.id === id; }) || {}).name || ''; }
+  function sgWhen(S, c) {
+    var d = new Date(c.start.replace(' ', 'T')), sp = TK.periodSpan(S, c.start, c.end);
+    return c.start.slice(5, 10) + ' ' + ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][d.getDay()] + ' ' + TK.periodText(sp[0], sp[1]);
   }
-  // inHit：上级已命中搜索词时，下级全部显示
-  function scRows(list, depth, inHit) {
-    var q = inHit ? '' : sc.q, out = '';
-    list.forEach(function (n) {
-      if (!scHit(n, q)) return;
-      var self = !!(q && n.name.indexOf(q) >= 0);
-      var group = n.type !== '技能', open = group && (sc.open[n.sid] || (q && !self)), st = scState(n);
-      var pick = n.type === '任务' || n.type === '技能';
-      var name = self ? esc(n.name).split(esc(q)).join('<mark>' + esc(q) + '</mark>') : esc(n.name);
-      var sel = n.skills.filter(function (s) { return sc.sel[s]; }).length;
-      out += '<div class="sc-row" style="padding-left:' + (10 + depth * 18) + 'px">' +
-        '<span class="car"' + (group ? ' data-sc-open="' + n.sid + '"' : '') + '>' + (group ? (open ? '▾' : '▸') : '') + '</span>' +
-        (pick ? '<input type="checkbox" data-sc-pick="' + n.sid + '"' + (st === 2 ? ' checked' : '') + (st === 1 ? ' data-mixed="1"' : '') + '>' : '') +
-        '<em style="background:' + (SC_COLOR[n.type] || '#94a3b8') + '">' + esc(n.type) + '</em><span class="n" title="' + esc(n.name) + '">' + name + '</span>' +
-        (group ? '<span class="m">' + (sel ? '已选 ' + sel + ' / ' : '') + n.skills.length + ' 个技能</span>' : '') + '</div>';
-      if (open) out += scRows(n.children || [], depth + 1, inHit || self);
+  function sgTaskOf(kc, c) {
+    // 课程进度口径：已发布的按考查技能；未发布的按备课资源带上的技能；存量课次选过的任务也认
+    var pubSk = c.status === '已发布' && c.publish && c.publish.task && c.publish.task.on ? (c.publish.task.skillIds || []) : null;
+    var sk = pubSk && pubSk.length ? pubSk : (c.skillIds || []), ids = (c.ktasks && c.ktasks.length ? c.ktasks : c.ktask ? [c.ktask] : []);
+    return kc.tasks.filter(function (t) { return t.skills.some(function (k) { return sk.indexOf(k.id) >= 0; }); })[0]
+      || kc.tasks.filter(function (t) { return ids.indexOf(t.id) >= 0; })[0] || null;
+  }
+  // 这门课上次备到哪个任务：已发布或已挂资源的课次里最近一次选的任务
+  function sgLast(S, pl, kc) {
+    var done = S.courses.filter(function (c) { return c.planId === pl.id && (c.status === '已发布' || (c.resIds || []).length) && sgTaskOf(kc, c); })
+      .sort(function (a, b) { return a.start < b.start ? 1 : -1; })[0];
+    if (!done) return null;
+    var t = sgTaskOf(kc, done), i = kc.tasks.indexOf(t);
+    return { last: t, next: kc.tasks[i + 1] || null };
+  }
+  function sgWords(text, from) {
+    var r = text;
+    (from || []).forEach(function (x) { [x.name, x.name.replace(/行业$/, '业'), x.name.replace(/(行业|专业)$/, '')].forEach(function (n) { if (n) r = r.split(n).join(' '); }); });
+    SG_STOP.forEach(function (w) { r = r.split(w).join(' '); });
+    return r.split(/[^\u4e00-\u9fa5]+|[的了和与及在是把]/).filter(function (x) { return x.length >= 2; });
+  }
+  function sgTaskText(t) { return t.name + ' ' + t.skills.map(function (k) { return k.name + ' ' + (k.kps || []).map(function (x) { return x.name; }).join(' '); }).join(' '); }
+  function sgHit(words, txt) {   // 命中的最长词（2–4 字）
+    var best = '';
+    words.forEach(function (w) { for (var L = Math.min(4, w.length); L >= 2; L--) for (var i = 0; i + L <= w.length; i++) { var x = w.substr(i, L); if (x.length > best.length && txt.indexOf(x) >= 0) best = x; } });
+    return best;
+  }
+  function sgBuild(p) {
+    kmIndex();
+    var out = [], seen = {}, skills = p.skills || [];
+    if (!skills.length) (function walk(l) { l.forEach(function (n) { if (n.type === '技能') skills.push(n.id); else walk(n.children || []); }); })(p.majors || []);
+    var inR = {}; skills.forEach(function (x) { inR[x] = 1; });
+    function add(o) { if (!o || !o.task || out.length >= 3 || seen[o.task.id]) return; seen[o.task.id] = 1; out.push(o); }
+    if (!window.TK) return out;
+    var S = TK.load(), me = myName(), plans = S.plans.filter(function (x) { return x.teacher === me && TK.planState(S, x) !== '已结束'; });
+    var mine = plans.map(function (pl) { return { pl: pl, kc: KM.course[TK.planKsId(S, pl)] }; })
+      .filter(function (x) { return x.kc && x.kc.tasks.some(function (t) { return t.skills.some(function (k) { return inR[k.id]; }); }); });
+    var sessOpt = function (c, why) {
+      var pl = S.plans.find(function (x) { return x.id === c.planId; }), kc = pl && KM.course[TK.planKsId(S, pl)]; if (!kc) return null;
+      var lt = sgLast(S, pl, kc), own = sgTaskOf(kc, c);
+      var used = S.courses.filter(function (x) { return x.planId === pl.id && x !== c; }).map(function (x) { return sgTaskOf(kc, x); });
+      var unused = kc.tasks.filter(function (t) { return used.indexOf(t) < 0; })[0];
+      var t = own || (lt && lt.next) || unused || kc.tasks[0];
+      var note = own ? '' : lt && lt.next === t ? '（接着上次备到的「' + esc(lt.last.name) + '」）' : t === unused && used.some(function (x) { return x; }) ? '（这门课还没备过的任务）' : t === unused ? '（从第一个任务开始）' : '（各任务都已备过）';
+      return t && { task: t, course: kc, sess: { id: c.id, name: c.name, plan: pl.course + ' · ' + sgCls(S, pl.classId) },
+        t1: esc(c.name.indexOf(kc.name) >= 0 ? c.name : kc.name + ' · ' + c.name) + '<small>' + esc(sgWhen(S, c)) + '</small>',
+        t2: '任务：' + esc(t.name) + note, why: why };
+    };
+    // 1. 已选 / 带入的课次：只给这一条
+    var ss = p.session || chosenSess, sc0 = ss && S.courses.find(function (c) { return c.id === ss.id; });
+    if (sc0) { add(sessOpt(sc0, p.session ? '从课次带入' : '你选的课次')); return out; }
+    // 2. 7 天内还没备课的课次
+    var now = new Date(), wk = new Date(now.getTime() + 7 * 864e5), ids = mine.map(function (x) { return x.pl.id; });
+    var up = S.courses.filter(function (c) { var d = new Date(c.start.replace(' ', 'T')); return ids.indexOf(c.planId) >= 0 && d >= now && d <= wk && c.status !== '已发布' && !(c.resIds || []).length; })
+      .sort(function (a, b) { return a.start < b.start ? -1 : 1; })[0];
+    if (up) { var dd = Math.round((new Date(up.start.slice(0, 10) + 'T00:00:00') - new Date(TK.fmt(now, false) + 'T00:00:00')) / 864e5); add(sessOpt(up, dd <= 0 ? '你今天要上这节课' : dd === 1 ? '你明天要上这节课' : dd + ' 天后要上这节课')); }
+    // 3. 任教课程里和输入最相关的任务
+    var words = sgWords(SG && SG.text || state.text || '', p.from), best = null;
+    mine.forEach(function (x) { x.kc.tasks.forEach(function (t) {
+      if (!t.skills.some(function (k) { return inR[k.id]; })) return;
+      var txt = sgTaskText(t), h = sgHit(words, txt); if (!h) return;
+      var sc1 = h.length * 2 + (t.name.indexOf(h) >= 0 ? 3 : 0);
+      if (!best || sc1 > best.sc) best = { sc: sc1, t: t, kc: x.kc, h: h };
+    }); });
+    if (best) add({ task: best.t, course: best.kc, t1: esc(best.kc.name), t2: '任务：' + esc(best.t.name), why: '和「' + esc(best.h) + '」最相关' });
+    // 4. 接着上次
+    var lastBest = null;
+    mine.forEach(function (x) { var l = sgLast(S, x.pl, x.kc); if (l && l.next) { var at = S.courses.filter(function (c) { return c.planId === x.pl.id && sgTaskOf(x.kc, c) === l.last; }).map(function (c) { return c.start; }).sort().pop(); if (!lastBest || at > lastBest.at) lastBest = { at: at, l: l, kc: x.kc }; } });
+    if (lastBest) add({ task: lastBest.l.next, course: lastBest.kc, t1: esc(lastBest.kc.name), t2: '任务：' + esc(lastBest.l.next.name) + '<br><span style="color:#99a1af">上次备到：' + esc(lastBest.l.last.name) + '</span>', why: '接着上次' });
+    // 需求里点名了某门课、但不是自己任教的：从这门课里给（和输入相关的任务，没有就第一个任务）
+    if (!out.length) (p.from || []).filter(function (f) { return f.type === '课程'; }).forEach(function (f) {
+      var kc = KM.order.map(function (id) { return KM.course[id]; }).filter(function (c) { return c.name === f.name; })[0]; if (!kc) return;
+      var bt = null; kc.tasks.forEach(function (t) { var h = sgHit(words, sgTaskText(t)); if (h && (!bt || h.length > bt.h.length)) bt = { t: t, h: h }; });
+      add({ task: (bt || { t: kc.tasks[0] }).t, course: kc, t1: esc(kc.name), t2: '任务：' + esc((bt || { t: kc.tasks[0] }).t.name), why: bt ? '和「' + esc(bt.h) + '」最相关' : '从第一个任务开始' });
     });
+    // 都没有：任教课程里范围内的第一个任务
+    if (!out.length) mine.slice(0, 2).forEach(function (x) { var t = x.kc.tasks.filter(function (t) { return t.skills.some(function (k) { return inR[k.id]; }); })[0]; add(t && { task: t, course: x.kc, t1: esc(x.kc.name), t2: '任务：' + esc(t.name), why: '你任教的课程' }); });
     return out;
   }
-  function scCount() { return Object.keys(sc.sel).length; }
-  function renderScopeTree() {
-    var html = scRows(sc.p.majors, 0);
-    $('#scTree').innerHTML = html || '<div class="sc-empty">没有找到「' + esc(sc.q) + '」相关的课程、任务或技能</div>';
-    [].forEach.call($('#scTree').querySelectorAll('[data-mixed]'), function (x) { x.indeterminate = true; });
-    $('#scCnt').innerHTML = '已选 <b>' + scCount() + '</b> 个技能';
-    $('#scOk').disabled = !scCount();
+  function sgSearch(q) {
+    kmIndex(); if (!q) return [];
+    var S = window.TK ? TK.load() : null, me = myName(), my = {};
+    if (S) S.plans.filter(function (x) { return x.teacher === me; }).forEach(function (pl) { my[TK.planKsId(S, pl)] = 1; });
+    var res = [];
+    KM.entries.forEach(function (e) {
+      if ((e.type !== '任务' && e.type !== '技能') || e.name.indexOf(q) < 0) return;
+      var x = KM.skill[e.skills[0]]; if (!x) return;
+      res.push({ type: e.type, name: e.name, course: x.course, task: x.task, skill: e.type === '技能' ? x.s : null, mine: !!my[x.course.id] });
+    });
+    res.sort(function (a, b) { return (b.mine - a.mine) || (a.type === b.type ? 0 : a.type === '任务' ? -1 : 1); });
+    return res.slice(0, 8);
   }
   function renderScope(p) {
-    var from = (p.from || []).map(function (x) { return (x.type ? x.type : '') + '「' + esc(x.name) + '」'; }).join('、');
-    var total = p.majors.reduce(function (a, m) { return a + m.skills.length; }, 0);
+    if (!SG || SG.p !== p) SG = { p: p, text: state.text, pick: 0, q: '', res: [] };
+    SG.opts = sgBuild(p);
+    if (!SG.opts.length) SG.pick = 'direct';
+    var from = (p.from || []).map(function (x) { return '「' + esc(x.name) + '」'; }).join('、');
+    var opt = function (o, i) {
+      var on = SG.pick === i;
+      return '<button type="button" class="sg-opt' + (o.plain ? ' plain' : '') + '" data-sg="' + i + '" aria-pressed="' + on + '"><span class="rd"></span><span class="tx"><div class="t1">' + o.t1 + '</div><div class="t2">' + o.t2 + '</div></span><span class="why">' + o.why + '</span></button>';
+    };
+    var picked = typeof SG.pick === 'object' ? SG.pick : null;
     $('#wbScope').innerHTML =
-      '<div class="sc-head">' + (p.auto ? '根据你的需求匹配到 ' : '') + from + ' 范围较大，涉及 <b>' + total + '</b> 个技能。请先选择本次备课的范围：勾选任务（含其下全部技能）或单个技能。</div>' +
-      '<div class="sc-tools"><input id="scQ" placeholder="搜索课程、任务或技能" value="' + esc(sc.q) + '"><span class="cnt" id="scCnt"></span></div>' +
-      '<div class="sc-tree" id="scTree"></div>' +
-      '<div class="sc-foot"><span class="tip">选定后按这些任务、技能及其下级内容生成课件；也可以先不选，按整个范围' + (p.auto ? '生成' : '带入') + '</span>' +
-      '<button class="sc-skip" id="scSkip" type="button">' + (p.auto ? '先不选，直接生成' : '先不选，全部带入') + '</button>' +
-      '<button class="sc-ok" id="scOk" type="button" disabled>' + (p.auto ? '确定范围并生成' : '确定范围') + '</button></div>';
-    renderScopeTree();
+      '<div class="sc-head">' + (p.session && p.from && p.from[0] && p.from[0].type === '课程' ? '这节课只关联了课程《' + esc(p.from[0].name) + '》，一节课用不完。这次想备哪部分？' : from + ' 范围较大，一节课用不完。这次想备哪部分？') + '</div>' +
+      '<div class="sg-list">' + SG.opts.map(opt).join('') +
+      (picked ? opt({ t1: esc(picked.course.name), t2: (picked.skill ? '技能：' + esc(picked.skill.name) + '（' + esc(picked.task.name) + '）' : '任务：' + esc(picked.task.name)), why: '搜索选中' }, 'q') : '') +
+      (SG.opts.length ? '' : '<div class="sg-none">你任教的课程里没有找到和' + from + '相关的内容，可以搜索，或直接生成</div>') +
+      opt({ plain: true, t1: '不关联知识体系，按需求直接生成', t2: '适合行业动态、时事类内容；生成的资源不记技能，发布任务时再选考查技能', why: '直接生成' }, 'direct') + '</div>' +
+      '<div class="sg-q">都不是？<input id="sgQ" placeholder="搜索任务或技能，如：讲解、线路设计" value="' + esc(SG.q) + '"></div>' +
+      '<div id="sgRes"></div>' +
+      '<div class="sc-foot"><span class="tip">选定后直接生成，生成的资源记下所选任务或技能</span><button class="sc-ok" id="scOk" type="button">开始生成</button></div>';
+    if (picked) $('#wbScope').querySelector('[data-sg="q"]').setAttribute('aria-pressed', 'true');
+    renderSgRes();
   }
+  function renderSgRes() {
+    var box = $('#sgRes'); if (!box) return;
+    SG.res = sgSearch(SG.q);
+    box.innerHTML = !SG.q ? '' : SG.res.length ? '<div class="sg-res">' + SG.res.map(function (r, i) {
+      return '<button type="button" data-sgr="' + i + '"><em style="background:' + (SC_COLOR[r.type] || '#94a3b8') + '">' + r.type + '</em>' + esc(r.name) + '<small>' + esc(r.course.name + (r.skill ? ' › ' + r.task.name : '')) + (r.mine ? '' : ' · 非任教课程') + '</small></button>';
+    }).join('') + '</div>' : '<div class="sg-none">没有找到「' + esc(SG.q) + '」相关的任务或技能</div>';
+  }
+  // 选中一条 → 与「多选备课」相同的带入数据，标记 picked（老师已选定，生成时不再确认知识点）
+  function sgApply(o) {
+    var p = SG.p, skills = o.skill ? [o.skill.id] : o.task.skills.map(function (k) { return k.id; });
+    var p2 = { scope: true, auto: p.auto, from: p.from, majors: kmTree(skills) };
+    scInit(p2); Object.keys(sc.nodes).forEach(function (k) { if (sc.nodes[k].type === '技能') sc.sel[k] = true; });
+    var np = scApply(); sc = null; if (!np) return;
+    np.picked = true; np.pickName = o.course.name + ' · ' + (o.skill ? o.skill.name : o.task.name); np.pickTask = o.task.name;
+    if (p.session) np.session = p.session; else if (o.sess) { chosenSess = o.sess; renderSess(); }
+    SG = null;
+    if (p.auto) { np.auto = true; np.scopeOrig = null; np.from = p.from; prep = np; renderPrep(prep); renderSend(); send(); return; }
+    prep = np; renderPrep(prep); setPrepText(prep);
+  }
+  $('#wbScope').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-sg]');
+    if (b) { var v = b.getAttribute('data-sg'); if (v !== 'q') SG.pick = v === 'direct' ? 'direct' : +v; renderScope(SG.p); return; }
+    var r = e.target.closest('[data-sgr]');
+    if (r) { SG.pick = SG.res[+r.getAttribute('data-sgr')]; SG.q = ''; renderScope(SG.p); return; }
+    if (e.target.id !== 'scOk') return;
+    if (SG.pick === 'direct') {   // 不关联知识体系：按原需求生成，不再匹配
+      var p = SG.p; SG = null; skipMatch = true; sgDirect = true; prep = p.bare || null; renderPrep(prep); renderSend();
+      if (p.auto) send(); return;
+    }
+    var o = typeof SG.pick === 'object' ? SG.pick : SG.opts[SG.pick];
+    if (o) sgApply(o);
+  });
+  $('#wbScope').addEventListener('input', function (e) {
+    if (e.target.id !== 'sgQ') return;
+    SG.q = e.target.value.trim(); renderSgRes();
+  });
   // 勾选结果 → 与「多选备课」相同的带入数据：根为专业，选中的任务 / 技能带整棵下级
   function scApply() {
     var picked = [];
@@ -1174,28 +1320,6 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       scopeOrig: sc.p
     };
   }
-  $('#wbScope').addEventListener('click', function (e) {
-    var o = e.target.closest('[data-sc-open]');
-    if (o) { var id = o.getAttribute('data-sc-open'); sc.open[id] = !sc.open[id]; renderScopeTree(); return; }
-    var k = e.target.closest('[data-sc-pick]');
-    if (k) {
-      var n = sc.nodes[k.getAttribute('data-sc-pick')], on = scState(n) !== 2;
-      n.skills.forEach(function (s) { if (on) sc.sel[s] = true; else delete sc.sel[s]; });
-      renderScopeTree(); return;
-    }
-    var skip = e.target.id === 'scSkip';
-    if (skip) Object.keys(sc.nodes).forEach(function (k) { if (sc.nodes[k].type === '技能') sc.sel[k] = true; });   // 先不选：按整个范围
-    if (e.target.id === 'scOk' || skip) {
-      var np = scApply(); if (!np) return;
-      if (skip) { np.skipped = sc.p.from; np.theme = (sc.p.from || []).map(function (x) { return x.name; }).join('、'); }
-      if (sc.p.auto) { np.auto = true; np.scopeOrig = null; prep = np; renderPrep(prep); renderSend(); send(); return; }   // 保留老师输入的需求，直接生成
-      prep = np; renderPrep(prep); setPrepText(prep);
-    }
-  });
-  $('#wbScope').addEventListener('input', function (e) {
-    if (e.target.id !== 'scQ') return;
-    sc.q = e.target.value.trim(); renderScopeTree();
-  });
   function setPrepText(p) {
     var pt = p.scope ? '' : prepText(p);
     $('#wbTa').value = pt; state.text = pt;
@@ -1226,11 +1350,11 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
   function kmIndex() {
     if (KM) return KM;
     var A = window.ASSESS_DATA || {}, G = A.graph || {}, K = (A.knowledge || {})['MAJOR-GUIDE'];
-    KM = { skill: {}, entries: [] };
+    KM = { skill: {}, entries: [], course: {}, order: [] };
     if (!K) return KM;
     var all = [], byAbl = {};
     K.courses.forEach(function (c) {
-      var cs = [];
+      var cs = []; KM.course[c.id] = c; KM.order.push(c.id);
       c.tasks.forEach(function (tk) {
         var ts = tk.skills.map(function (s) { KM.skill[s.id] = { s: s, task: tk, course: c }; all.push(s.id); cs.push(s.id); return s.id; });
         KM.entries.push({ type: '任务', name: tk.name, skills: ts });
@@ -1287,7 +1411,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     var small = hits.filter(function (h) { return !BIG_TYPES[h.e.type]; }), use = small.length ? small : hits;
     var skills = [], from = use.map(function (h) { return { type: h.e.type, name: h.e.name }; });
     use.forEach(function (h) { h.e.skills.forEach(function (s) { if (skills.indexOf(s) < 0) skills.push(s); }); });
-    var p = { scope: true, auto: true, from: from, majors: kmTree(skills) };
+    var p = { scope: true, auto: true, from: from, skills: skills, majors: kmTree(skills) };
     if (!small.length) return p;   // 只命中大范围：先选范围
     // 命中任务 / 技能 / 能力项：全部选中后直接带入
     scInit(p);
@@ -1295,11 +1419,20 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     var np = scApply(); np.auto = true; np.scopeOrig = null; np.from = from; sc = null;
     return np;
   }
+  // 从课次「去备课」、课次没挂技能但课程已关联知识体系：整门课作为范围，给备课范围建议
+  function sessScope(bp) {
+    if (!window.TK) return null;
+    kmIndex();
+    var S = TK.load(), c = S.courses.find(function (x) { return x.id === bp.session.id; }), pl = c && S.plans.find(function (x) { return x.id === c.planId; });
+    var kc = pl && KM.course[TK.planKsId(S, pl)]; if (!kc) return null;
+    var skills = []; kc.tasks.forEach(function (t) { t.skills.forEach(function (k) { skills.push(k.id); }); });
+    return { scope: true, auto: true, from: [{ type: '课程', name: kc.name }], skills: skills, majors: kmTree(skills), session: bp.session, bare: bp };
+  }
   function renderPrep(p) {
     var box = $('#wbPrep'); box.hidden = !p; renderTry(); renderSess(); if (!p) return;
-    $('#wbPrep .ph .t').textContent = p.auto ? '已按需求匹配知识范围' : '带入备课';
+    $('#wbPrep .ph .t').textContent = p.scope ? '选择备课范围' : p.picked ? '已选定备课范围' : p.auto ? '已按需求匹配知识范围' : '带入备课';
     $('#wbScope').hidden = !p.scope; $('#wbPrepBody').hidden = !!p.scope;
-    if (p.scope) { if (!sc || sc.p !== p) scInit(p); renderScope(p); return; }
+    if (p.scope) { renderScope(p); return; }
     var c = prepCounts(p);
     if (p.multi) $('#wbPrepSum').innerHTML = '已选 <b>' + p.selected.length + '</b> 个节点，连同下级共 <b>' + c.total + '</b> 个节点：' + esc(countText(c));
     else $('#wbPrepSum').innerHTML = c.total ? '下级共 <b>' + c.total + '</b> 个节点：' + esc(countText(c)) : '暂无下级节点';
@@ -1326,7 +1459,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
   $('#wbPrepClose').addEventListener('click', function () {
     var wasScope = prep && (prep.scope || prep.scopeOrig) && !prep.auto;
     if (prep && prep.auto) skipMatch = true;   // 老师移除了匹配结果：本条需求不再匹配，按原样生成
-    prep = null; session = null; sc = null; try { localStorage.removeItem(PREP_KEY); } catch (e) {} renderPrep(null);
+    prep = null; session = null; sc = null; SG = null; try { localStorage.removeItem(PREP_KEY); } catch (e) {} renderPrep(null);
     if (wasScope) { $('#wbTa').value = ''; state.text = ''; renderChips(); }
     renderSend();
   });
@@ -1383,7 +1516,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     render();
     var c = cur(); if (c && c.status === 'run') timer = setTimeout(advance, 400);   // 未完成的接着生成
   }
-  /* 任务「⋯」操作：置顶、重命名、在任务中心查看资源包 / 课次、删除（仅工作台生成的任务；资源包是任务中心里的备课资源，不在这里删） */
+  /* 任务「⋯」操作：置顶、重命名、在智慧课堂查看资源包 / 课次、删除（仅工作台生成的任务；资源包是任务中心里的备课资源，不在这里删） */
   function pinKey() { return 'wbPins.v1|' + myName(); }
   function loadPins() { try { return JSON.parse(localStorage.getItem(pinKey()) || '[]'); } catch (e) { return []; } }
   function savePins(p) { try { localStorage.setItem(pinKey(), JSON.stringify(p)); } catch (e) {} }
@@ -1399,8 +1532,8 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     var k = btn.getAttribute('data-tmore').split(':'), kind = k[0], id = k.slice(1).join(':'), I = taskInfo(kind, id), pinned = loadPins().indexOf(id) >= 0;
     var pop = document.createElement('div'); pop.className = 'tpop';
     pop.innerHTML = '<button data-op="pin">' + (pinned ? '📌 取消置顶' : '📌 置顶') + '</button><button data-op="rename">✎ 重命名</button>' +
-      (I.r ? '<button data-op="res">▤ 在任务中心查看资源包</button>' : '') + (I.c ? '<button data-op="course">↗ 查看关联课次「' + esc(I.c.name.length > 8 ? I.c.name.slice(0, 8) + '…' : I.c.name) + '」</button>' : '') +
-      '<div class="sep"></div>' + (kind === 'run' ? '<button data-op="del" class="del">🗑 删除</button>' : '<button data-op="del" class="del" disabled title="备课资源包在任务中心管理，这里不能删除">🗑 删除</button>');
+      (I.r ? '<button data-op="res">▤ 在智慧课堂查看资源包</button>' : '') + (I.c ? '<button data-op="course">↗ 查看关联课次「' + esc(I.c.name.length > 8 ? I.c.name.slice(0, 8) + '…' : I.c.name) + '」</button>' : '') +
+      '<div class="sep"></div>' + (kind === 'run' ? '<button data-op="del" class="del">🗑 删除</button>' : '<button data-op="del" class="del" disabled title="备课资源包在智慧课堂管理，这里不能删除">🗑 删除</button>');
     document.body.appendChild(pop); btn.closest('.lti').classList.add('menu');
     var rc = btn.getBoundingClientRect(), top = rc.bottom + 4;
     if (top + pop.offsetHeight > window.innerHeight - 8) top = rc.top - pop.offsetHeight - 4;
@@ -1412,7 +1545,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       else if (op === 'rename') renameTask(kind, id, I);
       else if (op === 'res') location.href = UI.link('teacher-tasks.html?open=res:' + I.r.id);
       else if (op === 'course') location.href = UI.link('teacher-tasks.html') + '&open=course:' + encodeURIComponent(I.c.id);
-      else if (op === 'del') TK.confirm('确定删除任务「' + I.title + '」吗？' + (I.r ? '生成的备课资源包仍保留在任务中心。' : ''), function () {
+      else if (op === 'del') TK.confirm('确定删除任务「' + I.title + '」吗？' + (I.r ? '生成的备课资源包仍保留在智慧课堂。' : ''), function () {
         saveTasks(loadTasks().filter(function (t) { return t.id !== id; })); savePins(loadPins().filter(function (x) { return x !== id; }));
         if (run && run.tid === id) $('#wbNew').click(); else renderTasks(); toast('已删除');
       });
@@ -1501,6 +1634,8 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
   renderTasks();
   prep = loadPrep();
   if (prep) { session = prep.session || null; renderPrep(prep); try { localStorage.removeItem(PREP_KEY); } catch (e) {} }
+  // 备课资源「重新生成」：带上原来的需求填入输入框
+  try { var PF = localStorage.getItem('wbPrefill'); if (PF) { localStorage.removeItem('wbPrefill'); $('#wbTa').value = PF; state.text = PF; renderChips(); renderSend(); } } catch (e) {}
   renderChips(); renderTools(); renderFiles(); renderSess();
   if (prep) setPrepText(prep);
   renderSend();

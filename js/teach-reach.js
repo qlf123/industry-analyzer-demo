@@ -53,12 +53,13 @@
         (((t || {}).criteria) || []).forEach(function (x) {
           var sid = x.sid; if (!sid) return;
           var g = bySid[sid];
-          if (!g) { g = bySid[sid] = { sid: sid, name: TK.skillName(sid), courses: {}, kps: ((TK.kn().skill[sid] || {}).kps) || [], allow: null, last: {} }; order.push(g); }
+          if (!g) { g = bySid[sid] = { sid: sid, name: TK.skillName(sid), courses: {}, kps: [], allow: null, last: {} }; order.push(g); }
           g.courses[c.id] = 1;
+          TK.taskKps(t, sid).forEach(function (k) { if (!g.kps.some(function (y) { return y.id === k.id; })) g.kps.push(k); });   // 发布时的知识点快照并集
           if (kpIds) { g.allow = g.allow || []; kpIds.forEach(function (id) { if (g.allow.indexOf(id) < 0) g.allow.push(id); }); }
           (c.submissions || []).forEach(function (sb) {
             var it = sb.teacher && (sb.teacher.items || []).filter(function (y) { return y.sid === sid; })[0];
-            if (it && (!asOf || tdate(sb.teacher.at) < asOf) && (!from || tdate(sb.teacher.at) >= from) && (!g.last[sb.student] || sb.teacher.at >= g.last[sb.student].at)) g.last[sb.student] = { at: sb.teacher.at, marks: TK.itemKps(it, sb.student, kpIds) };
+            if (it && (!asOf || tdate(sb.teacher.at) < asOf) && (!from || tdate(sb.teacher.at) >= from) && (!g.last[sb.student] || sb.teacher.at >= g.last[sb.student].at)) g.last[sb.student] = { at: sb.teacher.at, marks: TK.itemKps(it, sb.student, kpIds, t) };
           });
         });
       });

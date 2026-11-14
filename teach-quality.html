@@ -93,7 +93,7 @@
     improve: { key: 'tq-improve', title: '课程改进建议', desc: '老师在学情里提出的建议由专业负责人在这里处理（采纳 / 暂不处理并说明），也可以针对薄弱能力提出建议交给任课老师；处理结果回到老师的学情页' }
   }[view];
   UI.boot({ portal: 'admin', active: V.key });
-  document.title = V.title; document.getElementById('pt').textContent = V.title; document.getElementById('pd').textContent = V.desc;
+  document.title = V.title; document.getElementById('pt').textContent = V.title; document.getElementById('pd').hidden = true;   // 标题下不显示说明
   var esc = TK.esc, $ = function (s) { return document.querySelector(s); };
   var ctx = DEMO.getState(), iden = UI.currentIdentity(ctx);
   if (!UI.hasPerm(ctx, iden, 'teach:quality:view')) { $('.body').innerHTML = '<div class="card"><div class="empty3">当前身份没有「教学质量查看与改进处理」权限</div></div>'; return; }
@@ -138,7 +138,7 @@
     } else {
       h += sel('st', '状态', [['待处理', '待处理'], ['已采纳', '已采纳'], ['暂不处理', '暂不处理'], ['已发出', '已发出（专业负责人提出）']], '全部状态');
     }
-    $('#filters').innerHTML = h + '<span style="flex:1"></span><button class="btn-s" data-reset>重置</button>';
+    $('#filters').innerHTML = h + '<button class="btn-s" data-reset>重置</button>' + (view === 'improve' ? '<span style="margin-left:auto"><button class="btn" data-imp-new style="height:32px">＋ 提出改进建议</button></span>' : '');
   }
 
   /* ── 教学达成 ── */
@@ -162,7 +162,7 @@
               var ev = R.bySkill[x.sid] || [], bad = ev.filter(function (e) { return e.grade === '需改进'; }).length;
               return '<li><b>' + esc(TK.skillName(x.sid)) + '</b> <span class="note">《' + esc(courseOf(R.K, x.sid)) + '》· ' + esc(x.type) + '</span> — ' + (ev.length ? '已评价 ' + ev.length + ' 人次，达成 ' + (ev.length - bad) + (bad ? '，<span style="color:var(--crit)">未达成 ' + bad + '</span>' : '') : '<span class="note">还没有课堂证据</span>') + '</li>';
             }).join('') + '</ul><a class="lk" href="' + esc(UI.link('teach-quality.html?t=improve&new=' + encodeURIComponent(r.name), 'admin')) + '" style="display:inline-block;margin-top:6px">针对这项能力提改进建议 ›</a></td></tr>';
-        }).join('') || '<tr><td colspan="7"><div class="empty3">当前范围还没有课堂证据。老师在任务中心按评价标准确认后，这里会显示。</div></td></tr>') + '</tbody></table>';
+        }).join('') || '<tr><td colspan="7"><div class="empty3">当前范围还没有课堂证据。老师在智慧课堂确认评价后，这里会显示。</div></td></tr>') + '</tbody></table>';
     } else {
       var rows = plans.map(function (p) { return { p: p, b: R.byPlan[p.id] }; }).sort(function (a, b) { var ra = a.b ? TR.rate(a.b.pairs - a.b.no, a.b.pairs) : 101, rb = b.b ? TR.rate(b.b.pairs - b.b.no, b.b.pairs) : 101; return ra - rb; });
       h += '<table class="tbl2"><thead><tr><th>课程</th><th>班级</th><th>任课教师</th><th>学期</th><th>已评价课次</th><th>学生</th><th>学生 × 技能 评价</th><th>未达成</th><th>技能达成率</th><th>知识点掌握率</th></tr></thead><tbody>' +
@@ -314,7 +314,7 @@
     var plans = S.plans.filter(function (p) { return inMajor(cls(p.classId).majorId); }), courses = uniq(plans.map(function (p) { return p.course; }));
     var abls = TR.compute(S, plans).abilities.map(function (r) { return r.name; });
     if (impForm && impForm.target && abls.indexOf(impForm.target) < 0) abls.unshift(impForm.target);
-    var h = '<div class="tq-card"><div class="tq-h"><b>建议</b><span class="note">' + (pend ? pend + ' 条待处理' : '没有待处理的建议') + '</span><span class="sp"></span><button class="btn-s" data-imp-new>提出改进建议</button></div>';
+    var h = '<div class="tq-card"><div class="tq-h"><b>建议</b><span class="note">' + (pend ? pend + ' 条待处理' : '没有待处理的建议') + '</span></div>';
     if (impForm) {
       h += '<div style="border-bottom:1px solid var(--rule-2)"><div class="imp-f">' +
         '<label>建议类型<select data-imp-k="type" class="imp-in"><option>知识体系调整</option><option>能力图谱调整</option><option>课程安排</option><option>教学资源</option><option>其他</option></select></label>' +
@@ -331,7 +331,7 @@
       return '<div class="imp"><span style="font-weight:600;' + st + '">' + esc(x.status) + '</span>　<b>' + esc(x.type) + '</b> · 《' + esc(x.course) + '》' + (x.target ? ' · ' + esc(x.target) : '') +
         '<span class="note" style="margin-left:8px">' + esc(x.role + ' ' + x.from + ' · ' + x.major + ' · ' + x.at) + '</span><div style="margin-top:4px">' + esc(x.text) + '</div>' +
         (x.reply ? '<div class="note" style="margin-top:4px">处理：' + esc(x.reply.by + '：' + x.reply.text + ' · ' + x.reply.at) + '</div>' : '') + acts + '</div>';
-    }).join('') || '<div class="empty3">' + (all.length ? '没有符合条件的建议' : '还没有课程改进建议。老师在任务中心学情里提出的建议会出现在这里；也可以针对教学达成里未达成较多的能力提出建议，交给任课老师。') + '</div>');
+    }).join('') || '<div class="empty3">' + (all.length ? '没有符合条件的建议' : '还没有课程改进建议。老师在智慧课堂学情里提出的建议会出现在这里；也可以针对教学达成里未达成较多的能力提出建议，交给任课老师。') + '</div>');
     return h + '</div>';
   }
   function audit(action, object, after) { try { var st = DEMO.getState(), id = UI.currentIdentity(st); DEMO.addAudit(st, id.account.id, action, object, null, after, '成功'); DEMO.saveState(st); } catch (e) {} }

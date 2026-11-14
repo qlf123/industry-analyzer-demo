@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>图谱入图编辑器 · 第一阶段业务流程</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'PingFang SC', sans-serif; background: #f1f5f9; color: #1e293b; height: 100vh; display: flex; flex-direction: column; }
+  header { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  header h1 { font-size: 16px; }
+  header h1 small { font-size: 12px; color: #94a3b8; font-weight: 400; margin-left: 10px; }
+  .btns { display: flex; gap: 8px; align-items: center; }
+  button { border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 5px 12px; font-size: 12.5px; cursor: pointer; color: #334155; }
+  button:hover { border-color: #94a3b8; }
+  button.on { background: #1e293b; color: #fff; border-color: #1e293b; }
+  button.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+  button.danger { color: #dc2626; border-color: #fca5a5; }
+  button.danger:hover { background: #fef2f2; }
+  main { flex: 1; display: flex; min-height: 0; }
+  aside { width: 320px; background: #fff; border-right: 1px solid #e2e8f0; overflow-y: auto; padding: 14px; flex-shrink: 0; }
+  section#view { flex: 1; overflow: auto; position: relative; }
+  #graphWrap { min-width: 1500px; }
+  svg { display: block; background: #fff; }
+  .ptitle { font-size: 13px; font-weight: 700; margin: 4px 0 10px; color: #0f172a; }
+  .hint { font-size: 12px; color: #64748b; line-height: 1.7; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
+  .list { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+  .list .item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 12.5px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+  .list .item:last-child { border-bottom: 0; }
+  .list .item:hover { background: #f8fafc; }
+  .list .item.sel { background: #eff6ff; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot.l5 { border: 1.5px solid #64748b; background: #f8fafc; }
+  .list .item small { color: #94a3b8; margin-left: auto; font-size: 11px; }
+  .f { margin-bottom: 10px; }
+  .f label { display: block; font-size: 11.5px; color: #64748b; margin-bottom: 4px; }
+  .f input, .f select, .f textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 8px; font-size: 12.5px; font-family: inherit; }
+  .f textarea { height: 54px; resize: vertical; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  .badge { display: inline-block; font-size: 11px; border-radius: 4px; padding: 1px 7px; font-weight: 600; }
+  .b-ok { background: #dcfce7; color: #15803d; }
+  .b-new { background: #dbeafe; color: #1d4ed8; }
+  .b-no { background: #f1f5f9; color: #64748b; }
+  #flowsView { padding: 20px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 12.5px; }
+  th { background: #f8fafc; text-align: left; padding: 9px 12px; font-size: 12px; color: #475569; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; line-height: 1.55; }
+  td code { font-size: 11.5px; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; color: #334155; }
+  .legend-bar { position: absolute; right: 14px; top: 12px; background: rgba(255,255,255,.94); border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 11px; color: #475569; line-height: 1.8; width: 300px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .legend-bar b { font-size: 11.5px; color: #1e293b; }
+  .legend-bar .li { display: flex; align-items: center; gap: 6px; }
+  .legend-bar .li i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .legend-bar .li i.l5 { border: 1.5px solid #64748b; background: #f8fafc; }
+  .back { margin-bottom: 10px; }
+  .statline { font-size: 12.5px; color: #475569; margin-bottom: 14px; }
+  #filterBar { position: sticky; top: 0; z-index: 6; background: rgba(255,255,255,.97); border-bottom: 1px solid #e2e8f0; padding: 8px 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; }
+  #filterBar .lbl { color: #64748b; font-weight: 700; }
+  #filterBar .chip { padding: 3px 10px; border-radius: 999px; font-size: 12px; }
+  #filterBar select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; font-size: 12px; background: #fff; color: #334155; }
+  #filterBar .sep { width: 1px; height: 16px; background: #e2e8f0; }
+  #subStats { color: #1d4ed8; font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <h1>图谱入图编辑器<small>第一阶段业务流程 · 数据来源与节点关系（节点 / 关系 / 来源均可编辑）</small></h1>
+  <div class="btns">
+    <button id="tabGraph" class="on">图谱画布</button>
+    <button id="tabFlows">业务流程清单</button>
+    <span style="width:1px;height:20px;background:#e2e8f0"></span>
+    <button id="btnExport">导出 JSON</button>
+    <button id="btnImport">导入 JSON</button>
+    <input type="file" id="fileImport" hidden accept=".json">
+    <button id="btnReset">恢复默认</button>
+  </div>
+</header>
+<main>
+  <aside id="panel"></aside>
+  <section id="view">
+    <div id="filterBar" hidden>
+      <span class="lbl">权限子图（来源）</span>
+      <button class="chip on" data-g="all">全部</button>
+      <button class="chip" data-g="知识体系">知识体系</button>
+      <button class="chip" data-g="能力图谱">能力图谱</button>
+      <button class="chip" data-g="标准库">标准库</button>
+      <button class="chip" data-g="内容层">内容层</button>
+      <button class="chip" data-g="快照层">快照层</button>
+      <span class="sep"></span>
+      <span class="lbl">场景子图</span>
+      <select id="sceneSel">
+        <option value="">不限</option>
+        <option value="岗位准备">岗位准备 · 岗位→能力→技能</option>
+        <option value="课程教学">课程教学 · 课程→任务→技能→资源</option>
+        <option value="赛证对照">赛证对照 · 赛项/证书→能力/知识点</option>
+        <option value="学情达成">学情达成 · 快照→技能/知识点</option>
+      </select>
+      <span class="sep"></span>
+      <span class="lbl">自定义子图（起点展开）</span>
+      <select id="focusSel"><option value="">选起点节点</option></select>
+      <select id="depthSel">
+        <option value="1">1 度</option>
+        <option value="2" selected>2 度</option>
+        <option value="3">3 度</option>
+      </select>
+      <button id="btnClearF">清除筛选</button>
+      <span id="subStats"></span>
+    </div>
+    <div id="graphWrap">
+      <div class="legend-bar" id="legendBar"></div>
+      <svg id="canvas" width="1500" height="960" viewBox="0 0 1500 960"></svg>
+    </div>
+    <div id="flowsView" hidden></div>
+  </section>
+</main>
+<script>
+'use strict';
+/* ═══════════ 类型与关系定义（配色沿用全景图谱 / 知识体系详情页） ═══════════ */
+var TYPES = [
+  { t:'专业大类', c:'#5149e9', r:11, g:'知识体系' },
+  { t:'专业',     c:'#f59e0b', r:9,  g:'知识体系' },
+  { t:'课程分类', c:'#22c55e', r:8,  g:'知识体系' },
+  { t:'课程',     c:'#722ed1', r:11, g:'知识体系' },
+  { t:'任务',     c:'#fa8c16', r:9,  g:'知识体系' },
+  { t:'技能',     c:'#1890ff', r:8,  g:'知识体系' },
+  { t:'知识点',   c:'#52c41a', r:7,  g:'知识体系' },
+  { t:'细化知识点', c:'#eb2f96', r:6, g:'知识体系' },
+  { t:'岗位',     c:'#0e9f9f', r:11, g:'能力图谱' },
+  { t:'能力项',   c:'#5cdbd3', r:8,  g:'能力图谱' },
+  { t:'考核要求', c:'#ff9c6e', r:6,  g:'能力图谱' },
+  { t:'赛项',     c:'#c72c2a', r:10, g:'标准库' },
+  { t:'证书',     c:'#d48806', r:10, g:'标准库' },
+  { t:'备课资源', c:'#13c2c2', r:9,  g:'内容层' },
+  { t:'掌握度快照', c:'#f8fafc', r:9, g:'快照层', l5:true }
+];
+function typeOf(t){ for (var i=0;i<TYPES.length;i++) if (TYPES[i].t===t) return TYPES[i]; return TYPES[5]; }
+/* 关系：solid=随版本发布的结构边；dash=推导/挂载/快照（不入版本）；warn=预留门禁 */
+var RELS = {
+  'CONTAINS':          { c:'#64748b', dash:false, zh:'包含',       note:'来源内部层级（父→子）' },
+  'REQUIRES':          { c:'#64748b', dash:false, zh:'岗位要求',   note:'岗位要求能力项' },
+  'MAPS_TO':           { c:'#2563eb', dash:false, zh:'能力映射',   note:'能力项↔技能映射（仅已审核）' },
+  '标准对应':           { c:'#f97316', dash:false, zh:'标准对应',   note:'考核要求→能力项' },
+  'SUPPORTS':          { c:'#94a3b8', dash:true,  zh:'课程支撑',   note:'课程→能力项（由 MAPS_TO 推导）' },
+  'MOUNTED_ON':        { c:'#94a3b8', dash:true,  zh:'资源挂载',   note:'备课资源挂载（内容层，不随版本）；规则：所有资源至少挂 1 个能力点，教案只对应 1 个任务' },
+  'SNAPSHOT_OF':       { c:'#94a3b8', dash:true,  zh:'快照指向',   note:'掌握度/覆盖快照（L5 只读上图）' },
+  'SAFETY_CONSTRAINT': { c:'#f59e0b', dash:true,  zh:'安全约束',   note:'安全知识点约束任务（发布硬门禁，预留）' },
+  'PRE_REQUIRES':      { c:'#f59e0b', dash:true,  zh:'前置要求',   note:'知识点前置（学习路径，预留）' },
+  'ASSEMBLED_FROM':    { c:'#a855f7', dash:true,  zh:'拼装能力点', note:'技能拼装能力点（二期预留）' }
+};
+function relOf(r){ return RELS[r] || RELS['CONTAINS']; }
+
+/* ═══════════ 分区底图（视觉引导，不参与编辑 / 导出） ═══════════ */
+var ZONES = [
+  { label:'知识体系 · L2 结构（随版本）',     x:30,  y:40,  w:310,  h:800, fill:'#eef4ff', lc:'#5b7fd4' },
+  { label:'能力图谱 · L2 结构（随版本）',     x:400, y:40,  w:240,  h:560, fill:'#edfaf7', lc:'#3aa08f' },
+  { label:'标准库 · 待真实入图（mock）',      x:680, y:40,  w:300,  h:380, fill:'#fdf3f2', lc:'#c2746f' },
+  { label:'内容层 · L3 资源挂载（不随版本）', x:680, y:470, w:300,  h:340, fill:'#eef9ff', lc:'#4a9fc7' },
+  { label:'快照层 · L5 只读回流（不入版本）', x:30,  y:855, w:1450, h:90,  fill:'#f6f7f9', lc:'#8a94a6' }
+];
+
+/* ═══════════ 默认图谱数据（第一阶段闭环最小全图） ═══════════ */
+var DEFAULT = {
+  nodes: [
+    { id:'n1',  type:'专业大类', name:'旅游大类', src:'知识体系 Excel → build_kmap.py 构建', x:185, y:95 },
+    { id:'n2',  type:'专业', name:'导游专业', src:'知识体系 Excel → build_kmap.py 构建', note:'教学层裁定：专业入图（L2 结构层，随版本发布）', x:185, y:190 },
+    { id:'n3',  type:'课程分类', name:'专业核心课程', src:'知识体系 Excel → 构建入库', x:185, y:285 },
+    { id:'n4',  type:'课程', name:'导游业务', src:'教务管理·课程管理（edu-base.html，批2 关联体系）', note:'教学层裁定：课程入图（L2）——关联体系后即体系课程节点；教务属性（学时/考核方式/开课学期）不入图', x:185, y:385 },
+    { id:'n5',  type:'任务', name:'地陪讲解实训', src:'知识体系 Excel → assess-data.js', x:185, y:485 },
+    { id:'n6',  type:'技能', name:'景点讲解', src:'assess-data.js 知识体系技能库', x:185, y:590 },
+    { id:'n7',  type:'技能', name:'应急处置', src:'assess-data.js 知识体系技能库', x:300, y:545 },
+    { id:'n8',  type:'知识点', name:'喀斯特地貌', src:'知识体系·知识点（含名称/类型/核心内容）', x:250, y:690 },
+    { id:'n9',  type:'知识点', name:'天气与安全须知', src:'知识体系·知识点（含名称/类型/核心内容）', x:85, y:690 },
+    { id:'n19', type:'细化知识点', name:'溶洞形成过程', src:'老师个人补充 → 课程负责人审核 → 共享（个人范围不进版本，共享的进本专业全景版本）', x:250, y:780 },
+    { id:'n10', type:'岗位', name:'导游', src:'raw-data/19岗位备份.py → build_kmap.py', x:520, y:110 },
+    { id:'n11', type:'能力项', name:'景点讲解', src:'19岗位能力项 → 构建入库', x:520, y:300 },
+    { id:'n12', type:'能力项', name:'带团应急', src:'19岗位能力项 → 构建入库', x:520, y:480 },
+    { id:'n13', type:'考核要求', name:'讲解服务规范', src:'标准库（当前 mock）', x:750, y:130 },
+    { id:'n14', type:'备课资源', name:'课件《地陪讲解》', src:'备课工作台 workbench.html（批4 · 携带 skillIds）', note:'教学层裁定：教学资源入图（L3 内容层挂载）——资源节点不随版本；课次/课次任务/老师/班级/学生/提交/评价均不入图（L4 事务）', x:760, y:560 },
+    { id:'n17', type:'证书', name:'1+X 研学旅行', src:'标准库（mock，待真实入图）', x:900, y:300 },
+    { id:'n18', type:'赛项', name:'导游服务赛项', src:'标准库（mock，待真实入图）', x:900, y:110 },
+    { id:'n15', type:'掌握度快照', name:'技能达成 · 景点讲解', src:'teacher-tasks 学情统计（批6 · 只读上图）', x:185, y:890 },
+    { id:'n16', type:'掌握度快照', name:'课程技能覆盖缺口 · 导游业务', src:'teach-quality 覆盖统计（批6 · 只读上图）', x:620, y:890 }
+  ],
+  edges: [
+    { id:'e1',  from:'n1',  to:'n2',  rel:'CONTAINS' },
+    { id:'e2',  from:'n2',  to:'n3',  rel:'CONTAINS' },
+    { id:'e3',  from:'n3',  to:'n4',  rel:'CONTAINS' },
+    { id:'e4',  from:'n4',  to:'n5',  rel:'CONTAINS' },
+    { id:'e5',  from:'n5',  to:'n6',  rel:'CONTAINS' },
+    { id:'e6',  from:'n6',  to:'n8',  rel:'CONTAINS' },
+    { id:'e7',  from:'n6',  to:'n9',  rel:'CONTAINS' },
+    { id:'e8',  from:'n10', to:'n11', rel:'REQUIRES' },
+    { id:'e9',  from:'n10', to:'n12', rel:'REQUIRES' },
+    { id:'e10', from:'n11', to:'n6',  rel:'MAPS_TO' },
+    { id:'e11', from:'n12', to:'n7',  rel:'MAPS_TO' },
+    { id:'e12', from:'n4',  to:'n11', rel:'SUPPORTS' },
+    { id:'e13', from:'n14', to:'n6',  rel:'MOUNTED_ON' },
+    { id:'e14', from:'n17', to:'n8',  rel:'MAPS_TO', mock:true },
+    { id:'e15', from:'n18', to:'n11', rel:'MAPS_TO', mock:true },
+    { id:'e16', from:'n9',  to:'n5',  rel:'SAFETY_CONSTRAINT' },
+    { id:'e17', from:'n15', to:'n6',  rel:'SNAPSHOT_OF' },
+    { id:'e18', from:'n16', to:'n4',  rel:'SNAPSHOT_OF' },
+    { id:'e19', from:'n8',  to:'n19', rel:'CONTAINS' }
+  ]
+};
+
+/* ═══════════ 业务流程 → 入图信息清单 ═══════════ */
+var FLOWS = [
+  { flow:'图谱中心 · 能力图谱建模', data:'岗位 / 能力项 / 能力要求', src:'raw-data/19岗位备份.py → build_kmap.py', st:'ok', layer:'L2 结构（随版本）', rel:'岗位 REQUIRES→ 能力项；考核要求 标准对应→ 能力项' },
+  { flow:'图谱中心 · 知识体系建模', data:'专业大类 / 专业 / 课程分类 / 课程 / 任务 / 技能 / 知识点', src:'知识体系 Excel → build_kmap.py + assess-data.js', st:'ok', layer:'L2 结构（随版本）', rel:'七层 CONTAINS 链' },
+  { flow:'批2 · 课程关联知识体系', data:'课程↔体系关联（接管 / 回落 / 补选）', src:'edu-base.html + knowledge-system.html', st:'ok', layer:'L2 结构关系', rel:'课程节点挂接体系；课程 SUPPORTS→ 能力项（推导）' },
+  { flow:'批1 · 排课 / 节次时间', data:'课次、节次时间', src:'course-plan.html / edu-base 节次管理', st:'no', layer:'L4 事务（不入图）', rel:'无（课次仅归属课程）' },
+  { flow:'批3 · 智慧课堂框架', data:'课程空间 / 课堂记录', src:'teacher-tasks.html', st:'no', layer:'L4 事务（不入图）', rel:'无' },
+  { flow:'组织与身份 · 老师 / 班级 / 学生', data:'账号身份、班级、授课关系（谁教哪个班）', src:'common.js 身份体系 / edu-base 班级管理', st:'no', layer:'L4 事务（不入图）', rel:'无——「老师授课 / 学生选课」存关系库；人不是图谱节点，只作为快照的属性出现（如：某技能达成快照属于某学生）' },
+  { flow:'批4 · 备课', data:'备课资源 + skillIds（资源带技能）', src:'workbench.html（能力地图带入备课）', st:'ok', layer:'L3 内容（挂载，不随版本）', rel:'资源 MOUNTED_ON→ 技能' },
+  { flow:'批5 · 发布任务', data:'publish.task.skillIds / kpIds / kpSnap 快照', src:'teacher-tasks.html 发布弹窗（确认考查技能与知识点）', st:'new', layer:'L5 快照引用', rel:'任务快照 SNAPSHOT_OF→ 技能 / 知识点' },
+  { flow:'批5 · 评价与学习证据', data:'学习证据（技能，最近一次通过）', src:'teacher-tasks.html 评价', st:'no', layer:'L4 事务（不入图）', rel:'无' },
+  { flow:'批6 · 学情统计', data:'技能达成 / 知识点掌握（当前值）', src:'teacher-tasks.html / student-growth.html', st:'new', layer:'L5 快照（只读上图）', rel:'快照 SNAPSHOT_OF→ 技能 / 知识点' },
+  { flow:'批6 · 课程覆盖 / 改进建议', data:'课程技能覆盖、覆盖缺口', src:'teach-quality.html', st:'new', layer:'L5 快照（只读上图）', rel:'缺口 SNAPSHOT_OF→ 课程' },
+  { flow:'批6 · 补训', data:'补训课次（targets 指向技能）', src:'teacher-tasks.html 发起补训', st:'no', layer:'L4 事务（不入图）', rel:'补训课次回指技能（展示层叠加）' },
+  { flow:'批7 · 管理端测评', data:'能力项达成', src:'assess.html', st:'new', layer:'L5 快照（只读上图）', rel:'能力达成 SNAPSHOT_OF→ 能力项（经 MAPS_TO 聚合）' },
+  { flow:'图谱建议审核（反哺）', data:'老师贡献：新增 / 改名 / 映射建议', src:'graph-suggest.js + suggest-review.html', st:'ok', layer:'L2（经采纳发布）', rel:'采纳后新增 CONTAINS / MAPS_TO 边' },
+  { flow:'老师个人补充 · 细化知识点', data:'细化知识点（实时可见，待发布固化）', src:'knowledge-graph-view.html / pano-mine.js', st:'ok', layer:'L2 预发布态', rel:'CONTAINS→ 知识点' }
+];
+
+/* ═══════════ 状态 ═══════════ */
+var KEY = 'graph_ingest_editor_v4';
+var DATA, sel = null; /* sel: {kind:'node'|'edge', id} */
+function load(){
+  try { var raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT));
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(DATA)); }
+function nodeById(id){ for (var i=0;i<DATA.nodes.length;i++) if (DATA.nodes[i].id===id) return DATA.nodes[i]; return null; }
+function edgeById(id){ for (var i=0;i<DATA.edges.length;i++) if (DATA.edges[i].id===id) return DATA.edges[i]; return null; }
+function uid(p){ return p + Date.now().toString(36) + Math.floor(Math.random()*99); }
+DATA = load();
+
+/* ═══════════ 子图筛选（对应方案第 6 节：权限 / 场景 / 自定义三类子图） ═══════════ */
+var SCENES = {
+  '岗位准备': ['岗位', '能力项', '考核要求', '技能'],
+  '课程教学': ['课程', '任务', '技能', '备课资源', '知识点'],
+  '赛证对照': ['赛项', '证书', '能力项', '知识点'],
+  '学情达成': ['掌握度快照', '技能', '知识点', '课程']
+};
+var FILTER = { sources: [], scene: null, focusId: null, focusDepth: 2 };
+var focusSet = null;
+function computeFocus(){
+  if (!FILTER.focusId) { focusSet = null; return; }
+  var adj = {};
+  DATA.edges.forEach(function(e){
+    (adj[e.from] = adj[e.from] || []).push(e.to);
+    (adj[e.to] = adj[e.to] || []).push(e.from);
+  });
+  var seen = {}; seen[FILTER.focusId] = true;
+  var frontier = [FILTER.focusId];
+  for (var d = 0; d < FILTER.focusDepth; d++) {
+    var next = [];
+    frontier.forEach(function(id){ (adj[id]||[]).forEach(function(t){ if (!seen[t]) { seen[t] = true; next.push(t); } }); });
+    frontier = next;
+  }
+  focusSet = seen;
+}
+function visOf(n){
+  if (FILTER.sources.length && FILTER.sources.indexOf(typeOf(n.type).g) < 0) return false;
+  if (FILTER.scene && SCENES[FILTER.scene].indexOf(n.type) < 0) return false;
+  if (FILTER.focusId && !(focusSet && focusSet[n.id])) return false;
+  return true;
+}
+function updateStats(){
+  var el = document.getElementById('subStats'); if (!el) return;
+  if (!FILTER.sources.length && !FILTER.scene && !FILTER.focusId) { el.textContent = '当前：全图 ' + DATA.nodes.length + ' 节点 · ' + DATA.edges.length + ' 边'; return; }
+  var visIds = {}, vis = 0, m = 0, adjN = {};
+  DATA.nodes.forEach(function(n){ if (visOf(n)) { visIds[n.id] = 1; vis++; } });
+  DATA.edges.forEach(function(e){
+    if (visIds[e.from] && visIds[e.to]) m++;
+    else if (visIds[e.from]) adjN[e.to] = 1;
+    else if (visIds[e.to]) adjN[e.from] = 1;
+  });
+  var k = Object.keys(adjN).length;
+  el.textContent = '当前子图 ' + vis + ' 节点 · ' + m + ' 边' + (k ? ' · 另有 ' + k + ' 个关联节点不在范围' : '');
+}
+
+/* ═══════════ 画布渲染 ═══════════ */
+var COLORS = ['#64748b','#2563eb','#f97316','#94a3b8','#f59e0b','#a855f7'];
+/* 曲率方向按边 id 稳定取值，避免每次渲染抖动 */
+function bowSign(e){
+  var h = 0;
+  for (var i=0;i<e.id.length;i++) h = (h*31 + e.id.charCodeAt(i))|0;
+  return (h & 1) ? 1 : -1;
+}
+function render(){
+  var svg = document.getElementById('canvas');
+  var mk = COLORS.map(function(c,i){ return '<marker id="m'+i+'" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="'+c+'"/></marker>'; }).join('');
+  var s = '<defs>'+mk+'</defs>';
+  /* 分区底图 */
+  ZONES.forEach(function(z){
+    s += '<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" rx="14" fill="'+z.fill+'"/>'
+      + '<text x="'+(z.x+14)+'" y="'+(z.y+21)+'" font-size="11" font-weight="700" letter-spacing="1" fill="'+z.lc+'">'+esc(z.label)+'</text>';
+  });
+  /* 边（二次贝塞尔曲线，长度越长弯得越大，避免直穿其他节点）；子图外的边淡化 */
+  DATA.edges.forEach(function(e){
+    var a = nodeById(e.from), b = nodeById(e.to); if (!a || !b) return;
+    var R = relOf(e.rel);
+    var ci = COLORS.indexOf(R.c); if (ci<0) ci=0;
+    var isSel = sel && sel.kind==='edge' && sel.id===e.id;
+    var dim = !(visOf(a) && visOf(b));
+    var dx = b.x-a.x, dy = b.y-a.y;
+    var len = Math.sqrt(dx*dx+dy*dy) || 1;
+    var bow = Math.min(70, Math.max(12, len*0.12)) * bowSign(e);
+    var cx = (a.x+b.x)/2 - dy/len*bow, cy = (a.y+b.y)/2 + dx/len*bow;
+    var lx = (a.x + 2*cx + b.x)/4, ly = (a.y + 2*cy + b.y)/4;
+    s += '<g data-kind="edge" data-id="'+e.id+'"'+(dim?' opacity="0.12"':'')+' style="cursor:pointer">'
+      + '<path d="M'+a.x+','+a.y+' Q'+cx+','+cy+' '+b.x+','+b.y+'" fill="none" stroke="'+R.c+'" stroke-width="'+(isSel?2.8:1.6)+'"'
+      + ((R.dash||e.mock)?' stroke-dasharray="6 4"':'')+' marker-end="url(#m'+ci+')"/>'
+      + '<text x="'+lx+'" y="'+(ly-3)+'" font-size="10.5" font-weight="700" fill="'+R.c+'" text-anchor="middle" style="paint-order:stroke" stroke="#fff" stroke-width="3">'+R.zh+(e.mock?'（mock）':'')+'</text>'
+      + '<text x="'+lx+'" y="'+(ly+9)+'" font-size="8.5" fill="#94a3b8" text-anchor="middle" style="paint-order:stroke" stroke="#fff" stroke-width="3">'+e.rel+'</text></g>';
+  });
+  /* 节点（外圈同色光晕 + 白描边）；子图外的节点淡化 */
+  DATA.nodes.forEach(function(n){
+    var T = typeOf(n.type), isSel = sel && sel.kind==='node' && sel.id===n.id;
+    var fill = T.l5 ? '#f8fafc' : T.c;
+    var ring = T.l5 ? '#64748b' : '#ffffff';
+    var dim = !visOf(n);
+    s += '<g data-kind="node" data-id="'+n.id+'"'+(dim?' opacity="0.12"':'')+' style="cursor:grab">'
+      + (isSel?'<circle cx="'+n.x+'" cy="'+n.y+'" r="'+(T.r+5)+'" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3"/>':'')
+      + '<circle cx="'+n.x+'" cy="'+n.y+'" r="'+(T.r+5)+'" fill="'+fill+'" opacity="0.16"/>'
+      + '<circle cx="'+n.x+'" cy="'+n.y+'" r="'+T.r+'" fill="'+fill+'" stroke="'+ring+'" stroke-width="1.5"/>'
+      + '<text x="'+n.x+'" y="'+(n.y+T.r+13)+'" font-size="11.5" font-weight="600" fill="#1e293b" text-anchor="middle" style="paint-order:stroke" stroke="#fff" stroke-width="3">'+esc(n.name)+'</text>'
+      + (n.src?'<text x="'+n.x+'" y="'+(n.y+T.r+26)+'" font-size="9" fill="#94a3b8" text-anchor="middle" style="paint-order:stroke" stroke="#fff" stroke-width="3">'+esc(n.src.length>22?n.src.slice(0,22)+'…':n.src)+'</text>':'')
+      + '</g>';
+  });
+  svg.innerHTML = s;
+  updateStats();
+}
+function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* 拖拽与选中 */
+var drag = null;
+document.getElementById('canvas').addEventListener('pointerdown', function(ev){
+  var g = ev.target.closest('g'); 
+  if (!g || !g.dataset.id) { sel = null; render(); renderPanel(); return; }
+  var n = g.dataset.kind==='node' ? nodeById(g.dataset.id) : null;
+  sel = { kind: g.dataset.kind, id: g.dataset.id };
+  if (n) drag = { id: n.id, dx: n.x - ev.offsetX, dy: n.y - ev.offsetY, moved:false };
+  render(); renderPanel();
+});
+document.getElementById('canvas').addEventListener('pointermove', function(ev){
+  if (!drag) return;
+  var n = nodeById(drag.id); if (!n) return;
+  n.x = Math.max(20, Math.min(1480, ev.offsetX + drag.dx));
+  n.y = Math.max(20, Math.min(940, ev.offsetY + drag.dy));
+  drag.moved = true; render();
+});
+document.getElementById('canvas').addEventListener('pointerup', function(){
+  if (drag && drag.moved) { save(); renderPanel(); }
+  drag = null;
+});
+
+/* ═══════════ 侧栏（列表 / 编辑表单） ═══════════ */
+function renderPanel(){
+  var p = document.getElementById('panel'), h = '';
+  if (sel && sel.kind==='node') {
+    var n = nodeById(sel.id);
+    if (n) {
+      h += '<button class="back" id="pBack">← 返回列表</button><div class="ptitle">编辑节点</div>'
+        + fInput('fName','名称',n.name)
+        + '<div class="f"><label>节点类型</label><select id="fType">'+TYPES.map(function(t){return '<option'+(t.t===n.type?' selected':'')+'>'+t.t+'</option>';}).join('')+'</select></div>'
+        + fInput('fSrc','数据来源（页面 / 脚本 / 存储）',n.src||'')
+        + '<div class="f"><label>备注</label><textarea id="fNote">'+esc(n.note||'')+'</textarea></div>'
+        + '<div style="font-size:11px;color:#94a3b8;margin-bottom:10px">坐标 ('+Math.round(n.x)+', '+Math.round(n.y)+')——画布上直接拖动调整</div>'
+        + '<div class="row"><button class="primary" id="pDone">完成</button><button class="danger" id="pDelNode">删除节点</button></div>'
+        + '<div class="row" style="margin-top:8px"><button id="pFocus">◎ 以此为起点展开子图</button></div>';
+    }
+  } else if (sel && sel.kind==='edge') {
+    var e = edgeById(sel.id);
+    if (e) {
+      var opt = function(v){ return DATA.nodes.map(function(n){ return '<option value="'+n.id+'"'+(n.id===v?' selected':'')+'>'+esc(n.name+' · '+n.type)+'</option>'; }).join(''); };
+      h += '<button class="back" id="pBack">← 返回列表</button><div class="ptitle">编辑关系</div>'
+        + '<div class="f"><label>起点（from）</label><select id="eFrom">'+opt(e.from)+'</select></div>'
+        + '<div class="f"><label>终点（to）</label><select id="eTo">'+opt(e.to)+'</select></div>'
+        + '<div class="f"><label>关系类型</label><select id="eRel">'+Object.keys(RELS).map(function(r){return '<option'+(r===e.rel?' selected':'')+'>'+r+' · '+RELS[r].zh+'</option>';}).join('')+'</select></div>'
+        + '<div class="hint" style="margin:0 0 10px"><b>'+esc(e.rel)+'</b>（'+esc((relOf(e.rel)).zh)+'）：'+esc((relOf(e.rel)).note||'')+'</div>'
+        + '<div class="f"><label>备注（如：mock / 预留 / 已审核）</label><input id="eNote" value="'+esc(e.note||'')+'"></div>'
+        + '<div class="row"><button class="primary" id="pDone">完成</button><button class="danger" id="pDelEdge">删除关系</button></div>';
+    }
+  } else {
+    /* 列表视图 */
+    h += '<div class="hint">画布操作：<b>拖动节点</b>调位置，<b>点击节点 / 关系</b>进入编辑。底色分区对应五层模型（L2 结构 / L3 挂载 / L5 快照），节点可在分区间自由拖动；曲线曲率按边固定，长边自动弯开避开节点。图例见画布右上角。<br><b>教学层入图裁定</b>：专业 ✓ L2、课程 ✓ L2（关联体系后同节点）、教学资源 △ L3 挂载；课次 / 课次任务 / 老师 / 班级 / 学生 / 提交作业 / 评价 ✗ 不入图（L4 事务）。<br>判据口诀：只在<b>人工修订发布</b>时变的→L2；随<b>资源</b>变的→L3；随<b>评价和时间</b>变的→L4 / L5。</div>'
+      + '<div class="row" style="margin-bottom:12px"><button class="primary" id="pAddNode">＋ 新增节点</button><button id="pAddEdge">＋ 新增关系</button></div>'
+      + '<div class="ptitle">节点（'+DATA.nodes.length+'）</div><div class="list">';
+    DATA.nodes.forEach(function(n){
+      h += '<div class="item" data-kind="node" data-id="'+n.id+'"><span class="dot'+(typeOf(n.type).l5?' l5':'')+'" style="background:'+(typeOf(n.type).l5?'#f8fafc':typeOf(n.type).c)+'"></span>'+esc(n.name)+'<small>'+n.type+'</small></div>';
+    });
+    h += '</div><div class="ptitle">关系（'+DATA.edges.length+'）</div><div class="list">';
+    DATA.edges.forEach(function(e){
+      var a = nodeById(e.from), b = nodeById(e.to); if (!a||!b) return;
+      h += '<div class="item" data-kind="edge" data-id="'+e.id+'"><span style="color:'+(relOf(e.rel)).c+';font-weight:700">—</span>'+e.rel+'（'+(relOf(e.rel)).zh+'）<small>'+esc(a.name+' → '+b.name)+'</small></div>';
+    });
+    h += '</div>';
+  }
+  p.innerHTML = h;
+  bindPanel();
+}
+function fInput(id,label,val){ return '<div class="f"><label>'+label+'</label><input id="'+id+'" value="'+esc(val)+'"></div>'; }
+function bindPanel(){
+  var q = function(id){ return document.getElementById(id); };
+  if (q('pBack')) q('pBack').onclick = function(){ sel=null; render(); renderPanel(); };
+  if (q('pAddNode')) q('pAddNode').onclick = function(){
+    var n = { id:uid('n'), type:'技能', name:'新节点', src:'', x:700+Math.random()*200, y:400+Math.random()*200 };
+    DATA.nodes.push(n); sel={kind:'node',id:n.id}; save(); render(); renderPanel();
+  };
+  if (q('pAddEdge')) q('pAddEdge').onclick = function(){
+    if (DATA.nodes.length<2) return;
+    DATA.edges.push({ id:uid('e'), from:DATA.nodes[0].id, to:DATA.nodes[1].id, rel:'CONTAINS' });
+    sel={kind:'edge', id:DATA.edges[DATA.edges.length-1].id}; save(); render(); renderPanel();
+  };
+  if (q('fName')) q('fName').oninput = function(){ var n=nodeById(sel.id); n.name=q('fName').value; save(); render(); };
+  if (q('fType')) q('fType').onchange = function(){ var n=nodeById(sel.id); n.type=q('fType').value; save(); render(); renderPanel(); };
+  if (q('fSrc')) q('fSrc').oninput = function(){ var n=nodeById(sel.id); n.src=q('fSrc').value; save(); render(); };
+  if (q('fNote')) q('fNote').oninput = function(){ nodeById(sel.id).note=q('fNote').value; save(); };
+  if (q('eFrom')) q('eFrom').onchange = function(){ edgeById(sel.id).from=q('eFrom').value; save(); render(); };
+  if (q('eTo')) q('eTo').onchange = function(){ edgeById(sel.id).to=q('eTo').value; save(); render(); };
+  if (q('eRel')) q('eRel').onchange = function(){ edgeById(sel.id).rel=q('eRel').value.split(' · ')[0]; save(); render(); renderPanel(); };
+  if (q('eNote')) q('eNote').oninput = function(){ edgeById(sel.id).note=q('eNote').value; save(); };
+  if (q('pFocus')) q('pFocus').onclick = function(){ var id = sel.id; sel = null; focusOn(id); renderPanel(); };
+  if (q('pDelNode')) q('pDelNode').onclick = function(){
+    if (!confirm('删除该节点及其关联的所有关系？')) return;
+    DATA.nodes = DATA.nodes.filter(function(n){ return n.id!==sel.id; });
+    DATA.edges = DATA.edges.filter(function(e){ return e.from!==sel.id && e.to!==sel.id; });
+    sel=null; save(); render(); renderPanel();
+  };
+  if (q('pDelEdge')) q('pDelEdge').onclick = function(){
+    DATA.edges = DATA.edges.filter(function(e){ return e.id!==sel.id; });
+    sel=null; save(); render(); renderPanel();
+  };
+  /* 列表项点击 */
+  document.querySelectorAll('#panel .item').forEach(function(it){
+    it.onclick = function(){ sel={kind:it.dataset.kind, id:it.dataset.id}; render(); renderPanel(); };
+  });
+}
+
+/* ═══════════ 图例 ═══════════ */
+function renderLegend(){
+  var h = '<b>节点类型</b><br>';
+  TYPES.forEach(function(t){
+    h += '<div class="li"><i class="'+(t.l5?'l5':'')+'" style="background:'+(t.l5?'#f8fafc':t.c)+'"></i>'+t.t+' · '+t.g+'</div>';
+  });
+  h += '<br><b>关系（中英对照）</b><br>';
+  Object.keys(RELS).forEach(function(r){
+    var R = RELS[r];
+    h += '<div class="li"><span style="display:inline-block;width:16px;border-top:2px '+ (R.dash?'dashed':'solid')+' '+R.c+'"></span><span>'+r+'<br><span style="color:#64748b;font-size:10.5px">'+R.zh+' — '+R.note+'</span></span></div>';
+  });
+  h += '<br><span style="color:#94a3b8">虚线＝不入版本（挂载/推导/快照/预留）</span>';
+  document.getElementById('legendBar').innerHTML = h;
+}
+
+/* ═══════════ 业务流程清单 ═══════════ */
+function renderFlows(){
+  var cnt = { ok:0, nw:0, no:0 };
+  FLOWS.forEach(function(f){ cnt[f.st]++; });
+  var badge = { ok:'<span class="badge b-ok">已入图</span>', nw:'<span class="badge b-new">建议新增入图</span>', no:'<span class="badge b-no">不入图</span>' };
+  var h = '<div class="statline">第一阶段 8 个批次 + 2 条图谱侧流程，共 '+FLOWS.length+' 条业务流程：<b style="color:#15803d">'+cnt.ok+' 条已入图</b> · <b style="color:#1d4ed8">'+cnt.nw+' 条建议新增（均为 L5 只读快照）</b> · '+cnt.no+' 条不入图（L4 事务层，与整体规划一致）</div>'
+    + '<table><tr><th>业务流程</th><th>产生的数据</th><th>数据来源</th><th>入图判定</th><th>图层</th><th>节点关系（边）</th></tr>';
+  FLOWS.forEach(function(f){
+    h += '<tr><td><b>'+f.flow+'</b></td><td>'+f.data+'</td><td><code>'+f.src+'</code></td><td>'+badge[f.st]+'</td><td>'+f.layer+'</td><td>'+f.rel+'</td></tr>';
+  });
+  h += '</table><div class="statline" style="margin-top:14px">结论：改图谱结构的流程只有 5 个（两条图谱侧建模 + 课程关联 + 建议审核 + 个人补充），全部经「同步→草稿→发布」才对全专业生效；教学侧流程不写图谱结构，其价值通过 <b>资源挂载（L3）</b>与<b>只读快照（L5）</b>呈现——「建议新增入图」的 4 条正是当前原型缺失的部分，画布中已用灰色空心节点和虚线预置，可直接在其上编辑完善。</div>'
+    + '<div class="statline"><b>教学层实体入图裁定</b>（10 个实体）：专业 ✓ L2、课程 ✓ L2（关联知识体系后即体系课程节点，教务属性不入）、教学资源 △ L3 挂载节点（不随版本）；课次 / 课次任务 / 老师 / 班级 / 学生 / 提交作业 / 评价 ✗ 不入图（L4 事务）——发布任务的 skillIds / kpIds 快照走 L5（SNAPSHOT_OF 指向技能 / 知识点），掌握度按学生统计但学生只是快照属性；「老师授课 / 学生选课」关系存关系库。</div>'
+    + '<div class="statline"><b>与《全景图谱版本管理与子图设计方案》v1.1 的对齐要点</b>：① 四部分登记制——来源 / 节点 / 关系 / 资源，全景图谱只自建「细化知识点」一类节点（画布 n19）；② 发布单元 = 专业，版本 = 骨架快照 + 来源清单；③ 被引用节点只停用不删除，同步失效关系自动下线、悬挂资源进悬挂资源池；④ 同步影响分析前提是节点 ID 稳定；⑤ 资源至少挂 1 个能力点、挂载实时生效不进版本；⑥ 子图分权限 / 场景 / 自定义三类，只存规则实时取数，可见 = 子图范围 ∩ 用户权限，默认跟随最新可锁定版本。</div>';
+  document.getElementById('flowsView').innerHTML = h;
+}
+
+/* ═══════════ 子图筛选交互 ═══════════ */
+function refreshFocusSel(){
+  var selEl = document.getElementById('focusSel');
+  var cur = FILTER.focusId || '';
+  selEl.innerHTML = '<option value="">选起点节点</option>' + DATA.nodes.map(function(n){
+    return '<option value="'+n.id+'"'+(n.id===cur?' selected':'')+'>'+esc(n.name+' · '+n.type)+'</option>';
+  }).join('');
+}
+document.querySelectorAll('#filterBar .chip').forEach(function(chip){
+  chip.onclick = function(){
+    var g = chip.dataset.g;
+    if (g === 'all') { FILTER.sources = []; }
+    else {
+      var i = FILTER.sources.indexOf(g);
+      if (i < 0) FILTER.sources.push(g); else FILTER.sources.splice(i, 1);
+    }
+    document.querySelectorAll('#filterBar .chip').forEach(function(c){
+      c.className = 'chip' + (c.dataset.g === 'all' ? (FILTER.sources.length ? '' : ' on') : (FILTER.sources.indexOf(c.dataset.g) >= 0 ? ' on' : ''));
+    });
+    render();
+  };
+});
+document.getElementById('sceneSel').onchange = function(){ FILTER.scene = this.value || null; render(); };
+document.getElementById('focusSel').onchange = function(){ FILTER.focusId = this.value || null; computeFocus(); render(); };
+document.getElementById('depthSel').onchange = function(){ FILTER.focusDepth = +this.value; computeFocus(); render(); };
+document.getElementById('btnClearF').onclick = function(){
+  FILTER = { sources: [], scene: null, focusId: null, focusDepth: 2 };
+  document.querySelectorAll('#filterBar .chip').forEach(function(c){ c.className = 'chip' + (c.dataset.g === 'all' ? ' on' : ''); });
+  document.getElementById('sceneSel').value = '';
+  refreshFocusSel();
+  computeFocus(); render();
+};
+function focusOn(id){
+  FILTER.focusId = id || null; FILTER.scene = null;
+  document.getElementById('sceneSel').value = '';
+  refreshFocusSel(); computeFocus(); render();
+}
+
+/* ═══════════ 顶栏 ═══════════ */
+function switchTab(isGraph){
+  document.getElementById('tabGraph').className = isGraph?'on':'';
+  document.getElementById('tabFlows').className = isGraph?'':'on';
+  document.getElementById('filterBar').hidden = !isGraph;
+  document.getElementById('graphWrap').hidden = !isGraph;
+  document.getElementById('flowsView').hidden = isGraph;
+}
+document.getElementById('tabGraph').onclick = function(){ switchTab(true); };
+document.getElementById('tabFlows').onclick = function(){ switchTab(false); };
+document.getElementById('btnExport').onclick = function(){
+  var blob = new Blob([JSON.stringify(DATA,null,2)], {type:'application/json'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'graph-design-phase1.json'; a.click(); URL.revokeObjectURL(a.href);
+};
+document.getElementById('btnImport').onclick = function(){ document.getElementById('fileImport').click(); };
+document.getElementById('fileImport').onchange = function(ev){
+  var f = ev.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    try {
+      var d = JSON.parse(r.result);
+      if (!d.nodes || !d.edges) throw 0;
+      DATA = d; sel=null; save(); render(); renderPanel();
+    } catch(e){ alert('JSON 格式不对：需要 { nodes:[], edges:[] }'); }
+  };
+  r.readAsText(f); ev.target.value='';
+};
+document.getElementById('btnReset').onclick = function(){
+  if (!confirm('恢复为默认图谱设计？当前编辑将丢失（建议先导出）。')) return;
+  localStorage.removeItem(KEY); DATA = JSON.parse(JSON.stringify(DEFAULT)); sel=null;
+  render(); renderPanel();
+};
+
+/* init */
+refreshFocusSel();
+render(); renderPanel(); renderLegend(); renderFlows();
+</script>
+</body>
+</html>

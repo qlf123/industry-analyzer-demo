@@ -69,6 +69,15 @@
 .ff input,.ff select,.ff textarea{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--card);color:var(--ink);width:100%;box-sizing:border-box}
 .ff textarea{min-height:72px;resize:vertical}
 .ff input:focus,.ff select:focus,.ff textarea:focus{outline:none;border-color:var(--brand)}
+.ss{position:relative}
+.ss .ss-in{padding-right:28px;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2399a1af' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center}
+.ss .ss-in:disabled{opacity:.6;cursor:not-allowed}
+.ss-dd{position:fixed;z-index:1000;max-height:260px;overflow:auto;background:var(--card);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--pop-shadow);padding:4px 0}
+.ss-dd button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 12px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ss-dd button small{color:var(--muted);margin-left:8px;font-size:11.5px}
+.ss-dd button:hover,.ss-dd button.on{background:var(--brand-soft)}
+.ss-dd button.sel{color:var(--brand-ink);font-weight:600}
+.ss-empty{padding:8px 12px;font-size:12px;color:var(--muted)}
 .ff .err{border-color:var(--crit)!important}
 .ff .lh{display:flex;align-items:center;gap:8px}
 .ff .lh .sp{flex:1}

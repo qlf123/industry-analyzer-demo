@@ -23,7 +23,7 @@
     var files = [];
     c.resIds.forEach(function (rid) {
       var r = S.resources.find(function (x) { return x.id === rid; }); if (!r) return;
-      r.files.forEach(function (f) { if (p.fileIds.indexOf(f.id) >= 0) files.push({ id: f.id, type: f.type, name: f.name, size: f.size, pack: r.name, learnedAt: learn[f.id] || '' }); });
+      r.files.forEach(function (f) { if (p.fileIds.indexOf(f.id) >= 0) { var ad = (p.adds || []).filter(function (x) { return x.fileIds.indexOf(f.id) >= 0; })[0]; files.push({ id: f.id, type: f.type, name: f.name, size: f.size, pack: r.name, learnedAt: learn[f.id] || '', addedAt: ad ? ad.at : '' }); } });   // addedAt：发布后追加下发的
     });
     var subs = [];
     if (sub) { (sub.history || []).forEach(function (h, i) { subs.push(attempt(h, i + 1)); }); if (sub.at) subs.push(attempt(sub, subs.length + 1)); }
@@ -32,7 +32,7 @@
     if (fb && !fb.overall) fb = Object.assign({ overall: Math.round((fb.scores['讲授内容'] + fb.scores['教学方式'] + fb.scores['互动体验'] + fb.scores['学习收获']) / 4), tags: [] }, fb);
     var pl = (S.plans || []).find(function (x) { return x.id === c.planId; });
     return { id: c.id, course: c.name, plan: pl ? pl.course : '', major: c.major, teacher: (pl && pl.teacher) || S.teacher || '老师', publishAt: p.at, due: sub ? p.task.due : '', status: st,
-      task: sub ? { name: p.task.name, desc: p.task.desc, modes: p.task.modes, criteria: p.task.criteria || [], skillIds: p.task.skillIds || [], kpIds: p.task.kpIds || [], kpCrit: p.task.kpCrit || null, aiReq: p.task.aiReq || '' } : null, files: files, submissions: subs,
+      task: sub ? { name: p.task.name, desc: p.task.desc, modes: p.task.modes, criteria: p.task.criteria || [], skillIds: p.task.skillIds || [], kpIds: p.task.kpIds || [], kpSnap: p.task.kpSnap || null, kpCrit: p.task.kpCrit || null, aiReq: p.task.aiReq || '' } : null, files: files, submissions: subs,
       evalSeen: !sub || sub.evalSeen !== false, feedbackOn: !!p.feedback, feedback: fb || null };
   }
   /* 当前学生的视图：{ name, klass, tasks, growth } */
@@ -83,11 +83,10 @@
       (c.submissions || []).forEach(function (sb) {
         if (sb.student !== who || !sb.teacher) return;
         (sb.teacher.items || []).forEach(function (it) {
-          var ks = ((K.skill[it.sid] || {}).kps) || [];
-          if (allow) ks = ks.filter(function (k) { return allow.indexOf(k.id) >= 0; });
+          var ks = TK.taskKps(t, it.sid);
           if (!ks.length) return;
           if (!last[it.sid] || sb.teacher.at >= last[it.sid].at)
-            last[it.sid] = { at: sb.teacher.at, marks: TK.itemKps(it, who, allow), ks: ks, tid: c.id, task: t.name, course: c.name };
+            last[it.sid] = { at: sb.teacher.at, marks: TK.itemKps(it, who, allow, t), ks: ks, tid: c.id, task: t.name, course: c.name };
         });
       });
     });
@@ -114,12 +113,12 @@
   }
   // 演示用 AI 初评：按提交内容是否完整，逐项给出等级，供老师在教师端确认或修改
   var AI_REASON = { '合格': '基本做到，细节和依据还需完善。', '需改进': '提交内容中没有体现该项要求。' };
-  function mockAi(items, modes, crit, who) {
+  function mockAi(items, modes, crit, who, task) {
     var types = items.map(function (x) { return x.type; }).filter(function (t, i, a) { return a.indexOf(t) === i; });
     var txt = items.filter(function (x) { return x.type === '文字'; }).map(function (x) { return x.text; }).join('');
     var full = items.length >= 2 || txt.length >= 50;
     var per = (crit || []).map(function (x, i) {
-      var g = full || i === 0 ? '合格' : '需改进', kps = TK.aiKpMarks(x.sid, g, who || ''), miss = (TK.kn().skill[x.sid] || { kps: [] }).kps.filter(function (k) { return kps[k.id] === 'miss'; }).map(function (k) { return k.name; });
+      var g = full || i === 0 ? '合格' : '需改进', kps = TK.aiKpMarks(x.sid, g, who || '', null, task), miss = TK.taskKps(task, x.sid).filter(function (k) { return kps[k.id] === 'miss'; }).map(function (k) { return k.name; });
       return { sid: x.sid, grade: g, reason: AI_REASON[g] + (miss.length ? '没有体现：' + miss.join('、') + '。' : ''), kps: kps };
     });
     return { result: per.length ? TK.overall(per) : full ? '合格' : '需改进', items: per, summary: '提交了' + types.join('、') + '，共 ' + items.length + ' 项内容。',
@@ -132,7 +131,7 @@
       var sub = c.submissions.find(function (x) { return x.student === who; }), t = c.publish.task, late = t.due < TK.fmt(new Date());
       var first = !sub.at;
       if (!first) { sub.history = sub.history || []; sub.history.push({ at: sub.at, late: !!sub.late, files: sub.files, teacher: sub.teacher }); }
-      Object.assign(sub, { status: '已提交', at: TK.fmt(new Date()), late: late, files: items, modes: items.map(function (x) { return x.type; }).filter(function (m, i, a) { return a.indexOf(m) === i; }), teacher: null, ai: t.ai ? mockAi(items, t.modes, t.criteria, who) : null, evalSeen: true });
+      Object.assign(sub, { status: '已提交', at: TK.fmt(new Date()), late: late, files: items, modes: items.map(function (x) { return x.type; }).filter(function (m, i, a) { return a.indexOf(m) === i; }), teacher: null, ai: t.ai ? mockAi(items, t.modes, t.criteria, who, t) : null, evalSeen: true });
       // 成长星只记第一次提交，退回后重新提交不重复计
       var stars = first ? (late ? STAR.submitLate : STAR.submit) : 0;
       if (first) TK.addStuGrowth(S, who, { type: '提交任务', target: t.name, desc: late ? '超时提交情景任务' : '正常提交情景任务', stars: stars, tid: cid });

@@ -1,5 +1,5 @@
 /* 标准图谱建议（localStorage graphSuggest.v1）：能力地图里老师把个人节点「提交到标准图谱」，
- * 图谱中心「标准图谱建议」由管理员 / 专业负责人审核：采纳（可改名）/ 退回（写原因）；采纳的进入待发布，发布后全校可见。
+ * 图谱中心「图谱建议审核」由管理员 / 专业负责人审核：采纳（可改名）/ 退回（写原因）；采纳的进入待发布，发布后全校可见。
  * 记录：{id, ref:{kind, key}, type, kind, name, desc, parentKey, parentType, chain[], target, targetName, tree, count, dup,
  *        reason, by, at, status: 待审核 | 已采纳 | 已退回 | 已发布, review:{by, at, note, rename}, publishedAt}
  *   ref.kind：manual（人工节点）/ gapskill（技能缺口加入的 AI 技能）/ ai（AI 细分节点）；tree：{type, kind, name, desc, children[]} */

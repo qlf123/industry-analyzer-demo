@@ -39,8 +39,27 @@
   /* 知识点掌握（只用于学情分析和补训，不进证据、不汇总到能力）：
      演示用 AI 标注——按该技能的评价等级和提交内容，标出没体现的知识点；老师确认评价时可改。 */
   function hash(str) { var h = 0; for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; return Math.abs(h); }
-  function aiKpMarks(sid, grade, student, allowIds) {
-    var x = kn().skill[sid], ks = (x && x.kps) || [], out = {};
+  /* 知识点快照：发布任务时把每个考查技能下勾选的知识点（名称、类型、核心内容）存进任务（task.kpSnap）；
+     之后学生作答、AI 初评、老师评价、学情和教学达成都按快照，知识体系后来改了也不影响已发布的任务。
+     没有快照的存量任务按知识体系实时取（再按 kpIds 过滤） */
+  function taskKps(task, sid) {
+    if (task && task.kpSnap && task.kpSnap[sid]) return task.kpSnap[sid];
+    var x = kn().skill[sid], ks = (x && x.kps) || [], ids = task && task.kpIds && task.kpIds.length ? task.kpIds : null;
+    return ids ? ks.filter(function (k) { return ids.indexOf(k.id) >= 0; }) : ks;
+  }
+  function taskSids(task) {
+    var out = [];
+    ((task && task.skillIds) || []).concat(((task && task.criteria) || []).map(function (x) { return x.sid; })).forEach(function (sid) { if (sid && out.indexOf(sid) < 0) out.push(sid); });
+    return out;
+  }
+  function snapKps(task) {
+    var o = {};
+    taskSids(task).forEach(function (sid) { var ks = taskKps({ kpIds: task.kpIds }, sid); if (ks.length) o[sid] = ks.map(function (k) { return { id: k.id, name: k.name, type: k.type || '', core: k.core || '' }; }); });
+    return o;
+  }
+  function taskKpGroups(task) { return taskSids(task).map(function (sid) { return { sid: sid, skill: skillName(sid), kps: taskKps(task, sid) }; }).filter(function (g) { return g.kps.length; }); }
+  function aiKpMarks(sid, grade, student, allowIds, task) {
+    var ks = task ? taskKps(task, sid) : ((kn().skill[sid] || {}).kps || []), out = {};
     if (allowIds && allowIds.length) ks = ks.filter(function (k) { return allowIds.indexOf(k.id) >= 0; });
     ks.forEach(function (k, i) {
       var miss = grade === '需改进' ? (hash(student + k.id) % 2 === 0 || i === 0) : grade === '合格' ? (ks.length > 1 && hash(student + k.id) % 3 === 0) : false;
@@ -50,20 +69,19 @@
   }
   // 一次老师评价里，某技能下各知识点的结果：老师确认过的优先，没有则用 AI 标注（存量数据）；
   // allowIds：本次任务发布时勾选的考查知识点（kpIds），有则只保留这些（不传 = 全部，兼容存量数据）
-  function itemKps(item, student, allowIds) {
-    var m = (item && item.kps) || (item ? aiKpMarks(item.sid, item.grade, student) : {});
+  function itemKps(item, student, allowIds, task) {
+    var m = (item && item.kps) || (item ? aiKpMarks(item.sid, item.grade, student, null, task) : {});
     if (!allowIds || !allowIds.length) return m;
     var out = {}; Object.keys(m).forEach(function (k) { if (allowIds.indexOf(k) >= 0) out[k] = m[k]; }); return out;
   }
-  function kpCount(skillIds, kpIds) { return kpIds && kpIds.length ? kpIds.length : kpsOf(skillIds).reduce(function (a, g) { return a + g.kps.length; }, 0); }
+  function kpCount(skillIds, kpIds, task) { if (task) return taskKpGroups(task).reduce(function (a, g) { return a + g.kps.length; }, 0); return kpIds && kpIds.length ? kpIds.length : kpsOf(skillIds).reduce(function (a, g) { return a + g.kps.length; }, 0); }
   // 知识点判定依据：发布时为每个考查知识点定一条「体现了什么算掌握」，默认取知识体系里该知识点的核心内容，老师可改；
   // 任务里存了（task.kpCrit）以任务为准，存量任务没有则用默认
   function kpCritDefault(k) { return k.core ? '作答中体现：' + k.core : '作答中能正确运用「' + k.name + '」'; }
   function kpCrit(task, k) { return (task && task.kpCrit && task.kpCrit[k.id]) || kpCritDefault(k); }
   // 判定依据列表（只读）：按技能分组，每个知识点一行
   function kpCritHTML(task) {
-    var gs = kpsOf((task && task.skillIds) || []), ids = task && task.kpIds && task.kpIds.length ? task.kpIds : null;
-    if (ids) gs = gs.map(function (g) { var k2 = g.kps.filter(function (k) { return ids.indexOf(k.id) >= 0; }); return k2.length ? { skill: g.skill, kps: k2 } : null; }).filter(function (g) { return g; });
+    var gs = task ? taskKpGroups(task) : [];
     if (!gs.length) return '';
     return gs.map(function (g) {
       return '<div style="font-size:12px;color:var(--muted);margin-top:6px">' + esc(g.skill) + '</div>' + g.kps.map(function (k) {
@@ -72,9 +90,9 @@
     }).join('');
   }
   // 考查知识点展示：每个技能一行，知识点标类型，悬停看核心内容；kpIds = 发布时勾选的，有则只显示勾选的
-  function kpHTML(skillIds, kpIds) {
-    var gs = kpsOf(skillIds);
-    if (kpIds && kpIds.length) gs = gs.map(function (g) { var k2 = g.kps.filter(function (k) { return kpIds.indexOf(k.id) >= 0; }); return k2.length ? { sid: g.sid, skill: g.skill, kps: k2 } : null; }).filter(function (g) { return g; });
+  function kpHTML(skillIds, kpIds, task) {
+    var gs = task ? taskKpGroups(task) : kpsOf(skillIds);
+    if (!task && kpIds && kpIds.length) gs = gs.map(function (g) { var k2 = g.kps.filter(function (k) { return kpIds.indexOf(k.id) >= 0; }); return k2.length ? { sid: g.sid, skill: g.skill, kps: k2 } : null; }).filter(function (g) { return g; });
     if (!gs.length) return '<span style="color:var(--muted);font-size:12px">' + ((skillIds || []).length ? '所选技能下没有知识点' : '未挂技能，没有考查知识点') + '</span>';
     return gs.map(function (g) {
       return '<div style="font-size:12.5px;line-height:1.9"><span style="color:var(--muted)">' + esc(g.skill) + '：</span>' + g.kps.map(function (k) {
@@ -130,7 +148,7 @@
   function planKind(st, p) {
     if (planKsId(st, p)) return 'linked';
     var ec = eduCourse(st, p);
-    return ec && ec.type === '公共基础课' ? 'public' : 'unlinked';
+    return ec && (ec.type === '公共基础课程' || ec.type === '公共基础课') ? 'public' : 'unlinked';
   }
 
   /* ── 评价标准：每个评价项对应一个技能，分优秀 / 合格 / 需改进三档 ── */
@@ -333,16 +351,23 @@
   function load() {
     try {
       var s = JSON.parse(localStorage.getItem(KEY));
+      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return s; }   // 已是最新版：直接用，切勿走到下面重置演示数据
       if (s && s.v === 6) { seedEdu(s); s.v = 7; }   // 补上管理端教务基础数据，原有数据保留
       if (s && s.v === 7) { seedCourseType(s); s.v = 8; save(s); }   // 补上课程类型与公共基础课
       if (s && s.v === 8) { seedMajorLevel(s); s.v = 9; save(s); }   // 专业树补第三层
       if (s && s.v === 9) { seedStudents(s); s.v = 10; save(s); }   // 学生档案
       if (s && s.v === 10) { syncSessions(s); s.v = 11; save(s); }   // 排课自动生成课次
-      if (s && s.v === 11) { if (seedLabs(s)) save(s); Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return s; }
+      if (s && s.v === 11) { var ch1 = seedLabs(s), ch2 = seedPeriods(s), ch3 = seedKpSnap(s); if (ch1 || ch2 || ch3) save(s); Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); s.v = 12; save(s); }
+      if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); return s; }   // 课程类型细分为五类，旧值自动映射
     } catch (e) {}
-    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); s2.v = 11; save(s2); return s2;
+    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); s2.v = 13; save(s2); return s2;
   }
-  /* 实训资源（校内：实训室 / 设备 / 软件）：管理端「教务基础数据 › 实训资源管理」维护；能力测评的实训条件差距读这里。
+  /* 课程类型细分迁移：旧两分类映射到新五分类（专业课默认归入专业核心课程） */
+  function migrateCourseType(st) {
+    var MAP = { '专业课': '专业核心课程', '公共基础课': '公共基础课程' };
+    st.edu.courses.forEach(function (c) { if (MAP[c.type]) c.type = MAP[c.type]; });
+  }
+  /* 实训资源（校内：实训室 / 设备 / 软件）：管理端「教务管理 › 实训资源管理」维护；能力测评的实训条件差距读这里。
      首次从能力测评原来预置的本校校内实训资源导入；校外基地第一阶段不在这里管 */
   function seedLabs(st) {
     if (!st.edu || st.edu.labs) return false;
@@ -352,14 +377,14 @@
     });
     return true;
   }
-  /* 课程类型：专业课 / 公共基础课（公共基础课默认不计入技能达成）；预置两门公共基础课，并给「大学英语」建一个课程计划 */
+  /* 课程类型：公共基础课程 / 专业基础课程 / 专业核心课程 / 专业拓展课程 / 其他（公共基础课程默认不计入技能达成）；预置两门公共基础课程，并给「大学英语」建一个课程计划 */
   function seedCourseType(st) {
     var E = st.edu;
-    E.courses.forEach(function (c) { if (!c.type) c.type = '专业课'; if (c.ks && !c.ksVia) { c.ksVia = '预置'; c.ksBy = '专业负责人'; } });
-    if (E.courses.some(function (c) { return c.type === '公共基础课'; })) return;
+    E.courses.forEach(function (c) { if (!c.type) c.type = '专业核心课程'; if (c.ks && !c.ksVia) { c.ksVia = '预置'; c.ksBy = '专业负责人'; } });
+    if (E.courses.some(function (c) { return c.type === '公共基础课程'; })) return;
     var n = E.courses.length;
-    E.courses.push({ id: 'EC' + (++n), name: '大学英语', code: 'GG001', majorId: '', type: '公共基础课', desc: '全校公共基础课', status: '启用', ks: '', by: '超管', at: '2026-08-20 10:05' });
-    E.courses.push({ id: 'EC' + (++n), name: '思想道德与法治', code: 'GG002', majorId: '', type: '公共基础课', desc: '全校公共基础课', status: '启用', ks: '', by: '超管', at: '2026-08-20 10:06' });
+    E.courses.push({ id: 'EC' + (++n), name: '大学英语', code: 'GG001', majorId: '', type: '公共基础课程', desc: '全校公共基础课程', status: '启用', ks: '', by: '超管', at: '2026-08-20 10:05' });
+    E.courses.push({ id: 'EC' + (++n), name: '思想道德与法治', code: 'GG002', majorId: '', type: '公共基础课程', desc: '全校公共基础课程', status: '启用', ks: '', by: '超管', at: '2026-08-20 10:06' });
     var en = E.courses[E.courses.length - 2], slots = [];
     for (var i = -2; i <= 3; i++) { var d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + 1 + 7 * i); var day = fmt(d, false); slots.push({ id: uid('SL'), start: day + ' 10:00', end: day + ' 12:00' }); }
     st.plans.push({ id: 'CP6', courseId: '', eduCourseId: en.id, course: en.name, classId: 'CL1', teacher: '王老师', term: TERM, status: '启用', by: '超管', at: '2026-08-25 10:00', slots: slots });
@@ -367,8 +392,70 @@
 
   /* ── 管理端教务基础数据 + 课程计划排课 ──
      edu.majors（树）/ grades / terms / courses（课程，可关联知识体系课程）；plans[].slots 为管理端排好的上课时间，老师建课次时从中选 */
-  var PERIODS = [['08:00', '10:00'], ['10:00', '12:00'], ['14:00', '16:00'], ['16:00', '18:00']];
-  function periodOf(start) { var h = +String(start).slice(11, 13); return h < 10 ? 1 : h < 12 ? 2 : h < 16 ? 3 : 4; }
+  /* 节次时间：学校在「教务管理 › 节次时间管理」配置（edu.periods，按开始时间排序，第 N 节 = 第 N 行）；
+     排课选「第 X 节 到 第 Y 节」，时间按配置带出；课表按节次分行，跨节的课跨行显示 */
+  var DEF_PERIODS = [['08:00', '08:45'], ['08:55', '09:40'], ['10:00', '10:45'], ['10:55', '11:40'], ['14:00', '14:45'], ['14:55', '15:40'], ['16:00', '16:45'], ['16:55', '17:40'], ['19:00', '19:45'], ['19:55', '20:40']];
+  // 存量已发布任务补知识点快照（按当前知识体系）；知识体系数据没加载的页面不补，下次在有数据的页面补
+  function seedKpSnap(st) {
+    if (!root.ASSESS_DATA) return false;
+    var ch = false;
+    (st.courses || []).forEach(function (c) { var t = c.publish && c.publish.task; if (t && t.on && !t.kpSnap) { t.kpSnap = snapKps(t); ch = true; } });
+    return ch;
+  }
+  function seedPeriods(st) {
+    if (!st.edu || (st.edu.periods && st.edu.periods.length)) return false;
+    st.edu.periods = DEF_PERIODS.map(function (x) { return { start: x[0], end: x[1] }; });
+    // 首次启用节次：未发布课次对应的排课对齐到节次时间（已发布的不动）
+    var pub = {}; (st.courses || []).forEach(function (c) { if (c.slotId && c.status === '已发布') pub[c.slotId] = 1; });
+    (st.plans || []).forEach(function (p) { (p.slots || []).forEach(function (sl) {
+      if (pub[sl.id]) return;
+      var sp = periodSpan(st, sl.start, sl.end), t = periodTime(st, sl.start.slice(0, 10), sp[0], sp[1]);
+      sl.pa = sp[0]; sl.pb = sp[1]; sl.start = t.start; sl.end = t.end;
+    }); });
+    syncSessions(st); return true;
+  }
+  function periods(st) {
+    var ps = st && st.edu && st.edu.periods && st.edu.periods.length ? st.edu.periods : DEF_PERIODS.map(function (x) { return { start: x[0], end: x[1] }; });
+    return ps.slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+  }
+  // 一段上课时间落在哪几节：与时间有重叠的节次 → [起, 止]（从 1 计）；都不重叠时取开始时间之后最近的一节
+  function periodSpan(st, start, end) {
+    var ps = periods(st), s = String(start).slice(11, 16), e = String(end || start).slice(11, 16), a = 0, b = 0;
+    ps.forEach(function (p, i) { if (p.start < e && p.end > s) { if (!a) a = i + 1; b = i + 1; } });
+    if (!a) { ps.some(function (p, i) { if (p.start >= s) { a = b = i + 1; return true; } }); if (!a) a = b = ps.length; }
+    return [a, b];
+  }
+  function periodText(a, b) { return a === b ? '第' + a + '节' : '第' + a + '–' + b + '节'; }
+  // 某天第 a 到 b 节的起止时间
+  function periodTime(st, day, a, b) { var ps = periods(st); return { start: day + ' ' + ps[a - 1].start, end: day + ' ' + ps[b - 1].end }; }
+  function periodOf(start) { return periodSpan(load(), start, start)[0]; }
+  // 课次弹窗：切换「按节次 / 自定义时间段」两套时间输入的显示（内联 onchange 用）；
+  // 用 style.display 而非 hidden 属性——.ff 的 display 规则会覆盖 [hidden] 的 UA 样式
+  function switchTmode(sel) {
+    var isC = sel.value === 'c', box = sel.closest('.fgrid') || document;
+    [].slice.call(box.querySelectorAll('[data-perrow]')).forEach(function (x) { x.style.display = isC ? 'none' : ''; });
+    [].slice.call(box.querySelectorAll('[data-custrow]')).forEach(function (x) { x.style.display = isC ? '' : 'none'; });
+  }
+  /* 周课表网格：行 = 学校配置的节次，列 = 7 天；items: [{start, end, html}]，跨节的课跨行显示，同一天同一段的课放在一起 */
+  function ttGrid(st, days, today, items) {
+    var ps = periods(st), wd = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'], keys = days.map(function (d) { return fmt(d, false); });
+    var h = '<div class="tt" style="grid-template-rows:auto repeat(' + ps.length + ',minmax(52px,auto))"><div class="th" style="grid-row:1;grid-column:1">节次</div>';
+    keys.forEach(function (k, j) { h += '<div class="th' + (k === today ? ' today' : '') + '" style="grid-row:1;grid-column:' + (j + 2) + '">' + wd[days[j].getDay()] + '<small>' + k.slice(5) + (k === today ? ' · 今天' : '') + '</small></div>'; });
+    ps.forEach(function (p, i) {
+      h += '<div class="ph" style="grid-row:' + (i + 2) + ';grid-column:1">第' + (i + 1) + '节<br><span class="mono" style="font-size:10.5px">' + p.start + '–' + p.end + '</span></div>';
+      keys.forEach(function (k, j) { h += '<div class="cell' + (k === today ? ' today' : '') + '" style="grid-row:' + (i + 2) + ';grid-column:' + (j + 2) + '"></div>'; });
+    });
+    var g = {}, order = [];
+    items.slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; }).forEach(function (it) {
+      var j = keys.indexOf(String(it.start).slice(0, 10)); if (j < 0) return;
+      var sp = periodSpan(st, it.start, it.end), k = j + '|' + sp[0] + '|' + sp[1];
+      if (!g[k]) { g[k] = { j: j, sp: sp, html: '' }; order.push(k); }
+      g[k].html += it.html;
+    });
+    order.forEach(function (k) { var x = g[k]; h += '<div class="tt-ev" style="grid-row:' + (x.sp[0] + 1) + ' / ' + (x.sp[1] + 2) + ';grid-column:' + (x.j + 2) + '">' + x.html + '</div>'; });
+    return h + '</div>';
+  }
+  var PERIODS = DEF_PERIODS;
   function seedEdu(st) {
     if (st.edu) return;
     var by = '超管', at = '2026-08-05 16:06';
@@ -400,7 +487,7 @@
       var own = st.courses.filter(function (c) { return c.planId === p.id && c.source !== '补训课次'; });
       p.slots = own.map(function (c) { return { id: uid('SL'), start: c.start, end: c.end }; });
       var last = own.reduce(function (m, c) { return c.start > m ? c.start : m; }, daysAgo(7, 8, 0));
-      var base = new Date(last.replace(' ', 'T')), per = PERIODS[(p.id.charCodeAt(2) || 0) % 4];
+      var base = new Date(last.replace(' ', 'T')), pp = [1, 3, 5, 7][(p.id.charCodeAt(2) || 0) % 4], per = [DEF_PERIODS[pp - 1][0], DEF_PERIODS[pp][1]];
       for (var i = 1; i <= 3; i++) {
         var d = new Date(base); d.setDate(d.getDate() + 7 * i);
         var day = fmt(d, false); p.slots.push({ id: uid('SL'), start: day + ' ' + per[0], end: day + ' ' + per[1] });
@@ -418,6 +505,24 @@
   /* ── 排课 → 课次：管理端每排一次课，教师端就有一个课次（source '排课'，带 slotId）──
      未发布的课次跟着排课改时间、随排课删除；已发布的锁定（管理端不能再改这次排课）。
      名称默认「课程名 · 第 N 次课」，老师没改过名称（autoName）的随排课顺序更新。老师另建的课次 source '自建课次'，不带 slotId */
+  /* 课程计划状态（不再手动停用，按课次自动算）：未排课 / 进行中 / 已结束 */
+  function planState(st, p) {
+    var ls = st.courses.filter(function (c) { return c.planId === p.id; });
+    if (!ls.length) return '未排课';
+    var now = new Date();
+    return ls.some(function (c) { return new Date(String(c.end).replace(' ', 'T')) >= now; }) ? '进行中' : '已结束';
+  }
+  /* 时间冲突：同一天、同一班级或同一授课老师、时间段重叠（排课生成的课次、老师另建的额外课次、补训课次都算）；
+     except：自己（编辑时）；返回冲突的课次和它的课程计划 */
+  function lessonConflict(st, classId, teacher, start, end, except) {
+    var hit = null, day = String(start).slice(0, 10);
+    st.courses.forEach(function (c) {
+      if (hit || c === except || String(c.start).slice(0, 10) !== day || !(c.start < end && c.end > start)) return;
+      var q = st.plans.filter(function (x) { return x.id === c.planId; })[0]; if (!q) return;
+      if (q.classId === classId || q.teacher === teacher) hit = { c: c, p: q };
+    });
+    return hit;
+  }
   function syncSessions(st) {
     var changed = false;
     st.plans.forEach(function (p) {
@@ -576,7 +681,11 @@
     var id = 'f_' + f.k, req = f.req ? ' req' : '';
     var head = '<span class="lh"><span class="' + req + '">' + esc(f.label) + '</span><span class="sp"></span>' + (f.ai ? '<button type="button" class="ai-btn" data-ai="' + f.k + '">AI润色</button>' : '') + '</span>';
     var body;
-    if (f.type === 'select') body = '<select id="' + id + '" data-f="' + f.k + '"><option value="">请选择</option>' + f.options.map(function (o) { return '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>';
+    // 带搜索的下拉：options 可以是字符串，或 {v, sub}（sub 为辅助说明，参与搜索）；值写在隐藏的 data-f 上，配合 bindSearchSelect 使用
+    if (f.type === 'searchselect') body = '<div class="ss" data-ss><input type="hidden" data-f="' + f.k + '" value="' + esc(v || '') + '">' +
+      '<input class="ss-in" id="' + id + '" type="text" autocomplete="off" placeholder="' + esc(f.ph || '输入关键字搜索') + '" value="' + esc(v || '') + '">' +
+      '<div class="ss-dd" hidden>' + f.options.map(function (o) { var x = typeof o === 'string' ? { v: o } : o; return '<button type="button" data-ssv="' + esc(x.v) + '" data-sst="' + esc(x.v + ' ' + (x.sub || '')) + '">' + esc(x.v) + (x.sub ? '<small>' + esc(x.sub) + '</small>' : '') + '</button>'; }).join('') + '<div class="ss-empty" hidden>没有匹配的选项</div></div></div>';
+    else if (f.type === 'select') body = '<select id="' + id + '" data-f="' + f.k + '"><option value="">请选择</option>' + f.options.map(function (o) { return '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>';
     else if (f.type === 'textarea') body = '<textarea id="' + id + '" data-f="' + f.k + '" placeholder="' + esc(f.ph || '请输入') + '" maxlength="' + (f.max || 500) + '">' + esc(v || '') + '</textarea>';
     else if (f.type === 'switch') body = '<span class="lh"><button type="button" class="sw" data-f="' + f.k + '" data-sw aria-pressed="' + (!!v) + '"></button><span class="note" style="font-size:12px;color:var(--muted)">' + esc(f.ph || '') + '</span></span>';
     else if (f.type === 'chips') body = '<div class="chips2" data-f="' + f.k + '" data-chips>' + f.options.map(function (o) { return '<button type="button" aria-pressed="' + ((v || []).indexOf(o) >= 0) + '">' + esc(o) + '</button>'; }).join('') + '</div>';
@@ -585,6 +694,38 @@
     return '<div class="ff' + (f.full || f.type === 'textarea' || f.type === 'files' || f.type === 'chips' ? ' full' : '') + '">' + head + body + '</div>';
   }
   function fileRow(x) { return '<div class="fitem" data-file="' + esc(x.name) + '"><span class="fi" style="background:#7f63d8">' + esc((x.name.split('.').pop() || 'F').slice(0, 3).toUpperCase()) + '</span><span class="fn">' + esc(x.name) + '<small>' + esc(x.size || '') + '</small></span><button type="button" class="lk del" data-rmfile>删除</button></div>'; }
+  /* 带搜索的下拉：点开列出全部，输入即过滤（名称和辅助说明都参与），↑↓ 选择、回车确定、Esc 关闭；
+     只能选列表里的项，输入了列表外的内容失焦后恢复原选择；选中后在隐藏的 data-f 上触发 change */
+  function bindSearchSelect(root) {
+    [].forEach.call(root.querySelectorAll('[data-ss]'), function (box) {
+      var hid = box.querySelector('input[type=hidden]'), inp = box.querySelector('.ss-in'), dd = box.querySelector('.ss-dd'), cur = -1;
+      var opts = function () { return [].slice.call(dd.querySelectorAll('[data-ssv]')).filter(function (b) { return !b.hidden; }); };
+      function place() { var r = inp.getBoundingClientRect(); dd.style.left = r.left + 'px'; dd.style.top = (r.bottom + 4) + 'px'; dd.style.width = Math.max(r.width, 320) + 'px'; }
+      function filter(q) {
+        q = (q || '').trim().toLowerCase(); var n = 0;
+        [].forEach.call(dd.querySelectorAll('[data-ssv]'), function (b) { var on = !q || b.getAttribute('data-sst').toLowerCase().indexOf(q) >= 0; b.hidden = !on; b.classList.toggle('sel', b.getAttribute('data-ssv') === hid.value); if (on) n++; });
+        dd.querySelector('.ss-empty').hidden = n > 0; cur = -1; mark();
+      }
+      function mark() { opts().forEach(function (b, i) { b.classList.toggle('on', i === cur); }); var o = opts()[cur]; if (o) o.scrollIntoView({ block: 'nearest' }); }
+      function open() { if (inp.disabled) return; place(); dd.hidden = false; filter(inp.value === hid.value ? '' : inp.value); }
+      function close() { dd.hidden = true; }
+      function pick(v) { var ch = hid.value !== v; hid.value = v; inp.value = v; close(); if (ch) hid.dispatchEvent(new Event('change', { bubbles: true })); }
+      inp.addEventListener('focus', function () { inp.select(); open(); });
+      inp.addEventListener('click', open);
+      inp.addEventListener('input', function () { if (dd.hidden) { place(); dd.hidden = false; } filter(inp.value); });
+      inp.addEventListener('keydown', function (e) {
+        var l = opts();
+        if (e.key === 'ArrowDown') { e.preventDefault(); if (dd.hidden) open(); cur = Math.min(cur + 1, l.length - 1); mark(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); cur = Math.max(cur - 1, 0); mark(); }
+        else if (e.key === 'Enter') { e.preventDefault(); var o = l[cur] || (l.length === 1 ? l[0] : null); if (o) pick(o.getAttribute('data-ssv')); }
+        else if (e.key === 'Escape') { e.stopPropagation(); inp.value = hid.value; close(); }
+      });
+      inp.addEventListener('blur', function () { setTimeout(function () { if (!dd.hidden) close(); if (inp.value !== hid.value) { if (!inp.value.trim()) pick(''); else inp.value = hid.value; } }, 150); });
+      dd.addEventListener('mousedown', function (e) { e.preventDefault(); var b = e.target.closest('[data-ssv]'); if (b) pick(b.getAttribute('data-ssv')); });
+      var sc = box.closest('.tmd-b, .tdr-b'); if (sc) sc.addEventListener('scroll', function () { if (!dd.hidden) place(); });
+      window.addEventListener('resize', function () { if (!dd.hidden) place(); });
+    });
+  }
   function formHTML(fields, v) { v = v || {}; return '<div class="fgrid">' + fields.map(function (f) { return fieldHTML(f, v[f.k]); }).join('') + '</div>'; }
   function bindForm(root) {
     root.addEventListener('click', function (e) {
@@ -632,8 +773,8 @@
   var FT_COLOR = { '课件': '#7f63d8', '教案': '#10b981', '图片': '#0ea5e9', '情景互动游戏': '#f59e0b', '视频': '#ef4444', '文档': '#ef4444', '语音': '#0ea5e9', '文字': '#7f63d8' };
   root.TK = { load: load, save: save, reset: function () { localStorage.removeItem(KEY); }, fmt: fmt, uid: uid, esc: esc, TERM: TERM,
     periodRange: periodRange, inRange: inRange, addGrowth: addGrowth, addStuGrowth: addStuGrowth, STU_STAR: STU_STAR, toast: toast, drawer: drawer, modal: modal, confirm: confirmBox,
-    formHTML: formHTML, bindForm: bindForm, readForm: readForm, fileRow: fileRow, FT_COLOR: FT_COLOR,
-    PERIODS: PERIODS, periodOf: periodOf,
-    kn: kn, skillName: skillName, kpsOf: kpsOf, kpCount: kpCount, kpHTML: kpHTML, kpCrit: kpCrit, kpCritDefault: kpCritDefault, kpCritHTML: kpCritHTML, aiKpMarks: aiKpMarks, itemKps: itemKps, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs,
-    syncRoster: syncRoster, syncSessions: syncSessions, fillSkillsFromRes: fillSkillsFromRes, studentHasRecords: studentHasRecords, majorPath: majorPath, majorTop: majorTop, majorSubIds: majorSubIds, majorTree: majorTree, majorChain: majorChain, GRADES: GRADES, genCriteria: genCriteria, overall: overall, addEvidence: addEvidence };
+    formHTML: formHTML, bindForm: bindForm, bindSearchSelect: bindSearchSelect, readForm: readForm, fileRow: fileRow, FT_COLOR: FT_COLOR,
+    PERIODS: PERIODS, periodOf: periodOf, periods: periods, periodSpan: periodSpan, periodText: periodText, periodTime: periodTime, switchTmode: switchTmode, ttGrid: ttGrid,
+    kn: kn, skillName: skillName, kpsOf: kpsOf, kpCount: kpCount, kpHTML: kpHTML, kpCrit: kpCrit, kpCritDefault: kpCritDefault, kpCritHTML: kpCritHTML, taskKps: taskKps, taskKpGroups: taskKpGroups, snapKps: snapKps, aiKpMarks: aiKpMarks, itemKps: itemKps, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs,
+    syncRoster: syncRoster, syncSessions: syncSessions, planState: planState, lessonConflict: lessonConflict, fillSkillsFromRes: fillSkillsFromRes, studentHasRecords: studentHasRecords, majorPath: majorPath, majorTop: majorTop, majorSubIds: majorSubIds, majorTree: majorTree, majorChain: majorChain, GRADES: GRADES, genCriteria: genCriteria, overall: overall, addEvidence: addEvidence };
 })(window);

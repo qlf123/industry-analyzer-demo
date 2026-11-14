@@ -10,7 +10,7 @@
   'use strict';
 
   var STORAGE_KEY = 'permission-demo-state';
-  var DATA_VERSION = 9; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
+  var DATA_VERSION = 10; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
 
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
@@ -186,10 +186,10 @@
     { id: 'P-ACCOUNT-CREATE',    code: 'account:account:create',   name: '账号新建',       module: '组织', resource: '账号', action: '新建' },
     { id: 'P-ASSESS-VIEW',       code: 'major:assess:view',        name: '专业建设测评查看', module: '专业建设', resource: '专业建设测评', action: '查看' },
     { id: 'P-ASSESS-RUN',        code: 'major:assess:run',         name: '发起专业建设测评', module: '专业建设', resource: '专业建设测评', action: '发起' },
-    { id: 'P-EDU-MANAGE',        code: 'edu:base:manage',          name: '教务基础数据与课程计划维护', module: '教务', resource: '教务基础数据', action: '维护' },
+    { id: 'P-EDU-MANAGE',        code: 'edu:base:manage',          name: '教务管理与课程计划维护', module: '教务', resource: '教务管理', action: '维护' },
     { id: 'P-TEACH-QUALITY',     code: 'teach:quality:view',       name: '教学质量查看与改进处理', module: '教学质量', resource: '教学达成 / 课程改进建议', action: '查看处理' },
     { id: 'P-LAB-MANAGE',        code: 'edu:lab:manage',           name: '实训资源维护',   module: '教务', resource: '实训资源', action: '维护' },
-    { id: 'P-GRAPH-SUGGEST',     code: 'graph:suggest:review',     name: '标准图谱建议审核', module: '图谱中心', resource: '标准图谱建议', action: '审核发布' }
+    { id: 'P-GRAPH-SUGGEST',     code: 'graph:suggest:review',     name: '图谱建议审核', module: '图谱中心', resource: '图谱建议', action: '审核发布' }
   ];
 
   /* ── 角色（type：内置 / 预设 / 部门模板 / 自定义；key 供权限模块判定用） ── */
