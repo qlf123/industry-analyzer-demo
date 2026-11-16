@@ -259,6 +259,21 @@
             <span class="ksd-label">知识点名称 <em>*</em></span>
             <input type="text" id="addKpName" placeholder="请输入知识点名称" maxlength="40" autocomplete="off" />
           </label>
+          <label class="ksd-field">
+            <span class="ksd-label">知识点类型</span>
+            <select id="addKpType">
+              <option value="概念">概念</option>
+              <option value="原理">原理</option>
+              <option value="方法">方法</option>
+              <option value="技能">技能</option>
+              <option value="知识">知识</option>
+              <option value="规范">规范</option>
+            </select>
+          </label>
+          <label class="ksd-field">
+            <span class="ksd-label">核心内容</span>
+            <textarea id="addKpCore" rows="3" placeholder="一句话说明「体现了什么算掌握了这个知识点」，发布任务时作为判定依据的默认值" maxlength="200"></textarea>
+          </label>
         </div>
         <div class="ksd-dialog-actions">
           <button class="ksd-btn ghost" onclick="closeAddKp()">取消</button>
@@ -500,9 +515,15 @@
           var text=n.name;
           if(!tag&&text.length>12&&!isRoot)text=text.substring(0,11)+'...';
           if(n.disabled)text=(text.length>8?text.substring(0,7)+'…':text)+'（已停用）';
+          if(n.type==='knowledge'&&n.kpType&&!n.disabled)text+=' · '+n.kpType;   // 知识点显示类型
           var txt=el('text',{class:isRoot?'ksd-node-text root':'ksd-node-text normal',x:tag?(x+10):(x+w/2),y:n._y+4,'text-anchor':tag?'start':'middle'});
           txt.textContent=text;if(n.disabled)txt.setAttribute('style','fill:#98a2b3');
           svg.appendChild(txt);
+          if(n.type==='knowledge'&&(n.kpType||n.kpCore)){   // 悬停看核心内容（发布任务时作判定依据默认值）
+            var tip=el('title',{});
+            tip.textContent='类型：'+(n.kpType||'—')+(n.kpCore?'\n核心内容：'+n.kpCore:'');
+            rect.appendChild(tip);
+          }
           if(n.children&&n.children.length){
             var icon=el('text',{class:'ksd-expand-icon',x:x+w+4,y:n._y+4});
             icon.textContent=n.expanded?'−':'+';
@@ -623,17 +644,34 @@
       var ctxNodeId=null,ctxNodeRef=null;
       var ctxMenu=document.getElementById('ctxMenu');
 
+      // 知识点是否被已发布任务引用（PRD 5.5：被引用的只能停用，不能删除）。按名称匹配任务的知识点快照
+      // 本页不加载 teacher-kit.js，直接读教务本地数据（key 与 js/teacher-kit.js 的 KEY 一致）
+      function kpUsedByTask(name){
+        try{
+          var raw=null;
+          if(window.TK) raw=TK.load();
+          else raw=JSON.parse(localStorage.getItem('teacherDemo.v1')||'null');
+          if(!raw) return false;
+          var hit=false;
+          (raw.courses||[]).forEach(function(c){ (c.lessons||[]).forEach(function(l){
+            var t=l.publish&&l.publish.task; if(!t||!t.kpSnap) return;
+            Object.keys(t.kpSnap).forEach(function(sid){ (t.kpSnap[sid]||[]).forEach(function(k){ if(k.name===name) hit=true; }); });
+          }); });
+          return hit;
+        }catch(e){ return false; }
+      }
       function showContextMenu(e,nodeId,nodeRef){
         e.preventDefault();
         ctxNodeId=nodeId;
         ctxNodeRef=nodeRef;
         document.getElementById('ctxAddSibling').style.display=(nodeRef===treeData)?'none':'';
-        // 被全景图谱引用的节点只能停用；本次新增、未被引用的节点可删除；根节点两者都不提供
+        // 被全景图谱引用的节点只能停用；知识点被已发布任务引用时同样只能停用（不能删除）；本次新增、未被引用的节点可删除；根节点两者都不提供
         var isRoot=nodeRef===treeData;
+        var usedByTask=!isRoot&&nodeRef.type==='knowledge'&&kpUsedByTask(nodeRef.name);
         document.getElementById('ctxStateDivider').style.display=isRoot?'none':'';
         document.getElementById('ctxRestore').style.display=!isRoot&&nodeRef.disabled?'':'none';
-        document.getElementById('ctxRetire').style.display=!isRoot&&!nodeRef.disabled&&!nodeRef.isNew?'':'none';
-        document.getElementById('ctxDelete').style.display=!isRoot&&!nodeRef.disabled&&nodeRef.isNew?'':'none';
+        document.getElementById('ctxRetire').style.display=!isRoot&&!nodeRef.disabled&&(!nodeRef.isNew||usedByTask)?'':'none';
+        document.getElementById('ctxDelete').style.display=!isRoot&&!nodeRef.disabled&&nodeRef.isNew&&!usedByTask?'':'none';
         ctxMenu.style.left=Math.min(e.clientX,window.innerWidth-180)+'px';
         ctxMenu.style.top=Math.min(e.clientY,window.innerHeight-240)+'px';
         ctxMenu.classList.add('show');
@@ -795,6 +833,8 @@
         kpParentRef=p;
         document.getElementById('addKpParentPath').textContent='所属节点：'+p.name+'（'+TYPE_META[p.type].label+'）';
         document.getElementById('addKpName').value='';
+        document.getElementById('addKpType').value='概念';
+        document.getElementById('addKpCore').value='';
         document.getElementById('addKpConfirm').disabled=true;
         document.getElementById('addKpModal').classList.add('show');
         setTimeout(function(){document.getElementById('addKpName').focus();},30);
@@ -804,7 +844,7 @@
         if(!kpParentRef)return;
         var name=document.getElementById('addKpName').value.trim();
         if(!name)return;
-        addChild(kpParentRef,{name:name,type:'knowledge',color:TYPE_COLOR.knowledge,isNew:true,expanded:false});
+        addChild(kpParentRef,{name:name,type:'knowledge',kpType:document.getElementById('addKpType').value,kpCore:document.getElementById('addKpCore').value.trim(),color:TYPE_COLOR.knowledge,isNew:true,expanded:false});
         closeAddKp();
         assignIds(treeData);renderTree();
         toast('已新增知识点「'+name+'」');
@@ -812,7 +852,7 @@
       function aiBuildKp(){
         if(!kpParentRef)return;
         var name=document.getElementById('addKpName').value.trim()||uniqueName(kpParentRef,'新建知识点');
-        var node={name:name,type:'knowledge',color:TYPE_COLOR.knowledge,isNew:true,expanded:false};
+        var node={name:name,type:'knowledge',kpType:document.getElementById('addKpType').value,kpCore:document.getElementById('addKpCore').value.trim(),color:TYPE_COLOR.knowledge,isNew:true,expanded:false};
         addChild(kpParentRef,node);
         closeAddKp();
         assignIds(treeData);renderTree();

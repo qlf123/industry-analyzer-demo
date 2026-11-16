@@ -833,7 +833,7 @@
         var c = byId('courses', id);
         return '<span class="rtag">' + esc(c ? c.name : id) + '<button type="button" class="rtag-x" data-del="course" data-id="' + esc(id) + '" aria-label="移除">×</button></span>';
       }).join('');
-      return '<div class="sec-h">任教信息（选填）</div>'
+      return '<div class="sec-h">任教信息</div>'
         + '<div class="orgrow-pick"><span class="field-label">专业</span><div class="pick-body"><span class="role-tags">' + majorTags + '</span><select class="addsel" data-kind="major"><option value="">＋ 添加专业</option>' + majorOpts + '</select></div></div>'
         + '<div class="orgrow-pick"><span class="field-label">课程</span><div class="pick-body"><span class="role-tags">' + courseTags + '</span><select class="addsel" data-kind="course"><option value="">＋ 添加课程</option>' + courseOpts + '</select></div></div>';
     }
@@ -1272,7 +1272,7 @@
       var tags = draft.roleIds.map(function (rid) {
         return '<span class="rtag">' + esc(roleName(rid)) + '<button type="button" class="rtag-x" data-bdel-role="' + esc(rid) + '" aria-label="移除">×</button></span>';
       }).join('');
-      return '<div class="orgrow-pick"><span class="field-label">同时新增角色（选填）</span>'
+      return '<div class="orgrow-pick"><span class="field-label">同时新增角色</span>'
         + '<div class="pick-body"><span class="role-tags">' + tags + '</span>'
         + '<select class="addsel" data-baddrole="1"><option value="">＋ 添加角色</option>' + opts + '</select></div></div>';
     }
@@ -1565,7 +1565,7 @@
       var tags = draft.roleIds.map(function (rid) {
         return '<span class="rtag">' + esc(roleName(rid)) + '<button type="button" class="rtag-x" data-bmdel-role="' + esc(rid) + '" aria-label="移除">×</button></span>';
       }).join('');
-      return '<div class="orgrow-pick"><span class="field-label">添加角色（选填）</span>'
+      return '<div class="orgrow-pick"><span class="field-label">添加角色</span>'
         + '<div class="pick-body"><span class="role-tags">' + tags + '</span>'
         + '<select class="addsel" data-bmaddrole="1"><option value="">＋ 添加角色</option>' + opts + '</select></div></div>';
     }
@@ -1587,7 +1587,7 @@
       }).join('');
     }
     function renderBody() {
-      bodyEl.innerHTML = '<div class="orgrow-pick"><span class="field-label">加入组织（选填，多选）</span>'
+      bodyEl.innerHTML = '<div class="orgrow-pick"><span class="field-label">加入组织（多选）</span>'
         + '<div class="org-pick-layout">'
         + '<div class="org-pick-col"><div class="org-pick-title">组织树</div><div class="part-tree">' + orgTreeHtml() + '</div></div>'
         + '<div class="org-pick-col"><div class="org-pick-title">已选组织</div><div class="org-sel" id="bmOrgSel">' + orgSelHtml() + '</div></div>'

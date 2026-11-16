@@ -40,7 +40,7 @@
       +'<div class="pv-body"><div class="pv-sec"><h3>影响范围</h3>'+stats
       +(im.majors.length?'<div class="pv-sec-desc" style="margin:8px 0 0">涉及专业：'+im.majors.map(esc).join('、')+'</div>':'')+'</div>'
       +'<div class="pv-sec"><h3>挂载的资源 <span class="cnt">'+im.res.length+'</span></h3>'+res+'</div>'
-      +'<div class="pv-sec"><h3>停用原因 <span class="cnt">选填，记入影响分析记录</span></h3><input id="nrReason" class="pv-input" placeholder="如：岗位已被新职业替代"></div>'
+      +'<div class="pv-sec"><h3>停用原因 <span class="cnt">记入影响分析记录</span></h3><input id="nrReason" class="pv-input" placeholder="如：岗位已被新职业替代"></div>'
       +'<div class="pv-note info">停用在本图谱中立即生效；全景图谱不会直接改动已发布版本，各专业下次同步时生成草稿，失效关系在发布时下线。</div>'
       +'</div><div class="pv-foot"><span class="pv-spacer"></span><button class="pv-btn" data-close>取消</button><button class="pv-btn pri danger" id="nrOk">确认停用</button></div></div>';
     mask.classList.add('show');

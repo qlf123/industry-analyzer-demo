@@ -101,7 +101,7 @@
   function adopt(r) {
     var m = TK.modal({ title: '采纳建议', width: 480, body: '<div class="fgrid"><div class="ff full"><span class="lh"><span class="req">节点名称</span></span><input data-k="name" maxlength="20" value="' + esc(r.name) + '"><span style="font-size:11.5px;color:var(--muted)">可改名后采纳；下级节点按提交内容并入</span></div>' +
       (r.dup ? '<div class="ff full dup">同级已有同名的标准节点，建议改名或确认后再采纳</div>' : '') +
-      '<div class="ff full"><span class="lh"><span>审核意见</span></span><textarea data-k="note" maxlength="200" placeholder="选填"></textarea></div></div>',
+      '<div class="ff full"><span class="lh"><span>审核意见</span></span><textarea data-k="note" maxlength="200" placeholder="如：改名原因或补充说明"></textarea></div></div>',
       foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">采纳</button>' });
     m.foot.querySelector('[data-c]').onclick = m.close;
     m.foot.querySelector('[data-o]').onclick = function () {

@@ -1503,7 +1503,7 @@ function suggCard(g){
   }
   if(suggRejecting===g.id){
     return `<div class="sugg-card"><div class="sugg-top"><span class="sugg-name" style="color:#c72c2a">填写驳回原因</span></div>
-      <input class="field" id="suggReason" placeholder="驳回原因（可选）">
+      <input class="field" id="suggReason" placeholder="请输入驳回原因">
       <div class="sugg-row"><button class="sugg-mini" data-act="suggCancelReject">取消</button><button class="sugg-mini danger" data-act="suggConfirmReject" data-g="${g.id}">确认驳回</button></div></div>`;
   }
   return `<div class="sugg-card"><div class="sugg-top"><span class="sugg-type ${g.type}">${suggTypeLabel(g)}</span><span class="sugg-name">${esc(suggName(g))}</span>${g.conf?`<span class="sugg-conf">置信 ${Math.round(g.conf*100)}%</span>`:''}</div>

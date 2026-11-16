@@ -3019,7 +3019,7 @@ function renderFill(){
             `<button data-cov="${c}" aria-pressed="${f.cov===c}">${COVL[c]}</button>`).join('')}</div>
           <div class="seg lv" data-disabled="${f.cov&&f.cov!=='none'?'0':'1'}">${['L1','L2','L3'].map(L=>
             `<button data-lv="${L}" aria-pressed="${f.lv===L}">${L}</button>`).join('')}</div>
-          <input class="fby" data-by="${a.id}" value="${esc(f.by||'')}" placeholder="选填，如：导游服务 · 导游实务">
+          <input class="fby" data-by="${a.id}" value="${esc(f.by||'')}" placeholder="如：导游服务 · 导游实务">
         </div>`;
       }).join('') + `</div>`;
     }).join('');

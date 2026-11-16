@@ -240,7 +240,7 @@
       table(['课程名称', '课程类型', '课程编码', '所属专业', '知识体系', '课程计划', '状态', '创建人', '创建时间', '操作'], list.map(function (c) {
         var np = S.plans.filter(function (p) { return p.eduCourseId === c.id; }).length, ks = ksOf(c), st = ksState(c);
         return '<tr><td>' + esc(c.name) + '</td><td>' + (isPublicCourse(c.type) ? '<span class="pill k">公共基础课程</span>' : '<span class="pill core">' + esc(c.type || '专业核心课程') + '</span>') + '</td><td class="mono">' + esc(c.code || '—') + '</td><td>' + esc(majorPath(c.majorId)) + '</td>' +
-          '<td>' + (ks ? '<span class="ks-tag">● ' + esc(ks.label) + '</span><div class="muted" style="font-size:11px">' + esc(viaText(c)) + '</div>' : st === '不计入技能达成' ? '<span class="muted" style="font-size:12px">— 不计入技能达成</span>' : '<span class="ks-tag no">○ 未关联（需关联）</span>') + '</td>' +
+          '<td>' + (ks ? '<span class="ks-tag">● ' + esc(ks.label) + '</span>' : '<span class="muted">—</span>') + '</td>' +
           // 课程计划数：点击到「课程计划」并带上本课程的筛选
           '<td>' + (np ? '<a class="lk" href="' + esc(UI.link('course-plan.html?ec=' + encodeURIComponent(c.id))) + '" title="查看使用该课程的课程计划">' + np + '</a>' : '<span class="muted">0</span>') + '</td><td>' + pill(c.status) + '</td>' +
           '<td>' + esc(c.by || '—') + '</td><td class="muted">' + esc(c.at || '—') + '</td>' +
@@ -319,7 +319,7 @@
   var FORMS = {
     lab: function () {
       return [{ k: 'name', label: '名称', req: true, full: true, ph: '如：导游服务综合实训室' }, { k: 'type', label: '类型', type: 'select', req: true, options: LAB_TYPES },
-        { k: 'seats', label: '容纳人数', type: 'number', ph: '选填' }, { k: 'location', label: '地点', ph: '如：实训楼 302' }, { k: 'owner', label: '负责人', ph: '选填' },
+        { k: 'seats', label: '容纳人数', type: 'number', ph: '如：60' }, { k: 'location', label: '地点', ph: '如：实训楼 302' }, { k: 'owner', label: '负责人', ph: '如：张老师' },
         { k: 'conds', label: '能提供的实训条件', type: 'chips', req: true, options: LAB_CONDS.map(function (d) { return d.name; }) },
         { k: 'desc', label: '说明', type: 'textarea', full: true, ph: '如：可同时开展两组演练；设备维修中可写在这里' }];
     },
@@ -374,10 +374,11 @@
       if (!x) v.type = '专业核心课程';
       // 关联知识体系在图谱中心由专业负责人维护（一课一体系），课程侧只读展示、不再提供编辑
       var ksLabel = x && x.ks ? (ksOptions().filter(function (o) { return o.v === x.ks; })[0] || { label: x.ksName || x.ks }).label : '';
+      var ksLink = '<a class="lk" href="' + esc(UI.link('graph/knowledge-system.html', 'admin')) + '">去图谱中心 关联知识体系 ›</a>';
       extra = '<div class="fgrid" style="margin-top:4px"><div class="ff full"><span class="lh"><span>关联知识体系</span></span>' +
         (x && x.ks
           ? '<div style="font-size:13px;padding:8px 10px;border:1px solid var(--rule-2);border-radius:8px"><b>' + esc(ksLabel) + '</b><span style="color:var(--muted);font-size:12px;margin-left:8px">来源：' + esc(viaText(x)) + '</span></div>'
-          : '<div style="font-size:12.5px;color:var(--muted);padding:2px 2px 0">未关联。关联由专业负责人在图谱中心维护：建课程级知识体系时选择本课程，或用「匹配课程」批量关联' + (isPublicCourse(x ? x.type : v.type) ? '；公共基础课程默认不计入技能达成，可不关联' : '') + '。<a class="lk" href="' + esc(UI.link('graph/knowledge-system.html', 'admin')) + '">去图谱中心 ›</a></div>') +
+          : '<div style="padding:2px 0 0">' + ksLink + '</div>') +
         '</div></div>';
     }
     var m = TK.modal({ title: title, width: 560, body: (parent ? '<div class="scbar" style="margin:0 0 10px">上级专业：<b>' + esc(TK.majorPath(E, parent.id)) + '</b></div>' : '') + TK.formHTML(fields, v) + extra,

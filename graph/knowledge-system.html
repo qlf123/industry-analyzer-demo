@@ -31,6 +31,8 @@
       .ks-card-scope{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;margin:0 0 12px 6px;background:#eef0ff;color:#5149e9;}
       .ks-card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
       .ks-card-rel{display:flex;align-items:center;gap:6px;font-size:12px;color:#1f9d55;margin:-6px 0 10px;min-width:0;}
+      .ks-card-rel-none{color:var(--muted,#8a94a6);}
+      .ks-card-rel-none svg{opacity:.55;}
       .ks-card-rel svg{flex:none;}
       .ks-card-rel span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
       .ks-card-rel b{font-weight:600;color:#187a49;}
@@ -85,7 +87,6 @@
       .ks-rel-hint{font-size:11px;color:#8b99ac;margin-top:7px;}
       .ks-rel-block{margin-bottom:14px;}
       .ks-rel-block .ks-rel-grid{margin-bottom:0;}
-      .ks-card-tag-unlinked{background:#fff4e5;color:#b54708;}
       .ks-rel-grid{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
       .ks-dialog-body .ks-rel-field{flex:1;min-width:180px;display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#60718a;margin-bottom:0;}
       .ks-dialog-body .ks-rel-field select{height:36px;margin-top:0;padding:0 10px;border:1px solid #dfe6ef;border-radius:8px;font-size:13px;color:#31425e;background:#fff;box-sizing:border-box;}
@@ -191,17 +192,17 @@
             <button type="button" class="ks-type-btn active" data-type="standard" onclick="setKsType('standard')">标准创建</button>
             <button type="button" class="ks-type-btn" data-type="file" onclick="setKsType('file')">参考文件创建</button>
           </div>
+          <label id="ksNameField" style="display:none;">名称 <span class="req">*</span><input id="newKsName" type="text" placeholder="请输入名称" maxlength="40" oninput="ksNameAutoFilled=false" /></label>
           <label>范围 <span class="req">*</span><select id="newKsRange" onchange="onKsRangeChange()"><option value="专业大类">专业大类</option><option value="专业">专业</option><option value="课程">课程</option></select></label>
           <div class="ks-rel-block" id="ksRelPanel">
             <div class="ks-rel-grid">
-              <label class="ks-rel-field" id="ksRelCatField" style="display:none;">关联专业大类（选填）<select id="newKsRelCat" onchange="onKsRelCatChange()"></select></label>
-              <label class="ks-rel-field" id="ksRelMajorField" style="display:none;"><span id="ksRelMajorLabel">关联专业（选填）</span><select id="newKsRelMajor" onchange="onKsRelMajorChange()"></select></label>
-              <label class="ks-rel-field" id="ksRelCourseField" style="display:none;">关联课程（选填）<select id="newKsRelCourse" onchange="onKsRelCourseChange()"></select></label>
+              <label class="ks-rel-field" id="ksRelCatField" style="display:none;">关联专业大类<select id="newKsRelCat" onchange="onKsRelCatChange()"></select></label>
+              <label class="ks-rel-field" id="ksRelMajorField" style="display:none;"><span id="ksRelMajorLabel">关联专业</span><select id="newKsRelMajor" onchange="onKsRelMajorChange()"></select></label>
+              <label class="ks-rel-field" id="ksRelCourseField" style="display:none;">关联课程<select id="newKsRelCourse" onchange="onKsRelCourseChange()"></select></label>
             </div>
             <div id="ksRelHint" class="ks-rel-hint"></div>
           </div>
           <div id="ksStandardFields">
-            <label>名称 <span class="req">*</span><input id="newKsName" type="text" placeholder="请输入名称" maxlength="40" oninput="ksNameAutoFilled=false" /></label>
             <label>分类<select id="newKsSort"><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select></label>
           </div>
           <div id="ksFileFields" style="display:none;">
@@ -213,7 +214,7 @@
               <span class="ks-file-formats" id="ksFileFormats">支持 html / pdf / markdown / xls / xlsx / txt / csv / md / docx</span>
             </div>
           </div>
-          <label>描述（可选）<textarea id="newKsDesc" rows="3" placeholder="请输入知识体系描述（可选）"></textarea></label>
+          <label>描述<textarea id="newKsDesc" rows="3" placeholder="请输入知识体系描述"></textarea></label>
         </div>
         <div class="ks-dialog-actions">
           <button class="ghost-button" onclick="closeCreateKs()">取消</button>
@@ -232,7 +233,7 @@
         </div>
         <div class="ks-dialog-body">
           <label>范围<select id="editKsRange" class="ks-range-readonly" disabled><option value="专业大类">专业大类</option><option value="专业">专业</option><option value="课程">课程</option></select></label>
-          <div class="ks-field-label">关联对象（选填）</div>
+          <div class="ks-field-label">关联对象</div>
           <div class="ks-rel-grid">
             <label class="ks-rel-field" id="editKsRelCatField" style="display:none;">关联专业大类<select id="editKsRelCat" onchange="onEditKsRelCatChange()"></select></label>
             <label class="ks-rel-field" id="editKsRelMajorField" style="display:none;">关联专业<select id="editKsRelMajor" onchange="onEditKsRelMajorChange()"></select></label>
@@ -241,7 +242,7 @@
           <div id="editKsRelHint" class="ks-rel-hint">未关联，可在编辑中补充关联</div>
           <label>名称 <span class="req">*</span><input id="editKsName" type="text" maxlength="40" /></label>
           <label>分类<select id="editKsSort"><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select></label>
-          <label>描述（可选）<textarea id="editKsDesc" rows="3" placeholder="请输入知识体系描述（可选）"></textarea></label>
+          <label>描述<textarea id="editKsDesc" rows="3" placeholder="请输入知识体系描述"></textarea></label>
         </div>
         <div class="ks-dialog-actions">
           <button class="ghost-button" onclick="closeEditKs()">取消</button>
@@ -412,7 +413,6 @@
         var html='';
         if(s.level) html+='<span class="ks-card-tag">'+s.level+'</span>';
         html+='<span class="ks-card-tag ks-card-tag-range">'+ksRange(s)+'</span>';
-        if(!ksLinked(s)) html+='<span class="ks-card-tag ks-card-tag-unlinked" title="可在「⋮ › 编辑」中补充关联">未关联</span>';
         html+='<span class="ks-card-status '+buildCls+'">'+(buildMap[s.buildStatus]||'构建完成')+'</span>';
         if(s.syncStatus){
           var syncCls=(s.syncStatus==='sync_failed')?'failed':s.syncStatus;
@@ -421,13 +421,14 @@
         return '<div class="ks-card-tags">'+html+'</div>';
       }
 
-      // 关联对象独立一行：已关联专业 / 专业大类 / 课程 时显示（不与状态标签混排）
+      // 关联对象独立一行：与已关联行同位置同结构；未关联显示灰色「未关联xx」
       function ksCardRel(s){
-        if(!ksLinked(s)) return '';
-        var rg=ksRange(s), relObj=ksRelObject(s);
-        var label=rg==='课程'?'已关联课程':(rg==='专业大类'?'已关联专业大类':'已关联专业');
+        var rg=ksRange(s);
+        var label=rg==='课程'?'课程':(rg==='专业大类'?'专业大类':'专业');
+        if(!ksLinked(s)) return '<div class="ks-card-rel ks-card-rel-none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'
+          +'<span>未关联'+label+'，可在「⋮ › 编辑」中补充</span></div>';
         return '<div class="ks-card-rel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'
-          +'<span>'+label+'：<b>'+ksEsc(relObj)+'</b></span></div>';
+          +'<span>已关联'+label+'：<b>'+ksEsc(ksRelObject(s))+'</b></span></div>';
       }
 
       function renderKsCards(){
@@ -656,6 +657,7 @@
       function setKsType(type){
         ksType=type;
         [].slice.call(document.querySelectorAll('#ksTypeSeg .ks-type-btn')).forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-type')===type); });
+        document.getElementById('ksNameField').style.display = type==='standard' ? '' : 'none';
         document.getElementById('ksStandardFields').style.display = type==='standard' ? '' : 'none';
         document.getElementById('ksFileFields').style.display = type==='file' ? '' : 'none';
         document.getElementById('ksManualBtn').style.display = type==='standard' ? '' : 'none';
@@ -748,7 +750,7 @@
         var range=currentRange();
         var hint=document.getElementById('ksRelHint');
         hint.textContent=range==='课程'?'关联后这门课按技能备课、发布，学情可统计到技能；所属专业用于筛选课程':'关联后可一键匹配该'+(range==='专业大类'?'专业大类下的':'专业的')+'教务课程，老师备课、发布才能按技能走';
-        document.getElementById('ksRelMajorLabel').textContent=range==='课程'?'所属专业（选填）':'关联专业（选填）';
+        document.getElementById('ksRelMajorLabel').textContent=range==='课程'?'所属专业':'关联专业';
       }
 
       // 关联选择联动 + 名称自动带出
@@ -994,6 +996,7 @@
           saveKsSystems();
           renderKsCards();
           toast('创建成功');
+          if(m.range!=='课程' && m.rel) openMatchCourses(ksSystems[0].id);   // PRD 4.2：关联成功后自动弹出匹配课程（还在构建则提示稍后再匹配）
         }
         if(m.range!=='课程' && m.rel) takeOverRel(null, m.range, m.rel, doCreate); else doCreate();
       }
@@ -1035,6 +1038,7 @@
             saveKsSystems();
             renderKsCards();
             toast('AI已构建完成「'+s.name+'」，根节点为「'+rootName+'」');
+            if(m.range!=='课程' && relObject) openMatchCourses(id);   // PRD 4.2：关联成功（构建出节点）后自动弹出匹配课程
           },3000);
         }
         if(m.range!=='课程' && m.rel) takeOverRel(null, m.range, m.rel, doCreate); else doCreate();
@@ -1100,6 +1104,9 @@
           // 课程级还没关联教务课程 → 关联课程；专业/大类已关联 → 匹配课程
           if(range==='课程' && !rel) items+='<div class="ks-action-item" data-act="link">关联课程</div>';
           if(range!=='课程' && rel) items+='<div class="ks-action-item" data-act="match">匹配课程</div>';
+        }else if(range!=='课程' && rel){
+          // PRD 验收#7：构建中的专业/大类体系也可点匹配课程（还没课程节点时给提示，构建后可再匹配）
+          items+='<div class="ks-action-item" data-act="match">匹配课程</div>';
         }
         items+='<div class="ks-action-item danger" data-act="delete">删除</div>'
              + '<div class="ks-action-item" data-act="settings">分享</div>';

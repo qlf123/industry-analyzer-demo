@@ -116,7 +116,8 @@ function eduRelCourses(){
   return S.edu.courses.filter(function(c){ return c.status === '启用' && (!mine || mine.indexOf(c.id) >= 0); })
     .map(function(c){ return { id: c.id, name: c.name, major: maj(c.majorId), type: c.type }; });
 }
-// 可选「关联课程」：管理员全部 / 教师仅可授课程（带所属专业）
+// 可选「关联课程」：优先取管理端教务数据（管理员=全部启用课程；教师=自己课程计划里的课程，PRD 5.3）；
+// 仅 teacher-kit.js 未加载（脱离平台单独打开图谱 demo）时退回本地静态 teachableCourses
 function selectableRelCourses(){
   var edu = eduRelCourses(); if(edu) return edu;
   if(CURRENT_USER.role === 'admin') return COURSE_LIST;

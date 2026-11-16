@@ -1268,14 +1268,14 @@ function editNode(nodeId, level){
   const tree = g?.tree;
   const titles = ['编辑行业','编辑子行业','编辑岗位','编辑能力项'];
   $('#editNodeTitle').textContent = titles[level] || '编辑节点';
-  let fields = `<label>名称<input id="editName" type="text" value="${esc(node.name||'')}" /></label>`;
+  let fields = `<label>名称<span style="color:#F04438"> *</span><input id="editName" type="text" value="${esc(node.name||'')}" /></label>`;
   if(level <= 2 && node.describe !== undefined) fields += `<label>描述<textarea id="editDesc" rows="3">${esc(node.describe||'')}</textarea></label>`;
   if(level === 3){
     fields += `<label>类型<select id="editType"><option value="knowledge" ${node.type==='knowledge'?'selected':''}>知识</option><option value="skill" ${node.type==='skill'?'selected':''}>技能</option><option value="attitude" ${node.type==='attitude'?'selected':''}>素养</option></select></label>`;
     fields += `<label>领域<input id="editDomain" type="text" value="${esc(node.domain||'')}" /></label>`;
-    fields += `<label>L1 要求（选填）<input id="editL1" type="text" value="${esc(node.l1Req||'')}" placeholder="L1 级别的要求描述" /></label>`;
-    fields += `<label>L2 要求（选填）<input id="editL2" type="text" value="${esc(node.l2Req||'')}" placeholder="L2 级别的要求描述" /></label>`;
-    fields += `<label>L3 要求（选填）<input id="editL3" type="text" value="${esc(node.l3Req||'')}" placeholder="L3 级别的要求描述" /></label>`;
+    fields += `<label>L1 要求<input id="editL1" type="text" value="${esc(node.l1Req||'')}" placeholder="L1 级别的要求描述" /></label>`;
+    fields += `<label>L2 要求<input id="editL2" type="text" value="${esc(node.l2Req||'')}" placeholder="L2 级别的要求描述" /></label>`;
+    fields += `<label>L3 要求<input id="editL3" type="text" value="${esc(node.l3Req||'')}" placeholder="L3 级别的要求描述" /></label>`;
     fields += `<label>核心能力<select id="editCore"><option value="true" ${node.core?'selected':''}>是</option><option value="false" ${!node.core?'selected':''}>否</option></select></label>`;
     fields += `<label>行为描述<textarea id="editBehavior" rows="3">${esc(node.behaviorDesc||'')}</textarea></label>`;
     fields += `<label>评估方式<input id="editAssess" type="text" value="${esc(node.assessMethod||'')}" /></label>`;
@@ -1542,7 +1542,7 @@ function updateNodeParentOptions(){
         <button type="button" id="newL3AddBtn" onclick="addLevel('newL3Block','newL3AddBtn')" style="border:1px solid #5149e9;color:#5149e9;background:#fff;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;">+ 增加 L3</button>
       </div>
       <label>核心能力<select id="newNodeCore"><option value="false">否</option><option value="true">是</option></select></label>
-      <div style="margin-bottom:15px;"><span style="display:block;color:var(--text2);font-size:12px;font-weight:600;">前置能力项（选填，可多选）</span><div id="newNodePrereq" class="checkbox-group" style="margin-top:7px;">${prereqOpts || '<span style="font-size:12px;color:#999;">暂无可选能力项</span>'}</div></div>
+      <div style="margin-bottom:15px;"><span style="display:block;color:var(--text2);font-size:12px;font-weight:600;">前置能力项（多选）</span><div id="newNodePrereq" class="checkbox-group" style="margin-top:7px;">${prereqOpts || '<span style="font-size:12px;color:#999;">暂无可选能力项</span>'}</div></div>
       <label>行为描述<textarea id="newNodeBehavior" rows="2" placeholder="描述该能力项的可观察行为（可选）"></textarea></label>`;
   } else {
     $('#newNodeExtraFields').innerHTML = '<label>描述<textarea id="newNodeDesc" rows="2" placeholder="描述（可选）"></textarea></label>';
@@ -1669,7 +1669,7 @@ function openAddChild(parentId, level){
   const tree = g?.tree;
   const childLabels = ['子行业','岗位','能力项'];
   $('#addChildTitle').textContent = '添加' + childLabels[level];
-  let fields = `<label>名称<input id="addChildName" type="text" placeholder="请输入${childLabels[level]}名称" /></label>`;
+  let fields = `<label>名称<span style="color:#F04438"> *</span><input id="addChildName" type="text" placeholder="请输入${childLabels[level]}名称" /></label>`;
 
   if(level === 0){
     // 子行业：下层节点（岗位可多选）
@@ -1738,7 +1738,7 @@ function openAddChild(parentId, level){
     const allAbilities = [];
     (g?.tree?.subIndustries||[]).forEach(sub=>(sub.positions||[]).forEach(pos=>(pos.abilities||[]).forEach(ab=>allAbilities.push({id:ab.id,name:ab.name}))));
     const prereqOptions = allAbilities.map(a=>`<label><input type="checkbox" value="${a.id}"> ${a.name}</label>`).join('');
-    fields += `<div style="margin-bottom:15px;"><span style="display:block;color:var(--text2);font-size:12px;font-weight:600;">前置能力项（选填，可多选）</span><div id="addChildPrereq" class="checkbox-group" style="margin-top:7px;">${prereqOptions || '<span style="font-size:12px;color:#999;">暂无可选能力项</span>'}</div></div>`;
+    fields += `<div style="margin-bottom:15px;"><span style="display:block;color:var(--text2);font-size:12px;font-weight:600;">前置能力项（多选）</span><div id="addChildPrereq" class="checkbox-group" style="margin-top:7px;">${prereqOptions || '<span style="font-size:12px;color:#999;">暂无可选能力项</span>'}</div></div>`;
     fields += `<label>行为描述<textarea id="addChildBehavior" rows="2" placeholder="描述该能力项的可观察行为（可选）"></textarea></label>`;
   }
   $('#addChildForm').innerHTML = fields;
