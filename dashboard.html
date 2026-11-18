@@ -354,15 +354,15 @@ svg text{font-family:inherit}
     // 技能看证据，知识点看最近一次老师确认的评价（含退回），两个维度分开显示
     if (UI.hasPerm(DEMO.getState(), UI.currentIdentity(DEMO.getState()), 'teach:quality:view')) {
       var CS = '#4f7cff', CK = '#f59e0b', SP = scopedPlans();
-      var tq = TR.compute(S, SP, r), tqp = TR.compute(S, SP, pr), tr = TR.rate(tq.ok, tq.pairs), trp = TR.rate(tqp.ok, tqp.pairs);
+      var tq = TR.compute(S, SP, r), tqp = TR.compute(S, SP, pr), tr = tq.std.rate, trp = tqp.std.rate;   // 标准达成率：达成人数/(课程标准技能数×班级人数)，未关联课程不计入
       var kq = TR.kpRate(TR.kpsAgg(S, SP, r.b, r.a)), kqp = TR.kpRate(TR.kpsAgg(S, SP, pr.b, pr.a));
       var mNames = F.scope ? TK.majorSubIds(E, F.scope).map(function (id) { return (E.majors.filter(function (m) { return m.id === id; })[0] || {}).name; }) : null;
       var imps = (S.improves || []).filter(function (x) { return x.status === '待处理' && (!mNames || mNames.indexOf(x.major) >= 0); });
-      var weak = tq.abilities.filter(function (a) { return a.pairs; }).map(function (a) { return { n: a.name, r: TR.rate(a.ok, a.pairs), no: a.no }; }).sort(function (a, b) { return a.r - b.r; }).slice(0, 5);
+      var weak = tq.abilities.filter(function (a) { return a.sDen; }).map(function (a) { return { n: a.name, r: TR.rate(a.sOk, a.sDen), no: a.no }; }).filter(function (a) { return a.r != null; }).sort(function (a, b) { return a.r - b.r; }).slice(0, 5);
       var go = function (q, txt) { return '<a class="lk" href="' + esc(UI.link('teach-quality.html?' + q, 'admin')) + '">' + txt + ' ›</a>'; };
       // 趋势：本周期内按刻度，累计到每个刻度末的达成率 / 掌握率，和每个刻度新增的评价人次
       var tb = buckets(r), now0 = new Date();
-      var sv = tb.map(function (b) { if (b.a > now0) return null; var x = TR.compute(S, SP, { a: r.a, b: b.b }); return x.pairs ? TR.rate(x.ok, x.pairs) : null; });
+      var sv = tb.map(function (b) { if (b.a > now0) return null; var x = TR.compute(S, SP, { a: r.a, b: b.b }); return x.std.den ? x.std.rate : null; });
       var kv = tb.map(function (b) { if (b.a > now0) return null; var x = TR.kpRate(TR.kpsAgg(S, SP, b.b, r.a)); return x.t ? x.r : null; });
       var bv = tb.map(function (b) { return TR.compute(S, SP, { a: b.a, b: b.b }).pairs; });
       var tW = 520, tL = 32, tR = 70, n0 = tb.length, xi = function (i) { return tL + (n0 <= 1 ? (tW - tL - tR) / 2 : (tW - tL - tR) * i / (n0 - 1)); };
@@ -386,12 +386,12 @@ svg text{font-family:inherit}
         return g + '</svg>';
       };
       // 各课程对比（本周期）
-      var crs = SP.filter(function (p) { return tq.byPlan[p.id]; }).map(function (p) { var b = tq.byPlan[p.id], k = TR.kpRate(TR.kpsAgg(S, [p], r.b, r.a)); return { n: p.course + ' · ' + cls(p.classId).name, s: TR.rate(b.pairs - b.no, b.pairs), k: k.r }; });
+      var crs = SP.filter(function (p) { return tq.byPlan[p.id]; }).map(function (p) { var b = tq.byPlan[p.id], sb = tq.stdByPlan[p.id], k = TR.kpRate(TR.kpsAgg(S, [p], r.b, r.a)); return { n: p.course + ' · ' + cls(p.classId).name, s: sb && sb.den ? sb.rate : (b ? TR.rate(b.pairs - b.no, b.pairs) : null), k: k.r }; });
       var hbar = function (v, c) { return '<span style="flex:1;height:9px;background:var(--card);border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:' + (v || 0) + '%;background:' + c + ';border-radius:4px"></i></span><span style="width:38px;text-align:right;font-size:11.5px;color:var(--ink-2)">' + (v == null ? '—' : v + '%') + '</span>'; };
       var lg = function (c, t) { return '<span style="font-size:11.5px;font-weight:400;color:var(--ink-2);display:inline-flex;align-items:center;gap:5px"><i style="width:8px;height:8px;border-radius:2px;background:' + c + '"></i>' + t + '</span>'; };
       h += '<div class="db-sec"><div class="db-st"><span class="no">6</span>教学质量<span class="sp"></span>' + go('t=reach', '进入教学达成') + '</div>' +
-        '<div class="db-sub">技能看老师确认通过的证据，知识点看最近一次老师确认的评价（含退回）；两个维度分开统计，学生自评不计入</div><div class="kpis">' +
-        kpi('🎯', '#eef2ff', '本' + UNIT[F.p] + '技能达成率', tr == null ? '—' : tr, tr == null ? '' : '%', tr != null && trp != null ? delta(tr, trp, ' 个百分点') : '') +
+        '<div class="db-sub">达成率口径：达成人数 /（课程标准技能数 × 班级人数），未关联课程不计入；知识点看最近一次老师确认的评价（含退回）；学生自评不计入</div><div class="kpis">' +
+        kpi('🎯', '#eef2ff', '本' + UNIT[F.p] + '标准达成率', tr == null ? '—' : tr, tr == null ? '' : '%', tr != null && trp != null ? delta(tr, trp, ' 个百分点') : '') +
         kpi('📘', '#fff7ed', '本' + UNIT[F.p] + '知识点掌握率', kq.r == null ? '—' : kq.r, kq.r == null ? '' : '%', kq.r != null && kqp.r != null ? delta(kq.r, kqp.r, ' 个百分点') : '') +
         kpi('📝', '#eef2ff', '学生 × 技能 评价', tq.pairs, '次', delta(tq.pairs, tqp.pairs)) +
         kpi('💬', '#f3e8ff', '待处理改进建议', imps.length, '条') + '</div>' +

@@ -148,30 +148,30 @@
     var plans = scopePlans(true), R = TR.compute(S, plans), A = kpsAgg();
     var h = overview(plans, R, A);
     var TABS = [['abl', '按能力'], ['course', '按课程'], ['kp', '按知识点']];
-    var NOTE = { abl: '每个「学生 × 技能」取最近一次证据，需改进为未达成；点击行查看明细', course: '技能达成率看证据，知识点掌握率看最近一次评价；点击行查看明细', kp: '点击行展开查看未掌握学生名单' };
+    var NOTE = { abl: '达成率口径：达成人数 /（课程标准技能数 × 班级人数），未关联课程不计入；评价列看最近一次证据，点击行查看明细', course: '标准达成率 = 达成人数 /（课程标准技能数 × 班级人数），未关联课程不计入；点击行查看明细', kp: '点击行展开查看未掌握学生名单' };
     h += '<div class="tq-card"><div class="tq-h"><b>明细</b><span class="tabs-s">' + TABS.map(function (x) { return '<button data-by="' + x[0] + '" aria-pressed="' + (F.by === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</span><span class="sp"></span>' +
       '<span class="note">' + NOTE[F.by] + '</span></div>' + (F.by === 'kp' ? '' : '<div class="tw">');
     if (F.by === 'kp') return h + kpsDetail(A) + '</div>';
     if (F.by === 'abl') {
-      h += '<table class="tbl2"><thead><tr><th>能力</th><th>支撑技能</th><th>有课堂证据</th><th>学生 × 技能 评价</th><th>已达成</th><th>未达成</th><th>达成率</th></tr></thead><tbody>' +
+      h += '<table class="tbl2"><thead><tr><th>能力</th><th>支撑技能</th><th>有课堂证据</th><th>学生 × 技能 评价</th><th>已达成</th><th>未达成</th><th>标准达成率</th></tr></thead><tbody>' +
         (R.abilities.map(function (r) {
           var k = 'A|' + r.id;
           return '<tr class="xrow" data-x="' + k + '"><td>' + esc(r.name) + (r.a && r.a.core ? ' <span style="color:var(--brand)" title="核心能力">★</span>' : '') + '</td><td class="mono">' + r.sk.length + ' 个</td><td class="mono">' + r.withEv.length + ' 个</td>' +
-            '<td class="mono">' + r.pairs + '</td><td class="mono" style="color:var(--good)">' + r.ok + '</td><td class="mono"' + (r.no ? ' style="color:var(--crit);font-weight:600"' : '') + '>' + r.no + '</td><td>' + rateHTML(r.ok, r.pairs) + '</td></tr>' +
+            '<td class="mono">' + r.pairs + '</td><td class="mono" style="color:var(--good)">' + r.ok + '</td><td class="mono"' + (r.no ? ' style="color:var(--crit);font-weight:600"' : '') + '>' + r.no + '</td><td>' + (r.sDen ? rateHTML(r.sOk, r.sDen) : '<span class="note">未关联</span>') + '</td></tr>' +
             '<tr class="det"' + (OPEN[k] ? '' : ' hidden') + '><td colspan="7"><div class="note">支撑技能及课堂证据：</div><ul>' + r.sk.map(function (x) {
               var ev = R.bySkill[x.sid] || [], bad = ev.filter(function (e) { return e.grade === '需改进'; }).length;
               return '<li><b>' + esc(TK.skillName(x.sid)) + '</b> <span class="note">《' + esc(courseOf(R.K, x.sid)) + '》· ' + esc(x.type) + '</span> — ' + (ev.length ? '已评价 ' + ev.length + ' 人次，达成 ' + (ev.length - bad) + (bad ? '，<span style="color:var(--crit)">未达成 ' + bad + '</span>' : '') : '<span class="note">还没有课堂证据</span>') + '</li>';
             }).join('') + '</ul><a class="lk" href="' + esc(UI.link('teach-quality.html?t=improve&new=' + encodeURIComponent(r.name), 'admin')) + '" style="display:inline-block;margin-top:6px">针对这项能力提改进建议 ›</a></td></tr>';
         }).join('') || '<tr><td colspan="7"><div class="empty3">当前范围还没有课堂证据。老师在智慧课堂确认评价后，这里会显示。</div></td></tr>') + '</tbody></table>';
     } else {
-      var rows = plans.map(function (p) { return { p: p, b: R.byPlan[p.id] }; }).sort(function (a, b) { var ra = a.b ? TR.rate(a.b.pairs - a.b.no, a.b.pairs) : 101, rb = b.b ? TR.rate(b.b.pairs - b.b.no, b.b.pairs) : 101; return ra - rb; });
-      h += '<table class="tbl2"><thead><tr><th>课程</th><th>班级</th><th>任课教师</th><th>学期</th><th>已评价课次</th><th>学生</th><th>学生 × 技能 评价</th><th>未达成</th><th>技能达成率</th><th>知识点掌握率</th></tr></thead><tbody>' +
+      var rows = plans.map(function (p) { return { p: p, b: R.byPlan[p.id], sb: R.stdByPlan[p.id] }; }).sort(function (a, b) { var ra = a.sb ? a.sb.rate : (a.b ? TR.rate(a.b.pairs - a.b.no, a.b.pairs) : 101), rb = b.sb ? b.sb.rate : (b.b ? TR.rate(b.b.pairs - b.b.no, b.b.pairs) : 101); return (ra == null ? 101 : ra) - (rb == null ? 101 : rb); });
+      h += '<table class="tbl2"><thead><tr><th>课程</th><th>班级</th><th>任课教师</th><th>学期</th><th>已评价课次</th><th>学生</th><th>学生 × 技能 评价</th><th>未达成</th><th>标准达成率</th><th>知识点掌握率</th></tr></thead><tbody>' +
         (rows.map(function (x) {
           var p = x.p, b = x.b, k = 'P|' + p.id;
           if (!b) return '<tr><td>' + esc(p.course) + '</td><td>' + esc(cls(p.classId).name || '') + '</td><td>' + esc(p.teacher) + '</td><td class="note">' + esc(p.term) + '</td><td colspan="5" class="note">还没有课堂证据</td><td>' + kpRateOf(p) + '</td></tr>';
           var weak = Object.keys(b.weak).sort(function (m, n) { return b.weak[n] - b.weak[m]; });
           return '<tr class="xrow" data-x="' + k + '"><td>' + esc(p.course) + '</td><td>' + esc(cls(p.classId).name || '') + '</td><td>' + esc(p.teacher) + '</td><td class="note">' + esc(p.term) + '</td>' +
-            '<td class="mono">' + Object.keys(b.lessons).length + '</td><td class="mono">' + Object.keys(b.students).length + '</td><td class="mono">' + b.pairs + '</td><td class="mono"' + (b.no ? ' style="color:var(--crit);font-weight:600"' : '') + '>' + b.no + '</td><td>' + rateHTML(b.pairs - b.no, b.pairs) + '</td><td>' + kpRateOf(p) + '</td></tr>' +
+            '<td class="mono">' + Object.keys(b.lessons).length + '</td><td class="mono">' + Object.keys(b.students).length + '</td><td class="mono">' + b.pairs + '</td><td class="mono"' + (b.no ? ' style="color:var(--crit);font-weight:600"' : '') + '>' + b.no + '</td><td>' + (x.sb && x.sb.den ? rateHTML(x.sb.ok, x.sb.den) : '<span class="note">未关联</span>') + '</td><td>' + kpRateOf(p) + '</td></tr>' +
             '<tr class="det"' + (OPEN[k] ? '' : ' hidden') + '><td colspan="10">' + (weak.length ? '<div class="note">未达成较多的技能：</div><ul>' + weak.slice(0, 6).map(function (sid) { return '<li>' + esc(TK.skillName(sid)) + ' — <span style="color:var(--crit)">未达成 ' + b.weak[sid] + ' 人</span></li>'; }).join('') + '</ul>' : '<div class="note">评价过的技能都已达成。</div>') +
             '<a class="lk" href="' + esc(UI.link('teach-quality.html?t=improve&new=&course=' + encodeURIComponent(p.course), 'admin')) + '" style="display:inline-block;margin-top:6px">针对这门课提改进建议 ›</a></td></tr>';
         }).join('') || '<tr><td colspan="10"><div class="empty3">当前范围没有课程计划</div></td></tr>') + '</tbody></table>';
@@ -232,17 +232,16 @@
   function overview(plans, R, A) {
     var now = new Date(), ago = new Date(now.getTime() - 7 * 864e5);
     var K = kpRate(A), R0 = TR.compute(S, plans, { a: new Date(0), b: ago }), K0 = kpRate(kpsAgg(plans, ago));
-    var sr = TR.rate(R.ok, R.pairs), sr0 = TR.rate(R0.ok, R0.pairs);
+    var sr = R.std.rate, sr0 = R0.std.rate;   // 标准达成率：达成人数/(课程标准技能数×班级人数)，未关联课程不计入
     var cov = Object.keys(R.byPlan).length;
-    // 学生：按每人「学生 × 技能」最近一次证据的达成比例分档
-    var stu = {}; Object.keys(R.bySkill).forEach(function (sid) { R.bySkill[sid].forEach(function (e) { var x = stu[e.student] = stu[e.student] || { ok: 0, n: 0 }; x.n++; if (e.grade !== '需改进') x.ok++; }); });
-    var band = { hi: [], mid: [], lo: [] }; Object.keys(stu).forEach(function (n) { var r = stu[n].ok / stu[n].n; (r >= 0.8 ? band.hi : r >= 0.6 ? band.mid : band.lo).push(n); });
-    var noStu = Object.keys(stu).filter(function (n) { return stu[n].ok < stu[n].n; }).length;
+    // 学生：按每人达成课程标准技能的比例分档（分母 = 其所在课程计划的标准技能数合计）
+    var band = { hi: [], mid: [], lo: [] }; Object.keys(R.stdStu).forEach(function (n) { var s = R.stdStu[n]; if (!s.den) return; var r = s.ok / s.den; (r >= 0.8 ? band.hi : r >= 0.6 ? band.mid : band.lo).push(n); });
+    var noStu = Object.keys(R.stdStu).filter(function (n) { var s = R.stdStu[n]; return s.den && s.ok < s.den; }).length;
     var names = scopeNames(), imps = (S.improves || []).filter(function (x) { return !names || names.indexOf(x.major) >= 0; });
     var pend = imps.filter(function (x) { return x.status === '待处理'; }).length, done = imps.filter(function (x) { return x.status === '已采纳' || x.status === '暂不处理'; }).length;
     var card = function (lab, val, sub, dl, dot) { return '<div class="ov-c">' + '<div class="ov-l">' + (dot ? '<i style="background:' + dot + '"></i>' : '') + lab + '</div><div class="ov-v">' + val + '</div><div class="ov-s">' + sub + '</div>' + (dl || '') + '</div>'; };
     var h = '<div class="ov-cards">' +
-      card('技能达成率', sr == null ? '—' : sr + '<small>%</small>', '学生 × 技能 ' + R.pairs + ' 次评价 · ' + R.skills + ' 项技能 · ' + R.abilities.length + ' 项能力', delta(sr, sr0, ' 个百分点'), CS) +
+      card('技能达成率', sr == null ? '—' : sr + '<small>%</small>', '口径：达成人数 /（课程标准技能数 × 班级人数）· ' + R.pairs + ' 次评价 · 未关联课程不计入', delta(sr, sr0, ' 个百分点'), CS) +
       card('知识点掌握率', K.r == null ? '—' : K.r + '<small>%</small>', '考查 ' + A.groups.reduce(function (a, g) { return a + g.kps.length; }, 0) + ' 个知识点 · 已评价 ' + K.t + ' 人次', delta(K.r, K0.r, ' 个百分点'), CK) +
       card('课程计划覆盖', cov + '<small> / ' + plans.length + '</small>', '有课堂证据的课程计划' + (plans.length ? '，占 ' + TR.rate(cov, plans.length) + '%' : '')) +
       card('参与学生', R.students + '<small> 名</small>', '有老师确认的课堂证据' + (R.students ? '，人均 ' + Math.round(R.pairs / R.students * 10) / 10 + ' 项技能' : '')) +
@@ -252,24 +251,24 @@
     var rg = termRange();
     if (rg) {
       var ws = weeks(rg);
-      var sv = ws.map(function (w) { var x = TR.compute(S, plans, { a: rg.a, b: w.b }); return x.pairs ? TR.rate(x.ok, x.pairs) : null; });
+      var sv = ws.map(function (w) { var x = TR.compute(S, plans, { a: rg.a, b: w.b }); return x.std.den ? x.std.rate : null; });
       var kv = ws.map(function (w) { var x = kpRate(kpsAgg(plans, w.b)); return x.t ? x.r : null; });
       var bv = ws.map(function (w) { return TR.compute(S, plans, { a: w.a, b: w.b }).pairs; });
       h += '<div class="ov-panel"><div class="ov-ph">' + esc(F.term || TK.TERM) + ' · 按周趋势<span class="sp"></span><span class="lg"><i style="background:' + CS + '"></i>技能达成率（累计）</span><span class="lg"><i style="background:' + CK + '"></i>知识点掌握率（累计）</span></div>' +
         (sv.some(function (v) { return v != null; }) ? lineSVG(ws, [{ n: '技能达成率', short: '技能', c: CS, v: sv }, { n: '知识点掌握率', short: '知识点', c: CK, v: kv }]) +
           '<div class="ov-ph" style="margin-top:6px">每周新增评价（学生 × 技能，人次）</div>' + barSVG(ws, bv) : '<div class="empty3">本学期还没有课堂证据</div>') +
-        '<div class="note" style="margin-top:4px">累计：截至每周末，每个「学生 × 技能」取最近一次结果计算；技能看证据，知识点看最近一次评价，两者口径不同，分开看</div></div>';
+        '<div class="note" style="margin-top:4px">累计：截至每周末计算标准达成率（达成人数 / 课程标准技能数 × 班级人数）与知识点掌握率，两者口径不同，分开看</div></div>';
     }
     // 课程对比 + 学生分布 + 薄弱能力
-    var crs = plans.filter(function (p) { return R.byPlan[p.id]; }).map(function (p) { var b = R.byPlan[p.id], k = kpRate(kpsAgg([p])); return { n: p.course + ' · ' + (cls(p.classId).name || ''), s: TR.rate(b.pairs - b.no, b.pairs), k: k.r }; });
+    var crs = plans.filter(function (p) { return R.byPlan[p.id]; }).map(function (p) { var b = R.byPlan[p.id], sb = R.stdByPlan[p.id], k = kpRate(kpsAgg([p])); return { n: p.course + ' · ' + (cls(p.classId).name || ''), s: sb && sb.den ? sb.rate : (b ? TR.rate(b.pairs - b.no, b.pairs) : null), k: k.r }; });
     var bar = function (v, c) { return '<span class="hb"><i style="width:' + (v || 0) + '%;background:' + c + '"></i></span><span class="hv">' + (v == null ? '—' : v + '%') + '</span>'; };
-    var tot = Object.keys(stu).length || 1;
-    var weak = R.abilities.filter(function (a) { return a.pairs; }).map(function (a) { return { n: a.name, r: TR.rate(a.ok, a.pairs), no: a.no }; }).sort(function (a, b) { return a.r - b.r; }).slice(0, 5);
+    var tot = Object.keys(R.stdStu).length || 1;
+    var weak = R.abilities.filter(function (a) { return a.sDen; }).map(function (a) { return { n: a.name, r: TR.rate(a.sOk, a.sDen), no: a.no }; }).filter(function (a) { return a.r != null; }).sort(function (a, b) { return a.r - b.r; }).slice(0, 5);
     h += '<div class="ov-grid">' +
       '<div class="ov-panel"><div class="ov-ph">各课程达成对比<span class="sp"></span><span class="lg"><i style="background:' + CS + '"></i>技能</span><span class="lg"><i style="background:' + CK + '"></i>知识点</span></div>' +
         (crs.length ? crs.map(function (c) { return '<div class="cr"><div class="cn" title="' + esc(c.n) + '">' + esc(c.n) + '</div><div class="cb">' + bar(c.s, CS) + '</div><div class="cb">' + bar(c.k, CK) + '</div></div>'; }).join('') : '<div class="empty3">还没有课堂证据</div>') + '</div>' +
-      '<div class="ov-panel"><div class="ov-ph">学生技能达成分布<span class="sp"></span><span class="note">按每人已评价技能的达成比例</span></div>' +
-        (Object.keys(stu).length ? '<div class="stk">' + [['hi', '≥80%', '#22c55e'], ['mid', '60%–79%', '#94a3b8'], ['lo', '<60%', '#ef4444']].map(function (x) { var c = band[x[0]].length; return c ? '<span style="flex:' + c + ';background:' + x[2] + '" title="' + x[1] + '：' + c + ' 名"></span>' : ''; }).join('') + '</div>' +
+      '<div class="ov-panel"><div class="ov-ph">学生技能达成分布<span class="sp"></span><span class="note">按每人达成课程标准技能的比例，未关联课程不计入</span></div>' +
+        (Object.keys(R.stdStu).length ? '<div class="stk">' + [['hi', '≥80%', '#22c55e'], ['mid', '60%–79%', '#94a3b8'], ['lo', '<60%', '#ef4444']].map(function (x) { var c = band[x[0]].length; return c ? '<span style="flex:' + c + ';background:' + x[2] + '" title="' + x[1] + '：' + c + ' 名"></span>' : ''; }).join('') + '</div>' +
           '<div class="stl">' + [['hi', '达成 ≥80%', '#22c55e'], ['mid', '60%–79%', '#94a3b8'], ['lo', '低于 60%', '#ef4444']].map(function (x) { return '<div><i style="background:' + x[2] + '"></i>' + x[1] + '<b>' + band[x[0]].length + ' 名</b><span class="note">' + Math.round(band[x[0]].length * 100 / tot) + '%</span></div>'; }).join('') + '</div>' +
           (band.lo.length ? '<div class="note" style="margin-top:6px">低于 60%：' + band.lo.map(esc).join('、') + '</div>' : '') : '<div class="empty3">还没有课堂证据</div>') +
         '<div class="ov-ph" style="margin-top:14px">达成率最低的能力</div>' +

@@ -200,7 +200,7 @@
       { k: 'mj', label: '专业', type: 'select', req: true, options: majorNames },
       { k: 'cl', label: '班级', type: 'searchselect', req: true, ph: '先选专业，再输入班级名称搜索', options: initMajor ? classOpts(initMajor) : [] },
       // 课程多：带搜索的下拉，辅助说明写所属专业和课程类型（也能按专业搜）
-      { k: 'course', label: '课程', type: 'searchselect', req: true, ph: '输入课程名称或专业搜索', options: courses.map(function (c) { return { v: c.name, sub: (c.majorId ? majorName(c.majorId) : '全校') + ' · ' + (c.type || '专业课') }; }) },
+      { k: 'course', label: '课程', type: 'searchselect', req: true, ph: '输入课程名称或专业搜索', options: courses.map(function (c) { return { v: c.name, sub: majorName(c.majorId) + ' · ' + (c.type || '专业课') }; }) },
       { k: 'teacher', label: '授课老师', type: 'searchselect', req: true, ph: '输入姓名搜索', options: teacherOpts() }
     ];
     var m = TK.drawer({ title: p ? '编辑课程计划' : '新增课程计划', width: 560,
@@ -318,19 +318,22 @@
     if (!hit) { var x = TK.lessonConflict(S, p.classId, p.teacher, start, end, self ? lessonOf(p, self) : null); if (x && !x.c.slotId) hit = x.p; }
     return hit;
   }
-  // edit：改一次排课的时间（未发布课次跟着改）
+  // edit：改一次排课的时间、课次名称（未发布课次跟着改）
   function slotForm(p, weekly, done, edit) {
     var tm = termOf(p) || {}, PS = TK.periods(S), per = PS.map(function (x, i) { return '第' + (i + 1) + '节 ' + x.start + '–' + x.end; });
     var perF = [{ k: 'pa', label: '从', type: 'select', req: true, options: per }, { k: 'pb', label: '到', type: 'select', req: true, options: per }];
     var sp0 = edit ? TK.periodSpan(S, edit.start, edit.end) : [1, Math.min(2, per.length)];
+    // 编辑时带上课次名称：显示当前名称、可改；清空则恢复自动命名（保存时按排课顺序重排）
+    var les = edit ? lessonOf(p, edit) : null;
     var fields = weekly
       ? [{ k: 'from', label: '开始日期', type: 'date', req: true }, { k: 'to', label: '结束日期', type: 'date', req: true },
          { k: 'wd', label: '每周', type: 'select', req: true, full: true, options: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'] }].concat(perF)
-      : [{ k: 'date', label: '上课日期', type: 'date', req: true, full: true }].concat(perF);
+      : [{ k: 'date', label: '上课日期', type: 'date', req: true, full: true }].concat(perF)
+        .concat(les ? [{ k: 'name', label: '课次名称', type: 'text', full: true, ph: '留空则按「' + p.course + ' · 第 N 次课」自动命名' }] : []);
     var today = TK.fmt(new Date(), false);
     var m = TK.modal({ title: (weekly ? '按周批量排课 · ' : edit ? '编辑排课 · ' : '排一次课 · ') + p.course, width: 520,
-      body: TK.formHTML(fields, Object.assign(weekly ? { from: today > (tm.start || '') ? today : tm.start, to: tm.end, wd: '周一' } : { date: edit ? d2(edit.start) : today }, { pa: per[sp0[0] - 1], pb: per[sp0[1] - 1] })) +
-        '<div style="font-size:12px;color:var(--muted);margin-top:6px">学期：' + esc(p.term) + (tm.start ? '（' + tm.start + ' ~ ' + tm.end + '）' : '') + '；节次时间按「教务管理 › 节次时间管理」；同一时间班级或授课老师已有课的会在下面提示，改完再点「确定」</div><div data-cfg></div>',
+      body: TK.formHTML(fields, Object.assign(weekly ? { from: today > (tm.start || '') ? today : tm.start, to: tm.end, wd: '周一' } : { date: edit ? d2(edit.start) : today, name: les ? les.name || '' : '' }, { pa: per[sp0[0] - 1], pb: per[sp0[1] - 1] })) +
+        '<div data-cfg></div>',
       foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">确定</button>' });
     var cfgOf = function () { return m.body.querySelector('[data-cfg]'); };
     // 冲突提示：留在弹框里（不关闭、不落库），列出冲突的日期 / 节次 / 原因，用户改完时间再提交
@@ -340,6 +343,10 @@
         '<div style="margin-top:6px;font-size:12.5px;color:var(--ink-2);line-height:1.75">' + hits.map(function (h) {
           return '<span style="display:inline-block;min-width:86px;font-family:var(--mono)">' + esc(h.date.slice(5)) + '</span>' + esc(h.period) + ' · ' + esc(h.why);
         }).join('<br>') + '</div></div>';
+    }
+    // 校验错误：提示条放在弹框内（紧跟表单），用户看着字段改；改任意字段自动清掉
+    function showErr(msg) {
+      cfgOf().innerHTML = '<div style="margin-top:10px;background:var(--crit-bg);border:1px solid color-mix(in srgb,var(--crit) 40%,transparent);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--crit)">' + esc(msg) + '</div>';
     }
     function showCfg(hits, okDates, doAdd) {
       cfgOf().innerHTML = cfgHtml(hits, okDates);
@@ -356,23 +363,28 @@
     m.foot.querySelector('[data-o]').onclick = function () {
       var r = TK.readForm(m.body, fields);
       cfgOf().innerHTML = '';
-      if (r.bad.length) { TK.toast('请填写：' + r.bad.join('、')); return; }
+      if (r.bad.length) { showErr('请填写：' + r.bad.join('、')); return; }
       var pa = per.indexOf(r.v.pa) + 1, pb = per.indexOf(r.v.pb) + 1, dates = [];
-      if (pb < pa) { TK.toast('结束节次不能早于开始节次'); return; }
+      if (pb < pa) { showErr('结束节次不能早于开始节次'); return; }
       var at = function (day) { return TK.periodTime(S, day, pa, pb); };
       if (weekly) {
-        if (r.v.to < r.v.from) { TK.toast('结束日期需晚于开始日期'); return; }
+        if (r.v.to < r.v.from) { showErr('结束日期需晚于开始日期'); return; }
         var want = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'].indexOf(r.v.wd), dt = new Date(r.v.from + 'T00:00:00'), end = new Date(r.v.to + 'T00:00:00');
-        if (end - dt > 200 * 864e5) { TK.toast('按周排课一次最多排半年'); return; }
+        if (end - dt > 200 * 864e5) { showErr('按周排课一次最多排半年'); return; }
         while (dt <= end) { if (dt.getDay() === want) dates.push(TK.fmt(dt, false)); dt.setDate(dt.getDate() + 1); }
       } else dates = [r.v.date];
-      if (tm.start && dates.some(function (x) { return x < tm.start || x > tm.end; })) { TK.toast('上课日期需在学期内（' + tm.start + ' ~ ' + tm.end + '）'); return; }
+      if (tm.start && dates.some(function (x) { return x < tm.start || x > tm.end; })) { showErr('上课日期需在学期内（' + tm.start + ' ~ ' + tm.end + '）'); return; }
       var why = function (q) { return q === p ? '已排了这门课' : q.classId === p.classId ? '班级已有《' + q.course + '》' : q.teacher + '已有课'; };
       var perTxt = TK.periodText(pa, pb);
       if (edit) {
         var t0 = at(dates[0]), q0 = conflict(p, t0.start, edit, t0.end);
         if (q0) { showCfg([{ date: dates[0], period: perTxt, why: why(q0) }]); return; }
         edit.start = t0.start; edit.end = t0.end; edit.pa = pa; edit.pb = pb;
+        if (les) {   // 课次名称：改名后不再随排课顺序自动更新（与教师端口径一致）；清空恢复自动命名
+          var nm = (r.v.name || '').trim();
+          if (nm && nm !== les.name) { les.name = nm; les.autoName = false; }
+          else if (!nm && !les.autoName) les.autoName = true;
+        }
         save(); m.close(); done(); TK.toast('已保存，教师端课次已同步'); return;
       }
       var add = [], hits = [];

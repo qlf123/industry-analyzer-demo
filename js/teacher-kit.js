@@ -351,7 +351,7 @@
   function load() {
     try {
       var s = JSON.parse(localStorage.getItem(KEY));
-      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return s; }   // 已是最新版：直接用，切勿走到下面重置演示数据
+      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); return s; }   // 已是最新版：直接用，切勿走到下面重置演示数据
       if (s && s.v === 6) { seedEdu(s); s.v = 7; }   // 补上管理端教务基础数据，原有数据保留
       if (s && s.v === 7) { seedCourseType(s); s.v = 8; save(s); }   // 补上课程类型与公共基础课
       if (s && s.v === 8) { seedMajorLevel(s); s.v = 9; save(s); }   // 专业树补第三层
@@ -360,12 +360,44 @@
       if (s && s.v === 11) { var ch1 = seedLabs(s), ch2 = seedPeriods(s), ch3 = seedKpSnap(s); if (ch1 || ch2 || ch3) save(s); Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); s.v = 12; save(s); }
       if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); return s; }   // 课程类型细分为五类，旧值自动映射
     } catch (e) {}
-    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); s2.v = 13; save(s2); return s2;
+    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); s2.v = 13; save(s2); return s2;
   }
   /* 课程类型细分迁移：旧两分类映射到新五分类（专业课默认归入专业核心课程） */
   function migrateCourseType(st) {
     var MAP = { '专业课': '专业核心课程', '公共基础课': '公共基础课程' };
     st.edu.courses.forEach(function (c) { if (MAP[c.type]) c.type = MAP[c.type]; });
+  }
+  /* 存量数据修复：旧版本种子的专业课没有写 ks（以前 load 每次重置掩盖了这一点），
+     加载时按课程名从知识体系回填（幂等，只补空的专业课程，公共课程/已关联/手动新增的不动） */
+  function repairEduKs(st) {
+    try {
+      var E = st.edu; if (!E || !E.courses) return;
+      var K = kn(), byName = {};
+      Object.keys(K.course).forEach(function (id) { byName[K.course[id].name] = id; });
+      var changed = false;
+      E.courses.forEach(function (c) {
+        if (c.ks || c.ksHold || !c.type || c.type === '公共基础课程' || c.type === '公共基础课') return;
+        var id = byName[c.name];
+        if (id) { c.ks = id; c.ksVia = '预置'; c.ksBy = '专业负责人'; changed = true; }
+      });
+      if (changed) save(st);
+    } catch (e) {}
+  }
+  /* 演示数据：留 3 门导游专业课未关联（ksHold 防止被 repairEduKs 回填），
+     图谱中心「匹配课程」弹框里能看到「按名称匹配，待确认」，点「确认关联」真实写回 3 门；
+     确认关联时清除 ksHold，之后行为与普通课程一致 */
+  function seedKsDemo(st) {
+    try {
+      var E = st.edu; if (!E || !E.courses || E.ksDemo) return;
+      var NAMES = ['模拟导游', '导游词创作与讲解', '导游英语'], n = 0;
+      E.courses.forEach(function (c) {
+        if (NAMES.indexOf(c.name) >= 0 && c.type && c.type !== '公共基础课程' && c.type !== '公共基础课') {
+          c.ks = ''; c.ksName = ''; c.ksVia = ''; c.ksFrom = ''; c.ksBy = ''; c.ksAt = ''; c.ksHold = true; n++;
+        }
+      });
+      E.ksDemo = true;
+      if (n) save(st);
+    } catch (e) {}
   }
   /* 实训资源（校内：实训室 / 设备 / 软件）：管理端「教务管理 › 实训资源管理」维护；能力测评的实训条件差距读这里。
      首次从能力测评原来预置的本校校内实训资源导入；校外基地第一阶段不在这里管 */

@@ -38,6 +38,8 @@
       .ks-card-rel b{font-weight:600;color:#187a49;}
       .ks-card-tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;width:max-content;background:#eef1f6;color:#60718a;}
       .ks-card-tag-range{background:#eef0ff;color:#5149e9;}
+      .ks-card-tag-kind-std{background:#e6f1fb;color:#185fa5;}
+      .ks-card-tag-kind-ext{background:#faeeda;color:#854f0b;}
       .ks-card-desc{font-size:12px;color:#60718a;line-height:1.7;margin-bottom:14px;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
       .ks-card-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:#8b99ac;flex-wrap:wrap;}
       .ks-card-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #dfe6ef;}
@@ -75,6 +77,11 @@
       .ks-type-btn{flex:1;height:34px;border:1px solid #dfe6ef;border-radius:8px;background:#fff;color:#60718a;font-size:12px;font-weight:600;cursor:pointer;transition:.12s;}
       .ks-type-btn:hover{border-color:#c7d2fe;color:#5149e9;}
       .ks-type-btn.active{background:#eef0ff;border-color:#5149e9;color:#5149e9;}
+      /* 体系类型：弱化的单选样式（区别于「创建方式」分段按钮） */
+      .ks-kind-row{display:flex;gap:18px;align-items:center;margin:2px 0 4px;}
+      .ks-kind-row label{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:400;color:#60718a;cursor:pointer;white-space:nowrap;}
+      .ks-kind-row input{accent-color:#5149e9;margin:0;}
+      .ks-kind-row label.off{opacity:.5;cursor:not-allowed;}
       .ks-file-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px 14px;border:1px dashed #c7d2fe;border-radius:10px;background:#fafbff;cursor:pointer;text-align:center;margin-bottom:16px;transition:.12s;}
       .ks-file-drop:hover{border-color:#5149e9;background:#f5f6ff;}
       .ks-file-icon{font-size:22px;color:#5149e9;line-height:1;}
@@ -141,7 +148,7 @@
       </section>
       <div class="ks-toolbar">
         <select id="ksOwnerFilter"><option value="all">全部可见</option><option value="mine">我创建的</option><option value="shared">与我共享</option></select>
-        <select id="ksCatFilter"><option value="all">全部分类</option><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select>
+        <select id="ksCatFilter"><option value="all">全部层次</option><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select>
         <select id="ksScopeFilter"><option value="all">全部范围</option><option value="专业大类">专业大类</option><option value="专业">专业</option><option value="课程">课程</option></select>
         <select id="ksStatusFilter"><option value="all">全部状态</option><option value="building">构建中</option><option value="built">构建完成</option><option value="build_failed">构建失败</option><option value="syncing">同步中</option><option value="synced">同步完成</option><option value="sync_failed">同步失败</option></select>
         <input type="text" id="ksSearchInput" placeholder="搜索知识体系名称、描述..." />
@@ -187,11 +194,17 @@
           <button class="ks-close" onclick="closeCreateKs()" aria-label="关闭">×</button>
         </div>
         <div class="ks-dialog-body">
-          <div class="ks-field-label">类型</div>
+          <div class="ks-field-label">创建方式</div>
           <div class="ks-type-seg" id="ksTypeSeg">
-            <button type="button" class="ks-type-btn active" data-type="standard" onclick="setKsType('standard')">标准创建</button>
+            <button type="button" class="ks-type-btn active" data-type="standard" onclick="setKsType('standard')">自行搭建</button>
             <button type="button" class="ks-type-btn" data-type="file" onclick="setKsType('file')">参考文件创建</button>
           </div>
+          <div class="ks-field-label">体系类型</div>
+          <div class="ks-kind-row" id="ksKindRow">
+            <label id="ksKindStdLabel"><input type="radio" name="ksKind" id="ksKindStd" value="std" onclick="setKsKind('std')" />标准体系</label>
+            <label id="ksKindExtLabel"><input type="radio" name="ksKind" id="ksKindExt" value="ext" onclick="setKsKind('ext')" />拓展体系</label>
+          </div>
+          <div id="ksKindHint" class="ks-rel-hint"></div>
           <label id="ksNameField" style="display:none;">名称 <span class="req">*</span><input id="newKsName" type="text" placeholder="请输入名称" maxlength="40" oninput="ksNameAutoFilled=false" /></label>
           <label>范围 <span class="req">*</span><select id="newKsRange" onchange="onKsRangeChange()"><option value="专业大类">专业大类</option><option value="专业">专业</option><option value="课程">课程</option></select></label>
           <div class="ks-rel-block" id="ksRelPanel">
@@ -203,7 +216,7 @@
             <div id="ksRelHint" class="ks-rel-hint"></div>
           </div>
           <div id="ksStandardFields">
-            <label>分类<select id="newKsSort"><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select></label>
+            <label>层次<select id="newKsSort"><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select></label>
           </div>
           <div id="ksFileFields" style="display:none;">
             <div class="ks-field-label">参考文件 <span class="req">*</span></div>
@@ -214,7 +227,7 @@
               <span class="ks-file-formats" id="ksFileFormats">支持 html / pdf / markdown / xls / xlsx / txt / csv / md / docx</span>
             </div>
           </div>
-          <label>描述<textarea id="newKsDesc" rows="3" placeholder="请输入知识体系描述"></textarea></label>
+          <label>描述<textarea id="newKsDesc" rows="3" placeholder="如：面向旅游管理专业导游岗位的能力与知识点体系"></textarea></label>
         </div>
         <div class="ks-dialog-actions">
           <button class="ghost-button" onclick="closeCreateKs()">取消</button>
@@ -228,11 +241,17 @@
       <div class="ks-modal-backdrop" onclick="closeEditKs()"></div>
       <div class="ks-dialog" style="width:min(500px,92%);">
         <div class="ks-dialog-head">
-          <div><h2>编辑知识体系</h2><p>范围创建后不可修改，可补充或调整关联对象。</p></div>
+          <div><h2>编辑知识体系</h2><p id="editKsSub">范围创建后不可修改，可补充或调整关联对象。</p></div>
           <button class="ks-close" onclick="closeEditKs()" aria-label="关闭">×</button>
         </div>
         <div class="ks-dialog-body">
           <label>范围<select id="editKsRange" class="ks-range-readonly" disabled><option value="专业大类">专业大类</option><option value="专业">专业</option><option value="课程">课程</option></select></label>
+          <div class="ks-field-label">体系类型</div>
+          <div class="ks-kind-row" id="ksKindRowEdit">
+            <label id="editKsKindStdLabel"><input type="radio" name="editKsKind" id="editKsKindStd" value="std" onclick="setEditKsKind('std')" />标准体系</label>
+            <label id="editKsKindExtLabel"><input type="radio" name="editKsKind" id="editKsKindExt" value="ext" onclick="setEditKsKind('ext')" />拓展体系</label>
+          </div>
+          <div id="editKsKindHint" class="ks-rel-hint"></div>
           <div class="ks-field-label">关联对象</div>
           <div class="ks-rel-grid">
             <label class="ks-rel-field" id="editKsRelCatField" style="display:none;">关联专业大类<select id="editKsRelCat" onchange="onEditKsRelCatChange()"></select></label>
@@ -241,8 +260,8 @@
           </div>
           <div id="editKsRelHint" class="ks-rel-hint">未关联，可在编辑中补充关联</div>
           <label>名称 <span class="req">*</span><input id="editKsName" type="text" maxlength="40" /></label>
-          <label>分类<select id="editKsSort"><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select></label>
-          <label>描述<textarea id="editKsDesc" rows="3" placeholder="请输入知识体系描述"></textarea></label>
+          <label>层次<select id="editKsSort"><option value="高职">高职</option><option value="中职">中职</option><option value="本科">本科</option></select></label>
+          <label>描述<textarea id="editKsDesc" rows="3" placeholder="如：面向旅游管理专业导游岗位的能力与知识点体系"></textarea></label>
         </div>
         <div class="ks-dialog-actions">
           <button class="ghost-button" onclick="closeEditKs()">取消</button>
@@ -310,6 +329,8 @@
         }
         if(!s.buildStatus) s.buildStatus='built';
         if(s.syncStatus===undefined) s.syncStatus='';
+        // 体系类型迁移（2026-11-17）：存量数据没有 kind 字段——有关联对象或管理员创建的归「标准体系」，其余归「拓展体系」
+        if(!s.kind) s.kind=((s.relObject||s.scopeObject)||/管理员/.test(s.creator||''))?'std':'ext';
       });
       // 演示：导游专业的课程预置关联在「旅游类-导游」专业知识体系的课程节点上，这里把该体系关联到「导游」专业（只补一次，之后以用户操作为准）
       (function(){ var k=ksSystems.find(function(x){return x.id==='KS013';}); if(k && !k.relSeeded){ k.relSeeded=true; if(!k.relObject){ k.range='专业'; k.relObject='导游'; } try{sessionStorage.setItem('ks_systems_v2',JSON.stringify(ksSystems));}catch(e){} } })();
@@ -412,6 +433,8 @@
         var syncMap={syncing:'同步中',synced:'同步完成',sync_failed:'同步失败'};
         var html='';
         if(s.level) html+='<span class="ks-card-tag">'+s.level+'</span>';
+        var kind=s.kind || (((s.relObject||s.scopeObject)||/管理员/.test(s.creator||''))?'std':'ext');
+        html+='<span class="ks-card-tag '+(kind==='std'?'ks-card-tag-kind-std':'ks-card-tag-kind-ext')+'" title="'+(kind==='std'?'标准体系：可由教务关联课程，计入达成率等统计':'拓展体系：仅用于备课拓展，不计入统计')+'">'+(kind==='std'?'标准体系':'拓展体系')+'</span>';
         html+='<span class="ks-card-tag ks-card-tag-range">'+ksRange(s)+'</span>';
         html+='<span class="ks-card-status '+buildCls+'">'+(buildMap[s.buildStatus]||'构建完成')+'</span>';
         if(s.syncStatus){
@@ -501,8 +524,10 @@
         document.getElementById('ksFileMain').textContent='点击或拖拽上传参考文件';
         document.getElementById('ksFileFormats').textContent='支持 html / pdf / markdown / xls / xlsx / txt / csv / md / docx';
         setKsType('standard');
+        setKsKind(defaultKsKind(), true);
         document.getElementById('newKsRange').value=defaultKsRange();
         onKsRangeChange();
+        // 体系类型决定关联面板显隐；教师端锁拓展体系，关联面板恒隐藏（2026-11-17）
         document.getElementById('createKsModal').classList.add('open');
         document.getElementById('createKsModal').setAttribute('aria-hidden','false');
         setTimeout(function(){document.getElementById('newKsName').focus()},100);
@@ -534,7 +559,34 @@
       }
 
       // ===== 编辑知识体系（补/改/解除关联，范围只读）=====
-      var editKsId=null;
+      // 体系类型转换守卫：教务课程有引用（关联 / 匹配 / 课程级关联）时，标准体系不能转拓展
+      function ksLinkedCourseCount(s){
+        if(!window.TK) return 0;
+        var S=TK.load();
+        return S.edu.courses.filter(function(c){ return c.ks==='GKS-'+s.id || viaThisKs(c,s) || (ksRange(s)==='课程' && c.name===ksRelObject(s)); }).length;
+      }
+      var editKsId=null, editKind='std';
+      function renderEditKsKind(s){
+        var r=ksKindRadios('Edit');
+        r.std.checked=(editKind==='std'); r.ext.checked=(editKind==='ext');
+        r.std.disabled=ksTeacher() || editKind==='ext';                                    // 拓展体系不可转标准
+        r.ext.disabled=ksTeacher() || (s.kind==='std' && ksLinkedCourseCount(s)>0);        // 已关联教务课程不可转拓展
+        r.stdLabel.classList.toggle('off', r.std.disabled);
+        r.extLabel.classList.toggle('off', r.ext.disabled);
+        var h='';
+        if(editKind==='ext') h='拓展体系：仅用于备课拓展，不与教务课程关联，不计入达成率等统计'+(s.kind==='ext'?'；如需转为标准体系，请联系管理员':'');
+        else h=(s.kind==='std' && ksLinkedCourseCount(s)>0)?'已关联教务课程，不能改为拓展体系；如需调整请先解除课程关联':'标准体系：可关联教务课程；关联后备课、学情、达成率按它统计，未关联不产生统计';
+        document.getElementById('editKsKindHint').textContent=h;
+      }
+      function setEditKsKind(kind){
+        var s=ksSystems.find(function(x){return x.id===editKsId;}); if(!s) return;
+        if(kind===editKind) return;
+        if(ksTeacher()) return toast('老师创建的体系为拓展体系，不可更改');
+        if(editKind==='ext') return toast('拓展体系暂不支持转为标准体系');
+        if(kind==='ext' && ksLinkedCourseCount(s)>0) return toast('该体系已关联教务课程，不能改为拓展体系；请先解除关联');
+        editKind=kind;
+        renderEditKsKind(s);
+      }
       function openEditKs(id){
         var s=ksSystems.find(function(x){return x.id===id;});
         if(!s) return;
@@ -545,6 +597,8 @@
         document.getElementById('editKsName').value=s.name||'';
         document.getElementById('editKsSort').value=s.level||'高职';
         document.getElementById('editKsDesc').value=s.desc||'';
+        editKind=s.kind||'std';
+        renderEditKsKind(s);
         document.getElementById('editKsRelCat').value='';
         document.getElementById('editKsRelMajor').value='';
         document.getElementById('editKsRelCourse').value='';
@@ -557,6 +611,8 @@
           renderEditCourseOptions();
         }
         showEditRelMeta();
+        // 教师端编辑：关联收归教务，副标题同步提示（2026-11-17）
+        if(window.GC && GC.teacher()) document.getElementById('editKsSub').textContent='范围创建后不可修改；课程关联由教务在图谱中心维护，如需调整请联系教务。';
         document.getElementById('editKsModal').classList.add('open');
         document.getElementById('editKsModal').setAttribute('aria-hidden','false');
       }
@@ -566,6 +622,12 @@
       }
       function renderEditRelOptions(){
         var range=document.getElementById('editKsRange').value;
+        // 关联权收归教务：教师端编辑不提供关联对象修改（2026-11-17）
+        if(window.GC && GC.teacher()){
+          ['editKsRelCatField','editKsRelMajorField','editKsRelCourseField'].forEach(function(id){document.getElementById(id).style.display='none';});
+          document.getElementById('editKsRelHint').style.display='none';
+          return;
+        }
         document.getElementById('editKsRelCatField').style.display=(range==='专业大类')?'':'none';
         document.getElementById('editKsRelMajorField').style.display=(range==='专业'||range==='课程')?'':'none';
         document.getElementById('editKsRelCourseField').style.display=(range==='课程')?'':'none';
@@ -579,6 +641,7 @@
         fillSelect('editKsRelCourse', courseOptionHtml(majorVal));
       }
       function showEditRelMeta(){
+        if(window.GC && GC.teacher()){ document.getElementById('editKsRelHint').style.display='none'; return; }   // 教师端不显示关联提示
         var range=document.getElementById('editKsRange').value;
         var hasRel;
         if(range==='专业大类') hasRel=document.getElementById('editKsRelCat').value!=='';
@@ -607,13 +670,17 @@
         if(!name) return toast('请输入名称');
         var range=ksRange(s);
         var rel='', relMajor='';
-        if(range==='专业大类'){ rel=document.getElementById('editKsRelCat').value; }
+        if(window.GC && GC.teacher()){ rel=ksRelObject(s); relMajor=ksRelMajor(s); }   // 教师端不改关联，按原值保存
+        else if(range==='专业大类'){ rel=document.getElementById('editKsRelCat').value; }
         else if(range==='专业'){ rel=document.getElementById('editKsRelMajor').value; }
         else {
           rel=document.getElementById('editKsRelCourse').value;
           relMajor=document.getElementById('editKsRelMajor').value || (rel?majorOfCourse(rel):'');
         }
+        if(editKind==='ext'){ rel=''; relMajor=''; }   // 拓展体系不保留教务关联（保存时同步解除）
         var oldRel=ksRelObject(s);
+        var impacts=[];
+        if(s.kind==='std' && editKind==='ext') impacts.push('保存后本体系变为拓展体系：不与教务课程关联，不再计入达成率等统计');
         if(range==='课程' && rel){
           var linked=findLinkedKs(rel, s.id);
           if(linked) return toast('该课程已关联《'+linked+'》');
@@ -621,7 +688,6 @@
         // 先收集「保存会产生的影响」，统一放进一个确认框列出，确认后一次性执行
         var other=(range!=='课程' && rel && rel!==oldRel) ? ksOtherRel(s, range, rel) : null;
         var nUnlink=(range!=='课程' && oldRel && rel!==oldRel) ? unlinkKsCourses(s, true) : 0;
-        var impacts=[];
         if(range==='课程' && oldRel && rel!==oldRel) impacts.push('原关联的课程《'+oldRel+'》会解除关联；若该课程能匹配到所属专业知识体系的同名课程节点，会自动回落关联');
         if(other) impacts.push('「'+rel+'」已关联《'+other.name+'》');   // 同一对象只关联一个体系，接管原体系
         if(nUnlink) impacts.push('原来按本体系关联的 '+nUnlink+' 门课程会解除关联；有同名课程节点的，改用新关联时会再匹配');
@@ -632,6 +698,7 @@
           if(range==='课程') gcLinkCourse(s.id, name, rel);   // 改关联课程或改名都同步到课程上
           s.relObject=rel;
           s.relMajor=relMajor;
+          s.kind=editKind;
           s.level=document.getElementById('editKsSort').value;
           s.desc=document.getElementById('editKsDesc').value.trim();
           saveKsSystems();
@@ -654,6 +721,34 @@
       function ksToday(){var d=new Date();var p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
       var ksType='standard';
       var ksFile=null;
+      /* ── 体系类型（2026-11-17）：标准体系 / 拓展体系 ──
+         标准：可由教务关联课程，进达成率、教学进度等统计口径；拓展：仅用于备课拓展，不关联教务对象、不进口径。
+         老师创建锁死拓展；管理端标准→拓展允许纠错，但已关联教务课程的不能转（编辑弹框里再守一道）。 */
+      var ksKind='std';
+      function ksTeacher(){ return !!(window.GC && GC.teacher()); }
+      function defaultKsKind(){ return ksTeacher()?'ext':'std'; }
+      function ksKindRadios(suffix){   // suffix: '' 创建弹框 / 'Edit' 编辑弹框
+        var ids = suffix==='Edit'
+          ? {std:'editKsKindStd', ext:'editKsKindExt', stdLabel:'editKsKindStdLabel', extLabel:'editKsKindExtLabel'}
+          : {std:'ksKindStd', ext:'ksKindExt', stdLabel:'ksKindStdLabel', extLabel:'ksKindExtLabel'};
+        return { std:document.getElementById(ids.std), ext:document.getElementById(ids.ext),
+                 stdLabel:document.getElementById(ids.stdLabel), extLabel:document.getElementById(ids.extLabel) };
+      }
+      function setKsKind(kind, silent){
+        if(ksTeacher() && kind!=='ext'){ if(!silent) toast('老师创建的体系为拓展体系，仅用于备课拓展'); kind='ext'; }
+        ksKind=kind;
+        var r=ksKindRadios('');
+        r.std.checked=(kind==='std'); r.ext.checked=(kind==='ext');
+        r.std.disabled=ksTeacher();   // 教师端锁拓展
+        r.stdLabel.classList.toggle('off', r.std.disabled);
+        r.extLabel.classList.remove('off');
+        document.getElementById('ksKindHint').textContent = kind==='ext'
+          ? '拓展体系：仅用于备课拓展，不与教务课程关联，不计入达成率等统计'
+          : '标准体系：可关联教务课程；关联后备课、学情、达成率按它统计，未关联不产生统计';
+        var ext=kind==='ext';
+        document.getElementById('ksRelPanel').style.display=(ext||ksTeacher())?'none':'';
+        if(ext){ document.getElementById('newKsRelCat').value=''; document.getElementById('newKsRelMajor').value=''; document.getElementById('newKsRelCourse').value=''; }
+      }
       function setKsType(type){
         ksType=type;
         [].slice.call(document.querySelectorAll('#ksTypeSeg .ks-type-btn')).forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-type')===type); });
@@ -692,7 +787,7 @@
         var nameInput=document.getElementById('newKsName');
         if(nameInput){
           nameInput.value='';
-          nameInput.placeholder=range==='专业大类'?'请输入专业大类名称':range==='专业'?'请输入专业名称':'请输入课程名称';
+          nameInput.placeholder=range==='专业大类'?'如：旅游类':range==='专业'?'如：智慧旅游技术应用':'如：导游业务';
         }
         ksNameAutoFilled=false;
         document.getElementById('newKsRelCat').value='';
@@ -749,7 +844,7 @@
       function showRelMeta(){
         var range=currentRange();
         var hint=document.getElementById('ksRelHint');
-        hint.textContent=range==='课程'?'关联后这门课按技能备课、发布，学情可统计到技能；所属专业用于筛选课程':'关联后可一键匹配该'+(range==='专业大类'?'专业大类下的':'专业的')+'教务课程，老师备课、发布才能按技能走';
+        hint.textContent=range==='课程'?'关联后这门课按技能备课、发布，学情可统计到技能；所属专业用于筛选课程':'关联后可一键匹配该'+(range==='专业大类'?'专业大类下的':'专业的')+'教务课程；老师备课、发布才能对齐这套体系的技能口径';
         document.getElementById('ksRelMajorLabel').textContent=range==='课程'?'所属专业':'关联专业';
       }
 
@@ -831,6 +926,11 @@
         return m?TK.majorSubIds(E, m.id):[];
       }
       function viaThisKs(c, s){ return c.ksFrom===s.id || (c.ksVia==='预置' && s.id==='KS013'); }
+      // 关联变更存档：改关联时记下变更日期与旧体系名，教师端学情据此展示「变更前口径」分段（只在原有关联存在时记录）
+      function markKsChange(c, fromName){
+        var from = fromName != null ? fromName : (c.ksName || '');
+        if (from) c.ksChangedAt = { at: ksToday(), from: from };
+      }
       // 同一范围同一关联对象的另一个知识体系（纯判断，不动数据）
       function ksOtherRel(s, range, rel){
         return ksSystems.filter(function(x){ return x!==s && ksRange(x)===range && ksRelObject(x)===rel; })[0] || null;
@@ -850,7 +950,7 @@
       function unlinkKsCourses(s, dry){
         if(!window.TK) return 0;
         var S=TK.load(), n=0;
-        S.edu.courses.forEach(function(c){ if(c.ks && c.ks.indexOf('GKS-')!==0 && viaThisKs(c, s)){ n++; if(!dry){ c.ks=''; c.ksName=''; c.ksVia=''; c.ksFrom=''; c.ksBy=''; c.ksAt=''; } } });
+        S.edu.courses.forEach(function(c){ if(c.ks && c.ks.indexOf('GKS-')!==0 && viaThisKs(c, s)){ var oldN=c.ksName||''; n++; if(!dry){ markKsChange(c, oldN); c.ks=''; c.ksName=''; c.ksVia=''; c.ksFrom=''; c.ksBy=''; c.ksAt=''; } } });
         if(!dry && n) TK.save(S);
         return n;
       }
@@ -875,17 +975,17 @@
           var own=c.ks && c.ks.indexOf('GKS-')===0;
           var cur=!own && c.ks && nodes.some(function(n){return n.id===c.ks;}) ? c.ks : '';
           var auto=byName[c.name];
-          var st=own?'keep':(cur||auto)?'ok':'miss';
+          var st=own?'keep':cur?'ok':(auto?'auto':'miss');
           return {c:c, st:st, val:own?'':(cur||(auto?auto.id:''))};
-        }).sort(function(a,b){ var o={miss:0,ok:1,keep:2}; return o[a.st]-o[b.st]; });
+        }).sort(function(a,b){ var o={miss:0,auto:1,ok:2,keep:3}; return o[a.st]-o[b.st]; });
         var used={}; rows.forEach(function(r){ if(r.val) used[r.val]=1; });
         var spare=nodes.filter(function(n){ return !used[n.id]; });
         var opt=function(v){ return '<option value="">不关联</option>'+nodes.map(function(n){ return '<option value="'+n.id+'"'+(n.id===v?' selected':'')+'>'+n.name+'</option>'; }).join(''); };
-        var tag={ok:'<span style="color:#1f9d55">已匹配</span>',miss:'<span style="color:#c27c0e">名称对不上，请手动选</span>',keep:'<span style="color:#8b99ac">已有课程知识体系，保留</span>'};
-        var cnt={ok:0,miss:0,keep:0}; rows.forEach(function(r){cnt[r.st]++;});
+        var tag={ok:'<span style="color:#1f9d55">已关联</span>',auto:'<span style="color:#1f6feb">按名称匹配，待确认</span>',miss:'<span style="color:#c27c0e">名称对不上，请手动选</span>',keep:'<span style="color:#8b99ac">已有课程知识体系，保留</span>'};
+        var cnt={ok:0,auto:0,miss:0,keep:0}; rows.forEach(function(r){cnt[r.st]++;});
         var body;
         if(!nodes.length) body='<div style="font-size:13px;color:#60718a;line-height:1.8">《'+s.name+'》还没有课程节点，暂时无法匹配课程。构建出课程后，可在卡片「⋮ › 匹配课程」中再匹配。</div>';
-        else body='<div style="font-size:12.5px;color:#60718a;margin-bottom:10px">按名称把体系里的课程和「'+rel+'」'+(range==='专业大类'?'下所有专业':'（含下级专业）')+'的课程配对：已匹配 '+cnt.ok+' 门，名称对不上 '+cnt.miss+' 门，已有课程知识体系 '+cnt.keep+' 门。确认后写入「教务管理 › 课程管理」。</div>'+
+        else body='<div style="font-size:12.5px;color:#60718a;margin-bottom:10px">按名称把体系里的课程和「'+rel+'」'+(range==='专业大类'?'下所有专业':'（含下级专业）')+'的课程配对：已关联 '+cnt.ok+' 门，按名称匹配待确认 '+cnt.auto+' 门，名称对不上 '+cnt.miss+' 门，已有课程知识体系 '+cnt.keep+' 门。确认后写入「教务管理 › 课程管理」。</div>'+
           (rows.length?'<div style="max-height:46vh;overflow:auto;border:1px solid #edf1f5;border-radius:10px"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="background:#f7f9fc;color:#60718a;text-align:left"><th style="padding:8px 10px">教务课程</th><th style="padding:8px 10px">关联到体系中的课程</th><th style="padding:8px 10px">状态</th></tr></thead><tbody>'+
           rows.map(function(r,i){ return '<tr style="border-top:1px solid #edf1f5"><td style="padding:7px 10px">'+r.c.name+'<div style="font-size:11px;color:#8b99ac">'+majName(r.c.majorId)+' · '+(r.c.type||'专业课')+'</div></td><td style="padding:7px 10px">'+(r.st==='keep'?'<span style="color:#8b99ac">'+(r.c.ksName||'课程知识体系')+'</span>':'<select data-mi="'+i+'" style="height:30px;max-width:220px;border:1px solid #dbe3ee;border-radius:6px">'+opt(r.val)+'</select>')+'</td><td style="padding:7px 10px;white-space:nowrap">'+tag[r.st]+'</td></tr>'; }).join('')+
           '</tbody></table></div>':'<div style="font-size:13px;color:#60718a">「'+rel+'」下还没有启用的教务课程。</div>')+
@@ -902,8 +1002,9 @@
             if(r.st==='keep') return;
             var v=md.querySelector('[data-mi="'+i+'"]').value, c=S2.edu.courses.filter(function(x){return x.id===r.c.id;})[0];
             if(!c || (c.ks||'')===v) return;
-            if(v){ c.ks=v; c.ksName=s.name; c.ksVia='专业知识体系'; c.ksFrom=s.id; c.ksBy=CURRENT_USER.name; c.ksAt=ksToday(); n++; }
-            else if(viaThisKs(c, s)){ c.ks=''; c.ksName=''; c.ksVia=''; c.ksFrom=''; c.ksBy=''; c.ksAt=''; n++; }
+            var oldN=c.ksName||'';
+            if(v){ markKsChange(c, oldN); c.ks=v; c.ksName=s.name; c.ksVia='专业知识体系'; c.ksFrom=s.id; c.ksBy=CURRENT_USER.name; c.ksAt=ksToday(); delete c.ksHold; n++; }
+            else if(viaThisKs(c, s)){ markKsChange(c, oldN); c.ks=''; c.ksName=''; c.ksVia=''; c.ksFrom=''; c.ksBy=''; c.ksAt=''; n++; }
           });
           TK.save(S2); md.remove(); renderKsCards(); toast(n?'已更新 '+n+' 门课程的关联':'关联没有变化');
         });
@@ -940,9 +1041,9 @@
       function gcLinkCourse(ksId, ksName, courseName){
         if(!window.TK) return;
         var S=TK.load(), key='GKS-'+ksId;
-        S.edu.courses.forEach(function(c){ if(c.ks===key && c.name!==courseName){ c.ks=''; c.ksName=''; c.ksVia=''; fallbackLink(S, c); } });
+        S.edu.courses.forEach(function(c){ if(c.ks===key && c.name!==courseName){ var oldN=c.ksName||''; markKsChange(c, oldN); c.ks=''; c.ksName=''; c.ksVia=''; fallbackLink(S, c); } });
         var c=S.edu.courses.filter(function(x){return x.name===courseName;})[0];
-        if(c){ c.ks=key; c.ksName=ksName; c.ksVia='图谱中心'; c.ksBy=CURRENT_USER.name; c.ksAt=ksToday(); }
+        if(c){ markKsChange(c, c.ksName||''); c.ks=key; c.ksName=ksName; c.ksVia='图谱中心'; c.ksBy=CURRENT_USER.name; c.ksAt=ksToday(); }
         TK.save(S);
       }
       function findLinkedKs(courseName, excludeId){
@@ -973,10 +1074,12 @@
           rel=document.getElementById('newKsRelCourse').value;
           relMajor=document.getElementById('newKsRelMajor').value || (rel?majorOfCourse(rel):'');
         }
+        if(ksKind==='ext'){ rel=''; relMajor=''; }   // 拓展体系不关联教务对象
         return {
           range:range,
           rel:rel,
           relMajor:relMajor,
+          kind:ksKind,
           sort:document.getElementById('newKsSort').value,
           desc:document.getElementById('newKsDesc').value.trim()
         };
@@ -991,7 +1094,7 @@
         }
         function doCreate(){
           closeCreateKs();
-          ksSystems.unshift({id:newKsId(),name:name,desc:m.desc,level:m.sort,range:m.range,relObject:m.rel,relMajor:m.relMajor,rootType:ksRootType(m.range),category:'other',creator:CURRENT_USER.name,sharedTo:[],privacy:'仅自己',buildStatus:'building',syncStatus:'',nodes:0,createdAt:ksToday(),updatedAt:ksToday(),permissions:{members:[]}});
+          ksSystems.unshift({id:newKsId(),name:name,desc:m.desc,kind:m.kind,level:m.sort,range:m.range,relObject:m.rel,relMajor:m.relMajor,rootType:ksRootType(m.range),category:'other',creator:CURRENT_USER.name,sharedTo:[],privacy:'仅自己',buildStatus:'building',syncStatus:'',nodes:0,createdAt:ksToday(),updatedAt:ksToday(),permissions:{members:[]}});
           if(m.range==='课程' && m.rel) gcLinkCourse(ksSystems[0].id, name, m.rel);
           saveKsSystems();
           renderKsCards();
@@ -1020,7 +1123,7 @@
           var relObject=m.rel, relMajor=m.relMajor;
           var rootName=relObject||name;
           var rootPath=ksParentPath(m.range, relObject);
-          ksSystems.unshift({id:id,name:name,desc:m.desc,level:ksType==='file'?'':m.sort,range:m.range,relObject:relObject,relMajor:relMajor,rootType:ksRootType(m.range),category:'other',creator:CURRENT_USER.name,sharedTo:[],privacy:'仅自己',buildStatus:'building',syncStatus:'',nodes:0,createdAt:ksToday(),updatedAt:ksToday(),permissions:{members:[]}});
+          ksSystems.unshift({id:id,name:name,desc:m.desc,kind:m.kind,level:ksType==='file'?'':m.sort,range:m.range,relObject:relObject,relMajor:relMajor,rootType:ksRootType(m.range),category:'other',creator:CURRENT_USER.name,sharedTo:[],privacy:'仅自己',buildStatus:'building',syncStatus:'',nodes:0,createdAt:ksToday(),updatedAt:ksToday(),permissions:{members:[]}});
           if(m.range==='课程' && relObject) gcLinkCourse(id, name, relObject);
           saveKsSystems();
           renderKsCards();
@@ -1098,13 +1201,16 @@
         var s=ksSystems.find(function(x){return x.id===id;});
         var building=s && s.buildStatus==='building';
         var range=s?ksRange(s):'', rel=s?ksRelObject(s):'';
+        var isTch=window.GC && GC.teacher();   // 关联权收归教务：教师端不提供关联课程 / 匹配课程入口（2026-11-17）
         var items='';
         if(!building){
           items+='<div class="ks-action-item" data-act="edit">编辑</div>';
-          // 课程级还没关联教务课程 → 关联课程；专业/大类已关联 → 匹配课程
-          if(range==='课程' && !rel) items+='<div class="ks-action-item" data-act="link">关联课程</div>';
-          if(range!=='课程' && rel) items+='<div class="ks-action-item" data-act="match">匹配课程</div>';
-        }else if(range!=='课程' && rel){
+          if(!isTch){
+            // 课程级还没关联教务课程 → 关联课程；专业/大类已关联 → 匹配课程
+            if(range==='课程' && !rel) items+='<div class="ks-action-item" data-act="link">关联课程</div>';
+            if(range!=='课程' && rel) items+='<div class="ks-action-item" data-act="match">匹配课程</div>';
+          }
+        }else if(!isTch && range!=='课程' && rel){
           // PRD 验收#7：构建中的专业/大类体系也可点匹配课程（还没课程节点时给提示，构建后可再匹配）
           items+='<div class="ks-action-item" data-act="match">匹配课程</div>';
         }

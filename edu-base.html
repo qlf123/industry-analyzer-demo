@@ -69,7 +69,7 @@
     term: { key: 'edu-term', title: '学年学期管理', desc: '课程计划按学年学期建立；停用的学期不能新建课程计划' },
     period: { key: 'edu-period', title: '节次时间管理', desc: '全校统一的上课节次和每节起止时间；排课按「第几节到第几节」选择，班级课表、教师课表按这里的节次显示。修改后，未发布课次的上课时间跟着更新，已发布的不变' },
     lab: { key: 'edu-lab', title: '实训资源管理', desc: '本校校内实训资源（实训室、设备、软件）及其能提供的实训条件；课程需要哪些实训条件，按知识体系里审核通过的实训需求汇总；专业建设测评的实训条件差距读这里的登记。校外基地第一阶段不在这里登记' },
-    course: { key: 'edu-course', title: '课程管理', desc: '课程类型分公共基础课程、专业基础课程、专业核心课程、专业拓展课程、其他，公共基础课程默认不计入技能达成；课程与知识体系的关联由专业负责人在图谱中心维护，这里只读展示' }
+    course: { key: 'edu-course', title: '课程管理', desc: '课程类型分公共基础课程、专业基础课程、专业核心课程、专业拓展课程、其他，公共基础课程默认不计入技能达成；课程与知识体系的关联由教务在图谱中心统一维护，这里只读展示' }
   };
   var view = (location.search.match(/[?&]t=(\w+)/) || [])[1];
   if (!VIEWS[view]) view = 'major';
@@ -95,7 +95,7 @@
   function now() { return TK.fmt(new Date()); }
   function pill(st) { return '<span class="pill ' + (st === '启用' ? 'good' : 'crit') + '">已' + st + '</span>'; }
   function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0]; }
-  function majorName(id) { var m = byId(E.majors, id); return m ? m.name : (id === '' ? '全校' : '—'); }
+  function majorName(id) { var m = byId(E.majors, id); return m ? m.name : '—'; }
   // 专业完整路径：旅游类 › 导游 › 研学旅行方向
   function majorPath(id) { return TK.majorPath(E, id) || majorName(id); }
   function gradeName(id) { var g = byId(E.grades, id); return g ? g.name : '—'; }
@@ -239,7 +239,7 @@
         (!F.atFrom || day(c) >= F.atFrom) && (!F.atTo || day(c) <= F.atTo); });
       table(['课程名称', '课程类型', '课程编码', '所属专业', '知识体系', '课程计划', '状态', '创建人', '创建时间', '操作'], list.map(function (c) {
         var np = S.plans.filter(function (p) { return p.eduCourseId === c.id; }).length, ks = ksOf(c), st = ksState(c);
-        return '<tr><td>' + esc(c.name) + '</td><td>' + (isPublicCourse(c.type) ? '<span class="pill k">公共基础课程</span>' : '<span class="pill core">' + esc(c.type || '专业核心课程') + '</span>') + '</td><td class="mono">' + esc(c.code || '—') + '</td><td>' + esc(majorPath(c.majorId)) + '</td>' +
+        return '<tr><td>' + esc(c.name) + '</td><td>' + (isPublicCourse(c.type) ? '<span class="pill k">公共基础课程</span>' : '<span class="pill core">' + esc(c.type || '专业核心课程') + '</span>') + '</td><td class="mono">' + esc(c.code || '—') + '</td><td>' + (majorPath(c.majorId) ? esc(majorPath(c.majorId)) : '<span class="muted">—</span>') + '</td>' +
           '<td>' + (ks ? '<span class="ks-tag">● ' + esc(ks.label) + '</span>' : '<span class="muted">—</span>') + '</td>' +
           // 课程计划数：点击到「课程计划」并带上本课程的筛选
           '<td>' + (np ? '<a class="lk" href="' + esc(UI.link('course-plan.html?ec=' + encodeURIComponent(c.id))) + '" title="查看使用该课程的课程计划">' + np + '</a>' : '<span class="muted">0</span>') + '</td><td>' + pill(c.status) + '</td>' +
@@ -270,8 +270,8 @@
   function ksOptions() {
     var K = TK.kn(), out = Object.keys(K.course).filter(function (id) { return id.indexOf('GKS-') !== 0; }).map(function (id) { return { v: id, label: '旅游类-导游 › ' + K.course[id].name }; });
     var list = []; try { list = JSON.parse(sessionStorage.getItem('ks_systems_v2') || '[]'); } catch (e) {}
-    list.filter(function (s) { return s.range === '课程'; }).forEach(function (s) { out.push({ v: 'GKS-' + s.id, label: '图谱中心 · ' + s.name }); });
-    E.courses.forEach(function (c) { if (c.ks && c.ksName && !out.some(function (o) { return o.v === c.ks; })) out.push({ v: c.ks, label: '图谱中心 · ' + c.ksName }); });
+    list.filter(function (s) { return s.range === '课程'; }).forEach(function (s) { out.push({ v: 'GKS-' + s.id, label: s.name }); });
+    E.courses.forEach(function (c) { if (c.ks && c.ksName && !out.some(function (o) { return o.v === c.ks; })) out.push({ v: c.ks, label: c.ksName }); });
     return out;
   }
   function ksOf(c) {
@@ -372,7 +372,7 @@
     var extra = '';
     if (view === 'course') {
       if (!x) v.type = '专业核心课程';
-      // 关联知识体系在图谱中心由专业负责人维护（一课一体系），课程侧只读展示、不再提供编辑
+      // 关联知识体系由教务在图谱中心统一维护（一课一体系），课程侧只读展示、不再提供编辑
       var ksLabel = x && x.ks ? (ksOptions().filter(function (o) { return o.v === x.ks; })[0] || { label: x.ksName || x.ks }).label : '';
       var ksLink = '<a class="lk" href="' + esc(UI.link('graph/knowledge-system.html', 'admin')) + '">去图谱中心 关联知识体系 ›</a>';
       extra = '<div class="fgrid" style="margin-top:4px"><div class="ff full"><span class="lh"><span>关联知识体系</span></span>' +
@@ -431,7 +431,7 @@
     var ks = ksOf(c);
     var d = TK.drawer({ title: c.name, sub: '课程详情', width: 520 });
     d.body.innerHTML = '<div class="dr-s"><div class="dr-st">基础信息</div><div class="kvd">' +
-      [['课程名称', c.name], ['课程类型', c.type || '专业课'], ['课程编码', c.code || '—'], ['所属专业', majorPath(c.majorId)], ['状态', '已' + c.status], ['课程说明', c.desc || '—'], ['创建人', c.by + ' · ' + c.at]].map(function (x) { return '<div class="k">' + x[0] + '</div><div>' + esc(x[1]) + '</div>'; }).join('') + '</div></div>' +
+      [['课程名称', c.name], ['课程类型', c.type || '专业课'], ['课程编码', c.code || '—'], ['所属专业', majorPath(c.majorId) || '—'], ['状态', '已' + c.status], ['课程说明', c.desc || '—'], ['创建人', c.by + ' · ' + c.at]].map(function (x) { return '<div class="k">' + x[0] + '</div><div>' + esc(x[1]) + '</div>'; }).join('') + '</div></div>' +
       '<div class="dr-s"><div class="dr-st">知识体系</div>' + (ks ? '<div style="font-size:13px">' + esc(ks.label) + '</div>'
         : isPublicCourse(c.type) ? '<div style="font-size:12.5px;color:var(--muted)">公共基础课程，默认不计入技能达成：老师照常建课次、备课、布置和评价，任务按整体等级评价，不记学习证据。</div>'
         : '<div style="font-size:12.5px;color:var(--warn-ink)">' + esc(c.type || '专业核心课程') + '，还没关联知识体系。老师可以照常上课，发布任务时从备课资源确认技能；关联后才能统计课程技能覆盖。</div>') +
