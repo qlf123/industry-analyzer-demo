@@ -596,6 +596,8 @@ a.stat:hover .go{opacity:1}
         '<div class="ai-act">' + x.btn + '<details class="ai-ev"><summary>依据 ›</summary><ul>' + x.ev.map(function (e) { return '<li>' + e + '</li>'; }).join('') + '</ul></details></div></div></div>';
     }).join('') + '</div>';
   }
+  // 2026-11-18：课程首页先隐藏 AI 教学助手模块（aiCard 逻辑保留，需要时改回 true）
+  var SHOW_AI_CARD = false;
   function homeView() {
     var me = teacherName(), mp = myPlans(), today = TK.fmt(new Date(), false), now = new Date();
     var r = TK.periodRange(period);
@@ -653,7 +655,7 @@ a.stat:hover .go{opacity:1}
         (g.length > 3 ? '<button class="lk" data-tg="' + k + '">' + (open ? '收起' : '展开 ' + g.length + ' 条') + '</button>' : '') + '</div>' +
         (open ? g : g.slice(0, 3)).map(function (x) { return x.html; }).join('') + '</div>';
     }).join('') : '<div class="empty2" style="padding:10px">暂无待办</div>') + '</div>';
-    h += '<div class="hm-grid"><div class="hm-col">' + todayH + aiCard() + '</div>' + todoH + '</div>';
+    h += '<div class="hm-grid"><div class="hm-col">' + todayH + (SHOW_AI_CARD ? aiCard() : '') + '</div>' + todoH + '</div>';
     return h;
   }
   function markMenu(k) { try { document.querySelectorAll('#lnav [aria-current], #lnav .on').forEach(function (x) { x.removeAttribute('aria-current'); x.classList.remove('on'); }); var a = [].slice.call(document.querySelectorAll('#lnav a.lmenu')).filter(function (x) { return x.getAttribute('href').indexOf('teacher-tasks.html?t=' + k.replace('cr-', '')) >= 0; })[0]; if (a) { a.setAttribute('aria-current', 'page'); a.classList.add('on'); } } catch (e) {} }
