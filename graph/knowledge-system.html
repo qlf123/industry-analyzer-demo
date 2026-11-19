@@ -309,9 +309,16 @@
         {id:'KS019',name:'导游业务',desc:'导游业务课程知识体系',level:'高职',range:'课程',relObject:'导游业务',relMajor:'导游',category:'tourism',creator:'张明',sharedTo:['平台管理员'],privacy:'仅自己',buildStatus:'built',syncStatus:'synced',nodes:120,createdAt:'2026-09-28',updatedAt:'2026-09-28'}
       ];
 
-      // 本地持久化（创建的知识体系跨页面保留）
+      // 本地持久化（创建的知识体系跨页面保留）：存 localStorage，与教务课程数据同一套、跨标签页一致；
+      // 首次切换时把旧 sessionStorage 里本标签页的数据迁移过来
       var KS_KEY='ks_systems_v2';
-      try{var _stored=JSON.parse(sessionStorage.getItem(KS_KEY)||'null');if(_stored&&_stored.length)ksSystems=_stored;}catch(e){}
+      try{
+        if(!localStorage.getItem(KS_KEY)){
+          var _legacy=null; try{_legacy=JSON.parse(sessionStorage.getItem(KS_KEY)||'null');}catch(e){}
+          if(_legacy&&_legacy.length) localStorage.setItem(KS_KEY,JSON.stringify(_legacy));
+        }
+        var _stored=JSON.parse(localStorage.getItem(KS_KEY)||'null');if(_stored&&_stored.length)ksSystems=_stored;
+      }catch(e){}
       ksSystems.forEach(function(s){
         if(!s.creator) s.creator='平台管理员';
         if(!s.sharedTo) s.sharedTo=[];
@@ -333,8 +340,8 @@
         if(!s.kind) s.kind=((s.relObject||s.scopeObject)||/管理员/.test(s.creator||''))?'std':'ext';
       });
       // 演示：导游专业的课程预置关联在「旅游类-导游」专业知识体系的课程节点上，这里把该体系关联到「导游」专业（只补一次，之后以用户操作为准）
-      (function(){ var k=ksSystems.find(function(x){return x.id==='KS013';}); if(k && !k.relSeeded){ k.relSeeded=true; if(!k.relObject){ k.range='专业'; k.relObject='导游'; } try{sessionStorage.setItem('ks_systems_v2',JSON.stringify(ksSystems));}catch(e){} } })();
-      function saveKsSystems(){try{sessionStorage.setItem(KS_KEY,JSON.stringify(ksSystems));}catch(e){}}
+      (function(){ var k=ksSystems.find(function(x){return x.id==='KS013';}); if(k && !k.relSeeded){ k.relSeeded=true; if(!k.relObject){ k.range='专业'; k.relObject='导游'; } try{localStorage.setItem(KS_KEY,JSON.stringify(ksSystems));}catch(e){} } })();
+      function saveKsSystems(){try{localStorage.setItem(KS_KEY,JSON.stringify(ksSystems));}catch(e){}}
 
       // 组织树（院校 → 校区 → 学院/部门 → 系 → 教研室，叶子节点挂成员）
       var ORG_TREE = [
@@ -448,8 +455,8 @@
       function ksCardRel(s){
         var rg=ksRange(s);
         var label=rg==='课程'?'课程':(rg==='专业大类'?'专业大类':'专业');
-        if(!ksLinked(s)) return '<div class="ks-card-rel ks-card-rel-none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'
-          +'<span>未关联'+label+'，可在「⋮ › 编辑」中补充</span></div>';
+        if(!ksLinked(s)) return '<div class="ks-card-rel ks-card-rel-none" title="未关联'+label+'，可在「⋮ › 编辑」中补充关联"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'
+          +'<span>未关联'+label+'</span></div>';
         return '<div class="ks-card-rel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'
           +'<span>已关联'+label+'：<b>'+ksEsc(ksRelObject(s))+'</b></span></div>';
       }
@@ -552,7 +559,7 @@
         if(used){ ksConfirm('无法删除该知识体系',['不能删除：'+used+'。','被引用的知识体系只能保留；不再使用时，请先在编辑中解除课程关联。'],'知道了',function(){}); return; }
         ksConfirm('删除知识体系',['确认删除该知识体系？','此操作不可撤销。'],'删除',function(){
           ksSystems=ksSystems.filter(function(x){return x.id!==id;});
-          try{sessionStorage.setItem(KS_KEY,JSON.stringify(ksSystems));}catch(e){}
+          try{localStorage.setItem(KS_KEY,JSON.stringify(ksSystems));}catch(e){}
           renderKsCards();
           toast('已删除知识体系');
         },'取消');
@@ -586,6 +593,7 @@
         if(kind==='ext' && ksLinkedCourseCount(s)>0) return toast('该体系已关联教务课程，不能改为拓展体系；请先解除关联');
         editKind=kind;
         renderEditKsKind(s);
+        renderEditRelOptions();   // 类型切换后同步关联面板显隐：拓展体系不提供关联对象（2026-11-18）
       }
       function openEditKs(id){
         var s=ksSystems.find(function(x){return x.id===id;});
@@ -628,6 +636,14 @@
           document.getElementById('editKsRelHint').style.display='none';
           return;
         }
+        // 只有标准体系可关联教务专业/课程：拓展体系隐藏关联面板（2026-11-18）
+        if(editKind==='ext'){
+          ['editKsRelCatField','editKsRelMajorField','editKsRelCourseField'].forEach(function(id){document.getElementById(id).style.display='none';});
+          var eh=document.getElementById('editKsRelHint');
+          eh.textContent='拓展体系仅用于备课拓展，不关联教务专业/课程；如需关联，请先转为标准体系';
+          eh.style.display='';
+          return;
+        }
         document.getElementById('editKsRelCatField').style.display=(range==='专业大类')?'':'none';
         document.getElementById('editKsRelMajorField').style.display=(range==='专业'||range==='课程')?'':'none';
         document.getElementById('editKsRelCourseField').style.display=(range==='课程')?'':'none';
@@ -642,6 +658,7 @@
       }
       function showEditRelMeta(){
         if(window.GC && GC.teacher()){ document.getElementById('editKsRelHint').style.display='none'; return; }   // 教师端不显示关联提示
+        if(editKind==='ext') return;   // 拓展体系：关联面板已隐藏，提示文案由 renderEditRelOptions 设置
         var range=document.getElementById('editKsRange').value;
         var hasRel;
         if(range==='专业大类') hasRel=document.getElementById('editKsRelCat').value!=='';

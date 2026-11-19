@@ -35,7 +35,7 @@ window.GC = (function () {
       }
       if (key === 'gc-kb') return sessionStorage.getItem('gc_kb_owner_' + id) || '平台管理员';
       if (key === 'gc-ks') {
-        var list = JSON.parse(sessionStorage.getItem('ks_systems_v2') || '[]');
+        var list = JSON.parse(localStorage.getItem('ks_systems_v2') || '[]');
         var s = list.find(function (x) { return x.id === id; });
         return s ? (s.creator || '平台管理员') : '平台管理员';
       }

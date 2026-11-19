@@ -1,13 +1,13 @@
 /* 图谱中心 · 业务流程衔接
  * 把各页面串起来：新建的能力图谱 / 知识体系 → 映射任务可选 → 任务完成生成候选映射 → 映射审核结果保存 → 全景图谱显示已确认映射。
- * 数据都放在本标签页的 sessionStorage（与原平台各页面一致），关闭标签页即恢复初始状态。
+ * 数据放本标签页的 sessionStorage；知识体系定义（ks_systems_v2）例外——存 localStorage，与教务课程数据同一套、跨标签页一致。
  */
 window.GCF = (function () {
   'use strict';
   var K_GRAPHS = 'ability_graphs_v3', K_KS = 'ks_systems_v2', K_CANDS = 'gc_map_cands', K_REVIEW = 'gc_map_review';
 
-  function read(k, d) { try { var v = JSON.parse(sessionStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
-  function write(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function read(k, d) { try { var v = JSON.parse((k === K_KS ? localStorage : sessionStorage).getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+  function write(k, v) { try { (k === K_KS ? localStorage : sessionStorage).setItem(k, JSON.stringify(v)); } catch (e) {} }
 
   /* 已构建完成、带有图谱树的能力图谱 / 知识体系（页面里新建的） */
   function graphs() { return read(K_GRAPHS, []).filter(function (g) { return g.buildStatus === 'built' && g.tree; }); }

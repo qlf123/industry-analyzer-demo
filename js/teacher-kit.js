@@ -22,7 +22,7 @@
   function kn() {
     if (KN) return KN;
     var A = root.ASSESS_DATA || { knowledge: {}, mappings: {}, graph: { abilities: [] }, confirmedStatuses: [], countedTypes: [] };
-    KN = { course: {}, task: {}, skill: {}, abl: {}, map: {} };
+    KN = { course: {}, task: {}, skill: {}, abl: {}, map: {}, customKp: {} };
     ((A.knowledge['MAJOR-GUIDE'] || {}).courses || []).forEach(function (c) {
       KN.course[c.id] = c;
       c.tasks.forEach(function (t) { t.courseId = c.id; KN.task[t.id] = t; t.skills.forEach(function (x) { x.taskId = t.id; KN.skill[x.id] = x; }); });
@@ -34,32 +34,86 @@
     return KN;
   }
   function skillName(id) { var x = kn().skill[id]; return x ? x.name : id; }
-  // 考查知识点：技能下的知识点（知识体系「知识点数据」），按技能分组 [{sid, skill, kps:[{id, name, type, core}]}]
-  function kpsOf(skillIds) { return (skillIds || []).map(function (sid) { var x = kn().skill[sid]; return { sid: sid, skill: x ? x.name : sid, kps: (x && x.kps) || [] }; }).filter(function (g) { return g.kps.length; }); }
+  /* 知识点维度（2026-11-19 两维独立）：技能、知识点是两个正交的统计维度，知识点不按「挂在哪个技能下」推导。
+     课程匹配的知识点全集 = 课程计划关联知识体系里所有技能下的知识点平铺并集（宿主不体现） */
+  function courseKps(st, p) {
+    var out = [], seen = {};
+    planTasks(st, p).forEach(function (t) { (t.skills || []).forEach(function (x) { (x.kps || []).forEach(function (k) { if (!seen[k.id]) { seen[k.id] = 1; out.push(k); } }); }); });
+    return out;
+  }
+  // 按知识点 id 在知识体系里查详情（发布快照缺失时兜底用）；自定义知识点先查注册表
+  function kpById(id) {
+    var K = kn(), out = null;
+    if (K.customKp && K.customKp[id]) return K.customKp[id];
+    Object.keys(K.skill).some(function (sid) { return (K.skill[sid].kps || []).some(function (k) { if (k.id === id) { out = k; return true; } return false; }); });
+    return out;
+  }
+  /* 自定义节点（2026-11-19）：老师在备课资源里可以不选所属课程，从可见知识体系挑技能 / 知识点，
+     也可以自己输入名称新增（st.customNodes）。自定义节点注册进 kn() 的运行时索引，但不进任何标准课程树——
+     因此 skillName / kpById / 发布快照 / 学情都能解析，stdSkillMap / stdKpMap 判定下自动算「拓展」。 */
+  function registerCustomNodes(st) {
+    var K = kn(), cn = st && st.customNodes;
+    K.customKp = K.customKp || {};
+    Object.keys(K.customKp).forEach(function (id) { delete K.customKp[id]; });
+    Object.keys(K.skill).forEach(function (id) { if (K.skill[id].custom) delete K.skill[id]; });   // 自定义技能删掉后不残留在运行时索引
+    if (!cn) return;
+    Object.keys(cn.skill || {}).forEach(function (id) {
+      var n = cn.skill[id];
+      K.skill[id] = { id: id, name: n.name, custom: 1, kps: [], require: n.name, result: '达到「' + n.name + '」要求' };
+    });
+    Object.keys(cn.kp || {}).forEach(function (id) {
+      var n = cn.kp[id];
+      K.customKp[id] = { id: id, name: n.name, type: n.type || '', core: n.core || '', custom: 1 };
+    });
+  }
+  /* 拓展技能 / 拓展知识点（2026-11-19）：备课资源关联出来的技能、知识点可能不属于本课程关联的标准知识体系，
+     这类记为拓展——统计时与标准的一起统计、界面上用「拓展」标记区分。判定基准 = 课程关联知识体系树内的技能 / 知识点全集 */
+  function stdSkillMap(st, p) { var m = {}; planTasks(st, p).forEach(function (t) { (t.skills || []).forEach(function (x) { m[x.id] = 1; }); }); return m; }
+  function stdKpMap(st, p) { var m = {}; planTasks(st, p).forEach(function (t) { (t.skills || []).forEach(function (x) { (x.kps || []).forEach(function (k) { m[k.id] = 1; }); }); }); return m; }
+  // 「拓展」小徽标（橙色）：非本课程标准体系的技能 / 知识点用
+  function extTag() { return '<span style="font-size:10px;color:#B54708;background:#FFFAEB;border:1px solid #FDB022;border-radius:5px;padding:0 4px;margin-left:5px;white-space:nowrap;line-height:15px;display:inline-block;vertical-align:1px" title="不属于本课程标准知识体系，备课资源关联带出，统计时一并统计、单独标记">拓展</span>'; }
+  /* 任务考查的知识点（平铺）：优先发布时的快照 task.kpSnap（新口径为数组；存量按技能存的对象，平铺后按 id 去重），
+     再按发布勾选的 kpIds 过滤；无快照的存量任务按 kpIds 查知识体系，连 kpIds 也没有的按技能匹配并集（最老存量） */
+  function taskKps(task) {
+    if (!task) return [];
+    var ids = task.kpIds && task.kpIds.length ? task.kpIds : null, snap = task.kpSnap, flat = [];
+    if (snap && typeof snap === 'object') {
+      if (Array.isArray(snap)) flat = snap.slice();
+      else Object.keys(snap).forEach(function (sid) { (snap[sid] || []).forEach(function (k) { flat.push(k); }); });   // 存量：按技能 sid 存的对象快照
+    }
+    if (flat.length || ids) {
+      var out = [], seen = {};
+      flat.forEach(function (k) { if (k && k.id && !seen[k.id] && (!ids || ids.indexOf(k.id) >= 0)) { seen[k.id] = 1; out.push(k); } });
+      if (out.length) return out;
+      if (ids) { var arr = []; ids.forEach(function (id) { var k = kpById(id); if (k) arr.push(k); }); return arr; }
+    }
+    return kpsUnion(taskSids(task));
+  }
+  // 课程匹配的知识点（平铺并集，按 id 去重）——备课资源层配置知识点仍按所选技能匹配带出（宿主不体现）
+  function kpsUnion(skillIds) {
+    var out = [], seen = {};
+    (skillIds || []).forEach(function (sid) { ((kn().skill[sid] || {}).kps || []).forEach(function (k) { if (!seen[k.id]) { seen[k.id] = 1; out.push(k); } }); });
+    return out;
+  }
   /* 知识点掌握（只用于学情分析和补训，不进证据、不汇总到能力）：
      演示用 AI 标注——按该技能的评价等级和提交内容，标出没体现的知识点；老师确认评价时可改。 */
   function hash(str) { var h = 0; for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; return Math.abs(h); }
-  /* 知识点快照：发布任务时把每个考查技能下勾选的知识点（名称、类型、核心内容）存进任务（task.kpSnap）；
-     之后学生作答、AI 初评、老师评价、学情和教学达成都按快照，知识体系后来改了也不影响已发布的任务。
+  /* 知识点快照：发布任务时把勾选的考查知识点（名称、类型、核心内容）平铺存进任务（task.kpSnap，按知识点维度、不按技能分组）；
+     之后学生作答、AI 初评、老师评价、学情都按快照，知识体系后来改了也不影响已发布的任务。
      没有快照的存量任务按知识体系实时取（再按 kpIds 过滤） */
-  function taskKps(task, sid) {
-    if (task && task.kpSnap && task.kpSnap[sid]) return task.kpSnap[sid];
-    var x = kn().skill[sid], ks = (x && x.kps) || [], ids = task && task.kpIds && task.kpIds.length ? task.kpIds : null;
-    return ids ? ks.filter(function (k) { return ids.indexOf(k.id) >= 0; }) : ks;
-  }
   function taskSids(task) {
     var out = [];
     ((task && task.skillIds) || []).concat(((task && task.criteria) || []).map(function (x) { return x.sid; })).forEach(function (sid) { if (sid && out.indexOf(sid) < 0) out.push(sid); });
     return out;
   }
-  function snapKps(task) {
-    var o = {};
-    taskSids(task).forEach(function (sid) { var ks = taskKps({ kpIds: task.kpIds }, sid); if (ks.length) o[sid] = ks.map(function (k) { return { id: k.id, name: k.name, type: k.type || '', core: k.core || '' }; }); });
-    return o;
+  function snapKps(task, ext) {
+    // ext：{ kpid: 1 } 拓展知识点表（发布时按课程标准体系判定传入）；存量快照没有 ext 字段，视为标准
+    return taskKps(task).map(function (k) { var o = { id: k.id, name: k.name, type: k.type || '', core: k.core || '' }; if (ext && ext[k.id]) o.ext = 1; return o; });
   }
-  function taskKpGroups(task) { return taskSids(task).map(function (sid) { return { sid: sid, skill: skillName(sid), kps: taskKps(task, sid) }; }).filter(function (g) { return g.kps.length; }); }
-  function aiKpMarks(sid, grade, student, allowIds, task) {
-    var ks = task ? taskKps(task, sid) : ((kn().skill[sid] || {}).kps || []), out = {};
+  /* AI 标注知识点（任务级、两维独立）：按 AI 整体等级和提交内容，标出各考查知识点是否体现；老师确认评价时可改。
+     allowIds：只在这些知识点里标（一般传 task.kpIds，taskKps 已按它过滤，兼容调用方自选范围） */
+  function aiKpMarks(task, grade, student, allowIds) {
+    var ks = taskKps(task), out = {};
     if (allowIds && allowIds.length) ks = ks.filter(function (k) { return allowIds.indexOf(k.id) >= 0; });
     ks.forEach(function (k, i) {
       var miss = grade === '需改进' ? (hash(student + k.id) % 2 === 0 || i === 0) : grade === '合格' ? (ks.length > 1 && hash(student + k.id) % 3 === 0) : false;
@@ -67,44 +121,55 @@
     });
     return out;
   }
-  // 一次老师评价里，某技能下各知识点的结果：老师确认过的优先，没有则用 AI 标注（存量数据）；
-  // allowIds：本次任务发布时勾选的考查知识点（kpIds），有则只保留这些（不传 = 全部，兼容存量数据）
-  function itemKps(item, student, allowIds, task) {
-    var m = (item && item.kps) || (item ? aiKpMarks(item.sid, item.grade, student, null, task) : {});
+  /* 老师确认评价里的知识点标注（提交级，两维独立）：新数据存 sb.teacher.kpMarks；
+     存量评价只有逐技能 items[].kps，按知识点 id 取并集兼容读取。allowIds 有则只保留这些 */
+  function kpMarksOf(sub, task, allowIds) {
+    var m = null;
+    if (sub && sub.teacher) {
+      if (sub.teacher.kpMarks && Object.keys(sub.teacher.kpMarks).length) m = Object.assign({}, sub.teacher.kpMarks);
+      else { m = {}; ((sub.teacher.items) || []).forEach(function (it) { Object.keys(it.kps || {}).forEach(function (id) { if (m[id] == null) m[id] = it.kps[id]; }); }); }
+    }
+    if (!m) return {};
     if (!allowIds || !allowIds.length) return m;
     var out = {}; Object.keys(m).forEach(function (k) { if (allowIds.indexOf(k) >= 0) out[k] = m[k]; }); return out;
   }
-  function kpCount(skillIds, kpIds, task) { if (task) return taskKpGroups(task).reduce(function (a, g) { return a + g.kps.length; }, 0); return kpIds && kpIds.length ? kpIds.length : kpsOf(skillIds).reduce(function (a, g) { return a + g.kps.length; }, 0); }
+  /* AI 初评的知识点标注（提交级）：新数据存 sb.ai.kpMarks；存量从 ai.items[].kps 并集兼容读取；没有返回 null（由调用方演示生成） */
+  function aiKpMarksOf(sub, task, allowIds) {
+    var m = null;
+    if (sub && sub.ai) {
+      if (sub.ai.kpMarks && Object.keys(sub.ai.kpMarks).length) m = Object.assign({}, sub.ai.kpMarks);
+      else { m = {}; ((sub.ai.items) || []).forEach(function (it) { Object.keys(it.kps || {}).forEach(function (id) { if (m[id] == null) m[id] = it.kps[id]; }); }); }
+    }
+    if (!m || !Object.keys(m).length) return null;
+    if (!allowIds || !allowIds.length) return m;
+    var out = {}; Object.keys(m).forEach(function (k) { if (allowIds.indexOf(k) >= 0) out[k] = m[k]; }); return out;
+  }
+  function kpCount(kpIds, task) { return task ? taskKps(task).length : (kpIds || []).length; }
   // 知识点判定依据：发布时为每个考查知识点定一条「体现了什么算掌握」，默认取知识体系里该知识点的核心内容，老师可改；
   // 任务里存了（task.kpCrit）以任务为准，存量任务没有则用默认
   function kpCritDefault(k) { return k.core ? '作答中体现：' + k.core : '作答中能正确运用「' + k.name + '」'; }
   function kpCrit(task, k) { return (task && task.kpCrit && task.kpCrit[k.id]) || kpCritDefault(k); }
-  // 判定依据列表（只读）：按技能分组，每个知识点一行
+  // 判定依据列表（只读）：平铺，每个考查知识点一行（两维独立，不按技能分组）
   function kpCritHTML(task) {
-    var gs = task ? taskKpGroups(task) : [];
-    if (!gs.length) return '';
-    return gs.map(function (g) {
-      return '<div style="font-size:12px;color:var(--muted);margin-top:6px">' + esc(g.skill) + '</div>' + g.kps.map(function (k) {
-        return '<div style="font-size:12.5px;line-height:1.7;padding:2px 0 2px 10px;border-left:2px solid var(--rule)"><b style="font-weight:600">' + esc(k.name) + '</b>：<span style="color:var(--ink-2)">' + esc(kpCrit(task, k)) + '</span></div>';
-      }).join('');
+    var ks = task ? taskKps(task) : [];
+    if (!ks.length) return '';
+    return ks.map(function (k) {
+      return '<div style="font-size:12.5px;line-height:1.7;padding:2px 0 2px 10px;border-left:2px solid var(--rule)"><b style="font-weight:600">' + esc(k.name) + '</b>' + (k.ext ? extTag() : '') + '：<span style="color:var(--ink-2)">' + esc(kpCrit(task, k)) + '</span></div>';
     }).join('');
   }
-  // 考查知识点展示：每个技能一行，知识点标类型，悬停看核心内容；kpIds = 发布时勾选的，有则只显示勾选的
-  function kpHTML(skillIds, kpIds, task) {
-    var gs = task ? taskKpGroups(task) : kpsOf(skillIds);
-    if (!task && kpIds && kpIds.length) gs = gs.map(function (g) { var k2 = g.kps.filter(function (k) { return kpIds.indexOf(k.id) >= 0; }); return k2.length ? { sid: g.sid, skill: g.skill, kps: k2 } : null; }).filter(function (g) { return g; });
-    if (!gs.length) return '<span style="color:var(--muted);font-size:12px">' + ((skillIds || []).length ? '所选技能下没有知识点' : '未挂技能，没有考查知识点') + '</span>';
-    return gs.map(function (g) {
-      return '<div style="font-size:12.5px;line-height:1.9"><span style="color:var(--muted)">' + esc(g.skill) + '：</span>' + g.kps.map(function (k) {
-        return '<span title="' + esc(k.core || '') + '" style="display:inline-block;border:1px solid var(--rule);border-radius:6px;padding:0 7px;margin:0 6px 4px 0;background:var(--card)">' + esc(k.name) + (k.type ? '<small style="color:var(--muted);margin-left:4px">' + esc(k.type) + '</small>' : '') + '</span>';
-      }).join('') + '</div>';
-    }).join('');
+  // 考查知识点展示：平铺 chips（按 id 去重，不体现宿主），知识点标类型，拓展知识点带「拓展」徽标，悬停看核心内容；task 为已发布任务（快照/勾选口径）
+  function kpHTML(kpIds, task) {
+    var flat = taskKps(task || { kpIds: kpIds });
+    if (!flat.length) return '<span style="color:var(--muted);font-size:12px">没有考查知识点</span>';
+    return '<div style="font-size:12.5px;line-height:1.9">' + flat.map(function (k) {
+      return '<span title="' + esc(k.core || '') + '" style="display:inline-block;border:1px solid var(--rule);border-radius:6px;padding:0 7px;margin:0 6px 4px 0;background:var(--card)">' + esc(k.name) + (k.type ? '<small style="color:var(--muted);margin-left:4px">' + esc(k.type) + '</small>' : '') + (k.ext ? extTag() : '') + '</span>';
+    }).join('') + '</div>';
   }
 
   /* ── 图谱中心（graph/）新建的课程级知识体系：建课次时可选用；选用时导入一份到本机数据（st.gks），之后与预置知识体系同样使用 ── */
   function graphSystems(courseName) {
     var list = [];
-    try { list = JSON.parse(sessionStorage.getItem('ks_systems_v2') || '[]'); } catch (e) {}
+    try { list = JSON.parse(localStorage.getItem('ks_systems_v2') || '[]'); } catch (e) {}
     return list.filter(function (s) { return s.range === '课程' && s.relObject === courseName && s.buildStatus === 'built' && s.tree; });
   }
   function gksFrom(s) {
@@ -139,7 +204,7 @@
   function ensureKs(st, ks) {
     if (!ks || kn().course[ks] || ks.indexOf('GKS-') !== 0) return;
     if (st.gks && st.gks[ks.slice(4)]) { registerGks(st.gks[ks.slice(4)]); return; }
-    var list = []; try { list = JSON.parse(sessionStorage.getItem('ks_systems_v2') || '[]'); } catch (e) {}
+    var list = []; try { list = JSON.parse(localStorage.getItem('ks_systems_v2') || '[]'); } catch (e) {}
     var s = list.filter(function (x) { return 'GKS-' + x.id === ks && x.buildStatus === 'built' && x.tree; })[0];
     if (s) importGks(st, s);   // 选用时导入一份，之后图谱中心的修改不影响已建课次
   }
@@ -349,18 +414,19 @@
   }
   function addStuGrowth(st, who, rec) { (st.stuGrowth[who] = st.stuGrowth[who] || []).unshift(Object.assign({ id: uid('G'), at: fmt(new Date()) }, rec)); }
   function load() {
+    function finish(s) { registerCustomNodes(s); return s; }   // 自定义节点注册进 kn() 运行时索引（跨页面共享）
     try {
       var s = JSON.parse(localStorage.getItem(KEY));
-      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); return s; }   // 已是最新版：直接用，切勿走到下面重置演示数据
+      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据
       if (s && s.v === 6) { seedEdu(s); s.v = 7; }   // 补上管理端教务基础数据，原有数据保留
       if (s && s.v === 7) { seedCourseType(s); s.v = 8; save(s); }   // 补上课程类型与公共基础课
       if (s && s.v === 8) { seedMajorLevel(s); s.v = 9; save(s); }   // 专业树补第三层
       if (s && s.v === 9) { seedStudents(s); s.v = 10; save(s); }   // 学生档案
       if (s && s.v === 10) { syncSessions(s); s.v = 11; save(s); }   // 排课自动生成课次
       if (s && s.v === 11) { var ch1 = seedLabs(s), ch2 = seedPeriods(s), ch3 = seedKpSnap(s); if (ch1 || ch2 || ch3) save(s); Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); s.v = 12; save(s); }
-      if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); return s; }   // 课程类型细分为五类，旧值自动映射
+      if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); return finish(s); }   // 课程类型细分为五类，旧值自动映射
     } catch (e) {}
-    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); s2.v = 13; save(s2); return s2;
+    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); s2.v = 13; save(s2); return finish(s2);
   }
   /* 课程类型细分迁移：旧两分类映射到新五分类（专业课默认归入专业核心课程） */
   function migrateCourseType(st) {
@@ -536,7 +602,7 @@
   }
   /* ── 排课 → 课次：管理端每排一次课，教师端就有一个课次（source '排课'，带 slotId）──
      未发布的课次跟着排课改时间、随排课删除；已发布的锁定（管理端不能再改这次排课）。
-     名称默认「课程名 · 第 N 次课」，老师没改过名称（autoName）的随排课顺序更新。老师另建的课次 source '自建课次'，不带 slotId */
+     名称默认「课程名 · 第 N 次课」，N 是排课的稳定编号（slot.no）：删除中间课次不重排、新增取最大+1；老师没改过名称（autoName）的只随课程改名 / 编号初次分配更新。老师另建的课次 source '自建课次'，不带 slotId */
   /* 课程计划状态（不再手动停用，按课次自动算）：未排课 / 进行中 / 已结束 */
   function planState(st, p) {
     var ls = st.courses.filter(function (c) { return c.planId === p.id; });
@@ -545,11 +611,12 @@
     return ls.some(function (c) { return new Date(String(c.end).replace(' ', 'T')) >= now; }) ? '进行中' : '已结束';
   }
   /* 时间冲突：同一天、同一班级或同一授课老师、时间段重叠（排课生成的课次、老师另建的额外课次、补训课次都算）；
-     except：自己（编辑时）；返回冲突的课次和它的课程计划 */
+     except：自己（编辑时），可为单个课次或课次数组（用于跳过已查过的冲突继续找）；返回冲突的课次和它的课程计划 */
   function lessonConflict(st, classId, teacher, start, end, except) {
     var hit = null, day = String(start).slice(0, 10);
     st.courses.forEach(function (c) {
-      if (hit || c === except || String(c.start).slice(0, 10) !== day || !(c.start < end && c.end > start)) return;
+      // 已停用的课次时间已释放，不参与冲突判定（2026-11-19 课次停用/启用）
+      if (hit || c === except || c.disabled || (except && except.indexOf && except.indexOf(c) >= 0) || String(c.start).slice(0, 10) !== day || !(c.start < end && c.end > start)) return;
       var q = st.plans.filter(function (x) { return x.id === c.planId; })[0]; if (!q) return;
       if (q.classId === classId || q.teacher === teacher) hit = { c: c, p: q };
     });
@@ -559,12 +626,19 @@
     var changed = false;
     st.plans.forEach(function (p) {
       var slots = (p.slots || []).slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+      // 稳定编号（2026-11-18 方案A）：编号是「教学次序标识」，存到 slot.no；旧数据没有 no 的按时间顺序补一次并持久化，名称不变。
+      // 排课删除后编号不重排（出现空缺）；新增排课取最大编号+1（course-plan 分配）
+      var mx = slots.reduce(function (a, s) { return Math.max(a, s.no || 0); }, 0);
+      slots.forEach(function (sl) { if (!sl.no) { sl.no = ++mx; changed = true; } });
       var cl = st.classes.filter(function (c) { return c.id === p.classId; })[0] || {};
       slots.forEach(function (sl, i) {
-        var name = p.course + ' · 第 ' + (i + 1) + ' 次课';
+        // 已停用的排课：时间已释放，不生成 / 不同步 / 不认领课次（2026-11-19 课次停用/启用）
+        if (sl.disabled) return;
+        var name = p.course + ' · 第 ' + sl.no + ' 次课';
         var c = st.courses.filter(function (x) { return x.planId === p.id && x.slotId === sl.id; })[0];
-        // 旧数据：老师按已排时间建的课次，按开始时间认领
-        if (!c) { c = st.courses.filter(function (x) { return x.planId === p.id && !x.slotId && x.source !== '补训课次' && x.start === sl.start; })[0]; if (c) { c.slotId = sl.id; c.source = '排课'; changed = true; } }
+        // 旧数据：老师按已排时间建的课次，按开始时间认领；待教务审核的冲突课次不算（时间重叠 ≠ 同一次课）；
+        // 自建课次、停用课次、审核替换顶替进来的课次（swappedIn）不被认领——它们不是这次排课
+        if (!c) { c = st.courses.filter(function (x) { return x.planId === p.id && !x.slotId && x.source !== '补训课次' && x.source !== '自建课次' && !x.disabled && !x.swappedIn && x.status !== '待审核' && x.start === sl.start; })[0]; if (c) { c.slotId = sl.id; c.source = '排课'; changed = true; } }
         if (!c) {
           st.courses.push({ id: uid('CRS'), planId: p.id, slotId: sl.id, source: '排课', autoName: true, name: name, ktask: '', skillIds: [], classIds: [p.classId], major: cl.major || '', term: p.term,
             start: sl.start, end: sl.end, status: '未发布', resIds: [], createdAt: fmt(new Date()), publish: null, submissions: [], feedbacks: [], learn: {} });
@@ -807,6 +881,6 @@
     periodRange: periodRange, inRange: inRange, addGrowth: addGrowth, addStuGrowth: addStuGrowth, STU_STAR: STU_STAR, toast: toast, drawer: drawer, modal: modal, confirm: confirmBox,
     formHTML: formHTML, bindForm: bindForm, bindSearchSelect: bindSearchSelect, readForm: readForm, fileRow: fileRow, FT_COLOR: FT_COLOR,
     PERIODS: PERIODS, periodOf: periodOf, periods: periods, periodSpan: periodSpan, periodText: periodText, periodTime: periodTime, switchTmode: switchTmode, ttGrid: ttGrid,
-    kn: kn, skillName: skillName, kpsOf: kpsOf, kpCount: kpCount, kpHTML: kpHTML, kpCrit: kpCrit, kpCritDefault: kpCritDefault, kpCritHTML: kpCritHTML, taskKps: taskKps, taskKpGroups: taskKpGroups, snapKps: snapKps, aiKpMarks: aiKpMarks, itemKps: itemKps, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs,
+    kn: kn, skillName: skillName, registerCustomNodes: registerCustomNodes, kpsUnion: kpsUnion, courseKps: courseKps, kpById: kpById, kpCount: kpCount, kpHTML: kpHTML, kpCrit: kpCrit, kpCritDefault: kpCritDefault, kpCritHTML: kpCritHTML, taskKps: taskKps, snapKps: snapKps, aiKpMarks: aiKpMarks, aiKpMarksOf: aiKpMarksOf, kpMarksOf: kpMarksOf, stdSkillMap: stdSkillMap, stdKpMap: stdKpMap, extTag: extTag, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs,
     syncRoster: syncRoster, syncSessions: syncSessions, planState: planState, lessonConflict: lessonConflict, fillSkillsFromRes: fillSkillsFromRes, studentHasRecords: studentHasRecords, majorPath: majorPath, majorTop: majorTop, majorSubIds: majorSubIds, majorTree: majorTree, majorChain: majorChain, GRADES: GRADES, genCriteria: genCriteria, overall: overall, addEvidence: addEvidence };
 })(window);

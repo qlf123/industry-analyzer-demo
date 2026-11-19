@@ -44,7 +44,7 @@
       skills: Object.keys(bySkill).length, abilities: abilities };
   }
   function rate(ok, n) { return n ? Math.round(ok * 100 / n) : null; }
-  /* 标准达成率口径（与教师端学情一致）：
+  /* 标准达成率口径（管理端考核口径，未教的技能计入分母）：
    *   - 标准技能集合 = 当前知识体系任务树技能 ∪ 已发布任务快照技能（换体系后历史评价不丢）；
    *   - 分母 = 课程标准技能数 × 班级人数，全员同分母、跨班可比；老师的进度差异不进入达成率；
    *   - 只算已关联知识体系的课程计划，未关联课程不计入（避免把没有标准的课稀释进分母）。
@@ -89,44 +89,39 @@
     tot.rate = rate(tot.ok, tot.den);
     return { tot: tot, byPlan: byPlan, byStu: byStu, byAbl: byAbl, planStd: planStd };
   }
-  /* 知识点掌握（与教师端学情同口径）：每个学生取某技能最近一次老师确认的评价（含退回），只看发布时勾选的考查知识点；
+  /* 知识点掌握（两维独立，2026-11-19）：知识点不按技能分组，按知识点维度平铺统计——
+     每个学生取范围内最近一次老师确认的评价（含退回），看发布时勾选的考查知识点是否体现；
      asOf / from：只算这个时间段内的评价（用于趋势和周期统计）。返回 {plans, groups, rows, noEv}；不计入证据、不汇总到能力 */
   function kpsAgg(S, plans, asOf, from) {
-    var TK = root.TK, bySid = {}, order = [], tdate = function (x) { return new Date(String(x).replace(' ', 'T')); };
+    var TK = root.TK, byKp = {}, order = [], stuLast = {}, tdate = function (x) { return new Date(String(x).replace(' ', 'T')); };
     plans.forEach(function (p) {
       S.courses.filter(function (c) { return c.planId === p.id && c.publish && c.publish.task && c.publish.task.on; }).forEach(function (c) {
         var t = c.publish.task, kpIds = (t.kpIds && t.kpIds.length) ? t.kpIds : null;
-        (((t || {}).criteria) || []).forEach(function (x) {
-          var sid = x.sid; if (!sid) return;
-          var g = bySid[sid];
-          if (!g) { g = bySid[sid] = { sid: sid, name: TK.skillName(sid), courses: {}, kps: [], allow: null, last: {} }; order.push(g); }
+        TK.taskKps(t).forEach(function (k) {
+          if (kpIds && kpIds.indexOf(k.id) < 0) return;
+          var g = byKp[k.id];
+          if (!g) { g = byKp[k.id] = { k: k, courses: {}, cnt: { ok: 0, miss: 0, who: [] } }; order.push(g); }
           g.courses[c.id] = 1;
-          TK.taskKps(t, sid).forEach(function (k) { if (!g.kps.some(function (y) { return y.id === k.id; })) g.kps.push(k); });   // 发布时的知识点快照并集
-          if (kpIds) { g.allow = g.allow || []; kpIds.forEach(function (id) { if (g.allow.indexOf(id) < 0) g.allow.push(id); }); }
-          (c.submissions || []).forEach(function (sb) {
-            var it = sb.teacher && (sb.teacher.items || []).filter(function (y) { return y.sid === sid; })[0];
-            if (it && (!asOf || tdate(sb.teacher.at) < asOf) && (!from || tdate(sb.teacher.at) >= from) && (!g.last[sb.student] || sb.teacher.at >= g.last[sb.student].at)) g.last[sb.student] = { at: sb.teacher.at, marks: TK.itemKps(it, sb.student, kpIds, t) };
-          });
+        });
+        (c.submissions || []).forEach(function (sb) {
+          if (!sb.teacher) return;
+          if (asOf && !(tdate(sb.teacher.at) < asOf)) return;
+          if (from && !(tdate(sb.teacher.at) >= from)) return;
+          if (!stuLast[sb.student] || sb.teacher.at >= stuLast[sb.student].at) stuLast[sb.student] = { at: sb.teacher.at, marks: TK.kpMarksOf(sb, t, null) };
         });
       });
     });
-    order.forEach(function (g) {
-      if (g.allow) g.kps = g.kps.filter(function (k) { return g.allow.indexOf(k.id) >= 0; });
-      g.stus = Object.keys(g.last).length; g.cnt = {}; g.ok = 0; g.miss = 0;
-      g.kps.forEach(function (k) {
-        var c = { ok: 0, miss: 0, who: [] };
-        Object.keys(g.last).forEach(function (st) {
-          if (g.last[st].marks[k.id] === 'miss') { c.miss++; c.who.push(st); }
-          else if (g.last[st].marks[k.id] === 'ok') c.ok++;   // 最近一次评价未考查的（发布时未勾选）不计入
-        });
-        g.cnt[k.id] = c; g.ok += c.ok; g.miss += c.miss;
+    Object.keys(stuLast).forEach(function (st) {
+      order.forEach(function (g) {
+        var v = stuLast[st].marks[g.k.id];
+        if (v === 'miss') { g.cnt.miss++; g.cnt.who.push(st); }
+        else if (v === 'ok') g.cnt.ok++;   // 最近一次评价未考查的（发布时未勾选）不计入
       });
     });
-    var groups = order.filter(function (g) { return g.kps.length && g.stus; });
-    var rows = [];
-    groups.forEach(function (g) { g.kps.forEach(function (k) { rows.push({ g: g, k: k, c: g.cnt[k.id] }); }); });
+    var rows = order.map(function (g) { return { k: g.k, c: g.cnt, courses: g.courses }; });
     rows.sort(function (a, b) { return b.c.miss - a.c.miss || a.c.ok - b.c.ok; });
-    return { plans: plans, groups: groups, rows: rows, noEv: order.filter(function (g) { return g.kps.length && !g.stus; }) };
+    /* groups 保留为空数组（旧消费方兼容）：两维独立后不再按技能/任务分组展示 */
+    return { plans: plans, groups: [], rows: rows, noEv: order.filter(function (g) { return !(g.cnt.ok + g.cnt.miss); }) };
   }
   function kpRate(A) { var t = 0, o = 0; A.rows.forEach(function (r) { t += r.c.ok + r.c.miss; o += r.c.ok; }); return { t: t, o: o, r: rate(o, t) }; }
   root.TR = { compute: compute, rate: rate, kpsAgg: kpsAgg, kpRate: kpRate };

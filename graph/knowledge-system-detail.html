@@ -413,7 +413,7 @@
       // 图谱中心：打开的是新建的知识体系时显示它自己的树（下拉也可切换到新建的体系），节点编辑保存回该体系
       var GC_KS=null, GC_KS_LIST=[];
       (function(){
-        try{GC_KS_LIST=JSON.parse(sessionStorage.getItem('ks_systems_v2')||'[]');}catch(e){}
+        try{GC_KS_LIST=JSON.parse(localStorage.getItem('ks_systems_v2')||'[]');}catch(e){}
         var id=new URLSearchParams(location.search).get('id');
         var sel=document.getElementById('ksSelect');
         GC_KS_LIST.filter(function(x){return x.tree&&x.buildStatus==='built';}).forEach(function(x){sel.insertBefore(new Option(x.name,x.id),sel.firstChild);});
@@ -436,7 +436,7 @@
         if(!GC_KS)return;
         var n=0;(function c(x){n++;(x.children||[]).forEach(c);})(treeData);
         GC_KS.tree=treeData;GC_KS.nodes=n;
-        try{sessionStorage.setItem('ks_systems_v2',JSON.stringify(GC_KS_LIST));}catch(e){}
+        try{localStorage.setItem('ks_systems_v2',JSON.stringify(GC_KS_LIST));}catch(e){}
         // 图例按本体系实际节点计数
         var cnt={};(function c(x){cnt[x.type]=(cnt[x.type]||0)+1;(x.children||[]).forEach(c);})(treeData);
         var MAP={'专业大类':'root','专业':'major','课程分类':'category','课程':'course','任务':'task','操作流程':'process','技能规范':'skill','知识点':'knowledge','操作步骤':'step','标准':'standard','案例':'case'};

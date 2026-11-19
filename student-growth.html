@@ -206,14 +206,14 @@
         '<div style="background:#d1fae5"><div class="k">已掌握</div><div class="v" style="color:#059669">' + kv.ok + '<small>个</small></div></div>' +
         '<div style="background:#ffedd5"><div class="k">未掌握</div><div class="v" style="color:#ea580c">' + kv.miss + '<small>个</small></div></div>' +
         '<div style="background:var(--card-2)"><div class="k">掌握率</div><div class="v">' + pct(kv.ok, kv.total) + '<small>%</small></div></div></div>'
-      : '<div class="empty2">暂无知识点评价。完成情景任务、老师确认评价后，这里会显示每个技能下知识点的掌握情况</div>') + '</div>';
+      : '<div class="empty2">暂无知识点评价。完成情景任务、老师确认评价后，这里会显示每个考查知识点的掌握情况</div>') + '</div>';
     if (kv.list.length) {
-      // 以知识点为主：每个知识点一行（同一条在多次评价中出现时取最近一次），未掌握排前
+      // 以知识点为主（两维独立，不按技能分组）：每个知识点一行（同一条在多次评价中出现时取最近一次），未掌握排前
       var seen = {}, rows = [];
       kv.list.forEach(function (g) {
         g.kps.forEach(function (k) {
           if (seen[k.id]) return; seen[k.id] = 1;
-          rows.push({ k: k, skill: g.name, course: g.course, task: g.task, at: g.at, tid: g.tid });
+          rows.push({ k: k, course: g.course, task: g.task, at: g.at, tid: g.tid });
         });
       });
       var cnt = { ok: 0, miss: 0, none: 0 };
@@ -229,13 +229,13 @@
         .sort(function (a, b) { return ord[a.k.miss ? 'miss' : a.k.none ? 'none' : 'ok'] - ord[b.k.miss ? 'miss' : b.k.none ? 'none' : 'ok'] || (a.at < b.at ? 1 : -1); });
       var chip = function (key, n) { return '<button type="button" class="btn-s" data-kpf="' + key + '"' + (KPF.st === key ? ' style="border-color:var(--brand);color:var(--brand-ink)"' : '') + '>' + (key ? stName[key] : '全部') + ' ' + n + '</button>'; };
       h += '<div class="card pad"><div class="blk-t">知识点明细<span class="sp"></span><span style="display:flex;gap:6px">' + chip('', rows.length) + chip('miss', cnt.miss) + chip('none', cnt.none) + chip('ok', cnt.ok) + '</span></div>' +
-        '<table class="tbl2"><thead><tr><th style="width:32%">知识点</th><th>掌握情况</th><th>所属技能</th><th>来自任务</th><th>评价时间</th><th>操作</th></tr></thead><tbody>' +
+        '<table class="tbl2"><thead><tr><th style="width:32%">知识点</th><th>掌握情况</th><th>来自任务</th><th>评价时间</th><th>操作</th></tr></thead><tbody>' +
         (shown.map(function (r) {
-          return '<tr><td><b style="font-weight:600">' + esc(r.k.name) + '</b>' + (r.k.type ? ' <small style="color:var(--muted)">' + esc(r.k.type) + '</small>' : '') +
+          return '<tr><td><b style="font-weight:600">' + esc(r.k.name) + '</b>' + (r.k.type ? ' <small style="color:var(--muted)">' + esc(r.k.type) + '</small>' : '') + (r.k.ext ? TK.extTag() : '') +
             (r.k.core ? '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">' + esc(r.k.core) + '</div>' : '') + '</td>' +
-            '<td>' + stPill(r) + '</td><td>' + esc(r.skill) + '</td><td style="font-size:12px">' + esc(r.course) + '<div style="font-size:11.5px;color:var(--muted)">' + esc(r.task) + '</div></td>' +
+            '<td>' + stPill(r) + '</td><td style="font-size:12px">' + esc(r.course) + '<div style="font-size:11.5px;color:var(--muted)">' + esc(r.task) + '</div></td>' +
             '<td class="mono" style="font-size:11.5px;white-space:nowrap">' + esc(r.at) + '</td><td><a class="lk" href="' + taskLink(r.tid) + '">去看任务 ›</a></td></tr>';
-        }).join('') || '<tr><td colspan="6" class="empty2">没有符合筛选条件的知识点</td></tr>') + '</tbody></table></div>';
+        }).join('') || '<tr><td colspan="5" class="empty2">没有符合筛选条件的知识点</td></tr>') + '</tbody></table></div>';
     }
     return h;
   }

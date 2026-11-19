@@ -88,10 +88,9 @@
         { label: '课程计划管理', items: [
           { key: 'plan', label: '课程计划', icon: '▤', href: 'course-plan.html', perms: ['edu:base:manage'], landing: false }
         ] },
-        // 教学质量：课程计划执行后的结果（老师确认的课堂证据汇总）与课程改进建议的处理
+        // 教学质量：课程计划执行后的结果（老师确认的课堂证据汇总）；「课程改进建议」导航本期隐藏（2026-11-19），条目与页面保留
         { label: '教学质量', items: [
-          { key: 'tq-reach', label: '教学达成', icon: '▤', href: 'teach-quality.html?t=reach', perms: ['teach:quality:view'], landing: false },
-          { key: 'tq-improve', label: '课程改进建议', icon: '▤', href: 'teach-quality.html?t=improve', perms: ['teach:quality:view'], landing: false }
+          { key: 'tq-reach', label: '教学达成', icon: '▤', href: 'teach-quality.html?t=reach', perms: ['teach:quality:view'], landing: false }
         ] },
         { key: 'top-assess', label: '', items: [
           { key: 'assess', label: '专业建设测评', icon: '◈', href: 'assess.html',

@@ -269,7 +269,7 @@
   /* ── 课程关联的知识体系课程：预置知识体系的课程，或图谱中心为该课程建的课程知识体系 ── */
   function ksOptions() {
     var K = TK.kn(), out = Object.keys(K.course).filter(function (id) { return id.indexOf('GKS-') !== 0; }).map(function (id) { return { v: id, label: '旅游类-导游 › ' + K.course[id].name }; });
-    var list = []; try { list = JSON.parse(sessionStorage.getItem('ks_systems_v2') || '[]'); } catch (e) {}
+    var list = []; try { list = JSON.parse(localStorage.getItem('ks_systems_v2') || '[]'); } catch (e) {}
     list.filter(function (s) { return s.range === '课程'; }).forEach(function (s) { out.push({ v: 'GKS-' + s.id, label: s.name }); });
     E.courses.forEach(function (c) { if (c.ks && c.ksName && !out.some(function (o) { return o.v === c.ks; })) out.push({ v: c.ks, label: c.ksName }); });
     return out;

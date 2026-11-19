@@ -16,7 +16,8 @@
     var te = x.teacher, back = te && te.result === '退回修改';
     return { n: n, at: x.at, late: !!x.late, items: x.files,
       returned: back ? { at: te.at || '', reason: te.comment || '请修改后重新提交' } : null,
-      eval: te && !back ? { grade: te.grade, comment: te.comment, at: te.at || '', items: te.items || [] } : null, grades: te ? te.items || [] : [] };
+      eval: te && !back ? { grade: te.grade, comment: te.comment, at: te.at || '', items: te.items || [], kpMarks: te.kpMarks || null } : null,
+      grades: te ? te.items || [] : [], kpMarks: te ? (te.kpMarks || null) : null };
   }
   function taskView(S, c, who) {
     var p = c.publish, sub = p.task && p.task.on ? c.submissions.find(function (x) { return x.student === who; }) : null, learn = (c.learn || {})[who] || {};
@@ -70,34 +71,29 @@
     return { list: list, abls: abls };
   }
 
-  /* 知识点掌握统计（学生端）：与老师端学情口径一致——
-     按每个技能取本人最近一次老师确认的评价（含退回的那次），看技能下各知识点是否体现；
+  /* 知识点掌握统计（学生端，两维独立）：知识点不按技能分组，按任务维度统计——
+     每个任务取本人最近一次老师确认的评价（含退回的那次），看发布时勾选的考查知识点（task.kpIds；存量任务没有则视为全部）是否体现；
      只用于学习参考，不进证据、不汇总到技能达成 */
-  /* 知识点掌握：只看发布时勾选的考查知识点（task.kpIds；存量任务没有则视为全部），
-     取每个技能最近一次老师确认的评价（含退回），只用于学情展示，不进证据 */
   function kpView(S, who) {
-    var K = TK.kn(), last = {};
+    var last = {};
     S.courses.forEach(function (c) {
       if (!mine(S, c, who) || !c.publish.task) return;
-      var t = c.publish.task, allow = (t.kpIds && t.kpIds.length) ? t.kpIds : null;
+      var t = c.publish.task;
       (c.submissions || []).forEach(function (sb) {
         if (sb.student !== who || !sb.teacher) return;
-        (sb.teacher.items || []).forEach(function (it) {
-          var ks = TK.taskKps(t, it.sid);
-          if (!ks.length) return;
-          if (!last[it.sid] || sb.teacher.at >= last[it.sid].at)
-            last[it.sid] = { at: sb.teacher.at, marks: TK.itemKps(it, who, allow, t), ks: ks, tid: c.id, task: t.name, course: c.name };
-        });
+        if (!last[c.id] || sb.teacher.at >= last[c.id].at)
+          last[c.id] = { at: sb.teacher.at, marks: TK.kpMarksOf(sb, t, null), tid: c.id, task: t.name, course: c.name, ks: TK.taskKps(t) };
       });
     });
-    var list = Object.keys(last).map(function (sid) {
-      var x = K.skill[sid], l = last[sid];
-      var kps = l.ks.map(function (k) { return { id: k.id, name: k.name, type: k.type, core: k.core, miss: l.marks[k.id] === 'miss', none: l.marks[k.id] !== 'miss' && l.marks[k.id] !== 'ok' }; });
-      return { sid: sid, name: x.name, kps: kps, ok: kps.filter(function (k) { return !k.miss && !k.none; }).length, miss: kps.filter(function (k) { return k.miss; }).length,
+    var list = Object.keys(last).map(function (cid) {
+      var l = last[cid];
+      var kps = l.ks.map(function (k) { return { id: k.id, name: k.name, type: k.type, core: k.core, ext: k.ext ? 1 : 0, miss: l.marks[k.id] === 'miss', none: l.marks[k.id] !== 'miss' && l.marks[k.id] !== 'ok' }; });
+      return { name: l.task, kps: kps, ok: kps.filter(function (k) { return !k.miss && !k.none; }).length, miss: kps.filter(function (k) { return k.miss; }).length,
         at: l.at, tid: l.tid, task: l.task, course: l.course };
     }).sort(function (a, b) { return a.at < b.at ? 1 : -1; });
-    var all = list.reduce(function (a, x) { return a.concat(x.kps); }, []);
-    return { list: list, total: all.length, ok: all.filter(function (k) { return !k.miss && !k.none; }).length, miss: all.filter(function (k) { return k.miss; }).length };
+    var all = list.reduce(function (a, x) { return a.concat(x.kps); }, []), seen = {}, uni = [];
+    all.forEach(function (k) { if (!seen[k.id]) { seen[k.id] = 1; uni.push(k); } });
+    return { list: list, total: uni.length, ok: uni.filter(function (k) { return !k.miss && !k.none; }).length, miss: uni.filter(function (k) { return k.miss; }).length };
   }
 
   /* ── 学生操作（写回共用数据） ── */
@@ -111,17 +107,19 @@
       return true;
     });
   }
-  // 演示用 AI 初评：按提交内容是否完整，逐项给出等级，供老师在教师端确认或修改
+  // 演示用 AI 初评：按提交内容是否完整，逐项给出技能等级，同时按任务维度标注考查知识点（两维独立），供老师在教师端确认或修改
   var AI_REASON = { '合格': '基本做到，细节和依据还需完善。', '需改进': '提交内容中没有体现该项要求。' };
   function mockAi(items, modes, crit, who, task) {
     var types = items.map(function (x) { return x.type; }).filter(function (t, i, a) { return a.indexOf(t) === i; });
     var txt = items.filter(function (x) { return x.type === '文字'; }).map(function (x) { return x.text; }).join('');
     var full = items.length >= 2 || txt.length >= 50;
     var per = (crit || []).map(function (x, i) {
-      var g = full || i === 0 ? '合格' : '需改进', kps = TK.aiKpMarks(x.sid, g, who || '', null, task), miss = TK.taskKps(task, x.sid).filter(function (k) { return kps[k.id] === 'miss'; }).map(function (k) { return k.name; });
-      return { sid: x.sid, grade: g, reason: AI_REASON[g] + (miss.length ? '没有体现：' + miss.join('、') + '。' : ''), kps: kps };
+      var g = full || i === 0 ? '合格' : '需改进';
+      return { sid: x.sid, grade: g, reason: AI_REASON[g] };
     });
-    return { result: per.length ? TK.overall(per) : full ? '合格' : '需改进', items: per, summary: '提交了' + types.join('、') + '，共 ' + items.length + ' 项内容。',
+    var result = per.length ? TK.overall(per) : full ? '合格' : '需改进';
+    var kpAllow = (task && task.kpIds && task.kpIds.length) ? task.kpIds.slice() : null;
+    return { result: result, items: per, kpMarks: TK.aiKpMarks(task || {}, result, who || '', kpAllow), summary: '提交了' + types.join('、') + '，共 ' + items.length + ' 项内容。',
       highlights: full ? '内容覆盖了任务要求的主要方面，结构比较完整。' : '按时提交，结论明确。',
       problems: full ? '部分分析缺少数据来源。' : '内容较少，缺少分析过程' + (modes.length > types.length ? '，未使用' + modes.filter(function (m) { return types.indexOf(m) < 0; }).join('、') + '等形式补充' : '') + '。',
       advice: full ? '补充关键数据的来源，结论部分再精炼一些。' : '对照任务说明补充分析过程与依据。' };

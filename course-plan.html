@@ -64,6 +64,7 @@
       <div class="tabs l1" id="tabs" role="tablist">
         <button class="tab" role="tab" data-tab="plan" aria-selected="true">课程计划</button>
         <button class="tab" role="tab" data-tab="tt" aria-selected="false">课表</button>
+        <button class="tab" role="tab" data-tab="audit" aria-selected="false">课次审核<span id="auditBadge" style="display:none;margin-left:6px;font-size:11px;font-weight:600;line-height:1;padding:3px 7px;border-radius:999px;background:#F04438;color:#fff;vertical-align:1px"></span></button>
       </div>
     </div>
     <div class="body">
@@ -72,6 +73,7 @@
         <div class="eb-card"><div class="eb-tw" id="tbl"></div><div class="eb-foot" id="foot"></div></div>
       </div>
       <div id="paneTt" hidden></div>
+      <div id="paneAudit" hidden></div>
       <div id="paneDetail" hidden></div>
     </div>
   </div>
@@ -91,11 +93,14 @@
   (function () { var c = DEMO.getState(), id = UI.currentIdentity(c); if (!UI.hasPerm(c, id, 'edu:base:manage')) { document.querySelector('.panel').innerHTML = '<div class="body"><div class="card" style="padding:40px;text-align:center;color:var(--muted)">当前身份没有「教务管理与课程计划维护」权限</div></div>'; throw new Error('no-perm'); } })();
 
   var S = TK.load(), E = S.edu, F = {}, tab = 'plan';
+  S.lessonReqs = S.lessonReqs || [];   // 教师端提交的课次冲突审核单（2026-11-18）
   // 从「课程管理」点课程计划数进来：?ec=课程 ID，按这门课筛选（课程名称框显示课程名，改了就不再按 ID 精确筛）
   (function () { var m = location.search.match(/[?&]ec=([^&]+)/); if (!m) return; var ec = E.courses.filter(function (c) { return c.id === decodeURIComponent(m[1]); })[0]; if (ec) { F.ec = ec.id; F.q = ec.name; } })();
   var WD = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
   function save() { TK.syncSessions(S); TK.save(S); }   // 排课变化同步到教师端课次
   function me() { try { return UI.currentIdentity(DEMO.getState()).account.name; } catch (e) { return '管理员'; } }
+  // 审计日志：与教师端同一通道，管理端「系统配置 › 操作日志」可查
+  function audit(action, object, before, after) { try { var st = DEMO.getState(), id = UI.currentIdentity(st); DEMO.addAudit(st, id.account.id, action, object, before, after, '成功'); DEMO.saveState(st); } catch (e) {} }
   function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0]; }
   function cls(id) { return byId(S.classes, id) || { name: '—' }; }
   function majorName(id) { return TK.majorPath(E, id) || '—'; }   // 专业完整路径
@@ -142,7 +147,7 @@
       sel('cl', '班级', '全部班级', clsList.map(function (c) { return c.name; })) +
       sel('t', '授课老师', '全部授课老师', tch) +
       '<button class="btn-s" type="button" data-reset>重置</button>' +
-      '<span style="display:flex;gap:8px;margin-left:auto"><button class="btn-s" type="button" data-io="导入">导入</button><button class="btn-s" type="button" data-io="导出">导出</button><button class="btn" type="button" data-add style="height:32px">＋ 新增</button></span>';   // 新增 / 导入 / 导出放在筛选区右侧
+      '<span style="display:flex;gap:8px;margin-left:auto"><button class="btn-s" type="button" data-io="导入">导入</button><button class="btn-s" type="button" data-io="导出">导出</button><button class="btn" type="button" data-add style="height:32px">＋ 新增</button></span>';   // 导入 / 导出 / 新增放在筛选区右侧；课次审核已升级为独立页签
     var list = S.plans.filter(function (p) {
       return (F.ec ? p.eduCourseId === F.ec : (!F.q || p.course.indexOf(F.q) >= 0)) && (!F.term || p.term === F.term) && inMajor(cls(p.classId).majorId, F.mj) && (!F.cl || cls(p.classId).name === F.cl) && (!F.t || p.teacher === F.t);
     });
@@ -152,9 +157,9 @@
         var c = cls(p.classId), n = (p.slots || []).length, b = built(p), lessons = heldLessons(p);
         return '<tr><td>' + esc(p.term) + '</td><td>' + esc(majorName(c.majorId)) + '</td><td>' + esc(gradeName(c.gradeId)) + '</td><td>' + esc(c.name) + '</td><td>' + esc(p.course) + '</td><td>' + esc(p.teacher) + '</td><td>' + (c.students || []).length + '</td>' +
           '<td class="prog">' + (n ? n + ' 次 / <b>' + b + '</b>' : '<span class="muted">未排课</span>') + '</td>' +
-          '<td class="ops">' + opsLink('view', p.id, '详情') + opsLink('sched', p.id, '排课') + opsLink('edit', p.id, '编辑') + (n > 0 || lessons > 0 ? '' : opsLink('del', p.id, '删除')) + '</td></tr>';
+          '<td class="ops">' + opsLink('view', p.id, '详情') + opsLink('sched', p.id, '排课') + (n > 0 || lessons > 0 ? '' : opsLink('edit', p.id, '编辑')) + (n > 0 || lessons > 0 ? '' : opsLink('del', p.id, '删除')) + '</td></tr>';
       }).join('') || '<tr><td colspan="' + heads.length + '"><div class="empty">没有符合条件的课程计划</div></td></tr>') + '</tbody></table>';
-    $('#foot').innerHTML = '<span>共 ' + list.length + ' 条</span><span>每排一次课，教师端智慧课堂自动生成一个课次；已发布：老师已发布学习内容的课次</span>';
+    $('#foot').innerHTML = '<span>共 ' + list.length + ' 条</span><span>每排一次课，教师端智慧课堂自动生成一个课次；已排课的计划不可编辑、删除（先删掉全部排课），已发布：老师已发布学习内容的课次</span>';
   }
   function sel(k, label, all, opts) {
     return '<label>' + label + '<select class="sel" data-flt="' + k + '"><option value="">' + all + '</option>' + opts.map(function (o) { return '<option' + (F[k] === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></label>';
@@ -254,8 +259,8 @@
     var d = TK.drawer({ title: '课程计划详情', sub: p.course + ' · ' + c.name, width: 520,
       body: '<div class="kvd">' + [['学年学期', p.term], ['专业', majorName(c.majorId)], ['年级', gradeName(c.gradeId)], ['班级', c.name + ' · ' + (c.students || []).length + ' 人'], ['课程', p.course + '（' + (ec.type || '专业课') + '）'], ['授课老师', p.teacher],
         ['排课 / 已发布', (p.slots || []).length ? (p.slots || []).length + ' 次 / ' + built(p) + ' 次' : '未排课']].map(function (x) { return '<div class="k">' + x[0] + '</div><div>' + esc(x[1]) + '</div>'; }).join('') + '</div>',
-      foot: '<span class="sp"></span><button class="btn-s" data-pe>编辑</button><button class="btn" data-ps style="height:32px">排课</button>' });
-    d.foot.querySelector('[data-pe]').onclick = function () { d.close(); planForm(p); };
+      foot: '<span class="sp"></span>' + ((p.slots || []).length || heldLessons(p) ? '' : '<button class="btn-s" data-pe>编辑</button>') + '<button class="btn" data-ps style="height:32px">排课</button>' });
+    if (d.foot.querySelector('[data-pe]')) d.foot.querySelector('[data-pe]').onclick = function () { d.close(); planForm(p); };
     d.foot.querySelector('[data-ps]').onclick = function () { d.close(); planDetail(p, 'sched'); };
   }
   function planDetail(p, mode) {
@@ -278,20 +283,20 @@
         // 详情只放基础信息；排课列表、额外课次只在「排课」页
         // 教务排课和老师自建的课次放在一个列表里：来源、状态单列；只有教务排的、还没发布的能编辑 / 删除
         (ed ? (function () {
-          var rows = slots.map(function (sl) { var l = lessonOf(p, sl); return { start: sl.start, end: sl.end, name: l ? l.name : '—', status: l ? l.status : '未发布', src: '教务排课', slot: sl }; })
-            .concat(S.courses.filter(function (x) { return x.planId === p.id && !x.slotId; }).map(function (x) { return { start: x.start, end: x.end, name: x.name, status: x.status, src: x.targets ? (x.tutor ? '老师自建 · 辅导' : '老师自建 · 补训') : '老师自建' }; }))
+          var rows = slots.map(function (sl) { var l = lessonOf(p, sl); return { start: sl.start, end: sl.end, name: l ? l.name : '—', status: l ? l.status : '未发布', src: '教务排课', slot: sl, dis: !!sl.disabled || !!(l && l.disabled) }; })
+            .concat(S.courses.filter(function (x) { return x.planId === p.id && !x.slotId; }).map(function (x) { return { start: x.start, end: x.end, name: x.name, status: x.status, src: '老师自建', dis: !!x.disabled }; }))   // 补训/辅导标签本期隐藏（2026-11-19），统一按老师自建展示
             .sort(function (a, b) { return a.start < b.start ? -1 : 1; });
-          var nT = rows.filter(function (r) { return r.slot; }).length, nPub = rows.filter(function (r) { return r.status === '已发布'; }).length;
-          return '<div class="dr-s"><div class="dr-st">课次（共 ' + rows.length + ' 次：教务排课 ' + nT + '、老师自建 ' + (rows.length - nT) + '；已发布 ' + nPub + '）</div>' +
-            '<div style="font-size:12px;color:var(--muted);margin:-4px 0 8px">每排一次课，教师端智慧课堂自动生成一个课次；未发布时编辑、删除会同步到教师端，已发布的不能再改。老师自建的课次按全校规则做过冲突检查，这里只能查看</div>' +
+          var nT = rows.filter(function (r) { return r.slot; }).length, nPub = rows.filter(function (r) { return r.status === '已发布'; }).length, nDis = rows.filter(function (r) { return r.dis; }).length;
+          return '<div class="dr-s"><div class="dr-st">课次（共 ' + rows.length + ' 次：教务排课 ' + nT + '、老师自建 ' + (rows.length - nT) + '；已发布 ' + nPub + (nDis ? '；已停用 ' + nDis : '') + '）</div>' +
+            '<div style="font-size:12px;color:var(--muted);margin:-4px 0 8px">每排一次课，教师端智慧课堂自动生成一个课次；未发布时编辑、删除会同步到教师端，已发布的不能再改（也不能停用）。停用的课次时间释放、不计入教学进度，可随时启用恢复；只能操作教务排课的课次，老师自建的课次由老师自己停用 / 启用</div>' +
             '<div class="sl-acts"><button class="btn-s" data-sl="one">＋ 排一次课</button><button class="btn-s" data-sl="week">按周批量排课</button></div>' +
             '<table class="tbl2"><thead><tr><th>日期</th><th>节次</th><th>时间</th><th>课次</th><th>来源</th><th>状态</th><th>操作</th></tr></thead><tbody>' +
             (rows.map(function (r) {
               var dt = dateOf(r.start), sp = TK.periodSpan(S, r.start, r.end), pub = r.status === '已发布';
               return '<tr><td class="mono">' + d2(r.start) + ' ' + WD[dt.getDay()] + '</td><td>' + TK.periodText(sp[0], sp[1]) + '</td><td class="mono">' + r.start.slice(11) + '–' + r.end.slice(11) + '</td>' +
                 '<td>' + esc(r.name) + '</td><td>' + (r.slot ? '教务排课' : '<span style="color:var(--brand-ink)">' + esc(r.src) + '</span>') + '</td>' +
-                '<td><span class="pill ' + (pub ? 'good' : 'k') + '">' + esc(r.status) + '</span></td>' +
-                '<td style="white-space:nowrap">' + (!r.slot ? '<span class="muted">-</span>' : pub ? '<span class="muted" style="font-size:12px">已发布，不能改</span>' : '<button class="lk" data-mv="' + r.slot.id + '">编辑</button>　<button class="lk" data-rm="' + r.slot.id + '">删除</button>') + '</td></tr>';
+                '<td>' + (r.dis ? '<span class="pill crit">已停用</span>' : '<span class="pill ' + (pub ? 'good' : 'k') + '">' + esc(r.status) + '</span>') + '</td>' +
+                '<td style="white-space:nowrap">' + (!r.slot ? (r.dis ? '<span class="muted" style="font-size:12px">老师自建 · 已停用</span>' : '<span class="muted">-</span>') : pub ? '<span class="muted" style="font-size:12px">已发布，不能改</span>' : r.dis ? '<button class="lk" data-on="' + r.slot.id + '">启用</button>　<button class="lk" data-rm="' + r.slot.id + '">删除</button>' : '<button class="lk" data-mv="' + r.slot.id + '">编辑</button>　<button class="lk" data-rm="' + r.slot.id + '">删除</button>　<button class="lk" data-off="' + r.slot.id + '">停用</button>') + '</td></tr>';
             }).join('') || '<tr><td colspan="7"><div class="empty">还没有课次。每排一次课，教师端智慧课堂就会自动出现一个课次</div></td></tr>') + '</tbody></table></div>';
         })() : '') + '</div>';
     }
@@ -301,7 +306,31 @@
       if (e.target.closest('[data-gosched]')) { planDetail(p, 'sched'); return; }
       if (e.target.closest('[data-back]')) { history.pushState(null, '', location.pathname + location.search); detailP = null; detailPlan = null; render(); return; }
       var rm = e.target.closest('[data-rm]');
-      if (rm) { TK.confirm('删除这次排课？教师端对应的未发布课次会一起删除。', function () { p.slots = p.slots.filter(function (s) { return s.id !== rm.dataset.rm; }); save(); paint(); }); return; }
+      if (rm) { TK.confirm('删除这次排课？教师端对应的未发布课次会一起删除。其余课次名称保持不变（编号不重排，会出现编号空缺）。', function () { p.slots = p.slots.filter(function (s) { return s.id !== rm.dataset.rm; }); save(); paint(); }); return; }
+      // 停用 / 启用（2026-11-19）：只针对教务排课的未发布课次；停用后时间释放（不参与冲突判定），课次保留、不计入教学进度
+      var off = e.target.closest('[data-off]');
+      if (off) { TK.confirm('停用这次排课？停用后该课次时间释放，班级或老师的这个时段可以排其他课；课次保留记录、教师端显示「已停用」、不计入教学进度，可随时启用恢复。', function () {
+        var sl = p.slots.filter(function (s) { return s.id === off.dataset.off; })[0], l = sl && lessonOf(p, sl);
+        if (sl) sl.disabled = true; if (l) l.disabled = true;
+        save(); paint(); TK.toast('已停用，该时段已释放');
+      }); return; }
+      var on2 = e.target.closest('[data-on]');
+      if (on2) { var sl2 = p.slots.filter(function (s) { return s.id === on2.dataset.on; })[0], l2 = sl2 && lessonOf(p, sl2);
+        if (sl2) sl2.disabled = false; if (l2) { l2.disabled = false; l2.replaced = false; }
+        save(); paint(); TK.toast('已启用，课次恢复正常排课'); return; }
+      // 重新编号（2026-11-18 方案A 纠偏出口）：已发布 / 老师改过名称的课次编号保留占号，其余按时间顺序补空缺
+      if (e.target.closest('[data-reno]')) { TK.confirm('按上课时间顺序重新编号？只调整未发布且未改名的课次，已发布和手动命名的课次编号保留。', function () {
+        var taken = {}, slots = (p.slots || []).slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+        slots.forEach(function (sl) { var l = lessonOf(p, sl); if (l && (l.status === '已发布' || !l.autoName)) taken[sl.no || 0] = 1; });
+        var next = 1;
+        slots.forEach(function (sl) {
+          var l = lessonOf(p, sl);
+          if (l && (l.status === '已发布' || !l.autoName)) return;
+          while (taken[next]) next++;
+          sl.no = next++;
+        });
+        save(); paint(); TK.toast('已重新编号，教师端未发布课次名称已同步');
+      }); return; }
       var mv = e.target.closest('[data-mv]');
       if (mv) { slotForm(p, false, paint, p.slots.filter(function (s) { return s.id === mv.dataset.mv; })[0]); return; }
       var b = e.target.closest('[data-sl]'); if (!b) return;
@@ -310,10 +339,10 @@
     paint();
   }
   function termOf(p) { return E.terms.filter(function (t) { return termLabel(t) === p.term; })[0]; }
-  // 同一时间：同班级或同老师已有课 → 冲突
+  // 同一时间：同班级或同老师已有课 → 冲突（已停用的课次时间已释放，不算冲突，2026-11-19）
   function conflict(p, start, self, end) {
     var hit = null; end = end || start;
-    S.plans.forEach(function (q) { (q.slots || []).forEach(function (s) { if (!hit && s !== self && s.start.slice(0, 10) === start.slice(0, 10) && s.start < end && s.end > start && (q.classId === p.classId || q.teacher === p.teacher)) hit = q; }); });
+    S.plans.forEach(function (q) { (q.slots || []).forEach(function (s) { if (!hit && s !== self && !s.disabled && s.start.slice(0, 10) === start.slice(0, 10) && s.start < end && s.end > start && (q.classId === p.classId || q.teacher === p.teacher)) hit = q; }); });
     // 老师另建的额外课次、补训课次也占时间
     if (!hit) { var x = TK.lessonConflict(S, p.classId, p.teacher, start, end, self ? lessonOf(p, self) : null); if (x && !x.c.slotId) hit = x.p; }
     return hit;
@@ -329,7 +358,7 @@
       ? [{ k: 'from', label: '开始日期', type: 'date', req: true }, { k: 'to', label: '结束日期', type: 'date', req: true },
          { k: 'wd', label: '每周', type: 'select', req: true, full: true, options: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'] }].concat(perF)
       : [{ k: 'date', label: '上课日期', type: 'date', req: true, full: true }].concat(perF)
-        .concat(les ? [{ k: 'name', label: '课次名称', type: 'text', full: true, ph: '留空则按「' + p.course + ' · 第 N 次课」自动命名' }] : []);
+        .concat(les ? [{ k: 'name', label: '课次名称', type: 'text', full: true, ph: '留空则按「' + p.course + ' · 第 ' + (edit.no || 'N') + ' 次课」自动命名' }] : []);
     var today = TK.fmt(new Date(), false);
     var m = TK.modal({ title: (weekly ? '按周批量排课 · ' : edit ? '编辑排课 · ' : '排一次课 · ') + p.course, width: 520,
       body: TK.formHTML(fields, Object.assign(weekly ? { from: today > (tm.start || '') ? today : tm.start, to: tm.end, wd: '周一' } : { date: edit ? d2(edit.start) : today, name: les ? les.name || '' : '' }, { pa: per[sp0[0] - 1], pb: per[sp0[1] - 1] })) +
@@ -390,7 +419,9 @@
       var add = [], hits = [];
       dates.forEach(function (x) { var t1 = at(x), q = conflict(p, t1.start, null, t1.end); if (q) hits.push({ date: x, period: perTxt, why: why(q) }); else add.push({ x: x, t: t1 }); });
       var doAdd = function () {
-        add.forEach(function (o) { p.slots.push({ id: TK.uid('SL'), start: o.t.start, end: o.t.end, pa: pa, pb: pb }); });
+        // 稳定编号（2026-11-18 方案A）：新增排课取当前最大编号+1，删除中间课次后补排不会撞号、不重排已有课次
+        var mx = p.slots.reduce(function (a, s) { return Math.max(a, s.no || 0); }, 0);
+        add.sort(function (a, b) { return a.t.start < b.t.start ? -1 : 1; }).forEach(function (o) { p.slots.push({ id: TK.uid('SL'), no: ++mx, start: o.t.start, end: o.t.end, pa: pa, pb: pb }); });
         save(); m.close(); done(); TK.toast('已排 ' + add.length + ' 次课');
       };
       if (hits.length) { showCfg(hits, add, doAdd); return; }   // 有冲突：弹框不关，等调整或明确跳过
@@ -419,12 +450,105 @@
       '<select class="sel" data-tt="who">' + whoList.map(function (w) { return '<option' + (w === T.who ? ' selected' : '') + '>' + esc(w) + '</option>'; }).join('') + '</select>' +
       '<span style="flex:1"></span><button class="btn-s" data-wk="-1">‹ 上一周</button><span class="wk">' + from.slice(5).replace('-', '月') + '日 – ' + to.slice(5).replace('-', '月') + '日</span><button class="btn-s" data-wk="1">下一周 ›</button><button class="btn-s" data-wk="0">本周</button></div>';
     html += '<div class="tt-wrap">' + TK.ttGrid(S, days, today, items.map(function (it) {
-      var l = it.x || lessonOf(it.p, it.s), sp = TK.periodSpan(S, it.s.start, it.s.end);
-      return { start: it.s.start, end: it.s.end, html: '<div class="lsn"' + (it.x ? ' style="border-left-style:dashed"' : '') + '><b>' + esc(it.p.course) + (it.x ? ' <span class="t wait">' + (it.x.targets ? (it.x.tutor ? '辅导' : '补训') : '额外课次 · 老师自建') + '</span>' : '') + '</b>' + esc(T.mode === 'class' ? it.p.teacher : cls(it.p.classId).name) + '<div class="m">' + TK.periodText(sp[0], sp[1]) + ' · ' + it.s.start.slice(11) + '–' + it.s.end.slice(11) + '</div>' +
-        (l ? '<span class="t ' + (l.status === '已发布' ? 'ok' : 'wait') + '">' + esc(l.name) + ' · ' + esc(l.status) + '</span>' : '') + '</div>' };
+      var l = it.x || lessonOf(it.p, it.s), sp = TK.periodSpan(S, it.s.start, it.s.end), dis = !!it.s.disabled || !!(l && l.disabled);
+      return { start: it.s.start, end: it.s.end, html: '<div class="lsn"' + (dis ? ' style="border-left-style:dashed;opacity:.55"' : it.x ? ' style="border-left-style:dashed"' : '') + '><b>' + esc(it.p.course) + (dis ? ' <span class="t wait">已停用 · 时间已释放</span>' : it.x ? ' <span class="t wait">额外课次 · 老师自建</span>' : '') + '</b>' + esc(T.mode === 'class' ? it.p.teacher : cls(it.p.classId).name) + '<div class="m">' + TK.periodText(sp[0], sp[1]) + ' · ' + it.s.start.slice(11) + '–' + it.s.end.slice(11) + '</div>' +
+        (l && !dis ? '<span class="t ' + (l.status === '已发布' ? 'ok' : 'wait') + '">' + esc(l.name) + ' · ' + esc(l.status) + '</span>' : '') + '</div>' };
     }));
     html += '</div><div style="font-size:12px;color:var(--muted);margin-top:10px">本周 ' + items.length + ' 次课，其中已发布 ' + items.filter(function (it) { var l = it.x || lessonOf(it.p, it.s); return l && l.status === '已发布'; }).length + ' 次。排课在课程计划列表的「排课」中维护。</div>';
     $('#paneTt').innerHTML = html;
+  }
+
+  /* ── 课次审核（2026-11-18 冲突审核，独立页签）：老师自建 / 改期课次与教务排课冲突、老师不调整时间时提交的审核单；
+     教务处理动作（2026-11-19 调整）：调整到无冲突时间后通过 / 替换排课（老师课次顶替原排课，原排课课次停用、时间释放） / 驳回；
+     原来的「直接通过（允许时间重叠）」已去掉——通过必须调整到无冲突时间 ══ */
+  function updateAuditBadge() {
+    var n = S.lessonReqs.filter(function (q) { return q.status === '待审核'; }).length;
+    var b = $('#auditBadge');
+    if (!b) return;
+    b.textContent = n || '';
+    b.style.display = n ? '' : 'none';
+  }
+  var auditSt = '待审核';   // 审核状态筛选项，默认待审核（2026-11-19）
+  function renderAudit() {
+    var pane = $('#paneAudit');
+    updateAuditBadge();
+    /* 列表化（2026-11-19）：默认按提交审核时间倒序；顶部「审核状态」筛选（待审核默认 / 已通过 / 已驳回 / 全部） */
+    var list = S.lessonReqs.filter(function (q) { return auditSt === '全部' || q.status === auditSt; })
+      .sort(function (a, b) { return (b.at || '') > (a.at || '') ? 1 : (b.at || '') < (a.at || '') ? -1 : 0; });
+    var row = function (q) {
+      var c = byId(S.courses, q.courseId), pend2 = q.status === '待审核';
+      return '<tr>' +
+        '<td><b style="font-size:13px">' + esc(q.course) + '</b><div style="font-size:12px;color:var(--muted);margin-top:2px">' + esc(q.klass + ' · ' + q.teacher + ' · ' + q.time) + '</div></td>' +
+        '<td style="font-size:12.5px;color:var(--warn-ink)">' + esc(q.conflict || '—') + '</td>' +
+        '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + (q.at ? esc(q.at) : '—') +
+          (q.handledAt ? '<div style="margin-top:2px">处理于 ' + esc(q.handledAt) + '</div>' : '') +
+          (q.adjusted ? '<div>调整为 ' + esc(q.adjusted) + '</div>' : '') + (q.swapped ? '<div>已替换原排课</div>' : '') + '</td>' +
+        '<td><span class="pill ' + (pend2 ? 'w' : q.status === '已通过' ? 'good' : 'k') + '">' + q.status + '</span></td>' +
+        '<td style="white-space:nowrap">' + (pend2 ? (c ?
+          '<details style="margin-bottom:6px"><summary style="font-size:12px;color:var(--brand);cursor:pointer;user-select:none">调整课次时间（可选）</summary>' +
+          '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:12px">' +
+          '<input type="date" data-aud-d="' + q.id + '" value="' + c.start.slice(0, 10) + '" style="height:28px">' +
+          '<input type="time" data-aud-s="' + q.id + '" value="' + c.start.slice(11, 16) + '" style="height:28px">–' +
+          '<input type="time" data-aud-e="' + q.id + '" value="' + c.end.slice(11, 16) + '" style="height:28px">' +
+          '<span style="font-size:11px;color:var(--muted)">调整到无冲突时段后点「通过」</span></div></details>' : '') +
+          (!c ? '<span style="font-size:12px;color:var(--muted)">课次已被老师撤回</span>' :
+          '<div style="display:flex;gap:6px;justify-content:flex-end"><button class="btn-s" data-rej="' + q.id + '">驳回</button><button class="btn-s" data-swap="' + q.id + '">替换排课</button><button class="btn" data-appr="' + q.id + '" style="height:28px">通过</button></div>') : '—') + '</td>' +
+        '</tr>';
+    };
+    pane.innerHTML =
+      '<div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">老师自建或改期的课次与教务排课时间冲突、又不调整时间时，会提交到这里审核。教务可：把课次调整到无冲突时间后通过、用老师课次替换原排课（原排课课次停用、时间释放），或驳回退回老师；不允许与教务排课时间重叠通过。</div>' +
+      '<div class="rs-bar" style="margin-bottom:10px"><span style="font-size:12.5px;color:var(--muted);margin-right:4px">审核状态</span><span class="seg">' +
+      ['待审核', '已通过', '已驳回', '全部'].map(function (s2) {
+        var n = s2 === '全部' ? S.lessonReqs.length : S.lessonReqs.filter(function (q) { return q.status === s2; }).length;
+        return '<button data-ast="' + s2 + '" aria-pressed="' + (auditSt === s2) + '">' + s2 + ' <small>' + n + '</small></button>';
+      }).join('') + '</span></div>' +
+      '<div class="card" style="padding:4px 16px 8px">' +
+      (list.length ? '<table class="tbl2"><thead><tr><th style="width:24%">课次</th><th style="width:26%">冲突</th><th style="width:20%">提交 / 处理</th><th style="width:10%">状态</th><th style="width:20%">操作</th></tr></thead><tbody>' +
+        list.map(row).join('') + '</tbody></table>'
+        : '<div class="empty" style="padding:24px;text-align:center;color:var(--muted)">没有' + (auditSt === '全部' ? '' : '「' + auditSt + '」的') + '审核申请</div>') +
+      '</div>';
+  }
+  function handleAuditAction(btn) {
+    var q = byId(S.lessonReqs, btn.dataset.appr || btn.dataset.rej || btn.dataset.swap); if (!q) return;
+    var c = byId(S.courses, q.courseId);
+    if ((btn.dataset.appr || btn.dataset.swap) && (!c || c.status !== '待审核')) { TK.toast('这条申请对应的课次已被老师撤回'); renderAudit(); return; }
+    /* 通过：必须调整到无冲突时间（2026-11-19 去掉「直接通过允许重叠」）；没改时间时拦截并引导 */
+    if (btn.dataset.appr) {
+      var d = document.querySelector('[data-aud-d="' + q.id + '"]'), s = document.querySelector('[data-aud-s="' + q.id + '"]'), e2 = document.querySelector('[data-aud-e="' + q.id + '"]');
+      if (!(d && s && e2)) { TK.toast('请先展开「调整课次时间」，调整到无冲突时段后再通过'); return; }
+      var ns = d.value + ' ' + s.value, ne = d.value + ' ' + e2.value, changed = ns !== c.start || ne !== c.end;
+      if (!changed) { TK.toast('请先调整到无冲突的时间再通过；要保留老师课次的时间、顶替原排课，请用「替换排课」'); return; }
+      if (ne <= ns) { TK.toast('结束时间需晚于开始时间'); return; }
+      var p2 = byId(S.plans, q.planId);
+      var cf = p2 ? TK.lessonConflict(S, p2.classId, p2.teacher, ns, ne, c) : null;
+      if (cf) { TK.toast('调整后仍与《' + cf.p.course + '》（' + cf.c.start.slice(5, 16) + '）冲突，请换一个时段'); return; }
+      c.start = ns; c.end = ne; q.adjusted = ns.slice(5, 10) + ' ' + ns.slice(11, 16) + '–' + ne.slice(11, 16);
+      c.status = '未发布'; q.status = '已通过'; q.handledAt = TK.fmt(new Date());
+      save(); audit('通过课次审核', c.name, { 状态: '待审核' }, { 状态: '未发布', 时间: q.adjusted });
+      renderAudit(); TK.toast('已通过，教师端课次已转为正式课次（未发布）');
+      return;
+    }
+    /* 替换排课（2026-11-19）：老师课次顶替冲突的教务排课课次——原排课课次停用（时间释放、不计入教学进度，
+       教师端显示「已停用」，可随时启用恢复），老师课次转正式并记 swappedIn 溯源 */
+    if (btn.dataset.swap) {
+      var oc = byId(S.courses, q.conflictId);
+      if (!oc || oc === c) { TK.toast('找不到被替换的原排课课次，请用「通过」或「驳回」处理'); return; }
+      if (oc.status === '已发布') { TK.toast('原排课课次已发布，不能替换；请调整老师课次时间后用「通过」处理'); return; }
+      oc.disabled = true; oc.replaced = c.id;   // 原排课课次停用：时间释放、不计入教学进度（启用可恢复）
+      var op = byId(S.plans, oc.planId), osl = op && (op.slots || []).filter(function (x) { return x.id === oc.slotId; })[0];
+      if (osl) osl.disabled = true;
+      c.swappedIn = oc.id;   // 溯源：这门课次顶替了哪次排课；同步时不被认领回排课
+      c.status = '未发布'; q.status = '已通过'; q.swapped = true; q.handledAt = TK.fmt(new Date());
+      save(); audit('课次审核 · 替换排课', c.name, { 原排课: oc.name }, { 状态: '未发布', 原排课: '已停用（时间释放，可启用恢复）' });
+      renderAudit(); TK.toast('已通过，老师课次已替换原排课《' + oc.name + '》，原课次已停用');
+      return;
+    }
+    TK.confirm('驳回这条审核申请？教师端的待审核课次会一起删除，老师需要调整时间后重新创建。', function () {
+      if (c) S.courses.splice(S.courses.indexOf(c), 1);
+      q.status = '已驳回'; q.handledAt = TK.fmt(new Date());
+      save(); audit('驳回课次审核', q.course, { 状态: '待审核' }, { 状态: '已驳回（课次退回删除）' });
+      renderAudit(); TK.toast('已驳回，教师端课次已退回');
+    });
   }
 
   /* ── 事件 ── */
@@ -433,13 +557,16 @@
     $('#paneDetail').hidden = true; $('#tabs').style.display = ''; document.querySelector('.pt-t').textContent = '课程计划';
     $('#pgActs').innerHTML = '';
     [].forEach.call(document.querySelectorAll('#tabs .tab'), function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === tab)); });
-    $('#panePlan').hidden = tab !== 'plan'; $('#paneTt').hidden = tab !== 'tt';
-    if (tab === 'plan') renderPlans(); else renderTt();
+    $('#panePlan').hidden = tab !== 'plan'; $('#paneTt').hidden = tab !== 'tt'; $('#paneAudit').hidden = tab !== 'audit';
+    updateAuditBadge();
+    if (tab === 'plan') renderPlans(); else if (tab === 'tt') renderTt(); else renderAudit();
   }
   document.addEventListener('click', function (e) {
     var t = e.target;
     var tb = t.closest('#tabs [data-tab]'); if (tb) { tab = tb.dataset.tab; render(); return; }
     if (t.closest('[data-add]')) { planForm(null); return; }
+    var ab = t.closest('[data-appr], [data-rej], [data-swap]'); if (ab) { handleAuditAction(ab); return; }
+    var as2 = t.closest('[data-ast]'); if (as2) { auditSt = as2.dataset.ast; renderAudit(); return; }   // 审核状态筛选
     var io = t.closest('[data-io]'); if (io) { if (io.dataset.io === '导入') importPlans(); else exportPlans(); return; }
     if (t.closest('[data-reset]')) { F = {}; render(); return; }
     var tm = t.closest('[data-tm]'); if (tm) { T.mode = tm.dataset.tm; T.who = ''; renderTt(); return; }
@@ -450,7 +577,7 @@
     if (act === 'view') planInfo(p);
     else if (act === 'sched') planDetail(p, 'sched');
     else if (act === 'edit') planForm(p);
-    else if (act === 'del') TK.confirm('确定删除这个课程计划？删除后不可恢复。', function () { S.plans.splice(S.plans.indexOf(p), 1); S.courses = S.courses.filter(function (c) { return c.planId !== p.id; }); save(); render(); TK.toast('已删除'); });
+    else if (act === 'del') TK.confirm('确定删除这个课程计划？删除后不可恢复。', function () { S.plans.splice(S.plans.indexOf(p), 1); S.courses = S.courses.filter(function (c) { return c.planId !== p.id; }); S.lessonReqs = S.lessonReqs.filter(function (q) { return q.planId !== p.id; }); save(); render(); TK.toast('已删除'); });
   });
   document.addEventListener('input', function (e) { var f = e.target.closest('#filters [data-flt]'); if (f && f.tagName === 'INPUT') { F.q = f.value.trim(); delete F.ec; renderPlans(); var el = document.querySelector('[data-flt="q"]'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
   document.addEventListener('change', function (e) {
