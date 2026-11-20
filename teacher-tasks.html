@@ -350,7 +350,17 @@ a.stat:hover .go{opacity:1}
   var VIEW_KEY = { home: 'tasks', courses: 'cr-courses', tt: 'cr-tt', eval: 'cr-eval', res: 'cr-res' };
   var space = null, ctab = 'lessons', evf = '待评价', evPlan = '', evCls = '';   // evPlan：课程名；evCls：班级 id   // space：当前进入的课程空间（课程计划 id）；ctab：课程空间页签
   var period = 'week', tab = 'tt', ttWeek = mondayOf(new Date());
+  var courseTerm = TK.TERM;   // 我的课程：当前查看的学期（默认本学期，支持切换查看历史学期，2026-11-20）
   function mondayOf(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x; }
+  // 课表切学期后的周次定位（2026-11-20）：本学期=本周一；历史学期=该学期里老师最早一次课所在周，无课则用学期起始日
+  function firstWeekOfTerm(term) {
+    if (term === TK.TERM) return mondayOf(new Date());
+    var pids = myPlans().filter(function (p) { return p.term === term; }).map(function (p) { return p.id; });
+    var cs = myCourses().filter(function (c) { return pids.indexOf(c.planId) >= 0; }).sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+    if (cs.length) return mondayOf(cs[0].start.replace(' ', 'T'));
+    var t = (S.edu.terms || []).filter(function (x) { return ((x.year || '') + ' ' + (x.term || '')) === term; })[0];
+    return t && t.start ? mondayOf(t.start.replace(' ', 'T')) : mondayOf(new Date());
+  }
   var RF = { q: '', st: '', from: '', to: '', course: '', type: '', src: '' };
   function save() { TK.save(S); }
   // 审计：关键状态变化（发布、评价、证据、补训 / 辅导、改进建议）记入平台审计日志（管理端「系统配置 › 操作日志」查看）
@@ -362,7 +372,7 @@ a.stat:hover .go{opacity:1}
   /* ═══ 课次冲突审核：老师自建 / 改期课次与教务排课冲突时不能直接创建，可提交教务审核；
      教务在管理端课程计划「课次审核」里通过（转为正式未发布课次）或驳回（课次退回删除） ═══ */
   S.lessonReqs = S.lessonReqs || [];
-  function planMajor(p) { var c = S.classes.filter(function (x) { return x.id === p.classId; })[0], m = c && S.edu.majors.filter(function (x) { return x.id === c.majorId; })[0]; return m ? m.name : ''; }
+  function planMajor(p) { var cs = TK.planCls(S, p), c = cs[0], m = c && S.edu.majors.filter(function (x) { return x.id === c.majorId; })[0]; return m ? m.name : ''; }
   var IMP_ST = { '待处理': 'w', '已采纳': 'g', '暂不处理': '', '已发出': 'r' };   // 已发出：专业负责人提给任课老师的
   /* ═══ 知识点掌握（两维独立，2026-11-19）：知识点不按技能分组，按知识点维度平铺统计 ═══
      取每个学生范围内最近一次老师确认的评价（含退回的那次），看发布时勾选的考查知识点是否体现；
@@ -428,7 +438,7 @@ a.stat:hover .go{opacity:1}
     a.download = name; document.body.appendChild(a); a.click(); a.remove();
   }
   function exportPlan(kind, pid) {
-    var p = plan(pid), M = statModel(p), base = '《' + p.course + '》' + cls(p.classId).name, day = TK.fmt(new Date(), false);
+    var p = plan(pid), M = statModel(p), base = '《' + p.course + '》' + TK.planClsTxt(S, p), day = TK.fmt(new Date(), false);
     if (kind === 'stat') {
       var KP = kpModel(p, M), rows = [['学生', '任务', '技能', '状态', '最近一次评价', '未掌握知识点', '来自课次', '确认时间']];
       M.students.forEach(function (s) { var missKp = KP.stuMiss[s.name] || [], first = true; M.taught.forEach(function (r) { var e = r.lv[s.name], c = e && course(e.tid); rows.push([s.name, r.task, r.name + (r.ext ? '（拓展）' : ''), SN[r.st[s.name]] || '', e ? e.grade : '', first ? missKp.join('、') : '', c ? c.name : '', e ? e.at : '']); first = false; }); });
@@ -458,7 +468,7 @@ a.stat:hover .go{opacity:1}
   function res(id) { return S.resources.find(function (r) { return r.id === id; }); }
   function course(id) { return S.courses.find(function (c) { return c.id === id; }); }
   function plan(id) { return S.plans.find(function (p) { return p.id === id; }); }
-  function planTxt(p) { return p ? p.course + ' · ' + cls(p.classId).name : '—'; }
+  function planTxt(p) { return p ? p.course + ' · ' + TK.planClsTxt(S, p) : '—'; }
   function ktask(c) { return TK.kn().task[c.ktask]; }
   // 课次选的知识体系任务（可多个，可不选）
   function ktaskIds(c) { return (c.ktasks || (c.ktask ? [c.ktask] : [])).filter(function (id) { return TK.kn().task[id]; }); }
@@ -510,7 +520,7 @@ a.stat:hover .go{opacity:1}
   /* ═══ 智慧课堂：首页（今天的课、待办、我的课程、课表 / 备课资源）→ 课程空间（一门课 × 一个班：课次、教学资源、作业评价、学情、学生、改进建议） ═══ */
   function render() {
     if (space && !plan(space)) space = null;
-    document.getElementById('body').innerHTML = space ? spaceView(plan(space)) : VIEW === 'courses' ? coursesView() : VIEW === 'tt' ? pageH('我的课表', '按周看所有课次，点课次查看详情、备课和发布') + ttView() : VIEW === 'eval' ? pageH('作业评价', '所有课程的学生作业集中在这里，待评价的排在前面，可以连续评') + evalList(null) : VIEW === 'res' ? pageH('备课资源', 'AI 生成和自己上传的备课资源，集中管理；记录关联的技能与知识点，供发布课次时选用') + resList() : homeView();
+    document.getElementById('body').innerHTML = space ? spaceView(plan(space)) : VIEW === 'courses' ? coursesView() : VIEW === 'tt' ? pageH('我的课表') + ttView() : VIEW === 'eval' ? pageH('作业评价') + evalList(null) : VIEW === 'res' ? pageH('备课资源') + resList() : homeView();
     try { history.replaceState(null, '', location.pathname + location.search + (space ? '#course/' + space + '/' + ctab : '')); } catch (e) {}
   }
   function stBadge(c) {
@@ -670,13 +680,27 @@ a.stat:hover .go{opacity:1}
   }
   function markMenu(k) { try { document.querySelectorAll('#lnav [aria-current], #lnav .on').forEach(function (x) { x.removeAttribute('aria-current'); x.classList.remove('on'); }); var a = [].slice.call(document.querySelectorAll('#lnav a.lmenu')).filter(function (x) { return x.getAttribute('href').indexOf('teacher-tasks.html?t=' + k.replace('cr-', '')) >= 0; })[0]; if (a) { a.setAttribute('aria-current', 'page'); a.classList.add('on'); } } catch (e) {} }
   function pageH(t, d, extra) { return '<div class="tk-h"><h2>' + t + '</h2><span style="font-size:12px;color:var(--muted)">' + (d || '') + '</span><span class="sp"></span>' + (extra || '') + '</div>'; }
+  // 学期切换下拉（2026-11-20，我的课程/我的课表共用）：选项 = 本学期 ∪ 我负责计划里出现过的学期 ∪ 系统学期；默认本学期
+  function termOptions() {
+    return [TK.TERM].concat(myPlans().map(function (p) { return p.term; })).concat((S.edu.terms || []).map(function (t) { return (t.year || '') + ' ' + (t.term || ''); }))
+      .filter(function (t, i, a) { return t && t.trim() && a.indexOf(t) === i; });
+  }
+  function termSelHTML() {
+    var all = termOptions();
+    if (all.indexOf(courseTerm) < 0) courseTerm = all[0] || TK.TERM;
+    return '<label style="font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px">学期<select class="sel" data-courseterm style="width:auto;min-width:150px">' +
+      all.map(function (t) { return '<option value="' + esc(t) + '"' + (courseTerm === t ? ' selected' : '') + '>' + esc(t) + (t === TK.TERM ? '（本学期）' : '') + '</option>'; }).join('') + '</select></label>';
+  }
   // 我的课程：老师一般只带 2–3 门课，一门课一整行，分「教学进度 / 学习效果 / 待处理」三块（2026-11-18 口径：教学进度=老师教学层面，含课次推进、标准技能考查覆盖与评价进度；学习效果=学生层面成果，技能达成率按已评价技能统计、知识点掌握率）
   function coursesView() {
-    var mp = myPlans(), today = TK.fmt(new Date(), false), now = new Date();
-    if (!mp.length) return pageH('我的课程') + '<div class="card empty2">您目前没有负责的课程计划。课程计划由管理端维护，排课后对应的课次会自动出现在这里</div>';
+    var termSel = termSelHTML();
+    var mp = myPlans().filter(function (p) { return p.term === courseTerm; }), today = TK.fmt(new Date(), false), now = new Date();
+    var hist = courseTerm !== TK.TERM;
+    if (!mp.length) return pageH('我的课程', '', termSel) +
+      '<div class="card empty2">' + (hist ? '这个学期没有你负责的课程计划' : '您目前没有负责的课程计划。课程计划由管理端维护，排课后对应的课次会自动出现在这里') + '</div>';
     var md = function (x) { return x.slice(5, 16).replace('-', '月').replace(' ', '日 '); };
     var bar = function (v, col) { return '<div class="mc-bar"><i style="width:' + (v || 0) + '%;background:' + col + '"></i></div>'; };
-    var h = pageH('我的课程', '一门课 × 一个班；点课程名或「进入课程」完成这门课的备课、发布、评价和学情');
+    var h = pageH('我的课程', '', termSel);
     // 课程计划不再停用：按课次自动算状态；已结束的收进底部
     var ended = mp.filter(function (pp) { return TK.planState(S, pp) === '已结束'; });
     var act = mp.filter(function (pp) { return ended.indexOf(pp) < 0; });
@@ -685,7 +709,7 @@ a.stat:hover .go{opacity:1}
       var eff = list.filter(function (c) { return !auditPend(c) && !c.disabled; });   // 待教务审核、已停用的课次不进教学进度等统计（2026-11-19 停用/启用）
       var kind = TK.planKind(S, pp), M = kind === 'public' ? null : statModel(pp), KP = M ? kpModel(pp, M) : null;
       var done = eff.filter(function (c) { return taughtOk(c, now); }).length, npub = eff.filter(function (c) { return c.status === '已发布'; }).length;
-      var pend = eff.reduce(function (a, c) { return a + pending(c); }, 0), nStu = (cls(pp.classId).students || []).length;
+      var pend = eff.reduce(function (a, c) { return a + pending(c); }, 0), nStu = TK.planStus(S, pp).length;
       var noShowN = eff.filter(function (c) { return c.noShow; }).length, over = eff.filter(overdue), disAll = list.filter(function (c) { return c.disabled; }).length;
       var nxt = eff.filter(function (c) { return new Date(c.end.replace(' ', 'T')) >= now; })[0];
       var soon = eff.filter(function (c) { var d = new Date(c.start.replace(' ', 'T')); return c.status !== '已发布' && d >= now && d <= new Date(now.getTime() + 3 * 864e5); });
@@ -719,14 +743,14 @@ a.stat:hover .go{opacity:1}
       if (soon.length) todo.push('<div class="mc-todo"><span><b class="w">' + soon.length + '</b> 次课 3 天内上，还没发布</span>' + go('lessons', '去发布', 'btn-s') + '</div>');
       if (kind === 'unlinked') todo.push('<div class="mc-todo"><span>课程还没关联知识体系，学情只统计已教技能</span></div>');
       var todoH = '<div class="mc-col"><div class="mc-h">待处理</div>' + (todo.length ? todo.join('') : '<div class="mc-s" style="margin-top:6px">没有待处理的事</div>') + '</div>';
-      return '<div class="mc"><div class="mc-top"><div class="mc-name" data-space="' + pp.id + '|lessons"><b>' + esc(pp.course) + '</b><span>' + esc(cls(pp.classId).name) + ' · ' + nStu + ' 人 · ' + esc(pp.term) + '</span>' +
+      return '<div class="mc"><div class="mc-top"><div class="mc-name" data-space="' + pp.id + '|lessons"><b>' + esc(pp.course) + '</b><span>' + esc(TK.planClsTxt(S, pp)) + ' · ' + nStu + ' 人 · ' + esc(pp.term) + '</span>' +
           (kind === 'public' ? '<span class="tag">公共基础课</span>' : kind === 'linked' ? '<span class="tag g">已关联知识体系</span>' : '<span class="tag w">未关联知识体系</span>') + '</div>' +
           '<div class="mc-tabs">' + go('lessons', '课次') + go('res', '教学资源') + go('eval', '作业评价') + go('stu', '学生') + '</div>' + go('lessons', '进入课程 ›', 'btn') + '</div>' +
         '<div class="mc-body">' + prog + eff + todoH + '</div></div>';
-    }).join('') || '<div class="card empty2">进行中的课程都已结束</div>';
-    if (ended.length) h += '<details class="mc-ended"' + (act.length ? '' : ' open') + '><summary>已结束的课程（' + ended.length + '）</summary>' + ended.map(function (pp) {
+    }).join('') || '<div class="card empty2">' + (hist ? '这个学期的课程都已结束，在下方查看' : '进行中的课程都已结束') + '</div>';
+    if (ended.length) h += '<details class="mc-ended"' + (act.length && !hist ? '' : ' open') + '><summary>已结束的课程（' + ended.length + '）</summary>' + ended.map(function (pp) {
       var list = S.courses.filter(function (c) { return c.planId === pp.id; }), pend = list.reduce(function (a, c) { return a + pending(c); }, 0);
-      return '<div class="mc-er"><b>' + esc(pp.course) + '</b><span>' + esc(cls(pp.classId).name + ' · ' + pp.term + ' · 共 ' + list.length + ' 次课') + '</span>' + (pend ? '<span class="tag w">' + pend + ' 份作业待评价</span>' : '') +
+      return '<div class="mc-er"><b>' + esc(pp.course) + '</b><span>' + esc(TK.planClsTxt(S, pp) + ' · ' + pp.term + ' · 共 ' + list.length + ' 次课') + '</span>' + (pend ? '<span class="tag w">' + pend + ' 份作业待评价</span>' : '') +
         '<span style="flex:1"></span><button class="lk" data-space="' + pp.id + '|stat">看学情</button><button class="lk" data-space="' + pp.id + '|eval">作业评价</button><button class="btn-s" data-space="' + pp.id + '|lessons">进入课程 ›</button></div>';
     }).join('') + '</details>';
     return h;
@@ -737,7 +761,7 @@ a.stat:hover .go{opacity:1}
     var list = S.courses.filter(function (c) { return c.planId === pp.id; }), pend = list.filter(function (c) { return !auditPend(c) && !c.disabled; }).reduce(function (a, c) { return a + pending(c); }, 0);
     var kind = TK.planKind(S, pp), M = kind === 'public' ? null : statModel(pp);
     // 头部 KPI 已按用户要求去掉（2026-11-19）；待评价数 pend 仍用于「作业评价」页签红点
-    var h = '<div class="sp-h"><button class="lk" data-home>‹ 我的课程</button><div class="sp-t"><h2>' + esc(pp.course) + '</h2><span>' + esc(cls(pp.classId).name) + ' · ' + esc(pp.term) + ' · 任课 ' + esc(pp.teacher) + (kind === 'public' ? ' · 公共基础课' : kind === 'linked' ? ' · 已关联知识体系' : ' · 未关联知识体系') + '</span></div></div>';
+    var h = '<div class="sp-h"><button class="lk" data-home>‹ 我的课程</button><div class="sp-t"><h2>' + esc(pp.course) + '</h2><span>' + esc(TK.planClsTxt(S, pp)) + ' · ' + esc(pp.term) + ' · 任课 ' + esc(pp.teacher) + (kind === 'public' ? ' · 公共基础课' : kind === 'linked' ? ' · 已关联知识体系' : ' · 未关联知识体系') + '</span></div></div>';
     h += '<div class="tk-h" style="margin-bottom:12px"><span class="seg">' + CTABS.map(function (t) { var n = t[0] === 'eval' && pend ? ' <small class="dotn">' + pend + '</small>' : ''; return '<button data-ctab="' + t[0] + '" aria-pressed="' + (ctab === t[0]) + '">' + t[1] + n + '</button>'; }).join('') + '</span><span class="sp"></span>' +
       (ctab === 'lessons' ? '<button class="btn" data-newcourse="' + pp.id + '" style="height:32px" title="管理端排的课会自动生成课次，这里用于临时加课">＋ 新建课次</button>' : '') + '</div>';
     if (ctab === 'lessons') return h + lessonTimeline(pp);
@@ -845,13 +869,18 @@ a.stat:hover .go{opacity:1}
     if (!myPlans().length) return '<div class="card empty2">您目前没有负责的课程计划。课程计划由管理端维护，排课后对应的课次会出现在课表里</div>';
     var days = []; for (var i = 0; i < 7; i++) { var x = new Date(ttWeek); x.setDate(x.getDate() + i); days.push(x); }
     var today = TK.fmt(new Date(), false), from = TK.fmt(days[0], false), to = TK.fmt(days[6], false);
-    var items = myCourses().filter(function (c) { var d = c.start.slice(0, 10); return d >= from && d <= to; });
+    // 学期过滤（2026-11-20）：只显示所选学期计划下的课次（本周范围仍由 ttWeek 决定）
+    var items = myCourses().filter(function (c) {
+      var d = c.start.slice(0, 10), pp = plan(c.planId);
+      return d >= from && d <= to && (!pp || pp.term === courseTerm);
+    });
     var wd = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-    var h = '<div class="tt-bar"><span style="font-size:12.5px;color:var(--muted)">' + esc(TK.TERM) + '</span><span style="flex:1"></span>' +
-      '<button class="btn-s" data-wk="-1">‹ 上一周</button><span class="wk">' + from.slice(5).replace('-', '月') + '日 – ' + to.slice(5).replace('-', '月') + '日</span><button class="btn-s" data-wk="1">下一周 ›</button><button class="btn-s" data-wk="0">本周</button></div>';
+    var h = '<div class="tt-bar"><span style="flex:1"></span>' + termSelHTML() +
+      '<button class="btn-s" data-wk="-1">‹ 上一周</button><span class="wk">' + from.slice(5).replace('-', '月') + '日 – ' + to.slice(5).replace('-', '月') + '日</span><button class="btn-s" data-wk="1">下一周 ›</button>' +
+      (courseTerm === TK.TERM ? '<button class="btn-s" data-wk="0">本周</button>' : '') + '</div>';
     h += '<div class="tt-wrap">' + TK.ttGrid(S, days, today, items.map(function (c) {
           var pub = c.status === '已发布', p = plan(c.planId), sp = TK.periodSpan(S, c.start, c.end);
-          return { start: c.start, end: c.end, html: '<button type="button" class="lsn" data-ttc="' + c.id + '"><b>' + esc(p ? p.course : c.name) + '</b>' + esc(p ? cls(p.classId).name : '') + '<div class="m">' + TK.periodText(sp[0], sp[1]) + ' · ' + c.start.slice(11) + '–' + c.end.slice(11) + '</div>' +
+          return { start: c.start, end: c.end, html: '<button type="button" class="lsn" data-ttc="' + c.id + '"><b>' + esc(p ? p.course : c.name) + '</b>' + esc(p ? TK.planClsTxt(S, p) : '') + '<div class="m">' + TK.periodText(sp[0], sp[1]) + ' · ' + c.start.slice(11) + '–' + c.end.slice(11) + '</div>' +
             '<div>' + esc(c.name) + '</div><span class="t ' + (pub ? 'ok' : 'wait') + '">' + (c.disabled ? '已停用' : c.status) + '</span>' + (c.disabled ? ' <span class="t wait">停用</span>' : '') + (c.noShow ? ' <span class="t wait">未上</span>' : '') + (c.targets ? ' <span class="t wait">定向</span>' : c.source === '自建课次' ? ' <span class="t wait">自建</span>' : '') + '</button>' };
     }));
     var nPub = items.filter(function (c) { return c.status === '已发布'; }).length;
@@ -879,7 +908,7 @@ a.stat:hover .go{opacity:1}
     var seq = S.courses.filter(function (x) { return x.planId === c.planId && !x.targets && x.source !== '补训课次'; }).sort(function (a, b) { return a.start < b.start ? -1 : 1; });
     var i = seq.indexOf(c); return i >= 0 ? '第' + (i + 1) + '次课' : c.name;
   }
-  function clsShort(c) { var p = plan(c.planId), n = p ? (cls(p.classId) || {}).name || '' : ''; var m = n.match(/(\d+班)$/); return m ? m[1] : n; }
+  function clsShort(c) { var p = plan(c.planId), n = p ? TK.planClsTxt(S, p) : ''; var parts = n ? n.split('、').map(function (x) { var m = x.match(/(\d+班)$/); return m ? m[1] : x; }) : []; return parts.join('、'); }   // 多班合班：每个班各取「N班」短名拼接
   // 使用情况相关计算已随教学层面展示移除（2026-11-19：备课资源只做资源管理）；已下发课次仍不能删资源，判断在 resDelete 里
   /* 复用：课程进度 → 下一个任务；同一门课已有、覆盖该任务、还没在这个课程计划里用过的资源 */
   function lessonSk(c) { return c.status === '已发布' ? ((c.publish && c.publish.task && c.publish.task.skillIds) || c.skillIds || []) : (c.resIds || []).length ? (c.skillIds || []) : []; }
@@ -1153,7 +1182,7 @@ a.stat:hover .go{opacity:1}
     return m;
   }
   function statRows(p) {
-    var stus = cls(p.classId).students;
+    var stus = TK.planStus(S, p);   // 多班合班：学生 = 各班并集（2026-11-19）
     var rows = [], K = TK.kn(), tasks = TK.planTasks(S, p);
     var mkRow = function (x, tkName, tkId, origin) {
       var sess = S.courses.filter(function (c) { return c.planId === p.id && c.publish && c.publish.task && (c.publish.task.skillIds || []).indexOf(x.id) >= 0; });
@@ -1193,7 +1222,7 @@ a.stat:hover .go{opacity:1}
     return '<div class="card pad" style="margin-bottom:14px"><div class="blk-t" data-sec="' + id + '" style="cursor:pointer">' + head + '<span class="sp"></span><span style="font-size:12px;font-weight:400;color:var(--muted)">' + (open ? '收起 ▾' : '展开 ▸') + '</span></div>' + (open ? body : '') + '</div>';
   }
   function statModel(p) {
-    var stus = cls(p.classId).students, rows = statRows(p).slice().sort(function (a, b) { return a.idx - b.idx; });
+    var stus = TK.planStus(S, p), rows = statRows(p).slice().sort(function (a, b) { return a.idx - b.idx; });
     var tot = { ok: 0, no: 0, wait: 0, ret: 0, todo: 0, none: 0 };
     rows.forEach(function (r) {
       r.st = {}; r.cnt = { ok: 0, no: 0, wait: 0, ret: 0, todo: 0, none: 0 };
@@ -1399,7 +1428,7 @@ a.stat:hover .go{opacity:1}
   }
   // 公共基础课：不统计技能，看各课次任务的提交和评价等级
   function statPublic(p) {
-    var stus = cls(p.classId).students, list = S.courses.filter(function (c) { return c.planId === p.id && c.publish && c.publish.task && c.publish.task.on; });
+    var stus = TK.planStus(S, p), list = S.courses.filter(function (c) { return c.planId === p.id && c.publish && c.publish.task && c.publish.task.on; });
     var h = ''; h +=
       '<div class="scbar" style="margin:0 0 14px">《' + esc(p.course) + '》是公共基础课，默认不计入技能达成：这里显示各课次任务的提交和评价情况，不统计技能</div>';
     h += '<div class="card pad"><div class="blk-t">任务完成与评价 · ' + esc(planTxt(p)) + '<span class="tag">' + stus.length + ' 人</span></div>' + (list.length ? '<table class="tbl2"><thead><tr><th>课次</th><th>情景任务</th><th>已提交</th><th>已评价</th><th>优秀</th><th>合格</th><th>需改进</th></tr></thead><tbody>' +
@@ -1436,7 +1465,7 @@ a.stat:hover .go{opacity:1}
     m.foot.querySelector('[data-o]').onclick = function () {
       var v = TK.readForm(m.body, fields);
       if (v.bad.length) { TK.toast('请填写：' + v.bad.join('、')); return; }
-      var c = { id: TK.uid('CRS'), planId: p.id, ktask: r.taskId, skillIds: [sid], name: v.v.name, major: '导游', source: tutor ? '辅导任务' : '补训课次', term: p.term, classIds: [p.classId], targets: who.slice(),
+      var c = { id: TK.uid('CRS'), planId: p.id, ktask: r.taskId, skillIds: [sid], name: v.v.name, major: planMajor(p), source: tutor ? '辅导任务' : '补训课次', term: p.term, classIds: TK.planClassIds(S, p), targets: who.slice(),
         start: v.v.start, end: v.v.end, status: '未发布', resIds: S.resources.filter(function (x) { return x.status === '已完成' && (x.skillIds || []).indexOf(sid) >= 0; }).map(function (x) { return x.id; }), createdAt: TK.fmt(new Date()), publish: null, submissions: [], feedbacks: [], learn: {} };
       if (tutor) c.tutor = sid; else c.remedy = sid;
       S.courses.unshift(c); save(); audit(tutor ? '发起个别辅导' : '发起补训', c.name, null, { 技能: r.name, 学生: who.join('、') }); m.close(); render(); publishDrawer(c);
@@ -1517,13 +1546,13 @@ a.stat:hover .go{opacity:1}
     }
     // 与教务排课的冲突（跳过前面的非教务冲突，避免自建课次遮住教务排课冲突）
     function adminCfOf(tm) {
-      var p = plan(pid), cf = TK.lessonConflict(S, p.classId, p.teacher, tm.start, tm.end, c), skipped = [];
-      while (cf && cf.c.source !== '排课' && !cf.c.slotId) { skipped.push(cf.c); cf = TK.lessonConflict(S, p.classId, p.teacher, tm.start, tm.end, [c].concat(skipped)); }
+      var p = plan(pid), cf = TK.lessonConflict(S, TK.planClassIds(S, p), p.teacher, tm.start, tm.end, c), skipped = [];
+      while (cf && cf.c.source !== '排课' && !cf.c.slotId) { skipped.push(cf.c); cf = TK.lessonConflict(S, TK.planClassIds(S, p), p.teacher, tm.start, tm.end, [c].concat(skipped)); }
       return (cf && (cf.c.source === '排课' || cf.c.slotId)) ? cf : null;
     }
     function cfTxtOf(cf) {
-      var p = plan(pid);
-      return (cf.p.classId === p.classId ? cls(p.classId).name + ' 这时有《' + cf.p.course + '》' : cf.p.teacher + ' 这时在上《' + cf.p.course + '》（' + cls(cf.p.classId).name + '）') + '（' + cf.c.start.slice(5, 16) + '–' + cf.c.end.slice(11) + '）';
+      var p = plan(pid), pIds = TK.planClassIds(S, p);
+      return (TK.planClassIds(S, cf.p).some(function (id) { return pIds.indexOf(id) >= 0; }) ? TK.planClsTxt(S, p) + ' 这时有《' + cf.p.course + '》' : cf.p.teacher + ' 这时在上《' + cf.p.course + '》（' + TK.planClsTxt(S, cf.p) + '）') + '（' + cf.c.start.slice(5, 16) + '–' + cf.c.end.slice(11) + '）';
     }
     // 冲突实时检测：与教务排课冲突 → 创建 / 保存按钮置灰不可点，提示条里走「提交教务审核」；改时间自动恢复；auto / locked 时间锁定不检测
     function checkCf() {
@@ -1547,12 +1576,12 @@ a.stat:hover .go{opacity:1}
       if (r.bad.length) { TK.toast('请填写：' + r.bad.join('、')); return; }
       var tm = curTm(), p = plan(pid);
       if (!tm) { TK.toast('请选择上课日期和时间'); return; }
-      var v = { name: r.v.name, start: tm.start, end: tm.end, planId: p.id, classIds: [p.classId], major: '导游', term: p.term, status: '待审核' };
+      var v = { name: r.v.name, start: tm.start, end: tm.end, planId: p.id, classIds: TK.planClassIds(S, p), major: planMajor(p), term: p.term, status: '待审核' };
       if (c && c.autoName && r.v.name !== c.name) c.autoName = false;
       if (c) Object.assign(c, v);
       else S.courses.unshift(Object.assign({ id: TK.uid('CRS'), source: '自建课次', resIds: [], createdAt: TK.fmt(new Date()), publish: null, submissions: [], feedbacks: [], learn: {}, ktask: '', ktasks: [], skillIds: [] }, v));
       var cc = c || S.courses[0];
-      S.lessonReqs.push({ id: TK.uid('LRQ'), courseId: cc.id, planId: p.id, course: cc.name, teacher: p.teacher, klass: cls(p.classId).name, time: cc.start.slice(0, 16).replace('T', ' ') + '–' + cc.end.slice(11), conflict: cfTxt, conflictId: cfId || '', status: '待审核', at: TK.fmt(new Date()) });
+      S.lessonReqs.push({ id: TK.uid('LRQ'), courseId: cc.id, planId: p.id, course: cc.name, teacher: p.teacher, klass: TK.planClsTxt(S, p), time: cc.start.slice(0, 16).replace('T', ' ') + '–' + cc.end.slice(11), conflict: cfTxt, conflictId: cfId || '', status: '待审核', at: TK.fmt(new Date()) });
       save(); m.close(); render(); audit('提交课次审核', cc.name, null, { 冲突: cfTxt, 状态: '待教务审核' });
       TK.toast('已提交教务审核，冲突处理结果会更新课次状态');
       if (cur && cur.c === cc) cur.render();
@@ -1580,9 +1609,10 @@ a.stat:hover .go{opacity:1}
         }
         // 全校规则：同一天、同一班级或同一授课老师时间重叠即冲突（排课生成的、别人另建的、补训课次都算）
         // 与教务排课的冲突已在 checkCf 实时拦截（按钮置灰），这里到不了；剩下的非教务冲突：提示不拦截，「仍要创建」确认后落库
-        var cf = TK.lessonConflict(S, p.classId, p.teacher, tm.start, tm.end, c);
+        var cf = TK.lessonConflict(S, TK.planClassIds(S, p), p.teacher, tm.start, tm.end, c);
         if (cf && (cf.c.source !== '排课' && !cf.c.slotId)) {
-          var cfTxt2 = (cf.p.classId === p.classId ? cls(p.classId).name + ' 这时有《' + cf.p.course + '》' : cf.p.teacher + ' 这时在上《' + cf.p.course + '》（' + cls(cf.p.classId).name + '）') + '（' + cf.c.start.slice(5, 16) + '–' + cf.c.end.slice(11) + '）';
+          var pIds2 = TK.planClassIds(S, p);
+          var cfTxt2 = (TK.planClassIds(S, cf.p).some(function (id) { return pIds2.indexOf(id) >= 0; }) ? TK.planClsTxt(S, p) + ' 这时有《' + cf.p.course + '》' : cf.p.teacher + ' 这时在上《' + cf.p.course + '》（' + TK.planClsTxt(S, cf.p) + '）') + '（' + cf.c.start.slice(5, 16) + '–' + cf.c.end.slice(11) + '）';
           var cfg2 = m.body.querySelector('[data-cfg]');
           cfg2.innerHTML = '<div style="margin-top:10px;background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--warn-ink)">时间冲突：' + esc(cfTxt2) + '。课表里两个课次会重叠显示。</div>';
           var go = document.createElement('button'); go.type = 'button'; go.className = 'btn-s'; go.style.cssText = 'height:28px;margin-top:8px'; go.textContent = '仍要' + (c ? '保存' : '创建');
@@ -1594,7 +1624,7 @@ a.stat:hover .go{opacity:1}
       return;
       // 任务和技能不在这里改：已有课次保留原值（存量数据里选过的任务在发布时作为默认勾选），新建的自建课次为空，备课资源关联后带上技能
       function doSave(conflict) {
-        var v = { name: r.v.name, start: tm.start, end: tm.end, planId: p.id, classIds: [p.classId], major: '导游', term: p.term };
+        var v = { name: r.v.name, start: tm.start, end: tm.end, planId: p.id, classIds: TK.planClassIds(S, p), major: planMajor(p), term: p.term };
         if (!c) { v.ktask = ''; v.ktasks = []; v.skillIds = []; }
         if (c && c.autoName && r.v.name !== c.name) c.autoName = false;   // 老师改过名称，不再跟排课顺序 / 备课内容更新
         if (c) Object.assign(c, v);
@@ -1853,7 +1883,7 @@ a.stat:hover .go{opacity:1}
     var fl = []; c.resIds.forEach(function (id) { var r = res(id); if (r) r.files.forEach(function (f) { fl.push({ f: f, r: r }); }); });
     var d = TK.drawer({ title: '查看发布学习内容', width: 760, foot: '<button class="btn-s" data-c>关闭</button>' });
     d.body.innerHTML = '<div class="blk" style="background:var(--good-bg)"><b style="color:var(--good)">✓ 已发布</b>　<span style="font-size:12px;color:var(--ink-2)">发布时间：' + esc(p.at) + '　发布人：' + esc(teacherName()) + '</span></div>' +
-      '<div class="blk"><div class="blk-t">发布对象</div><div class="kvg" style="grid-template-columns:2fr 1fr"><div><div class="k">课程计划</div><div class="v">' + esc(planTxt(plan(c.planId))) + '</div></div><div><div class="k">接收人数</div><div class="v">' + stuOf(c, p.classIds).length + ' 人</div></div></div></div>' +
+      '<div class="blk"><div class="blk-t">发布对象</div><div class="kvg" style="grid-template-columns:2fr 1fr"><div><div class="k">课程计划</div><div class="v">' + esc(planTxt(plan(c.planId))) + '</div></div><div><div class="k">接收人数</div><div class="v">' + stuOf(c, TK.planClassIds(S, plan(c.planId))).length + ' 人</div></div></div></div>' +
       '<div class="blk"><div class="blk-t">已下发备课资源<span class="sp"></span><span class="tag">' + p.fileIds.length + ' 项</span></div>' + (fl.filter(function (x) { return p.fileIds.indexOf(x.f.id) >= 0; }).map(function (x) {
         return '<div class="fitem"><span class="fi" style="background:' + (TK.FT_COLOR[x.f.type] || '#7f63d8') + '">' + esc(x.f.type.slice(0, 2)) + '</span><span class="fn">' + esc(x.f.name) + '<small>' + esc(x.f.size) + '</small></span><span class="tag g">已下发</span><button class="lk" data-pv>预览</button></div>';
       }).join('') || '<div class="empty2" style="padding:10px">未下发备课资源</div>') + '</div>' +
@@ -2204,6 +2234,14 @@ a.stat:hover .go{opacity:1}
   // 点页面其他地方收起资源行的「⋯」菜单
   document.addEventListener('click', function (e) { if (!e.target.closest('.rs-more')) [].forEach.call(document.querySelectorAll('.rs-more[open]'), function (x) { x.open = false; }); });
   var body = document.getElementById('body');
+  // 学期下拉：change 时切换（click 委托里拿不到变更后的 value，故单独监听 change）
+  body.addEventListener('change', function (e) {
+    if (e.target.closest('[data-courseterm]')) {
+      courseTerm = e.target.value;
+      if (VIEW === 'tt') ttWeek = firstWeekOfTerm(courseTerm);   // 课表定位到所选学期（本周按钮也以此为准）
+      render();
+    }
+  });
   body.addEventListener('click', function (e) {
     var t;
     // 首页数据概览卡跳转：反馈卡直达第一条有未读反馈的课程「课次」页
@@ -2267,7 +2305,7 @@ a.stat:hover .go{opacity:1}
     if (e.target.closest('[data-matrix]')) { showMatrix = !showMatrix; render(); return; }
     if ((t = e.target.closest('[data-sub]')) && t.closest('.st-d')) { var q = t.getAttribute('data-sub').split('|'), sc = course(q[0]), sb = sc && sc.submissions.find(function (x) { return x.student === q[1]; }); if (sb) evalDrawer(sc, sb, function () { render(); }); return; }
     if ((t = e.target.closest('[data-stu]'))) { stuDetailModal(plan(statPlan) || myPlans()[0], t.getAttribute('data-stu')); return; }
-    if ((t = e.target.closest('[data-wk]'))) { var n = +t.getAttribute('data-wk'); if (!n) ttWeek = mondayOf(new Date()); else ttWeek.setDate(ttWeek.getDate() + 7 * n); render(); return; }
+    if ((t = e.target.closest('[data-wk]'))) { var n = +t.getAttribute('data-wk'); if (!n) ttWeek = firstWeekOfTerm(courseTerm); else ttWeek.setDate(ttWeek.getDate() + 7 * n); render(); return; }
     if ((t = e.target.closest('[data-ttc]'))) { courseDetail(course(t.getAttribute('data-ttc'))); return; }
     if ((t = e.target.closest('[data-weak]'))) { weakModal(t.getAttribute('data-weak')); return; }
     if ((t = e.target.closest('[data-kpweak]'))) { var kq = t.getAttribute('data-kpweak').split('|'); kpWeakModal(kq[0], kq[1]); return; }

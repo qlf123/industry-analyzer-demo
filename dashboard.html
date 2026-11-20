@@ -109,7 +109,7 @@ svg text{font-family:inherit}
   function teachers() { try { return DEMO.getState().accounts.filter(function (a) { return a.kind === '教师' && a.status === '正常'; }).map(function (a) { return a.name; }); } catch (e) { return ['李老师', '王老师', '何老师']; } }
   function cls(id) { return S.classes.filter(function (c) { return c.id === id; })[0] || {}; }
   function plan(id) { return S.plans.filter(function (p) { return p.id === id; })[0]; }
-  function majorOfPlan(p) { return cls(p.classId).majorId; }
+  function majorOfPlan(p) { return TK.planMajors(S, p)[0] || ''; }   // 多班合班（跨专业）按第一个班的专业归属统计范围
   function inScopeMajor(mid) { return !F.scope || TK.majorSubIds(E, F.scope).indexOf(mid) >= 0; }
   function scopedPlans() { return S.plans.filter(function (p) { return inScopeMajor(majorOfPlan(p)); }); }
   function scopedTeachers() {
@@ -386,7 +386,7 @@ svg text{font-family:inherit}
         return g + '</svg>';
       };
       // 各课程对比（本周期）
-      var crs = SP.filter(function (p) { return tq.byPlan[p.id]; }).map(function (p) { var b = tq.byPlan[p.id], sb = tq.stdByPlan[p.id], k = TR.kpRate(TR.kpsAgg(S, [p], r.b, r.a)); return { n: p.course + ' · ' + cls(p.classId).name, s: sb && sb.den ? sb.rate : (b ? TR.rate(b.pairs - b.no, b.pairs) : null), k: k.r }; });
+      var crs = SP.filter(function (p) { return tq.byPlan[p.id]; }).map(function (p) { var b = tq.byPlan[p.id], sb = tq.stdByPlan[p.id], k = TR.kpRate(TR.kpsAgg(S, [p], r.b, r.a)); return { n: p.course + ' · ' + TK.planClsTxt(S, p), s: sb && sb.den ? sb.rate : (b ? TR.rate(b.pairs - b.no, b.pairs) : null), k: k.r }; });
       var hbar = function (v, c) { return '<span style="flex:1;height:9px;background:var(--card);border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:' + (v || 0) + '%;background:' + c + ';border-radius:4px"></i></span><span style="width:38px;text-align:right;font-size:11.5px;color:var(--ink-2)">' + (v == null ? '—' : v + '%') + '</span>'; };
       var lg = function (c, t) { return '<span style="font-size:11.5px;font-weight:400;color:var(--ink-2);display:inline-flex;align-items:center;gap:5px"><i style="width:8px;height:8px;border-radius:2px;background:' + c + '"></i>' + t + '</span>'; };
       h += '<div class="db-sec"><div class="db-st"><span class="no">6</span>教学质量<span class="sp"></span>' + go('t=reach', '进入教学达成') + '</div>' +
@@ -411,7 +411,7 @@ svg text{font-family:inherit}
     scopedPlans().forEach(function (p) {
       var mid = majorOfPlan(p); if (!mid) return;
       var m = by[mid] || (by[mid] = { id: mid, name: (E.majors.filter(function (x) { return x.id === mid; })[0] || {}).name || mid, path: TK.majorPath(E, mid), tchSet: {}, cls: {}, plans: 0, lessons: 0, fbs: [], g: { '优秀': 0, '合格': 0, '需改进': 0 } });
-      m.tchSet[p.teacher] = 1; m.cls[p.classId] = 1; m.plans++;
+      m.tchSet[p.teacher] = 1; TK.planClassIds(S, p).forEach(function (id) { m.cls[id] = 1; }); m.plans++;
       S.courses.filter(function (c) { return c.planId === p.id; }).forEach(function (c) {
         if (inR(c.start, r)) m.lessons++;
         (c.feedbacks || []).forEach(function (f) { if (inR(f.at, r)) m.fbs.push(f); });
@@ -429,8 +429,8 @@ svg text{font-family:inherit}
     var r = cur(), T = scopedTeachers(), A = activity(r), title = '', body = '', sub = cycleLabel(r) + (F.scope ? ' · ' + TK.majorPath(E, F.scope) : ' · 全校');
     if (key === 'activity') { title = '教师数据详情'; body = table(['教师', '备课生成', '发布学习内容', '评价学生任务', '新建课次', '状态'], T.map(function (n) { var a = A[n]; return td([esc(n), a.gen, a.pub, a.eval, a.lesson, a.active ? '<span class="tag g">活跃</span>' : '<span class="tag w">未活跃</span>']); })); }
     else if (key === 'trend') { title = '教学过程数据明细'; body = table(['时间', '备课资源生成数', '学习资源发布数', '任务提交数', '任务评价完成数', '课程反馈均分'], buckets(r).map(function (b) { var v = fbAvg(feedbacks(b)); return td([b.l, resFiles(b).length, pubFiles(b), subs(b).length, evals(b).length, v == null ? '—' : v.toFixed(1)]); })); }
-    else if (key === 'risk') { title = '教学风险预警详情'; body = '<div class="db-sub">未活跃教师（本' + UNIT[F.p] + '没有备课、发布、评价、新建课次）</div>' + table(['教师', '负责课程计划'], T.filter(function (n) { return !A[n].active; }).map(function (n) { return td([esc(n), esc(S.plans.filter(function (p) { return p.teacher === n; }).map(function (p) { return p.course + ' · ' + cls(p.classId).name; }).join('；') || '—')]); })) +
-      '<div class="db-sub" style="margin-top:14px">低分课程（课程反馈均分低于 ' + LOW + ' 分）</div>' + table(['课次', '课程 · 班级', '授课教师', '反馈均分', '反馈人数'], lowLessons(r).map(function (c) { var f = feedbacks(r, [c]); var p = plan(c.planId) || {}; return td([esc(c.name), esc((p.course || '') + ' · ' + cls(p.classId).name), esc(p.teacher || ''), fbAvg(f).toFixed(1), f.length]); })); }
+    else if (key === 'risk') { title = '教学风险预警详情'; body = '<div class="db-sub">未活跃教师（本' + UNIT[F.p] + '没有备课、发布、评价、新建课次）</div>' + table(['教师', '负责课程计划'], T.filter(function (n) { return !A[n].active; }).map(function (n) { return td([esc(n), esc(S.plans.filter(function (p) { return p.teacher === n; }).map(function (p) { return p.course + ' · ' + TK.planClsTxt(S, p); }).join('；') || '—')]); })) +
+      '<div class="db-sub" style="margin-top:14px">低分课程（课程反馈均分低于 ' + LOW + ' 分）</div>' + table(['课次', '课程 · 班级', '授课教师', '反馈均分', '反馈人数'], lowLessons(r).map(function (c) { var f = feedbacks(r, [c]); var p = plan(c.planId) || {}; return td([esc(c.name), esc((p.course || '') + ' · ' + TK.planClsTxt(S, p)), esc(p.teacher || ''), fbAvg(f).toFixed(1), f.length]); })); }
     else if (key === 'types') { title = '生成备课资源明细'; body = table(['资源包', '教师', '文件', '类型', '生成时间'], resFiles(r).map(function (x) { return td([esc(x.r.name), esc(x.r.owner || '李老师'), esc(x.f.name), x.f.type, esc(x.r.createdAt)]); })); }
     else if (key === 'portrait') { title = '教师画像评分'; body = table(['教师'].concat(DIMS).concat(['综合分']), T.map(function (n) { return td([esc(n)].concat(prof(n).s).concat(['<b>' + overallOf(n) + '</b>'])); })) + '<div style="font-size:11.5px;color:var(--muted);margin-top:8px">来自教师档案的画像五维评分，综合分为五维平均</div>'; }
     else if (key === 'hours') { title = '教师授课时长'; var hs = {}; T.forEach(function (n) { hs[n] = { h: 0, n: 0 }; }); held(r).forEach(function (c) { var n = teacherOf(c); if (hs[n]) { hs[n].h += hoursOf(c); hs[n].n++; } }); body = table(['教师', '课次数', '授课时长（小时）'], Object.keys(hs).sort(function (a, b) { return hs[b].h - hs[a].h; }).map(function (n) { return td([esc(n), hs[n].n, Math.round(hs[n].h * 10) / 10]); })); }
@@ -439,8 +439,8 @@ svg text{font-family:inherit}
     else if (key === 'lessons') {
       title = '课程统计详情'; var now = new Date();
       body = table(['课次', '专业', '班级', '授课教师', '开始时间', '结束时间', '时长', '状态', '来源'], lessons(r).sort(function (a, b) { return a.start < b.start ? -1 : 1; }).map(function (c) {
-        var p = plan(c.planId) || {}, k = cls(p.classId), a = new Date(c.start.replace(' ', 'T')), b = new Date(c.end.replace(' ', 'T'));
-        return td([esc(c.name), esc(TK.majorPath(E, k.majorId)), esc(k.name || ''), esc(p.teacher || ''), c.start, c.end.slice(11), (Math.round(hoursOf(c) * 10) / 10) + 'h', b < now ? '已结束' : a > now ? '待授课' : '授课中', c.source === '排课' ? '教务排课' : '教师自建']);
+        var p = plan(c.planId) || {}, a = new Date(c.start.replace(' ', 'T')), b = new Date(c.end.replace(' ', 'T'));
+        return td([esc(c.name), esc(TK.majorPath(E, TK.planMajors(S, p)[0] || '')), esc(TK.planClsTxt(S, p) || ''), esc(p.teacher || ''), c.start, c.end.slice(11), (Math.round(hoursOf(c) * 10) / 10) + 'h', b < now ? '已结束' : a > now ? '待授课' : '授课中', c.source === '排课' ? '教务排课' : '教师自建']);
       }));
     }
     var d = TK.drawer({ title: title, sub: sub, width: 860 }); d.body.innerHTML = '<div style="overflow-x:auto">' + body + '</div>';

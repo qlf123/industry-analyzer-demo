@@ -215,6 +215,17 @@
     var ec = eduCourse(st, p);
     return ec && (ec.type === '公共基础课程' || ec.type === '公共基础课') ? 'public' : 'unlinked';
   }
+  /* 课程计划的班级：2026-11-19 起支持多班（可不选专业，给跨专业的多个班一起排课）。
+     存量单班 classId 在 load() v14 迁移为 classIds 数组；班级 / 学生 / 专业的取法全链路统一走这组助手 */
+  function planClassIds(st, p) { return (p && p.classIds && p.classIds.length ? p.classIds : (p && p.classId ? [p.classId] : [])); }
+  function planCls(st, p) { return planClassIds(st, p).map(function (id) { return st.classes.filter(function (c) { return c.id === id; })[0]; }).filter(Boolean); }
+  function planStus(st, p) { return planCls(st, p).reduce(function (a, c) { return a.concat(c.students || []); }, []); }   // 合班学生 = 各班并集（与课次 stuOf 同口径）
+  function planClsTxt(st, p) { return planCls(st, p).map(function (c) { return c.name; }).join('、'); }
+  function planMajors(st, p) {   // 计划涉及的专业 id（按班级推导，去重）；跨专业合班返回多个
+    var out = [], seen = {};
+    planCls(st, p).forEach(function (c) { if (c.majorId && !seen[c.majorId]) { seen[c.majorId] = 1; out.push(c.majorId); } });
+    return out;
+  }
 
   /* ── 评价标准：每个评价项对应一个技能，分优秀 / 合格 / 需改进三档 ── */
   var GRADES = ['优秀', '合格', '需改进'];
@@ -376,12 +387,12 @@
       classes: [{ id: 'CL1', name: '导游 2024级 1班', major: '导游', students: ['林同学'].concat(stu1) }, { id: 'CL2', name: '导游 2024级 2班', major: '导游', students: stu2 }],
       // 管理端课程计划（班级 × 课程 × 授课教师 × 学期），课程已关联知识体系课程
       plans: [
-        { id: 'CP1', courseId: 'C6a16162d72', course: '旅行策划', classId: 'CL1', teacher: '李老师', term: TERM },
-        { id: 'CP2', courseId: 'C5f2ef49d1e', course: '旅行社经营与管理', classId: 'CL1', teacher: '李老师', term: TERM },
-        { id: 'CP3', courseId: 'C6a16162d72', course: '旅行策划', classId: 'CL2', teacher: '李老师', term: TERM },
-        { id: 'CP4', courseId: 'C7b923953d1', course: '导游业务', classId: 'CL1', teacher: '何老师', term: TERM },
+        { id: 'CP1', courseId: 'C6a16162d72', course: '旅行策划', classIds: ['CL1'], teacher: '李老师', term: TERM },
+        { id: 'CP2', courseId: 'C5f2ef49d1e', course: '旅行社经营与管理', classIds: ['CL1'], teacher: '李老师', term: TERM },
+        { id: 'CP3', courseId: 'C6a16162d72', course: '旅行策划', classIds: ['CL2'], teacher: '李老师', term: TERM },
+        { id: 'CP4', courseId: 'C7b923953d1', course: '导游业务', classIds: ['CL1'], teacher: '何老师', term: TERM },
         // 研学旅行管理与服务：预置知识体系里没有这门课，由老师在图谱中心建课程知识体系后再建课次
-        { id: 'CP5', courseId: 'C-YX', course: '研学旅行管理与服务', classId: 'CL1', teacher: '何老师', term: TERM }
+        { id: 'CP5', courseId: 'C-YX', course: '研学旅行管理与服务', classIds: ['CL1'], teacher: '何老师', term: TERM }
       ],
       majors: ['导游'],
       terms: [TERM, '2025-2026 第二学期'],
@@ -417,7 +428,8 @@
     function finish(s) { registerCustomNodes(s); return s; }   // 自定义节点注册进 kn() 运行时索引（跨页面共享）
     try {
       var s = JSON.parse(localStorage.getItem(KEY));
-      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据
+      if (s && s.v === 14) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据（否则管理端新增的计划/资源被抹掉）
+      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); migratePlanMulti(s); s.v = 14; save(s); return finish(s); }   // v14：计划班级改多班（classIds 数组）
       if (s && s.v === 6) { seedEdu(s); s.v = 7; }   // 补上管理端教务基础数据，原有数据保留
       if (s && s.v === 7) { seedCourseType(s); s.v = 8; save(s); }   // 补上课程类型与公共基础课
       if (s && s.v === 8) { seedMajorLevel(s); s.v = 9; save(s); }   // 专业树补第三层
@@ -426,7 +438,11 @@
       if (s && s.v === 11) { var ch1 = seedLabs(s), ch2 = seedPeriods(s), ch3 = seedKpSnap(s); if (ch1 || ch2 || ch3) save(s); Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); s.v = 12; save(s); }
       if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); return finish(s); }   // 课程类型细分为五类，旧值自动映射
     } catch (e) {}
-    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); s2.v = 13; save(s2); return finish(s2);
+    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); s2.v = 14; save(s2); return finish(s2);
+  }
+  /* v14 迁移：课程计划支持多班——存量 classId 单班转 classIds 数组 */
+  function migratePlanMulti(st) {
+    (st.plans || []).forEach(function (p) { if (!p.classIds || !p.classIds.length) p.classIds = p.classId ? [p.classId] : []; delete p.classId; });
   }
   /* 课程类型细分迁移：旧两分类映射到新五分类（专业课默认归入专业核心课程） */
   function migrateCourseType(st) {
@@ -485,7 +501,7 @@
     E.courses.push({ id: 'EC' + (++n), name: '思想道德与法治', code: 'GG002', majorId: '', type: '公共基础课程', desc: '全校公共基础课程', status: '启用', ks: '', by: '超管', at: '2026-08-20 10:06' });
     var en = E.courses[E.courses.length - 2], slots = [];
     for (var i = -2; i <= 3; i++) { var d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + 1 + 7 * i); var day = fmt(d, false); slots.push({ id: uid('SL'), start: day + ' 10:00', end: day + ' 12:00' }); }
-    st.plans.push({ id: 'CP6', courseId: '', eduCourseId: en.id, course: en.name, classId: 'CL1', teacher: '王老师', term: TERM, status: '启用', by: '超管', at: '2026-08-25 10:00', slots: slots });
+    st.plans.push({ id: 'CP6', courseId: '', eduCourseId: en.id, course: en.name, classIds: ['CL1'], teacher: '王老师', term: TERM, status: '启用', by: '超管', at: '2026-08-25 10:00', slots: slots });
   }
 
   /* ── 管理端教务基础数据 + 课程计划排课 ──
@@ -610,15 +626,15 @@
     var now = new Date();
     return ls.some(function (c) { return new Date(String(c.end).replace(' ', 'T')) >= now; }) ? '进行中' : '已结束';
   }
-  /* 时间冲突：同一天、同一班级或同一授课老师、时间段重叠（排课生成的课次、老师另建的额外课次、补训课次都算）；
-     except：自己（编辑时），可为单个课次或课次数组（用于跳过已查过的冲突继续找）；返回冲突的课次和它的课程计划 */
-  function lessonConflict(st, classId, teacher, start, end, except) {
-    var hit = null, day = String(start).slice(0, 10);
+  /* 时间冲突：同一天、同班级（任一班级占用即冲突）或同一授课老师、时间段重叠（排课生成的课次、老师另建的额外课次、补训课次都算）；
+     classIds 可传数组（多班计划）或单个班级 id；except：自己（编辑时），可为单个课次或课次数组（用于跳过已查过的冲突继续找）；返回冲突的课次和它的课程计划 */
+  function lessonConflict(st, classIds, teacher, start, end, except) {
+    var ids = Array.isArray(classIds) ? classIds : [classIds], hit = null, day = String(start).slice(0, 10);
     st.courses.forEach(function (c) {
       // 已停用的课次时间已释放，不参与冲突判定（2026-11-19 课次停用/启用）
       if (hit || c === except || c.disabled || (except && except.indexOf && except.indexOf(c) >= 0) || String(c.start).slice(0, 10) !== day || !(c.start < end && c.end > start)) return;
       var q = st.plans.filter(function (x) { return x.id === c.planId; })[0]; if (!q) return;
-      if (q.classId === classId || q.teacher === teacher) hit = { c: c, p: q };
+      if (planClassIds(st, q).some(function (id) { return ids.indexOf(id) >= 0; }) || q.teacher === teacher) hit = { c: c, p: q };
     });
     return hit;
   }
@@ -630,7 +646,7 @@
       // 排课删除后编号不重排（出现空缺）；新增排课取最大编号+1（course-plan 分配）
       var mx = slots.reduce(function (a, s) { return Math.max(a, s.no || 0); }, 0);
       slots.forEach(function (sl) { if (!sl.no) { sl.no = ++mx; changed = true; } });
-      var cl = st.classes.filter(function (c) { return c.id === p.classId; })[0] || {};
+      var clsArr = planCls(st, p), cl = clsArr[0] || {};   // 多班合班时课次班级 = 全部班，major 沿用第一个班（仅展示用）
       slots.forEach(function (sl, i) {
         // 已停用的排课：时间已释放，不生成 / 不同步 / 不认领课次（2026-11-19 课次停用/启用）
         if (sl.disabled) return;
@@ -640,7 +656,7 @@
         // 自建课次、停用课次、审核替换顶替进来的课次（swappedIn）不被认领——它们不是这次排课
         if (!c) { c = st.courses.filter(function (x) { return x.planId === p.id && !x.slotId && x.source !== '补训课次' && x.source !== '自建课次' && !x.disabled && !x.swappedIn && x.status !== '待审核' && x.start === sl.start; })[0]; if (c) { c.slotId = sl.id; c.source = '排课'; changed = true; } }
         if (!c) {
-          st.courses.push({ id: uid('CRS'), planId: p.id, slotId: sl.id, source: '排课', autoName: true, name: name, ktask: '', skillIds: [], classIds: [p.classId], major: cl.major || '', term: p.term,
+          st.courses.push({ id: uid('CRS'), planId: p.id, slotId: sl.id, source: '排课', autoName: true, name: name, ktask: '', skillIds: [], classIds: planClassIds(st, p), major: cl.major || '', term: p.term,
             start: sl.start, end: sl.end, status: '未发布', resIds: [], createdAt: fmt(new Date()), publish: null, submissions: [], feedbacks: [], learn: {} });
           changed = true; return;
         }
@@ -880,7 +896,7 @@
   root.TK = { load: load, save: save, reset: function () { localStorage.removeItem(KEY); }, fmt: fmt, uid: uid, esc: esc, TERM: TERM,
     periodRange: periodRange, inRange: inRange, addGrowth: addGrowth, addStuGrowth: addStuGrowth, STU_STAR: STU_STAR, toast: toast, drawer: drawer, modal: modal, confirm: confirmBox,
     formHTML: formHTML, bindForm: bindForm, bindSearchSelect: bindSearchSelect, readForm: readForm, fileRow: fileRow, FT_COLOR: FT_COLOR,
-    PERIODS: PERIODS, periodOf: periodOf, periods: periods, periodSpan: periodSpan, periodText: periodText, periodTime: periodTime, switchTmode: switchTmode, ttGrid: ttGrid,
-    kn: kn, skillName: skillName, registerCustomNodes: registerCustomNodes, kpsUnion: kpsUnion, courseKps: courseKps, kpById: kpById, kpCount: kpCount, kpHTML: kpHTML, kpCrit: kpCrit, kpCritDefault: kpCritDefault, kpCritHTML: kpCritHTML, taskKps: taskKps, snapKps: snapKps, aiKpMarks: aiKpMarks, aiKpMarksOf: aiKpMarksOf, kpMarksOf: kpMarksOf, stdSkillMap: stdSkillMap, stdKpMap: stdKpMap, extTag: extTag, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs,
+    TERM: TERM, PERIODS: PERIODS, periodOf: periodOf, periods: periods, periodSpan: periodSpan, periodText: periodText, periodTime: periodTime, switchTmode: switchTmode, ttGrid: ttGrid,
+    kn: kn, skillName: skillName, registerCustomNodes: registerCustomNodes, kpsUnion: kpsUnion, courseKps: courseKps, kpById: kpById, kpCount: kpCount, kpHTML: kpHTML, kpCrit: kpCrit, kpCritDefault: kpCritDefault, kpCritHTML: kpCritHTML, taskKps: taskKps, snapKps: snapKps, aiKpMarks: aiKpMarks, aiKpMarksOf: aiKpMarksOf, kpMarksOf: kpMarksOf, stdSkillMap: stdSkillMap, stdKpMap: stdKpMap, extTag: extTag, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs, planClassIds: planClassIds, planCls: planCls, planStus: planStus, planClsTxt: planClsTxt, planMajors: planMajors,
     syncRoster: syncRoster, syncSessions: syncSessions, planState: planState, lessonConflict: lessonConflict, fillSkillsFromRes: fillSkillsFromRes, studentHasRecords: studentHasRecords, majorPath: majorPath, majorTop: majorTop, majorSubIds: majorSubIds, majorTree: majorTree, majorChain: majorChain, GRADES: GRADES, genCriteria: genCriteria, overall: overall, addEvidence: addEvidence };
 })(window);
