@@ -560,8 +560,8 @@
   }
 
   /* ── 课次审核（2026-11-18 冲突审核，独立页签）：老师自建 / 改期课次与教务排课冲突、老师不调整时间时提交的审核单；
-     教务处理动作（2026-11-19 调整）：调整到无冲突时间后通过 / 替换排课（老师课次顶替原排课，原排课课次停用、时间释放） / 驳回；
-     原来的「直接通过（允许时间重叠）」已去掉——通过必须调整到无冲突时间 ══ */
+     教务处理动作（2026-11-20 简化）：只保留「通过 / 驳回」两个动作——通过 = 停用原冲突排课课次（时间释放、不计入教学进度）+ 老师课次按提交时间排上，
+     通过前强提示「原冲突的课次将停用」，确认后落库、审核单状态变「已通过」；原「替换排课」并入「通过」，「调整到无冲突时间」与「直接通过（允许重叠）」均已去掉 ══ */
   function updateAuditBadge() {
     var n = S.lessonReqs.filter(function (q) { return q.status === '待审核'; }).length;
     var b = $('#auditBadge');
@@ -583,21 +583,14 @@
         '<td style="font-size:12.5px;color:var(--warn-ink)">' + esc(q.conflict || '—') + '</td>' +
         '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + (q.at ? esc(q.at) : '—') +
           (q.handledAt ? '<div style="margin-top:2px">处理于 ' + esc(q.handledAt) + '</div>' : '') +
-          (q.adjusted ? '<div>调整为 ' + esc(q.adjusted) + '</div>' : '') + (q.swapped ? '<div>已替换原排课</div>' : '') + '</td>' +
+          (q.adjusted ? '<div>调整为 ' + esc(q.adjusted) + '</div>' : '') + (q.swapped ? '<div>已停用原排课</div>' : '') + '</td>' +
         '<td><span class="pill ' + (pend2 ? 'w' : q.status === '已通过' ? 'good' : 'k') + '">' + q.status + '</span></td>' +
-        '<td style="white-space:nowrap">' + (pend2 ? (c ?
-          '<details style="margin-bottom:6px"><summary style="font-size:12px;color:var(--brand);cursor:pointer;user-select:none">调整课次时间（可选）</summary>' +
-          '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:12px">' +
-          '<input type="date" data-aud-d="' + q.id + '" value="' + c.start.slice(0, 10) + '" style="height:28px">' +
-          '<input type="time" data-aud-s="' + q.id + '" value="' + c.start.slice(11, 16) + '" style="height:28px">–' +
-          '<input type="time" data-aud-e="' + q.id + '" value="' + c.end.slice(11, 16) + '" style="height:28px">' +
-          '<span style="font-size:11px;color:var(--muted)">调整到无冲突时段后点「通过」</span></div></details>' : '') +
-          (!c ? '<span style="font-size:12px;color:var(--muted)">课次已被老师撤回</span>' :
-          '<div style="display:flex;gap:6px;justify-content:flex-end"><button class="btn-s" data-rej="' + q.id + '">驳回</button><button class="btn-s" data-swap="' + q.id + '">替换排课</button><button class="btn" data-appr="' + q.id + '" style="height:28px">通过</button></div>') : '—') + '</td>' +
+        '<td style="white-space:nowrap">' + (pend2 ? (!c ? '<span style="font-size:12px;color:var(--muted)">课次已被老师撤回</span>' :
+          '<div style="display:flex;gap:6px;justify-content:flex-end"><button class="btn-s" data-rej="' + q.id + '">驳回</button><button class="btn" data-appr="' + q.id + '" style="height:28px">通过</button></div>') : '—') + '</td>' +
         '</tr>';
     };
     pane.innerHTML =
-      '<div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">老师自建或改期的课次与教务排课时间冲突、又不调整时间时，会提交到这里审核。教务可：把课次调整到无冲突时间后通过、用老师课次替换原排课（原排课课次停用、时间释放），或驳回退回老师；不允许与教务排课时间重叠通过。</div>' +
+      '<div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">老师自建或改期的课次与教务排课时间冲突、又不调整时间时，会提交到这里审核。教务可：通过（停用原冲突排课、老师课次按提交时间排上）或驳回（退回老师）；通过前会强提示原排课将停用，确认后生效。</div>' +
       '<div class="rs-bar" style="margin-bottom:10px"><span style="font-size:12.5px;color:var(--muted);margin-right:4px">审核状态</span><span class="seg">' +
       ['待审核', '已通过', '已驳回', '全部'].map(function (s2) {
         var n = s2 === '全部' ? S.lessonReqs.length : S.lessonReqs.filter(function (q) { return q.status === s2; }).length;
@@ -610,38 +603,24 @@
       '</div>';
   }
   function handleAuditAction(btn) {
-    var q = byId(S.lessonReqs, btn.dataset.appr || btn.dataset.rej || btn.dataset.swap); if (!q) return;
+    var q = byId(S.lessonReqs, btn.dataset.appr || btn.dataset.rej); if (!q) return;
     var c = byId(S.courses, q.courseId);
-    if ((btn.dataset.appr || btn.dataset.swap) && (!c || c.status !== '待审核')) { TK.toast('这条申请对应的课次已被老师撤回'); renderAudit(); return; }
-    /* 通过：必须调整到无冲突时间（2026-11-19 去掉「直接通过允许重叠」）；没改时间时拦截并引导 */
+    if (btn.dataset.appr && (!c || c.status !== '待审核')) { TK.toast('这条申请对应的课次已被老师撤回'); renderAudit(); return; }
+    /* 通过（2026-11-20 简化）：只保留「通过 / 驳回」。通过 = 停用原冲突排课课次 + 老师课次按提交时间排上；
+       通过前强提示「原冲突的课次将停用」，确认后落库、审核单状态变「已通过」 */
     if (btn.dataset.appr) {
-      var d = document.querySelector('[data-aud-d="' + q.id + '"]'), s = document.querySelector('[data-aud-s="' + q.id + '"]'), e2 = document.querySelector('[data-aud-e="' + q.id + '"]');
-      if (!(d && s && e2)) { TK.toast('请先展开「调整课次时间」，调整到无冲突时段后再通过'); return; }
-      var ns = d.value + ' ' + s.value, ne = d.value + ' ' + e2.value, changed = ns !== c.start || ne !== c.end;
-      if (!changed) { TK.toast('请先调整到无冲突的时间再通过；要保留老师课次的时间、顶替原排课，请用「替换排课」'); return; }
-      if (ne <= ns) { TK.toast('结束时间需晚于开始时间'); return; }
-      var p2 = byId(S.plans, q.planId);
-      var cf = p2 ? TK.lessonConflict(S, TK.planClassIds(S, p2), p2.teacher, ns, ne, c) : null;
-      if (cf) { TK.toast('调整后仍与《' + cf.p.course + '》（' + cf.c.start.slice(5, 16) + '）冲突，请换一个时段'); return; }
-      c.start = ns; c.end = ne; q.adjusted = ns.slice(5, 10) + ' ' + ns.slice(11, 16) + '–' + ne.slice(11, 16);
-      c.status = '未发布'; q.status = '已通过'; q.handledAt = TK.fmt(new Date());
-      save(); audit('通过课次审核', c.name, { 状态: '待审核' }, { 状态: '未发布', 时间: q.adjusted });
-      renderAudit(); TK.toast('已通过，教师端课次已转为正式课次（未发布）');
-      return;
-    }
-    /* 替换排课（2026-11-19）：老师课次顶替冲突的教务排课课次——原排课课次停用（时间释放、不计入教学进度，
-       教师端显示「已停用」，可随时启用恢复），老师课次转正式并记 swappedIn 溯源 */
-    if (btn.dataset.swap) {
       var oc = byId(S.courses, q.conflictId);
-      if (!oc || oc === c) { TK.toast('找不到被替换的原排课课次，请用「通过」或「驳回」处理'); return; }
-      if (oc.status === '已发布') { TK.toast('原排课课次已发布，不能替换；请调整老师课次时间后用「通过」处理'); return; }
-      oc.disabled = true; oc.replaced = c.id;   // 原排课课次停用：时间释放、不计入教学进度（启用可恢复）
-      var op = byId(S.plans, oc.planId), osl = op && (op.slots || []).filter(function (x) { return x.id === oc.slotId; })[0];
-      if (osl) osl.disabled = true;
-      c.swappedIn = oc.id;   // 溯源：这门课次顶替了哪次排课；同步时不被认领回排课
-      c.status = '未发布'; q.status = '已通过'; q.swapped = true; q.handledAt = TK.fmt(new Date());
-      save(); audit('课次审核 · 替换排课', c.name, { 原排课: oc.name }, { 状态: '未发布', 原排课: '已停用（时间释放，可启用恢复）' });
-      renderAudit(); TK.toast('已通过，老师课次已替换原排课《' + oc.name + '》，原课次已停用');
+      if (!oc || oc === c) { TK.toast('找不到冲突的原排课课次，无法通过'); return; }
+      if (oc.status === '已发布') { TK.toast('原排课课次已发布，不能停用；请先处理原排课或驳回本条'); return; }
+      TK.confirm('通过后，原冲突的排课《' + oc.name + '》将停用（时间释放、不计入教学进度，可随时启用恢复），老师提交的课次《' + c.name + '》将按提交时间排上。确认通过吗？', function () {
+        oc.disabled = true; oc.replaced = c.id;   // 原排课课次停用：时间释放、不计入教学进度（启用可恢复）
+        var op = byId(S.plans, oc.planId), osl = op && (op.slots || []).filter(function (x) { return x.id === oc.slotId; })[0];
+        if (osl) osl.disabled = true;
+        c.swappedIn = oc.id;   // 溯源：这门课次顶替了哪次排课；同步时不被认领回排课
+        c.status = '未发布'; q.status = '已通过'; q.swapped = true; q.handledAt = TK.fmt(new Date());
+        save(); audit('通过课次审核', c.name, { 原排课: oc.name }, { 状态: '未发布', 原排课: '已停用（时间释放，可启用恢复）' });
+        renderAudit(); TK.toast('已通过，原排课《' + oc.name + '》已停用，老师课次已排上');
+      });
       return;
     }
     TK.confirm('驳回这条审核申请？教师端的待审核课次会一起删除，老师需要调整时间后重新创建。', function () {
@@ -666,7 +645,7 @@
     var t = e.target;
     var tb = t.closest('#tabs [data-tab]'); if (tb) { tab = tb.dataset.tab; render(); return; }
     if (t.closest('[data-add]')) { planForm(null); return; }
-    var ab = t.closest('[data-appr], [data-rej], [data-swap]'); if (ab) { handleAuditAction(ab); return; }
+    var ab = t.closest('[data-appr], [data-rej]'); if (ab) { handleAuditAction(ab); return; }
     var as2 = t.closest('[data-ast]'); if (as2) { auditSt = as2.dataset.ast; renderAudit(); return; }   // 审核状态筛选
     var io = t.closest('[data-io]'); if (io) { if (io.dataset.io === '导入') importPlans(); else exportPlans(); return; }
     if (t.closest('[data-reset]')) { F = {}; render(); return; }

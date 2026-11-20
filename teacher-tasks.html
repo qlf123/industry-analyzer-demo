@@ -654,8 +654,6 @@ a.stat:hover .go{opacity:1}
       todo.push({ k: 'od', html: '<div class="todo-r"><span class="tx">《' + esc(c.name) + '》' + esc(c.start.slice(5, 16).replace('-', '月').replace(' ', '日 ')) + ' 的课已过期还没发布<small>' + esc(planTxt(plan(c.planId))) + ' · 过期课次不计入教学进度</small></span><span class="tag r">已过期</span>' + ((c.resIds || []).length ? '' : '<button class="btn-s" data-cact="prep" data-id="' + c.id + '">去备课</button>') + '<button class="btn-pp" data-cact="publish" data-id="' + c.id + '">发布</button></div>' });
     });
     myCourses().filter(function (c) { return pending(c); }).sort(function (a, b) { return pending(b) - pending(a); }).forEach(function (c) { todo.push({ k: 'eval', html: '<div class="todo-r"><span class="tx">《' + esc(c.name) + '》' + pending(c) + ' 份作业待评价<small>' + esc(planTxt(plan(c.planId))) + '</small></span><button class="btn-pp" data-goeval="' + c.id + '">去评价</button></div>' }); });
-    var soon = new Date(now.getTime() + 3 * 864e5);
-    myCourses().filter(function (c) { var d = new Date(c.start.replace(' ', 'T')); return c.status !== '已发布' && !overdue(c) && d >= new Date(today + 'T00:00:00') && d <= soon; }).sort(function (a, b) { return a.start < b.start ? -1 : 1; }).forEach(function (c) { todo.push({ k: 'pub', html: '<div class="todo-r"><span class="tx">《' + esc(c.name) + '》' + esc(c.start.slice(5, 16).replace('-', '月').replace(' ', '日 ')) + ' 上课，还没发布<small>' + esc(planTxt(plan(c.planId))) + '</small></span>' + ((c.resIds || []).length ? '' : '<button class="btn-s" data-cact="prep" data-id="' + c.id + '">去备课</button>') + '<button class="btn-pp" data-cact="publish" data-id="' + c.id + '">发布</button></div>' }); });
     myCourses().filter(function (c) { return unread(c); }).forEach(function (c) { todo.push({ k: 'fb', html: '<div class="todo-r"><span class="tx">《' + esc(c.name) + '》' + unread(c) + ' 条课程反馈未读<small>' + esc(planTxt(plan(c.planId))) + '</small></span><button class="btn-s" data-cact="view" data-id="' + c.id + '">查看</button></div>' }); });
     // 知识体系变更通知：教务在图谱中心改了任教课程的关联，提醒老师统计口径变了
     mp.forEach(function (pp) {
@@ -666,8 +664,8 @@ a.stat:hover .go{opacity:1}
         todo.push({ k: 'ks', html: '<div class="todo-r"><span class="tx">《' + esc(pp.course) + '》知识体系已变更为《' + esc(ksNow) + '》<small>' + esc(ch.at) + ' 教务在图谱中心调整' + (ch.from ? '，原「' + esc(ch.from) + '」' : '') + '；已发布课次的评价按快照保留，学情新旧口径分段展示</small></span><button class="btn-s" data-space="' + pp.id + '|stat">看学情</button></div>' });
       }
     });
-    var GN = { od: ['过期', 'r'], eval: ['评价', 'r'], pub: ['发布', 'w'], fb: ['反馈', ''], ks: ['变更', ''] };   // sug（改进建议）本期隐藏
-    var todoH = '<div class="card pad hm-card"><div class="blk-t">待办<span class="tag">' + todo.length + '</span></div>' + (todo.length ? ['od', 'eval', 'pub', 'fb', 'ks'].map(function (k) {
+    var GN = { od: ['过期', 'r'], eval: ['评价', 'r'], fb: ['反馈', ''], ks: ['变更', ''] };   // pub（发布）已去：与左栏「今天的课」重复（2026-11-20）；sug 本期隐藏
+    var todoH = '<div class="card pad hm-card"><div class="blk-t">待办<span class="tag">' + todo.length + '</span></div>' + (todo.length ? ['od', 'eval', 'fb', 'ks'].map(function (k) {
       var g = todo.filter(function (x) { return x.k === k; }); if (!g.length) return '';
       var open = !!todoOpen[k];
       return '<div class="todo-g"><div class="todo-gh"><span class="tag ' + GN[k][1] + '">' + GN[k][0] + '</span><b>' + g.length + '</b><span style="flex:1"></span>' +
