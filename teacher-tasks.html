@@ -64,8 +64,7 @@
 .lt-st.on i{background:var(--good);border-color:var(--good)}.lt-st.on b{color:var(--ink)}.lt-st.on::before{background:var(--good)}
 .lt-st.cur i{border-color:var(--warn)}.lt-st.cur b,.lt-st.cur small{color:var(--warn)}
 .lt-st.na{justify-content:center;padding-top:6px}.lt-st.na::before{display:none}.lt-st.na b{font-weight:400}
-.lt-a{display:flex;flex-direction:column;align-items:flex-end;gap:5px}.lt-a > div{display:flex;gap:6px}
-.lt-more{gap:10px!important}.lt-more .lk{font-size:12px}.lt-more .del{color:var(--crit)}
+.lt-a{display:flex;flex-direction:column;align-items:flex-end;gap:5px}.lt-a > div{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.lt-a .del{color:var(--crit);border-color:color-mix(in srgb,var(--crit) 35%,transparent)}.lt-a .note{font-size:11.5px}
 @media(max-width:1100px){.lt-row{grid-template-columns:80px 1fr}.lt-prog,.lt-a{grid-column:1/-1}.lt-a{align-items:flex-start}}
 .rs-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .mc-ended{margin-top:16px}.mc-ended>summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink-2);margin:0 2px 8px}
@@ -305,7 +304,7 @@ a.stat:hover .go{opacity:1}
 .ktl .kt:first-child{border-top:0}
 .ktl .kt.on{background:color-mix(in srgb,var(--brand-soft) 45%,transparent)}
 .ktl label,.kt-ex label{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;margin:0;width:auto;cursor:pointer;text-align:left}
-.ktl input[type=checkbox],.kt-ex input[type=checkbox],.kst input[type=checkbox]{width:auto!important;height:auto!important;flex:0 0 auto;margin:0;accent-color:var(--brand)}
+.ktl input[type=checkbox],.kt-ex input[type=checkbox],.kst input[type=checkbox],.kptl input[type=checkbox]{width:auto!important;height:auto!important;flex:0 0 auto;margin:0;accent-color:var(--brand)}
 .kt-h{font-size:13px;color:var(--ink)}
 .kt-h .no{flex:0 0 auto;font-size:11px;color:var(--muted);font-family:var(--mono)}
 .kt-h .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -361,7 +360,7 @@ a.stat:hover .go{opacity:1}
     var t = (S.edu.terms || []).filter(function (x) { return ((x.year || '') + ' ' + (x.term || '')) === term; })[0];
     return t && t.start ? mondayOf(t.start.replace(' ', 'T')) : mondayOf(new Date());
   }
-  var RF = { q: '', st: '', from: '', to: '', course: '', type: '', src: '' };
+  var RF = { q: '', st: '', from: '', to: '', course: '', type: '', src: '', pkg: '' };
   function save() { TK.save(S); }
   // 审计：关键状态变化（发布、评价、证据、补训 / 辅导、改进建议）记入平台审计日志（管理端「系统配置 › 操作日志」查看）
   function audit(action, object, before, after) {
@@ -650,13 +649,13 @@ a.stat:hover .go{opacity:1}
       (tl.length ? tl.map(row).join('') : '<div class="empty2" style="padding:10px">今天没有课' + (next3.length ? '，接下来有 ' + next3.length + ' 次课' : '') + '</div>' + next3.map(row).join('')) + '</div>';
     // 待办：同类合成一组，每组先显示 3 条，多的可展开
     var todo = [];
-    // 过期未发布（2026-11-18 L1）：上课时间已过还没发布，不计入教学进度，最优先提醒；可改期或坚持发布
-    myCourses().filter(overdue).sort(function (a, b) { return a.start < b.start ? -1 : 1; }).forEach(function (c) {
-      todo.push({ k: 'od', html: '<div class="todo-r"><span class="tx">《' + esc(c.name) + '》' + esc(c.start.slice(5, 16).replace('-', '月').replace(' ', '日 ')) + ' 的课已过期还没发布<small>' + esc(planTxt(plan(c.planId))) + ' · 过期课次不计入教学进度</small></span><button class="btn-s" data-cact="edit" data-id="' + c.id + '">改期</button><button class="btn-pp" data-cact="publish" data-id="' + c.id + '">发布</button></div>' });
+    // 已过期（2026-11-20）：上课时间已过还没发布，不计入教学进度；操作与未过期一致（去备课/发布），仅状态标签提示「已过期」
+    myCourses().filter(function (c) { return overdue(c); }).sort(function (a, b) { return a.start < b.start ? -1 : 1; }).forEach(function (c) {
+      todo.push({ k: 'od', html: '<div class="todo-r"><span class="tx">《' + esc(c.name) + '》' + esc(c.start.slice(5, 16).replace('-', '月').replace(' ', '日 ')) + ' 的课已过期还没发布<small>' + esc(planTxt(plan(c.planId))) + ' · 过期课次不计入教学进度</small></span><span class="tag r">已过期</span>' + ((c.resIds || []).length ? '' : '<button class="btn-s" data-cact="prep" data-id="' + c.id + '">去备课</button>') + '<button class="btn-pp" data-cact="publish" data-id="' + c.id + '">发布</button></div>' });
     });
     myCourses().filter(function (c) { return pending(c); }).sort(function (a, b) { return pending(b) - pending(a); }).forEach(function (c) { todo.push({ k: 'eval', html: '<div class="todo-r"><span class="tx">《' + esc(c.name) + '》' + pending(c) + ' 份作业待评价<small>' + esc(planTxt(plan(c.planId))) + '</small></span><button class="btn-pp" data-goeval="' + c.id + '">去评价</button></div>' }); });
     var soon = new Date(now.getTime() + 3 * 864e5);
-    myCourses().filter(function (c) { var d = new Date(c.start.replace(' ', 'T')); return c.status !== '已发布' && d >= new Date(today + 'T00:00:00') && d <= soon; }).sort(function (a, b) { return a.start < b.start ? -1 : 1; }).forEach(function (c) { todo.push({ k: 'pub', html: '<div class="todo-r"><span class="tx">《' + esc(c.name) + '》' + esc(c.start.slice(5, 16).replace('-', '月').replace(' ', '日 ')) + ' 上课，还没发布<small>' + esc(planTxt(plan(c.planId))) + '</small></span>' + ((c.resIds || []).length ? '' : '<button class="btn-s" data-cact="prep" data-id="' + c.id + '">去备课</button>') + '<button class="btn-pp" data-cact="publish" data-id="' + c.id + '">发布</button></div>' }); });
+    myCourses().filter(function (c) { var d = new Date(c.start.replace(' ', 'T')); return c.status !== '已发布' && !overdue(c) && d >= new Date(today + 'T00:00:00') && d <= soon; }).sort(function (a, b) { return a.start < b.start ? -1 : 1; }).forEach(function (c) { todo.push({ k: 'pub', html: '<div class="todo-r"><span class="tx">《' + esc(c.name) + '》' + esc(c.start.slice(5, 16).replace('-', '月').replace(' ', '日 ')) + ' 上课，还没发布<small>' + esc(planTxt(plan(c.planId))) + '</small></span>' + ((c.resIds || []).length ? '' : '<button class="btn-s" data-cact="prep" data-id="' + c.id + '">去备课</button>') + '<button class="btn-pp" data-cact="publish" data-id="' + c.id + '">发布</button></div>' }); });
     myCourses().filter(function (c) { return unread(c); }).forEach(function (c) { todo.push({ k: 'fb', html: '<div class="todo-r"><span class="tx">《' + esc(c.name) + '》' + unread(c) + ' 条课程反馈未读<small>' + esc(planTxt(plan(c.planId))) + '</small></span><button class="btn-s" data-cact="view" data-id="' + c.id + '">查看</button></div>' }); });
     // 知识体系变更通知：教务在图谱中心改了任教课程的关联，提醒老师统计口径变了
     mp.forEach(function (pp) {
@@ -710,7 +709,7 @@ a.stat:hover .go{opacity:1}
       var kind = TK.planKind(S, pp), M = kind === 'public' ? null : statModel(pp), KP = M ? kpModel(pp, M) : null;
       var done = eff.filter(function (c) { return taughtOk(c, now); }).length, npub = eff.filter(function (c) { return c.status === '已发布'; }).length;
       var pend = eff.reduce(function (a, c) { return a + pending(c); }, 0), nStu = TK.planStus(S, pp).length;
-      var noShowN = eff.filter(function (c) { return c.noShow; }).length, over = eff.filter(overdue), disAll = list.filter(function (c) { return c.disabled; }).length;
+      var noShowN = eff.filter(function (c) { return c.noShow; }).length, over = eff.filter(function (c) { return overdue(c); }), disAll = list.filter(function (c) { return c.disabled; }).length;
       var nxt = eff.filter(function (c) { return new Date(c.end.replace(' ', 'T')) >= now; })[0];
       var soon = eff.filter(function (c) { var d = new Date(c.start.replace(' ', 'T')); return c.status !== '已发布' && d >= now && d <= new Date(now.getTime() + 3 * 864e5); });
       var kok = 0, kt = 0; if (KP) KP.rows.forEach(function (x) { kok += x.cnt.ok; kt += x.cnt.ok + x.cnt.miss; });
@@ -774,7 +773,7 @@ a.stat:hover .go{opacity:1}
   }
   // 作业评价：这门课所有课次的学生提交集中在一起，待评价在前，可以连续评
   // 课次（课程空间）：按时间线排列，每节课一行：日期时间、课次和考查内容、这节课的进度（备课 → 发布 → 提交 → 评价）、下一步该做的事
-  var lsf = '', pastOpen = false;
+  var lsf = '', pastOpen = true;   // 已上课分组默认展开（2026-11-20）
   function lessonTimeline(pp) {
     var now = new Date(), today = TK.fmt(now, false), wd = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
     var all = S.courses.filter(function (c) { return c.planId === pp.id; }).sort(function (a, b) { return a.start < b.start ? -1 : 1; });
@@ -791,46 +790,50 @@ a.stat:hover .go{opacity:1}
     function row(c) {
       var pub = c.status === '已发布', nRes = (c.resIds || []).length, task = pub && c.publish && c.publish.task && c.publish.task.on;      var tot = stuOf(c).length, subs = (c.submissions || []).filter(function (x) { return x.status && x.status !== '未提交'; }).length, evd = (c.submissions || []).filter(function (x) { return x.teacher; }).length, pd = pending(c);
       var d = new Date(c.start.slice(0, 10) + 'T00:00:00'), isToday = c.start.slice(0, 10) === today;
-      // 未发布课次不画四步进度（提交/评价永远是灰的，零信息量）：改状态短语；已发布/已上课保留四步（每步有真实数字）
+      // 已发布保留四步（每步有真实数字）；未发布也展示四步（备课/发布/提交/评价，提交评价灰色占位，2026-11-20 用户要求未上课也展示四步）
       var prog = c.disabled
         ? '<div class="lt-prog"><span class="lt-st"><b>已停用</b><small>时间已释放 · 不计入进度</small></span></div>'
         : pub
         ? '<div class="lt-prog">' + step(nRes > 0, '备课', nRes ? nRes + ' 个资源包' : '未备课', !nRes) + step(pub, '发布', pub ? (task ? '含任务' : '仅资源') : '未发布', nRes && !pub) +
           (task ? step(subs >= tot && tot, '提交', subs + '/' + tot, subs < tot) + step(evd >= subs && subs, '评价', pd ? '待评 ' + pd : evd + '/' + subs, pd > 0) : '<span class="lt-st na"><b>没布置情景任务</b></span>') + '</div>'
         : auditPend(c) ? '<div class="lt-prog"><span class="lt-st"><b>待教务审核</b><small>与教务排课时间冲突</small></span></div>'
-        : '<div class="lt-prog"><span class="lt-st' + (nRes ? ' cur' : '') + '"><b>' + (nRes ? '已备课' : '待备课') + '</b>' + (nRes ? '<small>待发布</small>' : '') + '</span></div>';
+        : '<div class="lt-prog">' + step(nRes > 0, '备课', nRes ? nRes + ' 个资源包' : '未备课', !nRes) + step(false, '发布', '未发布', !!nRes) + step(false, '提交', '—', false) + step(false, '评价', '—', false) + '</div>';
       var odC = overdue(c, now);
-      var next = c.disabled ? (c.source !== '排课' ? '<button class="btn-s" data-cact="lessonOn" data-id="' + c.id + '">启用</button><span class="note">已停用，时间已释放</span>' : '<span class="note">已停用（时间已释放）· 由教务在管理端启用</span>')
-        : auditPend(c) ? '<span class="note">冲突待教务处理，通过后可正常备课发布</span>'
-        : odC ? '<button class="btn-pp" data-cact="edit" data-id="' + c.id + '">改期</button><button class="btn-s" data-cact="publish" data-id="' + c.id + '">坚持发布</button>'
-        : !pub ? (nRes ? '<button class="btn-pp" data-cact="publish" data-id="' + c.id + '">发布</button>' : '<button class="btn-pp" data-cact="prep" data-id="' + c.id + '">去备课</button><button class="btn-s" data-cact="publish" data-id="' + c.id + '">发布</button>')
-        : pd ? '<button class="btn-pp" data-ltev="' + c.id + '">评价 ' + pd + '</button>' : '<button class="btn-s" data-cact="view" data-id="' + c.id + '">查看</button>';
-      // 次操作收进「⋯」菜单，行尾只留主操作（2026-11-17：与备课资源列表交互一致）；已下课的课可标记未上/恢复（2026-11-18 L2）；
-      // 待教务审核的课次锁定操作，只能撤回申请（2026-11-18 冲突审核）
-      var more = auditPend(c)
-        ? '<details class="rs-more"><summary title="更多操作">⋯</summary><div class="rs-mn"><button type="button" class="del" data-cact="del" data-id="' + c.id + '">撤回审核申请</button></div></details>'
-        : '<details class="rs-more"><summary title="更多操作">⋯</summary><div class="rs-mn">' +
-        '<button type="button" data-cact="edit" data-id="' + c.id + '">编辑</button>' +
-        (c.source !== '排课' ? '<button type="button" data-cact="copy" data-id="' + c.id + '">复制</button>' : '') +
-        '<button type="button" data-cact="' + (pub ? 'addres' : 'link') + '" data-id="' + c.id + '">' + (pub ? '追加资源' : '关联资源') + '</button>' +
-        (pub ? '<button type="button" data-cact="view" data-id="' + c.id + '">详情</button>' : '') +
-        // 停用 / 启用（2026-11-19）：老师只能操作自己建的课次（自建 / 定向），教务排课的课次找教务；已发布的不能停用
-        (!pub && c.source !== '排课' && !auditPend(c) ? '<button type="button" data-cact="' + (c.disabled ? 'lessonOn' : 'lessonOff') + '" data-id="' + c.id + '">' + (c.disabled ? '启用' : '停用') + '</button>' : '') +
-        (pub && ended(c) ? (c.noShow ? '<button type="button" data-cact="reshow" data-id="' + c.id + '">恢复为已上</button>' : '<button type="button" data-cact="noshow" data-id="' + c.id + '">标记未上（调课/停课）</button>') : '') +
-        (!pub && c.source !== '排课' ? '<button type="button" class="del" data-cact="del" data-id="' + c.id + '">删除</button>' : '') +
-        '</div></details>';
+      // 所有操作平铺在操作栏（2026-11-20：不再收进「⋯」）；待审核只可撤回、已停用只可启用（排课来源由教务启用）
+      var acts = [];
+      if (auditPend(c)) {
+        acts.push('<button type="button" class="btn-s del" data-cact="del" data-id="' + c.id + '">撤回审核申请</button>');
+      } else if (c.disabled) {
+        acts.push(c.source !== '排课' ? '<button class="btn-s" data-cact="lessonOn" data-id="' + c.id + '">启用</button><span class="note">时间已释放</span>' : '<span class="note">已停用 · 由教务在管理端启用</span>');
+      } else if (!pub) {
+        if (!nRes) acts.push('<button class="btn-pp" data-cact="prep" data-id="' + c.id + '">去备课</button>');
+        acts.push('<button class="btn-pp" data-cact="publish" data-id="' + c.id + '">发布</button>');
+        acts.push('<button class="btn-s" data-cact="link" data-id="' + c.id + '">关联资源</button>');
+        acts.push('<button class="btn-s" data-cact="edit" data-id="' + c.id + '">编辑</button>');
+        if (c.source !== '排课') acts.push('<button class="btn-s" data-cact="copy" data-id="' + c.id + '">复制</button>');
+        if (c.source !== '排课') acts.push('<button class="btn-s" data-cact="lessonOff" data-id="' + c.id + '">停用</button>');
+        if (c.source !== '排课') acts.push('<button type="button" class="btn-s del" data-cact="del" data-id="' + c.id + '">删除</button>');
+      } else {
+        if (pd) acts.push('<button class="btn-pp" data-ltev="' + c.id + '">评价 ' + pd + '</button>');
+        acts.push('<button class="btn-s" data-cact="view" data-id="' + c.id + '">详情</button>');
+        acts.push('<button class="btn-s" data-cact="addres" data-id="' + c.id + '">追加资源</button>');
+        acts.push('<button class="btn-s" data-cact="edit" data-id="' + c.id + '">编辑</button>');
+        // 已上课（已发布且已下课）课次去掉「复制」「标记未上」（2026-11-20）；已标记未上的保留「恢复为已上」
+        if (c.source !== '排课' && !ended(c)) acts.push('<button class="btn-s" data-cact="copy" data-id="' + c.id + '">复制</button>');
+        if (ended(c) && c.noShow) acts.push('<button class="btn-s" data-cact="reshow" data-id="' + c.id + '">恢复为已上</button>');
+      }
       var sk = (c.skillIds || []).map(TK.skillName);
       // 最近一节待备课的课次：这门课已有覆盖下一个任务的资源时，提示直接用
       var reuseN = 0, nxtT = null;
       if (!pub && !nRes && nextOpenLesson(pp) === c) { nxtT = planNextTask(pp); reuseN = nxtT ? resForTask(pp, nxtT).length : 0; }
       return '<div class="lt-row' + (isToday ? ' today' : '') + (c.noShow || c.disabled ? ' muted' : '') + '"><div class="lt-d"><b>' + c.start.slice(5, 10).replace('-', '/') + '</b><span>' + wd[d.getDay()] + (isToday ? ' · 今天' : '') + '</span><span class="mono">' + c.start.slice(11) + '–' + c.end.slice(11) + '</span></div>' +
         '<div class="lt-m"><div class="lt-n"><b title="' + esc(c.name) + '">' + esc(c.name) + '</b>' + (auditPend(c) ? '<span class="tag w">待教务审核</span>' : '') + (c.disabled ? '<span class="tag k">已停用' + (c.replaced ? '（被审核替换）' : '') + ' · 不计入进度</span>' : '') + (c.targets ? '<span class="tag r">定向 ' + c.targets.length + ' 人</span>' : c.source === '自建课次' ? '<span class="tag">自建课次</span>' : '') + (odC ? '<span class="tag r">已过期</span>' : '') + (!c.disabled && c.noShow ? '<span class="tag k">' + (c.replaced ? '已被替换课次顶替 · 不计入进度' : '未上 · 不计入进度') + '</span>' : '') + (unread(c) ? '<span class="tag w">反馈 ' + unread(c) + '</span>' : '') + '</div>' +
-          '<div class="lt-sk" title="' + esc(sk.join('、')) + '">' + (ktaskNames(c) ? '任务：' + esc(ktaskNames(c)) + (sk.length ? ' · ' : '') : '') + (sk.length ? '技能 ' + sk.length + ' 个：' + esc(sk.slice(0, 3).join('、')) + (sk.length > 3 ? ' 等' : '') : '<span class="note">待备课</span>') + (reuseN ? '<button type="button" class="lt-reuse" data-lreuse="' + c.id + '" title="' + esc('按进度这节课轮到「' + nxtT.name + '」') + '">已有 ' + reuseN + ' 份资源可用</button>' : '') + '</div></div>' +
-        prog + '<div class="lt-a"><div>' + next + '</div><div class="lt-more">' + more + '</div></div></div>';
+          (pub && ended(c) ? '' : '<div class="lt-sk" title="' + esc(sk.join('、')) + '">' + (ktaskNames(c) ? '任务：' + esc(ktaskNames(c)) + (sk.length ? ' · ' : '') : '') + (sk.length ? '技能 ' + sk.length + ' 个：' + esc(sk.slice(0, 3).join('、')) + (sk.length > 3 ? ' 等' : '') : '<span class="note">待备课</span>') + (reuseN ? '<button type="button" class="lt-reuse" data-lreuse="' + c.id + '" title="' + esc('按进度这节课轮到「' + nxtT.name + '」') + '">已有 ' + reuseN + ' 份资源可用</button>' : '') + '</div>') + '</div>' +
+        prog + '<div class="lt-a"><div>' + acts.join('') + '</div></div></div>';
     }
     if (au.length) h += '<div class="rs-gh"><b>待教务审核</b><span class="tag w">' + au.length + '</span><span style="font-size:11.5px;color:var(--muted)">与教务排课时间冲突的课次，等教务在管理端处理；通过后可正常备课发布，不需要可撤回申请</span></div><div class="card rs-list">' + au.map(row).join('') + '</div>';
     if (up.length) h += '<div class="rs-gh"><b>即将上课</b><span class="tag">' + up.length + '</span></div><div class="card rs-list">' + up.map(row).join('') + '</div>';
-    if (od.length) h += '<div class="rs-gh" style="margin-top:16px"><b>已过期未发布</b><span class="tag r">' + od.length + '</span><span style="font-size:11.5px;color:var(--muted)">不计入教学进度；建议改期后发布，或确认课程内容不变坚持发布</span></div><div class="card rs-list">' + od.map(row).join('') + '</div>';
+    if (od.length) h += '<div class="rs-gh" style="margin-top:16px"><b>已过期未发布</b><span class="tag r">' + od.length + '</span><span style="font-size:11.5px;color:var(--muted)">上课时间已过的课次不计入教学进度，可改期、去备课或直接发布</span></div><div class="card rs-list">' + od.map(row).join('') + '</div>';
     if (past.length) h += '<div class="rs-gh" style="margin-top:16px"><b>已上课</b><span class="tag">' + past.length + '</span>' + (past.some(function (c) { return c.noShow; }) ? '<span style="font-size:11.5px;color:var(--muted)">标记「未上」的课次不计入教学进度</span>' : '') + '<button class="lk" data-past>' + (pastOpen || !up.length ? '收起' : '展开') + '</button></div>' + (pastOpen || !up.length ? '<div class="card rs-list">' + past.map(row).join('') + '</div>' : '');
     return h;
   }
@@ -928,20 +931,23 @@ a.stat:hover .go{opacity:1}
   function resText(r) { return r.name + ' ' + resTasks(r).map(function (t) { return t.name; }).join(' ') + ' ' + (r.skillIds || []).map(TK.skillName).join(' '); }
   // 资源包关联的技能、知识点（2026-11-19：列表拆成「关联技能」「关联知识点」两列；拓展判定同发布抽屉——
   // 不在所属课程标准体系内的标「拓展」徽标）。每列最多平铺 4 个 chip，多的收进「+N」；
-  // 知识点口径同详情抽屉：配置了展示已勾选的，没配置展示课程匹配全集并标注「未勾选 · 发布默认不勾」
-  function resSkKpHTML(r) {
+  // 知识点口径：配置了展示已勾选的，没配置展示课程匹配全集（不再加「未勾选」文案，2026-11-20）
+  function resSkKpHTML(r, f) {
     var pp = myPlans().filter(function (p) { return p.course === resCourse(r); })[0];
     var stdS = pp ? TK.stdSkillMap(S, pp) : null, stdK = pp ? TK.stdKpMap(S, pp) : null;
     var chip = function (n, ext) { return '<span class="rs-chip">' + esc(n) + (ext ? TK.extTag() : '') + '</span>'; };
-    var skIds = (r.skillIds || []).filter(function (id) { return TK.skillName(id); });
-    var uni = TK.kpsUnion(r.skillIds), cfg = (r.kpIds || []).map(function (id) { return TK.kpById(id); }).filter(Boolean);   // kpById 兜底：自定义知识点也在此解析
-    // 与详情抽屉口径一致：没配置知识点时展示课程匹配全集并标注「未勾选」（发布时默认不勾），配置了只展示已勾选的
+    // 标注以文件为主体（2026-11-20）：传 f 时读文件自己的 skillIds/kpIds；无标注的老文件回退到包级（兼容迁移前数据）
+    var skSrc = f && f.skillIds && f.skillIds.length ? f.skillIds : ((f && f.skillIds) ? [] : r.skillIds);
+    var kpSrc = f && f.kpIds && f.kpIds.length ? f.kpIds : ((f && f.kpIds) ? [] : r.kpIds);
+    var skIds = (skSrc || []).filter(function (id) { return TK.skillName(id); });
+    var uni = TK.kpsUnion(skSrc), cfg = (kpSrc || []).map(function (id) { return TK.kpById(id); }).filter(Boolean);   // kpById 兜底：自定义知识点也在此解析
+    // 没配置知识点时展示课程匹配全集（不加文案），配置了只展示已勾选的
     var use = cfg.length ? cfg : uni;
-    var kpNote = !cfg.length ? '<span class="note">未勾选 · 发布默认不勾</span>' : '<span class="note">已勾选 ' + cfg.length + '</span>';
+    var kpNote = cfg.length ? '<span class="note">已勾选 ' + cfg.length + '</span>' : '';
     var skHtml = skIds.slice(0, 4).map(function (id) { return chip(TK.skillName(id), stdS && !stdS[id]); }).join('') + (skIds.length > 4 ? '<span class="note">+' + (skIds.length - 4) + '</span>' : '');
     var kpHtml = use.slice(0, 4).map(function (k) { return chip(k.name, stdK && !stdK[k.id]); }).join('') + (use.length > 4 ? '<span class="note">+' + (use.length - 4) + '</span>' : '');
     return {
-      sk: skHtml ? '<div class="rs-skg">' + skHtml + '</div>' : '<span class="note">未记技能，可编辑补上</span>',
+      sk: (skHtml ? '<div class="rs-skg">' + skHtml + '</div>' : '<span class="note">未记技能</span>'),
       kp: kpHtml ? '<div class="rs-skg">' + kpNote + kpHtml + '</div>' : '<span class="note">未记知识点</span>'
     };
   }
@@ -953,37 +959,39 @@ a.stat:hover .go{opacity:1}
     var courses = []; all.forEach(function (r) { var cn = resCourse(r); if (cn && courses.indexOf(cn) < 0) courses.push(cn); });
     var qHit = function (r) { return !RF.q || resText(r).indexOf(RF.q) >= 0 || r.files.some(function (f) { return f.name.indexOf(RF.q) >= 0; }); };
     var list = all.filter(function (r) {
-      return qHit(r) && (only || !RF.course || resCourse(r) === RF.course) && (!RF.type || r.files.some(function (f) { return f.type === RF.type; })) && (!RF.src || resSrc(r) === RF.src);
+      var pkgHit = !RF.pkg || (RF.pkg === '未归属' ? !r.name : r.name === RF.pkg);
+      return pkgHit && qHit(r) && (only || !RF.course || resCourse(r) === RF.course) && (!RF.type || r.files.some(function (f) { return f.type === RF.type; })) && (!RF.src || resSrc(r) === RF.src);
     }).sort(function (a, b) { return a.createdAt < b.createdAt ? 1 : -1; });
     var sel = function (k, all0, opts) { return '<select class="sel" data-rf="' + k + '"><option value="">' + all0 + '</option>' + opts.map(function (o) { return '<option' + (RF[k] === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>'; };
-    var h = '<div class="rs-bar">' + (only ? '' : sel('course', '全部课程', courses)) + sel('type', '全部内容', TYPES) + sel('src', '全部来源', ['AI 生成', '上传']) +
+    var pkgNames = [].concat.apply([], all.map(function (r) { return r.name ? [r.name] : ['未归属']; })).filter(function (n, i, a) { return a.indexOf(n) === i; }).sort();
+    var h = '<div class="rs-bar">' + (only ? '' : sel('course', '全部课程', courses)) + sel('type', '全部内容', TYPES) + sel('src', '全部来源', ['AI 生成', '上传']) + sel('pkg', '全部资源包', pkgNames) +
       '<input class="inp search" data-rf="q" placeholder="搜索名称、文件、任务或技能" value="' + esc(RF.q) + '" style="width:200px">' +
       '<span style="display:flex;gap:8px;margin-left:auto"><button class="btn-s" type="button" data-rup style="height:32px">上传资源</button></span></div>';
     if (!list.length) return h + '<div class="card empty2">' + (emptyTxt || '没有符合条件的备课资源') + '</div>';
     var head = '<div class="rs-row rs-head"><span>文件</span><span>内容</span><span>关联技能</span><span>关联知识点</span><span style="text-align:right">操作</span></div>';
     // 包级操作（查看详情 / 编辑 / 删除）：文件行收进 ⋯，无文件包直接平铺
-    function pkgOps(r, more) {
-      var mi = function (a, l, cls) { return '<button type="button" class="' + (cls || '') + '" data-ract="' + a + '" data-id="' + r.id + '">' + l + '</button>'; };
+    function pkgOps(r, more, fid) {
+      var mi = function (a, l, cls) { return '<button type="button" class="' + (cls || '') + '" data-ract="' + a + '" data-id="' + r.id + '"' + (fid ? ' data-fid="' + esc(fid) + '"' : '') + '>' + l + '</button>'; };
       if (!more) return mi('view', '查看') + mi('edit', '编辑') + mi('del', '删除', 'del');
-      return '<details class="rs-more"><summary title="资源包操作">⋯</summary><div class="rs-mn">' + mi('view', '查看资源包') + mi('edit', '编辑资源包') + mi('del', '删除资源包', 'del') + '</div></details>';
+      return '<details class="rs-more"><summary title="资源包操作">⋯</summary><div class="rs-mn">' + (fid ? mi('fdel', '删除此文件', 'del') : '') + mi('view', '查看资源包') + mi('edit', '编辑资源包') + mi('del', '删除资源包', 'del') + '</div></details>';
     }
     // 文件平铺（2026-11-19：不再按资源包 ▸ 折叠展开，每个文件一行直接展示）。资源包作为文件的归属信息放在行内第二行；
     // 技能 / 知识点是包级属性，随文件行展示；操作 = 文件级预览 / 在线编辑 / 下载 + ⋯（包级查看 / 编辑 / 删除）
     function fileRowHTML(r, f) {
       var canEd = f.type !== '图片' && f.type !== '视频';
-      var cols = resSkKpHTML(r);
-      var meta = '📦 ' + esc(r.name) + ' <span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span> · ' + esc(f.size) + ' · ' + r.createdAt + (r.owner && r.owner !== teacherName() ? ' · ' + esc(r.owner) : '');
+      var cols = resSkKpHTML(r, f);
+      var meta = (r.name ? '📦 ' + esc(r.name) + ' ' : '') + '<span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span> · ' + esc(f.size) + ' · ' + r.createdAt + (r.owner && r.owner !== teacherName() ? ' · ' + esc(r.owner) : '');
       return '<div class="rs-row" data-rid="' + r.id + '" data-fid="' + esc(f.id) + '"><div class="rs-n"><b title="' + esc(f.name) + '">' + esc(f.name) + '</b><div class="rs-l2"><span class="note">' + meta + '</span></div></div>' +
         '<div class="rs-t"><span class="rs-chip"><i style="background:' + (TK.FT_COLOR[f.type] || '#7f63d8') + '"></i>' + esc(f.type) + '</span></div>' +
         '<div class="rs-u">' + cols.sk + '</div>' +
         '<div class="rs-u">' + cols.kp + '</div>' +
-        '<span class="rs-a"><button class="lk" data-fpv>预览</button>' + (canEd ? '<button class="lk" data-fed>在线编辑</button>' : '') + '<button class="lk" data-fdl>下载</button>' + pkgOps(r, true) + '</span></div>';
+        '<span class="rs-a"><button class="lk" data-fpv>预览</button>' + (canEd ? '<button class="lk" data-fed>在线编辑</button>' : '') + '<button class="lk" data-fdl>下载</button>' + pkgOps(r, true, f.id) + '</span></div>';
     }
     // 没有文件的资源包也占一行（否则编辑 / 删除入口丢了）
     function pkgRowHTML(r) {
       var cols = resSkKpHTML(r);
-      var meta = r.createdAt + (r.owner && r.owner !== teacherName() ? ' · ' + esc(r.owner) : '') + ' · 包里暂无文件，可在「编辑资源包」里上传';
-      return '<div class="rs-row" data-rid="' + r.id + '"><div class="rs-n"><b title="' + esc(r.name) + '">📦 ' + esc(r.name) + '<span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span></b><div class="rs-l2"><span class="note">' + meta + '</span></div></div>' +
+      var meta = r.createdAt + (r.owner && r.owner !== teacherName() ? ' · ' + esc(r.owner) : '') + ' · 暂无文件，可在「编辑」里上传';
+      return '<div class="rs-row" data-rid="' + r.id + '"><div class="rs-n"><b title="' + esc(r.name || '独立资源') + '">' + (r.name ? '📦 ' + esc(r.name) + ' ' : '') + '<span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span></b><div class="rs-l2"><span class="note">' + meta + '</span></div></div>' +
         '<div class="rs-t"><span class="note">暂无文件</span></div>' +
         '<div class="rs-u">' + cols.sk + '</div>' +
         '<div class="rs-u">' + cols.kp + '</div>' +
@@ -1038,13 +1046,14 @@ a.stat:hover .go{opacity:1}
       return '<span class="rs-chip">' + esc(o.nameOf(id)) + '<button type="button" class="rs-xdel" data-rsdel="' + o.kind + '" data-rsdelid="' + id + '" title="移除">×</button></span>';
     }).join('') || '<span class="note">未选择</span>';
   }
-  function resForm(r) {
+  function resForm(r, f) {
+    var single = !!f;   // 单文件标注模式（2026-11-20）：只编辑这一个文件的技能/知识点标注，保存后重算包级并集
     var courses = []; myPlans().forEach(function (p) { if (courses.indexOf(p.course) < 0) courses.push(p.course); });
-    var fields = [{ k: 'name', label: '资源名称', req: true, full: true, ph: '例如：一日游线路设计课件' },
+    var fields = single ? [] : [{ k: 'name', label: '归属资源包', type: 'searchselect', full: true, options: [].concat.apply([], [S.resources.filter(function (x) { return x.name; }).map(function (x) { return { v: x.name, sub: '并入已有资源包' }; })]) , ph: '留空=独立文件；填已有包名=并入；直接输入=新建包' },
       { k: 'course', label: '所属课程', type: 'searchselect', full: true, options: courses, ph: '例如：导游业务' },
       { k: 'files', label: '文件', type: 'files', ph: '课件、教案、图片、视频等' }];
-    var skSel = r ? (r.skillIds || []).slice() : [];
-    var kpSel = r ? (r.kpIds || []).slice() : [];   // 知识点与技能两维独立：可在知识点区单独勾选 / 自定义
+    var skSel = single ? (f.skillIds || []).slice() : r ? (r.skillIds || []).slice() : [];
+    var kpSel = single ? (f.kpIds || []).slice() : r ? (r.kpIds || []).slice() : [];   // 知识点与技能两维独立：可在知识点区单独勾选 / 自定义
     var newSk = {}, newKp = {};   // 本次新增的自定义节点（保存时写入 S.customNodes 并注册，取消则丢弃）
     var sys = resVisSystems();
     var skNameOf = function (id) { return newSk[id] || TK.skillName(id); };   // skillName 对未注册 id 原样返回 id，故自定义的先查 newSk
@@ -1058,9 +1067,9 @@ a.stat:hover .go{opacity:1}
       return hit || (sys[0] ? sys[0].id : '');
     })();
     // 编辑 / 上传与「查看」保持一致，用右侧抽屉（2026-11-17）；从详情里点编辑会叠一层抽屉，保存后回到详情
-    var m = TK.drawer({ title: r ? '编辑资源' : '上传资源', width: 780, tag: r ? '<span class="tag ' + (resSrc(r) === '上传' ? 'k' : 'g') + '">' + resSrc(r) + '</span>' : '', body: TK.formHTML(fields, r ? { name: r.name, course: resCourse(r), files: r.files } : { course: courses.length === 1 ? courses[0] : '' }) +
+    var m = TK.drawer({ title: single ? '编辑文件标注' : r ? '编辑资源' : '上传资源', width: 780, tag: '', body: (single ? '<div class="ff full"><span class="lh"><span>文件</span></span><div class="note" style="padding:8px 10px;border:1px solid var(--rule);border-radius:8px">' + esc(f.name) + ' <small style="color:var(--muted)">' + esc(f.type || '') + ' · ' + esc(f.size || '') + '</small></div></div>' : TK.formHTML(fields, r ? { name: r.name, course: resCourse(r), files: r.files } : { course: courses.length === 1 ? courses[0] : '' })) +
       '<div class="ff full" style="margin-top:8px"><span class="lh"><span>关联技能 · 关联知识点</span><span class="sp"></span><span style="font-size:11.5px;color:var(--muted)">选择知识体系后在树上勾选，也可自定义添加；发布课次选用此资源时，按这里勾选带出考查技能与知识点</span></span><div data-rsall></div></div>',
-      foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">' + (r ? '保存' : '上传') + '</button>' });
+      foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">保存</button>' });
     TK.bindForm(m.body); TK.bindSearchSelect(m.body);
     function chipsRow(kind, w) {
       return '<div style="display:flex;align-items:flex-start;gap:8px;margin-top:8px"><span class="note" style="flex:none;min-width:72px;padding-top:5px">已选' + w + '</span><div class="rs-sel" style="flex:1" data-rschips="' + kind + '">' + resChipsHTML({ kind: kind, sel: kind === 'sk' ? skSel : kpSel, nameOf: kind === 'sk' ? skNameOf : kpNameOf }) + '</div></div>';
@@ -1136,12 +1145,6 @@ a.stat:hover .go{opacity:1}
     paint();
     m.foot.querySelector('[data-c]').onclick = m.close;
     m.foot.querySelector('[data-o]').onclick = function () {
-      var v = TK.readForm(m.body, fields);
-      if (v.bad.length) { TK.toast('请填写：' + v.bad.join('、')); return; }
-      if (!v.v.files.length) { TK.toast('请上传至少一个文件'); return; }
-      var old = {}; (r ? r.files : []).forEach(function (f) { old[f.name] = f; });
-      var files = v.v.files.map(function (f) { return old[f.name] || { id: TK.uid('F'), type: fileType(f.name), name: f.name, size: f.size || '', url: '' }; });
-      var rec = r || { id: TK.uid('RES'), status: '已完成', source: '上传', createdAt: TK.fmt(new Date()), owner: teacherName() };
       // 自定义技能 / 知识点写入 S.customNodes 并即时注册：之后 skillName / kpById / 发布候选 / 学情统计都能解析
       if (Object.keys(newSk).length || Object.keys(newKp).length) {
         var cn = S.customNodes = S.customNodes || { skill: {}, kp: {} };
@@ -1149,12 +1152,52 @@ a.stat:hover .go{opacity:1}
         Object.keys(newKp).forEach(function (id) { cn.kp[id] = { name: newKp[id].name, type: newKp[id].type || '' }; });
         TK.registerCustomNodes(S);
       }
-      rec.name = v.v.name; rec.course = v.v.course; rec.files = files; rec.skillIds = skSel.slice(); rec.kpIds = kpSel.slice(); rec.knowledge = skSel.map(TK.skillName).join(' › ');
-      if (!r) S.resources.unshift(rec);
+      if (single) {
+        // 单文件标注模式：只改这一个文件的 skillIds/kpIds，包级由 syncResTags 重算为并集（发布链路读包级不变）
+        f.skillIds = skSel.slice(); f.kpIds = kpSel.slice();
+        TK.syncResTags(r);
+        linkedCourses(r).forEach(function (c) { TK.fillSkillsFromRes(S, c); });
+        save(); m.close(); if (curR) curR.render(); render();
+        TK.toast('已保存文件标注');
+        return;
+      }
+      var v = TK.readForm(m.body, fields);
+      if (v.bad.length) { TK.toast('请填写：' + v.bad.join('、')); return; }
+      if (!v.v.files.length) { TK.toast('请上传至少一个文件'); return; }
+      var old = {}; (r ? r.files : []).forEach(function (f0) { old[f0.name] = f0; });
+      var files = v.v.files.map(function (f0) { return old[f0.name] || { id: TK.uid('F'), type: fileType(f0.name), name: f0.name, size: f0.size || '', url: '' }; });
+      var rec = r || { id: TK.uid('RES'), status: '已完成', source: '上传', createdAt: TK.fmt(new Date()), owner: teacherName() };
+      // 标注下沉到文件级（2026-11-20）：选择区的技能/知识点写入每个文件；包级标注由 syncResTags 重算为并集（发布/学情读包级不变）
+      files.forEach(function (f0) { f0.skillIds = skSel.slice(); f0.kpIds = kpSel.slice(); });
+      // 归属资源包（2026-11-20）：填了包名且存在同名资源 → 并入该包（追加文件，已有文件标注不动）；否则新建；留空=独立文件
+      var nm = (v.v.name || '').trim(), target = !r && nm ? S.resources.filter(function (x) { return x.name === nm; })[0] : null;
+      if (target) {
+        target.files = (target.files || []).concat(files);
+        if (v.v.course && !target.course) target.course = v.v.course;
+        TK.syncResTags(target);
+        rec = target;
+      } else {
+        rec.name = nm; rec.course = v.v.course; rec.files = files; rec.source = r ? rec.source : '上传';
+        TK.syncResTags(rec);
+        if (!r) S.resources.unshift(rec);
+      }
       linkedCourses(rec).forEach(function (c) { TK.fillSkillsFromRes(S, c); });   // 资源已挂在课次上时，保存后同步课次技能（数据一致性，非教学操作）
       save(); m.close(); render(); if (curR) curR.render();
-      TK.toast(r ? '已保存' : '已上传');
+      TK.toast(r ? '已保存' : target ? '已并入资源包「' + nm + '」' : '已上传');
     };
+  }
+  // 文件级删除（2026-11-20 文件为主）：只删一个文件；已下发给学生的文件不能删（保护落到文件级）
+  function resFileDelete(r, f) {
+    var issued = linkedCourses(r).some(function (c) { return c.status === '已发布' && c.publish && (c.publish.fileIds || []).indexOf(f.id) >= 0; });
+    if (issued) { TK.toast('这个文件已经下发给学生，不能删除'); return; }
+    TK.confirm('删除文件「' + f.name + '」？', function () {
+      r.files = r.files.filter(function (x) { return x !== f; });
+      TK.syncResTags(r);
+      linkedCourses(r).forEach(function (c) { TK.fillSkillsFromRes(S, c); });
+      // 已关联课次里若记录了该文件 id，一并清理
+      linkedCourses(r).forEach(function (c) { if (c.publish && c.publish.fileIds) c.publish.fileIds = c.publish.fileIds.filter(function (id) { return id !== f.id; }); });
+      save(); render(); if (curR) curR.render(); TK.toast('已删除文件');
+    });
   }
   function resDelete(r) {
     var fids = r.files.map(function (f) { return f.id; });
@@ -1544,30 +1587,47 @@ a.stat:hover .go{opacity:1}
       if (pb < pa) return null;
       return TK.periodTime(S, day, pa, pb);
     }
-    // 与教务排课的冲突（跳过前面的非教务冲突，避免自建课次遮住教务排课冲突）
-    function adminCfOf(tm) {
-      var p = plan(pid), cf = TK.lessonConflict(S, TK.planClassIds(S, p), p.teacher, tm.start, tm.end, c), skipped = [];
-      while (cf && cf.c.source !== '排课' && !cf.c.slotId) { skipped.push(cf.c); cf = TK.lessonConflict(S, TK.planClassIds(S, p), p.teacher, tm.start, tm.end, [c].concat(skipped)); }
-      return (cf && (cf.c.source === '排课' || cf.c.slotId)) ? cf : null;
+    // 分类所有冲突课次：published=已发布（无法撤回/调整）；other=其他老师课次（教务无权限调整）；admin=教务排课且未发布（可提交审核）；own=自己课次（可「仍要创建」）
+    function cfKinds(tm) {
+      var p = plan(pid), ids = TK.planClassIds(S, p), out = { admin: null, published: null, other: null, own: null }, skipped = [], cf;
+      while ((cf = TK.lessonConflict(S, ids, p.teacher, tm.start, tm.end, [c].concat(skipped)))) {
+        if (cf.c.status === '已发布') out.published = out.published || cf;
+        else if (cf.c.source === '排课' || cf.c.slotId) out.admin = out.admin || cf;
+        else if (cf.p.teacher !== p.teacher) out.other = out.other || cf;
+        else out.own = out.own || cf;
+        skipped.push(cf.c);
+      }
+      return out;
     }
     function cfTxtOf(cf) {
       var p = plan(pid), pIds = TK.planClassIds(S, p);
       return (TK.planClassIds(S, cf.p).some(function (id) { return pIds.indexOf(id) >= 0; }) ? TK.planClsTxt(S, p) + ' 这时有《' + cf.p.course + '》' : cf.p.teacher + ' 这时在上《' + cf.p.course + '》（' + TK.planClsTxt(S, cf.p) + '）') + '（' + cf.c.start.slice(5, 16) + '–' + cf.c.end.slice(11) + '）';
     }
-    // 冲突实时检测：与教务排课冲突 → 创建 / 保存按钮置灰不可点，提示条里走「提交教务审核」；改时间自动恢复；auto / locked 时间锁定不检测
+    // 冲突实时检测（2026-11-20 细化）：已发布课次冲突（无法撤回）/ 其他老师课次冲突（教务无权限）→ 按钮置灰、不能提交审核；教务排课且未发布冲突 → 置灰 + 可「提交教务审核」；自己课次冲突 → 不拦截（保存时「仍要创建」）；改时间自动恢复；auto / locked 时间锁定不检测
     function checkCf() {
       var cfg = m.body.querySelector('[data-cfg]');
       if (auto || locked) { saveBtn.disabled = false; saveBtn.style.opacity = ''; cfg.innerHTML = ''; return; }
-      var tm = curTm(), cf = tm && adminCfOf(tm);
-      if (cf) {
+      function warn(msg) { return '<div style="margin-top:10px;background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--warn-ink)">' + msg + '</div>'; }
+      var tm = curTm(), k = tm && cfKinds(tm);
+      if (!k) { saveBtn.disabled = false; saveBtn.style.opacity = ''; cfg.innerHTML = ''; return; }
+      if (k.published) {
         saveBtn.disabled = true; saveBtn.style.opacity = '.45';
-        cfg.innerHTML = '<div style="margin-top:10px;background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--warn-ink)">与教务排课的课次时间冲突：' + esc(cfTxtOf(cf)) + '。请调整上课时间或提交教务审核。</div>';
-        var sub = document.createElement('button'); sub.type = 'button'; sub.className = 'btn-s'; sub.style.cssText = 'height:28px;margin-top:8px'; sub.textContent = '提交教务审核';
-        sub.onclick = submitAuditNow.bind(null, cfTxtOf(cf), cf.c.id); cfg.appendChild(sub);
-      } else {
-        saveBtn.disabled = false; saveBtn.style.opacity = '';
-        cfg.innerHTML = '';
+        cfg.innerHTML = warn('与已发布的课次时间冲突：' + esc(cfTxtOf(k.published)) + '。已发布课次无法撤回，不能提交教务审核，请调整上课时间。');
+        return;
       }
+      if (k.other) {
+        saveBtn.disabled = true; saveBtn.style.opacity = '.45';
+        cfg.innerHTML = warn('与其他老师的课次时间冲突：' + esc(cfTxtOf(k.other)) + '。教务没有权限调整老师自建的课次，不能提交教务审核，请调整上课时间。');
+        return;
+      }
+      if (k.admin) {
+        saveBtn.disabled = true; saveBtn.style.opacity = '.45';
+        cfg.innerHTML = warn('与教务排课的课次时间冲突：' + esc(cfTxtOf(k.admin)) + '。请调整上课时间或提交教务审核。');
+        var sub = document.createElement('button'); sub.type = 'button'; sub.className = 'btn-s'; sub.style.cssText = 'height:28px;margin-top:8px'; sub.textContent = '提交教务审核';
+        sub.onclick = submitAuditNow.bind(null, cfTxtOf(k.admin), k.admin.c.id); cfg.appendChild(sub);
+        return;
+      }
+      saveBtn.disabled = false; saveBtn.style.opacity = ''; cfg.innerHTML = '';
     }
     /* 提交教务审核：现读表单里的名称与时间，课次以「待审核」状态落库，等教务在管理端处理：
        通过（可调时间）/ 替换原排课 → 转为正式未发布课次；驳回 → 课次退回删除 */
@@ -1607,14 +1667,13 @@ a.stat:hover .go{opacity:1}
           if (pb < pa) { TK.toast('结束节次不能早于开始节次'); return; }
           tm = TK.periodTime(S, day, pa, pb);
         }
-        // 全校规则：同一天、同一班级或同一授课老师时间重叠即冲突（排课生成的、别人另建的、补训课次都算）
-        // 与教务排课的冲突已在 checkCf 实时拦截（按钮置灰），这里到不了；剩下的非教务冲突：提示不拦截，「仍要创建」确认后落库
-        var cf = TK.lessonConflict(S, TK.planClassIds(S, p), p.teacher, tm.start, tm.end, c);
-        if (cf && (cf.c.source !== '排课' && !cf.c.slotId)) {
-          var pIds2 = TK.planClassIds(S, p);
-          var cfTxt2 = (TK.planClassIds(S, cf.p).some(function (id) { return pIds2.indexOf(id) >= 0; }) ? TK.planClsTxt(S, p) + ' 这时有《' + cf.p.course + '》' : cf.p.teacher + ' 这时在上《' + cf.p.course + '》（' + TK.planClsTxt(S, cf.p) + '）') + '（' + cf.c.start.slice(5, 16) + '–' + cf.c.end.slice(11) + '）';
+        // 全校规则：同一天、同一班级或同一授课老师时间重叠即冲突
+        // 「已发布 / 其他老师 / 教务排课」冲突已在 checkCf 实时置灰拦截（按钮不可点，这里到不了）；这里只处理「自己课次」冲突：「仍要创建」确认后落库
+        var kk = cfKinds(tm);
+        if (kk.published || kk.other || kk.admin) { TK.toast('与已有课次时间冲突，请调整上课时间'); return; }
+        if (kk.own) {
           var cfg2 = m.body.querySelector('[data-cfg]');
-          cfg2.innerHTML = '<div style="margin-top:10px;background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--warn-ink)">时间冲突：' + esc(cfTxt2) + '。课表里两个课次会重叠显示。</div>';
+          cfg2.innerHTML = '<div style="margin-top:10px;background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--warn-ink)">时间冲突：' + esc(cfTxtOf(kk.own)) + '。课表里两个课次会重叠显示。</div>';
           var go = document.createElement('button'); go.type = 'button'; go.className = 'btn-s'; go.style.cssText = 'height:28px;margin-top:8px'; go.textContent = '仍要' + (c ? '保存' : '创建');
           go.onclick = doSave.bind(null, true); cfg2.appendChild(go);
           return;
@@ -1750,19 +1809,101 @@ a.stat:hover .go{opacity:1}
     var kpAll = TK.courseKps(S, plan(c.planId) || {});
     // 备课资源关联的知识点可能不属于本课程标准体系（拓展）——并入候选（平铺、按 id 去重），默认勾选、标「拓展」
     c.resIds.forEach(function (id) { var r = res(id); (r && r.kpIds || []).forEach(function (kid) { if (kpAll.every(function (k) { return k.id !== kid; })) { var k = TK.kpById(kid); if (k) kpAll.push(k); } }); });
-    var kpAddOpen = false;
+    // 知识点体系树（2026-11-20）：老师可见多个知识体系——弹窗里先下拉选择知识体系，再按该体系树分层勾选（知识点作叶子）。
+    // 下拉选项 = 用户可见且含有知识点的体系（预置课程体系 + 已导入图谱体系 + 图谱中心 built 且本人创建 / 共享给本人，同备课资源 resVisSystems 口径）；
+    // 默认选中本课程关联的体系（未关联课程先出占位项）；拓展知识点（备课资源带的、不在本课程体系）无论选哪个体系都单独一组
+    var kpSysOpts = (function () {
+      var opts = resVisSystems().filter(function (s) { return s.tasks.some(function (t) { return (t.skills || []).some(function (k) { return (k.kps || []).length; }); }); });
+      var ks0 = kind === 'linked' ? TK.planKsId(S, plan(c.planId) || {}) : '';
+      if (ks0 && !opts.some(function (s) { return s.id === ks0; })) {
+        var kc = TK.kn().course[ks0] || {};
+        opts.unshift({ id: ks0, name: kc.ksName || kc.name || ks0, tasks: TK.planTasks(S, plan(c.planId) || {}) });
+      }
+      return opts;
+    })();
+    function kpTreeData(sysId) {
+      var root = { name: '', children: {}, leaves: [] }, stdIds = {};
+      Object.keys(stdK || {}).forEach(function (id) { stdIds[id] = 1; });
+      var tasks;
+      if (!sysId) tasks = kind === 'linked' ? TK.planTasks(S, plan(c.planId) || {}) : [];
+      else { var s = kpSysOpts.filter(function (x) { return x.id === sysId; })[0]; tasks = s ? (s.tasks || []) : []; }
+      tasks.forEach(function (t) {
+        (t.skills || []).forEach(function (sk) {
+          var parts = String(sk.path || (t.name + '--' + sk.name)).split('--').map(function (x) { return x.trim(); }).filter(Boolean);
+          var node = root;
+          parts.forEach(function (p) { node.children[p] = node.children[p] || { name: p, children: {}, leaves: [] }; node = node.children[p]; });
+          (sk.kps || []).forEach(function (k) { if (!node.leaves.some(function (x) { return x.id === k.id; })) node.leaves.push(k); });
+        });
+      });
+      // 拓展知识点（备课资源带的、不在本课程体系）单独一组
+      var ext = kpAll.filter(function (k) { return !stdIds[k.id]; });
+      return { root: root, ext: ext };
+    }
+    // 内嵌体系树（2026-11-20 改，不再弹 modal）：「知识体系下拉 + 搜索 + 全选 + 树」直接收进抽屉的折叠 details，勾选即生效。
+    // 下拉默认选中本课程关联的体系（未关联课程先出占位项）；跨体系勾选的知识点勾上即并入候选，后续 chips / 判定依据 / 发布快照同口径
+    var kpSysSel = kind === 'linked' ? (TK.planKsId(S, plan(c.planId) || {}) || '') : '';
+    var kpQuery = '', kpTreeOpen = false;
+    // 知识点池 = 当前候选全集（含拓展 / 自定义）+ 所有可见体系的知识点：跨体系勾选时能查到详情并直接并入候选
+    var kpPool = {};
+    kpAll.forEach(function (k) { kpPool[k.id] = k; });
+    kpSysOpts.forEach(function (s) { (s.tasks || []).forEach(function (t) { (t.skills || []).forEach(function (sk) { (sk.kps || []).forEach(function (k) { kpPool[k.id] = k; }); }); }); });
+    function sysKpN(s) { return s.tasks.reduce(function (a, t) { return a + t.skills.reduce(function (b, k) { return b + (k.kps || []).length; }, 0); }, 0); }
+    function kpSelN() { return kpAll.filter(function (k) { return kpChecked[k.id]; }).length; }
+    function kpLeafHTML(k, depth) {
+      if (kpQuery && k.name.toLowerCase().indexOf(kpQuery) < 0) return '';
+      return '<label style="display:flex;align-items:center;gap:8px;padding:5px 8px 5px ' + (10 + depth * 16) + 'px;font-size:12.5px;cursor:pointer;border-radius:6px"><input type="checkbox" data-kpick="' + k.id + '"' + (kpChecked[k.id] ? ' checked' : '') + '><span class="tag" style="font-size:10.5px;padding:1px 6px;background:var(--brand-soft);color:var(--brand-ink)">知识点</span><span>' + esc(k.name) + '</span>' + (stdK[k.id] ? '' : TK.extTag()) + '</label>';
+    }
+    function kpNodeHTML(node, depth, prefix) {
+      var any = node.leaves.some(function (k) { return !kpQuery || k.name.toLowerCase().indexOf(kpQuery) >= 0; });
+      Object.keys(node.children).forEach(function (name) { if (kpNodeHTML(node.children[name], depth + 1, prefix + name + '›')) any = true; });
+      if (!any) return '';
+      var body = node.leaves.map(function (k) { return kpLeafHTML(k, depth); }).join('');
+      Object.keys(node.children).forEach(function (name) { body += kpNodeHTML(node.children[name], depth + 1, prefix + name + '›'); });
+      var label = prefix ? prefix.split('›').filter(Boolean).pop() : '';
+      return label ? '<details class="kpnode" open><summary style="cursor:pointer;padding:6px 8px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px"><span class="tag" style="font-size:10.5px;padding:1px 6px;background:var(--card-2);color:var(--muted)">分类节点</span>' + esc(label) + '</summary>' + body + '</details>' : body;
+    }
+    function kpTreeLeaves(node, acc) { node.leaves.forEach(function (k) { acc[k.id] = 1; }); Object.keys(node.children).forEach(function (n) { kpTreeLeaves(node.children[n], acc); }); return acc; }
+    function kpTreeListHTML() {
+      var td = kpTreeData(kpSysSel);
+      var html = kpNodeHTML(td.root, 0, '');
+      if (td.ext.length) {
+        var ex = td.ext.map(function (k) { return kpLeafHTML(k, 0); }).join('');
+        if (ex) html += '<details class="kpnode" open><summary style="cursor:pointer;padding:6px 8px;font-size:12.5px;font-weight:500">拓展知识点（备课资源）</summary>' + ex + '</details>';
+      }
+      return html || '<div style="padding:16px;color:var(--muted);font-size:12px">' + (kpSysSel ? '没有匹配的知识点' : '请先选择知识体系') + '</div>';
+    }
+    function updateKpTreeSum() {
+      var b = d.body.querySelector('[data-kptreebox]'); if (!b) return;
+      var s = b.querySelector('[data-kptsum]'); if (!s) return;
+      var cur = kpSysOpts.filter(function (x) { return x.id === kpSysSel; })[0];
+      s.textContent = '（' + (cur ? sysKpN(cur) + ' 个知识点' : '未选择体系') + ' · 已勾选 ' + kpSelN() + '）';
+    }
+    function paintKpTree(rebuild) {
+      var box = d.body.querySelector('[data-kptreebox]'); if (!box || !kpSysOpts.length) return;
+      if (rebuild) {
+        box.innerHTML = '<details class="ksadd" data-kptd' + (kpTreeOpen ? ' open' : '') + '><summary>从知识体系树选择知识点<span style="font-weight:400" data-kptsum></span></summary>' +
+          '<div style="margin-top:8px"><select class="inp" data-ksys style="width:100%">' +
+          (kind === 'linked' ? '' : '<option value="">选择知识体系…</option>') +
+          kpSysOpts.map(function (s) { return '<option value="' + s.id + '"' + (s.id === kpSysSel ? ' selected' : '') + '>' + esc(s.name) + ' · ' + sysKpN(s) + ' 个知识点</option>'; }).join('') + '</select>' +
+          '<div style="display:flex;gap:8px;margin-top:8px"><input class="inp" data-ksearch placeholder="搜索知识点" style="flex:1;min-width:0"><button type="button" class="lk" data-kall style="flex:none">全选本体系</button></div>' +
+          '<div class="kptl" data-kplist style="max-height:300px;overflow:auto;margin-top:6px;border:1px solid var(--rule);border-radius:8px;padding:4px"></div></div></details>';
+      }
+      box.querySelector('[data-kplist]').innerHTML = kpTreeListHTML();
+      updateKpTreeSum();
+    }
     function kpPickHTML() {
       var kps = kpAll;
-      if (!kps.length) return '<span style="color:var(--muted);font-size:12px">' + (kind === 'linked' ? '本课程知识体系没有匹配到知识点' : '本课程还没关联知识体系，没有可勾选的知识点') + '</span>';
+      if (!kps.length) {
+        if (!kpSysOpts.length) return '<span style="color:var(--muted);font-size:12px">' + (kind === 'linked' ? '本课程知识体系没有匹配到知识点' : '本课程还没关联知识体系，也没有可用的知识体系') + '</span>';
+        return '<div style="font-size:12px;color:var(--muted);padding:6px 0">还没有候选知识点，可展开下方知识体系树勾选，也可以不勾知识点直接发布</div>';
+      }
       kps.forEach(function (k) { if (!(k.id in kpChecked)) kpChecked[k.id] = resKpIds.indexOf(k.id) >= 0; });
-      // 补选弱化（2026-11-19）：主区只平铺已勾选的知识点；未勾选的收进折叠的「补选」入口，勾选后上移主区
-      var picked = kps.filter(function (k) { return kpChecked[k.id]; }), rest = kps.filter(function (k) { return !kpChecked[k.id]; });
+      var picked = kps.filter(function (k) { return kpChecked[k.id]; });
       function chip(k) {
         return '<label style="display:inline-flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:8px;padding:6px 12px;font-size:12.5px;cursor:pointer;background:var(--card);flex:0 0 auto;max-width:100%"><input type="checkbox" data-kpid="' + k.id + '"' + (kpChecked[k.id] ? ' checked' : '') + '><span style="white-space:nowrap">' + esc(k.name) + '</span>' + (k.type ? '<span style="font-size:11px;color:var(--muted);border:1px solid var(--rule);border-radius:5px;padding:0 5px;line-height:16px;white-space:nowrap">' + esc(k.type) + '</span>' : '') + (stdK[k.id] ? '' : TK.extTag()) + '</label>';
       }
-      return '<div style="margin-top:8px"><div style="font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px">考查知识点<span style="font-weight:400;color:var(--muted);margin-left:6px">已勾选 ' + picked.length + ' / ' + kps.length + ' 项' + (resKpIds.length ? ' · 默认按备课资源配置' : ' · 备课资源未配置，默认不勾') + '</span></div>' +
-        (picked.length ? '<div style="display:flex;flex-wrap:wrap;gap:8px">' + picked.map(chip).join('') + '</div>' : '<div style="font-size:12px;color:var(--muted);padding:6px 0">还没勾选知识点，可在下方补选，也可以不勾知识点直接发布</div>') +
-        (rest.length ? '<details class="ksadd" data-kpadd' + (kpAddOpen ? ' open' : '') + '><summary>从本课程知识体系补选知识点<span style="font-weight:400">（' + rest.length + ' 项）</span></summary><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">' + rest.map(chip).join('') + '</div></details>' : '') + '</div>';
+      return '<div style="margin-top:8px"><div style="font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px">考查知识点<span style="font-weight:400;color:var(--muted);margin-left:6px">已勾选 ' + picked.length + ' / ' + kps.length + ' 项</span></div>' +
+        (picked.length ? '<div style="display:flex;flex-wrap:wrap;gap:8px">' + picked.map(chip).join('') + '</div>' : '<div style="font-size:12px;color:var(--muted);padding:6px 0">还没勾选知识点，可展开下方知识体系树勾选，也可以不勾知识点直接发布</div>') + '</div>';
     }
     // 知识点判定依据：默认取知识体系里的核心内容，老师可改（只列勾选的知识点）
     var kpCritEdit = {};
@@ -1789,7 +1930,7 @@ a.stat:hover .go{opacity:1}
           : '<div class="empty2" style="padding:14px">该课次还没有关联备课资源。<button class="lk" data-golink>去关联</button> 或 <button class="lk" data-goprep>去备课</button>（带着本次课的技能进入工作台，生成后自动关联）</div>') + '</div>' +
       '<div class="blk"><div class="blk-t">情景任务配置<span class="sp"></span><button type="button" class="sw" data-taskon aria-pressed="true"></button></div><div data-taskbox>' + TK.formHTML(TASK_F, { name: c.name, modes: ['文字', '文档'], ai: true, needTeacher: true }) +
         '<div class="ff full" style="margin-top:10px"><span class="lh"><span>考查技能</span></span><div data-sks>' + sksHTML() + '</div></div>' +
-        '<div class="ff full" style="margin-top:6px"><span class="lh"><span>考查知识点</span></span><div data-kpbox></div><div data-kpcrit></div></div>' +
+        '<div class="ff full" style="margin-top:6px"><span class="lh"><span>考查知识点</span></span><div data-kpbox></div><div data-kptreebox></div><div data-kpcrit></div></div>' +
         '<div class="ff full" style="margin-top:6px" data-aireqbox><span class="lh"><span><b style="color:var(--crit)">*</b> AI评价要求</span><span class="sp"></span><button type="button" class="ai-btn" data-aigen>AI生成</button></span>' +
           '<textarea data-aireq maxlength="500" rows="7" placeholder="请输入 AI 评价要求，例如：从内容准确性、表达流畅度、结构完整性等维度进行评价..." style="width:100%;font:inherit;font-size:12.5px;line-height:1.7;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--card);color:var(--ink);resize:vertical"></textarea>' +
           '<div style="display:flex;font-size:11.5px;color:var(--muted);margin-top:2px"><span>AI 按这份要求给出一份总评；展开可看各考查技能是否达到、各知识点是否掌握，老师可调整</span><span style="flex:1"></span><span data-aicnt style="flex:none;margin-left:12px">0 / 500</span></div></div>' +
@@ -1817,21 +1958,49 @@ a.stat:hover .go{opacity:1}
       var sw = d.body.querySelector('[data-taskbox] [data-f="ai"]');
       d.body.querySelector('[data-aireqbox]').style.display = sw && sw.getAttribute('aria-pressed') === 'true' ? '' : 'none';
     }
-    function paintCrit() { paintReq(); var kb = d.body.querySelector('[data-kpbox]'); if (kb) kb.innerHTML = kpPickHTML(); paintKpCrit(); }
+    function paintCrit() { paintReq(); var kb = d.body.querySelector('[data-kpbox]'); if (kb) kb.innerHTML = kpPickHTML(); paintKpCrit(); updateKpTreeSum(); }
     paintCrit();
+    paintKpTree(true);
     TK.bindForm(d.body);
     d.body.addEventListener('click', function (e) {
       if (e.target.closest('[data-taskon],[data-fbon]')) { var b = e.target.closest('.sw'); b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); d.body.querySelector('[data-taskbox]').style.display = d.body.querySelector('[data-taskon]').getAttribute('aria-pressed') === 'true' ? '' : 'none'; }
+      if (e.target.closest('[data-kall]')) {   // 全选 = 当前体系树全部叶子 + 拓展 + 候选全集（跨体系勾选直接并入候选）
+        var td0 = kpTreeData(kpSysSel);
+        var acc = {}; kpAll.forEach(function (k) { acc[k.id] = 1; }); kpTreeLeaves(td0.root, acc); td0.ext.forEach(function (k) { acc[k.id] = 1; });
+        Object.keys(acc).forEach(function (id) {
+          if (!kpPool[id]) kpPool[id] = TK.kpById(id) || { id: id, name: id };
+          if (kpAll.every(function (k) { return k.id !== id; })) kpAll.push(kpPool[id]);
+          kpChecked[id] = true;
+        });
+        paintKpTree(); paintCrit(); paintKpCrit();
+        return;
+      }
       if (e.target.closest('[data-golink]')) { d.close(); linkResModal(c); }
       if (e.target.closest('[data-goprep]')) { d.close(); goPrep(c); }
       if (e.target.closest('[data-aigen]')) { aiReqEdited = false; paintReq(true); TK.toast('已按考查技能和知识点生成 AI 评价要求'); }
       if (e.target.closest('[data-taskbox] [data-f="ai"]')) setTimeout(function () { paintReq(); }, 0);
     });
-    d.body.addEventListener('input', function (e) { if (e.target.hasAttribute('data-aireq')) { aiReqEdited = true; d.body.querySelector('[data-aicnt]').textContent = e.target.value.length + ' / 500'; } if (e.target.hasAttribute('data-kpc')) kpCritEdit[e.target.getAttribute('data-kpc')] = e.target.value; });
-    d.body.addEventListener('toggle', function (e) { if (e.target.hasAttribute && e.target.hasAttribute('data-kpcd')) kpCritOpen = e.target.open; if (e.target.hasAttribute && e.target.hasAttribute('data-kpadd')) kpAddOpen = e.target.open; }, true);
+    d.body.addEventListener('input', function (e) { if (e.target.hasAttribute('data-aireq')) { aiReqEdited = true; d.body.querySelector('[data-aicnt]').textContent = e.target.value.length + ' / 500'; } if (e.target.hasAttribute('data-kpc')) kpCritEdit[e.target.getAttribute('data-kpc')] = e.target.value; if (e.target.hasAttribute('data-ksearch')) { kpQuery = (e.target.value || '').trim().toLowerCase(); paintKpTree(); } });
+    d.body.addEventListener('toggle', function (e) { if (e.target.hasAttribute && e.target.hasAttribute('data-kpcd')) kpCritOpen = e.target.open; if (e.target.hasAttribute && e.target.hasAttribute('data-kptd')) kpTreeOpen = e.target.open; }, true);
     d.body.addEventListener('change', function (e) {
       d.body.querySelector('[data-fn]').textContent = '已选 ' + d.body.querySelectorAll('[data-pf]:checked').length + ' 项';
-      if (e.target.hasAttribute('data-kpid')) { kpChecked[e.target.getAttribute('data-kpid')] = e.target.checked; var kpb = d.body.querySelector('[data-kpbox]'); if (kpb) kpb.innerHTML = kpPickHTML(); paintKpCrit(); paintReq(); }   // 勾选补选知识点后重绘：勾选的上移主区、取消的下移回收进补选区
+      if (e.target.hasAttribute && e.target.hasAttribute('data-ksys')) {   // 切换知识体系：重置搜索、按新体系重绘树（已勾选保留）
+        kpSysSel = e.target.value; kpQuery = '';
+        var ksi = d.body.querySelector('[data-ksearch]'); if (ksi) ksi.value = '';
+        paintKpTree(); return;
+      }
+      if (e.target.hasAttribute && e.target.hasAttribute('data-kpick')) {   // 树内勾选：勾上即并入候选（跨体系也生效），只更新 chips/汇总，不重绘树（保住滚动位置）
+        var kid = e.target.getAttribute('data-kpick');
+        if (e.target.checked) {
+          if (!kpPool[kid]) kpPool[kid] = TK.kpById(kid) || { id: kid, name: kid };
+          if (kpAll.every(function (k) { return k.id !== kid; })) kpAll.push(kpPool[kid]);
+        }
+        kpChecked[kid] = e.target.checked;
+        var kpb = d.body.querySelector('[data-kpbox]'); if (kpb) kpb.innerHTML = kpPickHTML();
+        updateKpTreeSum(); paintKpCrit(); paintReq();
+        return;
+      }
+      if (e.target.hasAttribute('data-kpid')) { kpChecked[e.target.getAttribute('data-kpid')] = e.target.checked; var kpid = e.target.getAttribute('data-kpid'); var tcb = d.body.querySelector('[data-kpick="' + kpid + '"]'); if (tcb) tcb.checked = e.target.checked; var kpb2 = d.body.querySelector('[data-kpbox]'); if (kpb2) kpb2.innerHTML = kpPickHTML(); paintKpCrit(); paintReq(); updateKpTreeSum(); }   // chips 勾选后重绘：同步树内勾选态与汇总
       if (e.target.hasAttribute('data-sk') || e.target.hasAttribute('data-ska')) {
         readCrit();
         var ska = e.target.getAttribute('data-ska');
@@ -1846,12 +2015,12 @@ a.stat:hover .go{opacity:1}
         paintCrit();
       }
     });
+    var odWarned = false;   // 过期课次发布前提醒一次（2026-11-20：过期可发布，但提示不计入教学进度）
     d.foot.querySelector('[data-c]').onclick = d.close;
-    var odWarned = false;   // 过期课次发布前提醒一次（2026-11-18 L1）
     d.foot.querySelector('[data-o]').onclick = function () {
       if (!odWarned && overdue(c)) {
         odWarned = true;
-        TK.confirm('该课次上课时间（' + esc(c.start.slice(5, 16).replace('-', '月').replace(' ', '日 ')) + '）已过。发布后学生会立即收到内容和任务，过期课次不计入教学进度；如时间有变，建议先改期再发布。仍要发布吗？', function () { d.foot.querySelector('[data-o]').click(); });
+        TK.confirm('该课次上课时间（' + esc(c.start.slice(5, 16).replace('-', '月').replace(' ', '日 ')) + '）已过。发布后学生会立即收到内容和任务，过期课次不计入教学进度。仍要发布吗？', function () { d.foot.querySelector('[data-o]').click(); });
         return;
       }
       var fileIds = [].map.call(d.body.querySelectorAll('[data-pf]:checked'), function (x) { return x.getAttribute('data-pf'); });
@@ -2193,17 +2362,34 @@ a.stat:hover .go{opacity:1}
     function paint() {
       var g = {};
       r.files.forEach(function (f) { (g[f.type] = g[f.type] || []).push(f); });
-      d.body.innerHTML = '<div class="blk"><div class="blk-t" style="font-size:15px">' + esc(r.name) + '<span class="sp"></span><button class="btn-s" data-red>编辑</button><button class="btn-s" data-dlall>下载全部</button></div>' +
+      d.body.innerHTML = '<div class="blk"><div class="blk-t" style="font-size:15px">' + esc(r.name || '独立资源') + '<span class="sp"></span><button class="btn-s" data-red>编辑</button><button class="btn-s" data-dlall>下载全部</button></div>' +
           '<div class="kvg" style="grid-template-columns:1fr 1fr 1fr 1fr"><div><div class="k">来源</div><div class="v">' + resSrc(r) + '</div></div><div><div class="k">所属课程</div><div class="v">' + esc(resCourse(r) || '—') + '</div></div>' +
           '<div><div class="k">' + (resSrc(r) === '上传' ? '上传时间' : '生成时间') + '</div><div class="v">' + esc(r.createdAt) + '</div></div><div><div class="k">创建人</div><div class="v">' + esc(r.owner || teacherName()) + '</div></div></div></div>' +
         // 「任务 · 技能 · 知识点」块已去掉（2026-11-19）：关联技能 / 关联知识点在列表两列即有展示，详情不再重复包级覆盖说明
         '<div class="blk"><div class="blk-t">文件（' + r.files.length + '）</div>' + (r.files.length ? Object.keys(g).map(function (t) {
           return '<div class="ftype"><div class="ftype-h"><span class="fi" style="width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:#fff;font-size:11px;background:' + (TK.FT_COLOR[t] || '#7f63d8') + '">' + t.slice(0, 1) + '</span>' + t + '<small>共 ' + g[t].length + ' 个</small></div>' +
-            g[t].map(function (f) { return '<div class="fitem"><span class="fn">' + esc(f.name) + '<small>' + esc(f.size) + '</small></span><button class="lk" data-dl>下载</button><button class="lk" data-pv>预览</button>' + (t === '图片' || t === '视频' ? '' : '<button class="lk" data-ed>在线编辑</button>') + '</div>'; }).join('') + '</div>';
+            g[t].map(function (f) {
+              var fsk = (f.skillIds || []).map(TK.skillName).filter(Boolean);
+              var fkp = (f.kpIds || []).map(function (id) { var k = TK.kpById(id); return k && k.name; }).filter(Boolean);
+              var tagLine = fsk.length || fkp.length ? '<small style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">' +
+                (fsk.length ? fsk.map(function (n) { return '<span class="rs-chip">' + esc(n) + '</span>'; }).join('') : '') +
+                (fkp.length ? fkp.map(function (n) { return '<span class="rs-chip">' + esc(n) + '</span>'; }).join('') : '') + '</small>' : '';
+              return '<div class="fitem" data-fid="' + esc(f.id) + '"><span class="fn">' + esc(f.name) + '<small>' + esc(f.size) + '</small>' + tagLine + '</span><button class="lk" data-ftag>标注</button><button class="lk" data-dl>下载</button><button class="lk" data-pv>预览</button>' + (t === '图片' || t === '视频' ? '' : '<button class="lk" data-ed>在线编辑</button>') + '<button class="lk" data-fdel style="color:var(--danger,#e5484d)">删除</button></div>';
+            }).join('') + '</div>';
         }).join('') : '<div class="empty2">还没有文件</div>') + '</div>';
     }
     d.body.addEventListener('click', function (e) {
       var t;
+      if ((t = e.target.closest('[data-ftag]'))) {
+        var fid = t.closest('[data-fid]').getAttribute('data-fid'), ff = r.files.filter(function (x) { return x.id === fid; })[0];
+        if (ff) resForm(r, ff);
+        return;
+      }
+      if ((t = e.target.closest('[data-fdel]'))) {
+        var fid2 = t.closest('[data-fid]').getAttribute('data-fid'), ff2 = r.files.filter(function (x) { return x.id === fid2; })[0];
+        if (ff2) resFileDelete(r, ff2);
+        return;
+      }
       if (e.target.closest('[data-red]')) resForm(r);
       else if (e.target.closest('[data-dlall]')) TK.toast(r.files.length ? '已开始打包下载' : '暂无可下载的资源');
       else if (e.target.closest('[data-dl]')) TK.toast('已开始下载');
@@ -2267,6 +2453,12 @@ a.stat:hover .go{opacity:1}
     if (e.target.closest('[data-past]')) { pastOpen = !pastOpen; render(); return; }
     if ((t = e.target.closest('[data-ltev]'))) { ctab = 'eval'; evf = '待评价'; render(); return; }
     if (e.target.closest('[data-rup]')) { resForm(null); return; }
+    if ((t = e.target.closest('[data-ftag]'))) {
+      var row = t.closest('[data-rid]'), rr = res(row && row.getAttribute('data-rid')), fid2 = row && row.getAttribute('data-fid');
+      var ff2 = rr && rr.files.filter(function (x) { return x.id === fid2; })[0];
+      if (rr && ff2) resForm(rr, ff2);
+      return;
+    }
     if ((t = e.target.closest('[data-newextra]'))) { courseForm(null, t.getAttribute('data-newextra')); return; }
     if ((t = e.target.closest('[data-newcourse]'))) { courseForm(null, t.getAttribute('data-newcourse')); return; }   // 课程空间内新建：锁定本课程计划
     if ((t = e.target.closest('[data-fpv]'))) { TK.toast('预览文件'); return; }
@@ -2341,7 +2533,11 @@ a.stat:hover .go{opacity:1}
     }
     if ((t = e.target.closest('[data-ract]'))) {
       var r = res(t.getAttribute('data-id')), ra = t.getAttribute('data-ract');
-      if (ra === 'dl') TK.toast(r.status === '已完成' ? '已开始打包下载' : r.status === '生成中' ? '资源还在生成中' : '资源生成失败，暂无可下载内容');
+      if (ra === 'fdel') {
+        var fid3 = t.getAttribute('data-fid'), ff3 = r.files.filter(function (x) { return x.id === fid3; })[0];
+        if (ff3) resFileDelete(r, ff3);
+      }
+      else if (ra === 'dl') TK.toast(r.status === '已完成' ? '已开始打包下载' : r.status === '生成中' ? '资源还在生成中' : '资源生成失败，暂无可下载内容');
       else if (ra === 'view') resDetail(r);
       else if (ra === 'edit') resForm(r);
       else if (ra === 'del') resDelete(r);

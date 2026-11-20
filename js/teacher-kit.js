@@ -267,17 +267,22 @@
     };
     var K = kn(), sk = function (tid) { return ((K.task[tid] || {}).skills || []).map(function (x) { return x.id; }); };
     var kw = function (tid) { return sk(tid).map(skillName).join(' › '); };
+    // 文件级标注（2026-11-20）：seed 时把包的技能标注写到每个文件上，包级仍保留并集（发布链路读它）
+    var tagFiles = function (res) {
+      (res.files || []).forEach(function (f) { f.skillIds = (res.skillIds || []).slice(); f.kpIds = []; });
+      return res;
+    };
     // 知识体系任务：旅行策划 / 旅行社经营与管理
     var T_THEME = 'T92182239a1', T_ROUTE = 'T882fe6be5b', T_PROMO = 'T41f49eb1dc', T_RECEIVE = 'T4683a72cc3', T_SALE = 'T692a377f02', T_ADMIN = 'T9b6539bf94';
     var T_GUIDE = 'T32b70c3195', T_EMERG = 'Teb4a82849c';   // 导游业务：导览讲解 / 问题与突发事件处理
-    var R1 = { id: 'RES1', name: '《客户咨询与接待》备课资源包', status: '已完成', createdAt: daysAgo(2, 10, 7), skillIds: sk(T_RECEIVE), knowledge: kw(T_RECEIVE), files: files('客户咨询与接待', ['课件', '教案', '图片', '情景互动游戏']) };
-    var R2 = { id: 'RES2', name: '《策划方案呈现与营销推广》备课资源包', status: '已完成', createdAt: daysAgo(1, 15, 18), skillIds: sk(T_PROMO), knowledge: kw(T_PROMO), files: files('策划方案呈现与营销推广', ['课件', '教案', '图片', '情景互动游戏']) };
-    var R3 = { id: 'RES3', name: '《旅行线路规划与资源整合》备课资源包', status: '已完成', createdAt: daysAgo(3, 14, 20), skillIds: sk(T_ROUTE), knowledge: kw(T_ROUTE), files: files('旅行线路规划与资源整合', ['课件', '教案', '图片', '视频']) };
-    var R4 = { id: 'RES4', name: '《旅行社基层管理》备课资源包', status: '生成中', createdAt: today(9, 30), skillIds: sk(T_ADMIN), knowledge: kw(T_ADMIN), files: files('旅行社基层管理', ['图片']) };
-    var R5 = { id: 'RES5', name: '《策划方案呈现与营销推广》课件', status: '生成失败', createdAt: daysAgo(1, 15, 26), skillIds: sk(T_PROMO), knowledge: kw(T_PROMO), files: [] };
-    var R6 = { id: 'RES6', name: '《旅行社产品推荐与销售》备课资源包', status: '已完成', createdAt: daysAgo(34, 9, 40), skillIds: sk(T_SALE), knowledge: kw(T_SALE), files: files('旅行社产品推荐与销售', ['课件', '教案']) };
-    var R7 = { id: 'RES7', name: '《客户需求分析与行程主题定位》备课资源包', status: '已完成', createdAt: daysAgo(3, 8, 30), skillIds: sk(T_THEME), knowledge: kw(T_THEME), files: files('客户需求分析与行程主题定位', ['课件', '教案', '图片']) };
-    var R8 = { id: 'RES8', name: '《导游业务·导览讲解与应急处置》备课资源包', status: '已完成', createdAt: daysAgo(12, 9, 30), skillIds: sk(T_GUIDE).concat(sk(T_EMERG)), knowledge: kw(T_GUIDE) + ' › ' + kw(T_EMERG), files: files('导游业务', ['课件', '教案', '视频']) };
+    var R1 = tagFiles({ id: 'RES1', name: '《客户咨询与接待》备课资源包', status: '已完成', createdAt: daysAgo(2, 10, 7), skillIds: sk(T_RECEIVE), knowledge: kw(T_RECEIVE), files: files('客户咨询与接待', ['课件', '教案', '图片', '情景互动游戏']) });
+    var R2 = tagFiles({ id: 'RES2', name: '《策划方案呈现与营销推广》备课资源包', status: '已完成', createdAt: daysAgo(1, 15, 18), skillIds: sk(T_PROMO), knowledge: kw(T_PROMO), files: files('策划方案呈现与营销推广', ['课件', '教案', '图片', '情景互动游戏']) });
+    var R3 = tagFiles({ id: 'RES3', name: '《旅行线路规划与资源整合》备课资源包', status: '已完成', createdAt: daysAgo(3, 14, 20), skillIds: sk(T_ROUTE), knowledge: kw(T_ROUTE), files: files('旅行线路规划与资源整合', ['课件', '教案', '图片', '视频']) });
+    var R4 = tagFiles({ id: 'RES4', name: '《旅行社基层管理》备课资源包', status: '生成中', createdAt: today(9, 30), skillIds: sk(T_ADMIN), knowledge: kw(T_ADMIN), files: files('旅行社基层管理', ['图片']) });
+    var R5 = tagFiles({ id: 'RES5', name: '《策划方案呈现与营销推广》课件', status: '生成失败', createdAt: daysAgo(1, 15, 26), skillIds: sk(T_PROMO), knowledge: kw(T_PROMO), files: [] });
+    var R6 = tagFiles({ id: 'RES6', name: '《旅行社产品推荐与销售》备课资源包', status: '已完成', createdAt: daysAgo(34, 9, 40), skillIds: sk(T_SALE), knowledge: kw(T_SALE), files: files('旅行社产品推荐与销售', ['课件', '教案']) });
+    var R7 = tagFiles({ id: 'RES7', name: '《客户需求分析与行程主题定位》备课资源包', status: '已完成', createdAt: daysAgo(3, 8, 30), skillIds: sk(T_THEME), knowledge: kw(T_THEME), files: files('客户需求分析与行程主题定位', ['课件', '教案', '图片']) });
+    var R8 = tagFiles({ id: 'RES8', name: '《导游业务·导览讲解与应急处置》备课资源包', status: '已完成', createdAt: daysAgo(12, 9, 30), skillIds: sk(T_GUIDE).concat(sk(T_EMERG)), knowledge: kw(T_GUIDE) + ' › ' + kw(T_EMERG), files: files('导游业务', ['课件', '教案', '视频']) });
     // 学习记录按文件记：{ 学生: { 文件id: 学习时间 } }
     var L = function (R, types, at) { var m = {}; R.files.forEach(function (f) { if (types.indexOf(f.type) >= 0) m[f.id] = at; }); return m; };
     var sub = function (st, extra) { return Object.assign({ student: st, status: '未提交', modes: [], at: '', files: [], ai: null, teacher: null }, extra || {}); };
@@ -428,8 +433,9 @@
     function finish(s) { registerCustomNodes(s); return s; }   // 自定义节点注册进 kn() 运行时索引（跨页面共享）
     try {
       var s = JSON.parse(localStorage.getItem(KEY));
-      if (s && s.v === 14) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据（否则管理端新增的计划/资源被抹掉）
-      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); migratePlanMulti(s); s.v = 14; save(s); return finish(s); }   // v14：计划班级改多班（classIds 数组）
+      if (s && s.v === 15) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据（否则管理端新增的计划/资源被抹掉）
+      if (s && s.v === 14) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); migrateResFileTags(s); s.v = 15; save(s); return finish(s); }   // v15：资源标注下沉到文件
+      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); migratePlanMulti(s); migrateResFileTags(s); s.v = 15; save(s); return finish(s); }   // v14→v15：计划多班 + 资源文件级标注
       if (s && s.v === 6) { seedEdu(s); s.v = 7; }   // 补上管理端教务基础数据，原有数据保留
       if (s && s.v === 7) { seedCourseType(s); s.v = 8; save(s); }   // 补上课程类型与公共基础课
       if (s && s.v === 8) { seedMajorLevel(s); s.v = 9; save(s); }   // 专业树补第三层
@@ -438,11 +444,33 @@
       if (s && s.v === 11) { var ch1 = seedLabs(s), ch2 = seedPeriods(s), ch3 = seedKpSnap(s); if (ch1 || ch2 || ch3) save(s); Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); s.v = 12; save(s); }
       if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); return finish(s); }   // 课程类型细分为五类，旧值自动映射
     } catch (e) {}
-    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); s2.v = 14; save(s2); return finish(s2);
+    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); s2.v = 15; save(s2); return finish(s2);
   }
   /* v14 迁移：课程计划支持多班——存量 classId 单班转 classIds 数组 */
   function migratePlanMulti(st) {
     (st.plans || []).forEach(function (p) { if (!p.classIds || !p.classIds.length) p.classIds = p.classId ? [p.classId] : []; delete p.classId; });
+  }
+  /* 资源标注：文件是标注主体（f.skillIds / f.kpIds）；包级 skillIds/kpIds = 包内文件并集（发布/学情读包级不变）。
+     syncResTags 重算包级并集，保持两者一致（2026-11-20 文件级下沉） */
+  function syncResTags(r) {
+    if (!r) return;
+    var sk = [], kp = [];
+    (r.files || []).forEach(function (f) {
+      (f.skillIds || []).forEach(function (id) { if (sk.indexOf(id) < 0) sk.push(id); });
+      (f.kpIds || []).forEach(function (id) { if (kp.indexOf(id) < 0) kp.push(id); });
+    });
+    r.skillIds = sk; r.kpIds = kp; r.knowledge = sk.map(skillName).join(' › ');
+    return r;
+  }
+  /* v15 迁移：资源标注下沉到文件——存量包级 skillIds/kpIds 复制到包内每个文件，之后包级由 syncResTags 重算 */
+  function migrateResFileTags(st) {
+    (st.resources || []).forEach(function (r) {
+      var sk = (r.skillIds || []).slice(), kp = (r.kpIds || []).slice();
+      (r.files || []).forEach(function (f) {
+        if (!f.skillIds) f.skillIds = sk.slice();
+        if (!f.kpIds) f.kpIds = kp.slice();
+      });
+    });
   }
   /* 课程类型细分迁移：旧两分类映射到新五分类（专业课默认归入专业核心课程） */
   function migrateCourseType(st) {
@@ -898,5 +926,5 @@
     formHTML: formHTML, bindForm: bindForm, bindSearchSelect: bindSearchSelect, readForm: readForm, fileRow: fileRow, FT_COLOR: FT_COLOR,
     TERM: TERM, PERIODS: PERIODS, periodOf: periodOf, periods: periods, periodSpan: periodSpan, periodText: periodText, periodTime: periodTime, switchTmode: switchTmode, ttGrid: ttGrid,
     kn: kn, skillName: skillName, registerCustomNodes: registerCustomNodes, kpsUnion: kpsUnion, courseKps: courseKps, kpById: kpById, kpCount: kpCount, kpHTML: kpHTML, kpCrit: kpCrit, kpCritDefault: kpCritDefault, kpCritHTML: kpCritHTML, taskKps: taskKps, snapKps: snapKps, aiKpMarks: aiKpMarks, aiKpMarksOf: aiKpMarksOf, kpMarksOf: kpMarksOf, stdSkillMap: stdSkillMap, stdKpMap: stdKpMap, extTag: extTag, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs, planClassIds: planClassIds, planCls: planCls, planStus: planStus, planClsTxt: planClsTxt, planMajors: planMajors,
-    syncRoster: syncRoster, syncSessions: syncSessions, planState: planState, lessonConflict: lessonConflict, fillSkillsFromRes: fillSkillsFromRes, studentHasRecords: studentHasRecords, majorPath: majorPath, majorTop: majorTop, majorSubIds: majorSubIds, majorTree: majorTree, majorChain: majorChain, GRADES: GRADES, genCriteria: genCriteria, overall: overall, addEvidence: addEvidence };
+    syncRoster: syncRoster, syncSessions: syncSessions, planState: planState, lessonConflict: lessonConflict, fillSkillsFromRes: fillSkillsFromRes, syncResTags: syncResTags, studentHasRecords: studentHasRecords, majorPath: majorPath, majorTop: majorTop, majorSubIds: majorSubIds, majorTree: majorTree, majorChain: majorChain, GRADES: GRADES, genCriteria: genCriteria, overall: overall, addEvidence: addEvidence };
 })(window);
