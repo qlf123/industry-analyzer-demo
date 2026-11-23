@@ -514,7 +514,7 @@
     if (!acct.name) return null;
     school.accounts.push(acct);
     if (!school.admin) school.admin = acct;
-    audit(s, actor, '新建院校账号', school.name, '账号 ' + acct.name + '（' + acct.accountId + '）');
+    audit(s, actor, '新建院校管理员账号', school.name, '账号 ' + acct.name + '（' + acct.accountId + '）');
     save(s);
     syncAdminAccount(school);
     return acct;

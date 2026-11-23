@@ -25,7 +25,7 @@
 <script src="../js/mock-data.js?v=4"></script>
 <script src="../js/permission.js"></script>
 <script src="../js/common.js?v=17"></script>
-<script src="../js/platform-kit.js?v=12"></script>
+<script src="../js/platform-kit.js?v=13"></script>
 <script>
 (function () {
   'use strict';
@@ -58,7 +58,7 @@
       '<input class="pf-in" id="pfQ" placeholder="搜索院校、姓名、登录账号、手机号" value="' + esc(F.q) + '">' +
       '<select class="pf-sel" id="pfStatus"><option value="">全部状态</option><option value="启用">启用</option><option value="停用">停用</option></select>' +
       '<span class="sp"></span>' +
-      '<button class="btn" type="button" data-new>新建院校账号</button>' +
+      '<button class="btn" type="button" data-new>新建院校管理员账号</button>' +
       '</div>' +
       '<div class="pf-card"><div class="pf-card-h">院校账号<span class="sp"></span><span class="pf-mono" id="pfCount"></span></div><div id="list"></div></div>';
 
@@ -125,7 +125,7 @@
     var dlg = document.createElement('dialog');
     dlg.className = 'aidlg pf-dlg';
     dlg.innerHTML = '<form>' +
-      '<h2>' + (isNew ? '新建院校账号' : '编辑院校账号') + '</h2>' +
+      '<h2>' + (isNew ? '新建院校管理员账号' : '编辑院校管理员账号') + '</h2>' +
       '<div class="pf-form">' +
       '<label class="full"><span class="req">所属院校</span><select data-k="schoolId"' + (isNew ? '' : ' disabled') + '>' +
       all.map(function (s) { return '<option value="' + esc(s.id) + '"' + (s.id === currentSchool.id ? ' selected' : '') + '>' + esc(s.name) + '（' + esc(s.code) + '）</option>'; }).join('') +
@@ -165,7 +165,7 @@
           name: nameEl.value, phone: phoneEl.value, accountId: accInput, initPassword: pwdEl.value
         }, identity.account.name);
         if (!acct) { toast('新建失败'); return; }
-        toast('已新建院校账号：' + acct.name);
+        toast('已新建院校管理员账号：' + acct.name);
       } else {
         PF.updateAccount(currentSchool.id, current.accountId, {
           name: nameEl.value, phone: phoneEl.value, initPassword: pwdEl.value

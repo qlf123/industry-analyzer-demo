@@ -26,7 +26,7 @@
 <script src="../js/permission.js"></script>
 <script src="../js/common.js?v=17"></script>
 <script src="../js/sys-dict.js?v=2"></script>
-<script src="../js/platform-kit.js?v=12"></script>
+<script src="../js/platform-kit.js?v=13"></script>
 <script>
 (function () {
   'use strict';
@@ -160,6 +160,7 @@
         '<td><div class="pf-acts">' +
         '<a class="btn-s" href="' + link('school-detail.html?id=' + encodeURIComponent(s.id)) + '">查看</a>' +
         '<button class="btn-s" type="button" data-edit data-id="' + esc(s.id) + '">编辑</button>' +
+        '<a class="btn-s" href="' + link('school-menu.html?schoolId=' + encodeURIComponent(s.id)) + '">配置菜单</a>' +
         '<button class="btn-s" type="button" data-toggle data-id="' + esc(s.id) + '">' + (s.status === '启用' ? '停用' : '启用') + '</button>' +
         '</div></td></tr>';
     });
