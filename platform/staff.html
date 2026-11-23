@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>平台账号</title>
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="platform.css">
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">平台账号</h1>
+          <div class="pt-d">维护平台运营人员账号；平台账号不属于任何院校，仅用于平台管理端</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="../js/mock-data.js?v=4"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js?v=17"></script>
+<script src="../js/platform-kit.js?v=12"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'platform', active: 'pv-staff', base: '../' });
+
+  var ctx = DEMO.getState();
+  var identity = UI.currentIdentity(ctx);
+  var F = { q: '', status: '' };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2400);
+  }
+  function statusPill(s) {
+    return s === '正常' ? '<span class="pf-status on">正常</span>' : '<span class="pf-status off">停用</span>';
+  }
+  function isPlatformAccount(a) {
+    return a.kind === '平台管理员' || (ctx.assignments || []).some(function (x) {
+      return x.accountId === a.id && x.roleId === 'R-PLATFORM';
+    });
+  }
+  function platformAccounts() {
+    return (ctx.accounts || []).filter(isPlatformAccount);
+  }
+  function save() {
+    DEMO.saveState(ctx);
+  }
+  function nextAccountId() {
+    var n = 1;
+    (ctx.accounts || []).forEach(function (a) {
+      var m = String(a.id).match(/^ACC-PLATFORM-(\d+)$/);
+      if (m) n = Math.max(n, parseInt(m[1], 10) + 1);
+    });
+    return 'ACC-PLATFORM-' + n;
+  }
+
+  function renderShell() {
+    document.getElementById('body').innerHTML =
+      '<div class="pf-toolbar">' +
+      '<input class="pf-in" id="pfQ" placeholder="搜索姓名 / 账号 / 手机号" value="' + esc(F.q) + '">' +
+      '<select class="pf-sel" id="pfStatus"><option value="">全部状态</option><option value="正常">正常</option><option value="停用">停用</option></select>' +
+      '<span class="sp"></span>' +
+      '<button class="btn" type="button" data-new>新建平台账号</button>' +
+      '</div>' +
+      '<div class="pf-card"><div class="pf-card-h">平台运营账号<span class="sp"></span><span class="pf-mono" id="pfCount"></span></div><div id="list"></div></div>';
+
+    document.getElementById('pfQ').addEventListener('input', function (e) { F.q = e.target.value; renderList(); });
+    document.getElementById('pfStatus').addEventListener('change', function (e) { F.status = e.target.value; renderList(); });
+    document.querySelector('[data-new]').addEventListener('click', function () { openDialog(null); });
+    document.getElementById('list').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-edit],[data-toggle],[data-reset]');
+      if (!b) return;
+      var a = (ctx.accounts || []).find(function (x) { return x.id === b.getAttribute('data-id'); });
+      if (!a) return;
+      if (b.hasAttribute('data-edit')) openDialog(a);
+      else if (b.hasAttribute('data-toggle')) toggleStatus(a);
+      else resetPassword(a);
+    });
+    renderList();
+  }
+
+  function filtered() {
+    var q = F.q.trim().toLowerCase();
+    return platformAccounts().filter(function (a) {
+      if (F.status && a.status !== F.status) return false;
+      if (!q) return true;
+      return [a.name, a.id, a.phone].filter(Boolean).join(' ').toLowerCase().indexOf(q) >= 0;
+    });
+  }
+
+  function renderList() {
+    var rows = filtered();
+    document.getElementById('pfCount').textContent = '共 ' + rows.length + ' 人';
+    if (!rows.length) {
+      document.getElementById('list').innerHTML = '<div class="pf-empty">没有匹配的平台账号。</div>';
+      return;
+    }
+    var me = identity && identity.account && identity.account.id;
+    var h = '<table class="pf-tbl"><thead><tr>' +
+      '<th>姓名</th><th>登录账号</th><th>手机号</th><th>角色</th><th>状态</th><th>最近登录</th><th></th></tr></thead><tbody>';
+    rows.forEach(function (a) {
+      var isMe = a.id === me;
+      h += '<tr>' +
+        '<td><span class="nm">' + esc(a.name) + '</span>' + (isMe ? '<span class="sub">当前登录</span>' : '') + '</td>' +
+        '<td><span class="pf-mono">' + esc(a.id) + '</span></td>' +
+        '<td>' + esc(a.phone || '—') + '</td>' +
+        '<td>平台超级管理员</td>' +
+        '<td>' + statusPill(a.status) + '</td>' +
+        '<td>' + esc(a.lastLoginAt || '—') + '</td>' +
+        '<td><div class="pf-acts">' +
+        '<button class="btn-s" type="button" data-edit data-id="' + esc(a.id) + '">编辑</button>' +
+        '<button class="btn-s" type="button" data-toggle data-id="' + esc(a.id) + '"' + (isMe ? ' disabled' : '') + '>' +
+          (a.status === '停用' ? '启用' : '停用') + '</button>' +
+        '<button class="btn-s" type="button" data-reset data-id="' + esc(a.id) + '">重置密码</button>' +
+        '</div></td></tr>';
+    });
+    h += '</tbody></table>';
+    document.getElementById('list').innerHTML = h;
+  }
+
+  function openDialog(a) {
+    var isNew = !a;
+    var dlg = document.createElement('dialog');
+    dlg.className = 'aidlg pf-dlg';
+    dlg.innerHTML = '<form>' +
+      '<h2>' + (isNew ? '新建平台账号' : '编辑平台账号') + '</h2>' +
+      '<div class="pf-form">' +
+      '<label><span class="req">姓名</span><input data-k="name" value="' + esc(a ? a.name : '') + '"></label>' +
+      '<label><span>手机号</span><input data-k="phone" value="' + esc(a ? a.phone || '' : '') + '"></label>' +
+      '<label class="full"><span>登录账号</span><input data-k="account" value="' + esc(a ? a.id : nextAccountId()) + '" ' + (isNew ? '' : 'disabled') + '></label>' +
+      '<label class="full"><span>初始密码</span><input value="' + PF.INITIAL_PASSWORD + '" disabled></label>' +
+      '</div>' +
+      '<div class="pf-note">新建账号默认角色为「平台超级管理员」，拥有全部平台管理权限；初始密码 ' + PF.INITIAL_PASSWORD + '，首次登录后自行修改。</div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:2px">' +
+      '<button type="button" class="btn ghost" data-cancel>取消</button>' +
+      '<button type="button" class="btn" data-submit>保存</button>' +
+      '</div></form>';
+    document.body.appendChild(dlg);
+    dlg.showModal();
+    dlg.addEventListener('close', function () { dlg.remove(); });
+
+    var nameEl = dlg.querySelector('[data-k="name"]');
+    var phoneEl = dlg.querySelector('[data-k="phone"]');
+
+    dlg.querySelector('[data-cancel]').addEventListener('click', function () { dlg.close(); });
+    dlg.querySelector('[data-submit]').addEventListener('click', function () {
+      if (!nameEl.value.trim()) { nameEl.classList.add('pf-err'); toast('请填写姓名'); return; }
+      if (isNew) {
+        var id = dlg.querySelector('[data-k="account"]').value.trim() || nextAccountId();
+        if ((ctx.accounts || []).some(function (x) { return x.id === id; })) { toast('账号已存在'); return; }
+        var now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+        var acc = {
+          id: id, name: nameEl.value.trim(), orgId: null, kind: '平台管理员',
+          status: '正常', studentId: null, phone: phoneEl.value.trim() || null,
+          lastLoginAt: null, createdAt: now, createdBy: identity.account.name,
+          updatedAt: now, updatedBy: identity.account.name
+        };
+        ctx.accounts.push(acc);
+        ctx.assignments.push({
+          id: 'A-' + id.replace(/[^0-9]/g, ''),
+          accountId: id, roleId: 'R-PLATFORM',
+          scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [],
+          teachingScope: { majorIds: [], classIds: [], courseIds: [] },
+          extraPermIds: []
+        });
+        save();
+        toast('已新建平台账号：' + acc.name);
+      } else {
+        a.name = nameEl.value.trim();
+        a.phone = phoneEl.value.trim() || null;
+        a.updatedAt = new Date().toISOString().slice(0, 16).replace('T', ' ');
+        a.updatedBy = identity.account.name;
+        save();
+        toast('已更新：' + a.name);
+      }
+      dlg.close();
+      renderList();
+    });
+  }
+
+  function toggleStatus(a) {
+    if (a.id === identity.account.id) { toast('不能停用当前登录账号'); return; }
+    a.status = a.status === '停用' ? '正常' : '停用';
+    a.updatedAt = new Date().toISOString().slice(0, 16).replace('T', ' ');
+    a.updatedBy = identity.account.name;
+    save();
+    toast((a.status === '正常' ? '已启用' : '已停用') + '：' + a.name);
+    renderList();
+  }
+
+  function resetPassword(a) {
+    if (!confirm('确定将「' + a.name + '」的密码重置为 ' + PF.INITIAL_PASSWORD + ' 吗？')) return;
+    toast('已重置为初始密码 ' + PF.INITIAL_PASSWORD);
+  }
+
+  renderShell();
+})();
+</script>
+</body>
+</html>

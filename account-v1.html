@@ -236,7 +236,7 @@
     </div>
   </div>
 </div>
-<script src="js/mock-data.js"></script>
+<script src="js/mock-data.js?v=4"></script>
 <script src="js/permission.js"></script>
 <script src="js/member.js"></script>
 <script src="js/common.js"></script>
@@ -408,22 +408,25 @@
     var idn = accountIdentity(a);
     var canEditMain = Perm.check(ctx, identity, 'org:account:edit', a, 'account').allowed;
     var canAssign = can('org:account:assign');
+    var isProtected = a.platformProvisioned === true;
     var hasChk = false; // 列表勾选列已隐藏
     var chkCell = hasChk ? '<div class="chkcell"><input type="checkbox" data-accchk="' + esc(a.id) + '"'
       + (selectedIds[a.id] ? ' checked' : '') + '></div>' : '';
     var acts = '<button class="btn-s" data-adetail="' + esc(a.id) + '">详情</button>';
-    if (canEditMain) {
+    if (canEditMain && !isProtected) {
       acts += ' <button class="btn-s" data-aedit="' + esc(a.id) + '">编辑</button> '
         + (a.status === '停用'
           ? '<button class="btn-s" data-aenable="' + esc(a.id) + '">启用</button>'
           : '<button class="btn-s" data-adisable="' + esc(a.id) + '">停用</button>') + ' '
         + '<button class="btn-s" data-apwd="' + esc(a.id) + '">重置密码</button>';
     }
-    if (canAssign && !canEditMain) {
+    if (canAssign && !canEditMain && !isProtected) {
       acts += ' <button class="btn-s" data-aassign="' + esc(a.id) + '">分配角色</button>';
     }
+    if (isProtected) acts += ' <span class="cell-s" title="平台预置管理员，院校不可停用或删除">受平台保护</span>';
     if (ui.why) acts += '<button class="whyq" data-awhy="' + esc(a.id) + '">?</button>';
     var nameCell = '<div class="cell-t">' + esc(a.name)
+      + (isProtected ? '<span class="pill" style="background:var(--brand-soft);color:var(--brand-ink);margin-left:6px">平台预置</span>' : '')
       + '<span class="cell-s">' + esc(a.id) + '</span></div>';
     var orgCell = '<div class="cell-t">' + accountOrgNameCell(a)
       + (filtered ? '<span class="cell-s">有权限，被当前组织过滤</span>' : '') + '</div>';
@@ -1029,6 +1032,7 @@
     dlg.addEventListener('close', function () { dlg.remove(); });
   }
   function toggleStatus(a) {
+    if (a.platformProvisioned === true) { toast('平台预置管理员不可停用'); return; }
     var before = { status: a.status };
     a.status = a.status === '停用' ? '正常' : '停用';
     audit(a.status === '正常' ? '启用账号' : '停用账号', a.name, before, { status: a.status }, '成功', a.orgId);
@@ -1036,6 +1040,7 @@
     render();
   }
   function resetPassword(a) {
+    if (a.platformProvisioned === true) { toast('平台预置管理员密码由平台重置'); return; }
     audit('重置密码', a.name, null, { passwordReset: true }, '成功', a.orgId);
     toast('已重置「' + a.name + '」的密码');
   }

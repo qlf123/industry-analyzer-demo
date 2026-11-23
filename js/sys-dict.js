@@ -1,7 +1,9 @@
-/* 字典数据（localStorage sysDict.v1）：字典管理页维护，院校基础信息等页面取下拉选项 */
+/* 字典数据：平台默认 sysDict.default.v1 + 院校本校 sysDict.v1
+ * 平台超管维护默认字典；院校首次打开字典管理时复制一份本校字典，之后各自独立。 */
 (function (root) {
   'use strict';
   var KEY = 'sysDict.v1';
+  var DEFAULT_KEY = 'sysDict.default.v1';
   function seed() {
     var at = '2026-08-05 16:30', by = '管理员', n = 0;
     function cat(name, en, code, items) {
@@ -25,10 +27,25 @@
       cat('学籍状态', 'Student Status', 'DM_XJZT', [['在读', 'Enrolled', 'ZD'], ['休学', 'Suspended', 'XX'], ['毕业', 'Graduated', 'BY']])
     ] };
   }
+  function read(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
   function save(D) { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} }
+  function saveDefault(D) { try { localStorage.setItem(DEFAULT_KEY, JSON.stringify(D)); } catch (e) {} }
+  // 平台默认字典：首次初始化时优先沿用现有本校字典，保证升级前后选项一致
+  function loadDefault() {
+    var D = read(DEFAULT_KEY);
+    if (!D || !D.cats) { D = read(KEY) || seed(); saveDefault(D); }
+    return D;
+  }
+  // 本校字典：不存在时从平台默认复制一份
   function load() {
-    var D; try { D = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-    if (!D || !D.cats) { D = seed(); save(D); }
+    var D = read(KEY);
+    if (!D || !D.cats) { D = JSON.parse(JSON.stringify(loadDefault())); save(D); }
+    return D;
+  }
+  // 恢复平台默认：用最新默认字典覆盖本校字典
+  function resetToDefault() {
+    var D = JSON.parse(JSON.stringify(loadDefault()));
+    save(D);
     return D;
   }
   function today() { var d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
@@ -41,5 +58,5 @@
     if (parentName) { var p = c.items.filter(function (x) { return !x.parentId && x.name === parentName; })[0]; if (!p) return []; pid = p.id; }
     return c.items.filter(function (x) { return x.parentId === pid && usable(x); }).sort(function (a, b) { return a.order - b.order; }).map(function (x) { return x.name; });
   }
-  root.SysDict = { KEY: KEY, load: load, save: save, opts: opts };
+  root.SysDict = { KEY: KEY, DEFAULT_KEY: DEFAULT_KEY, load: load, save: save, loadDefault: loadDefault, saveDefault: saveDefault, resetToDefault: resetToDefault, opts: opts };
 })(window);

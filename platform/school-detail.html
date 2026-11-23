@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>院校详情</title>
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="platform.css">
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">院校详情</h1>
+          <div class="pt-d">平台侧只读查看 · 不进入院校业务页面</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="../js/mock-data.js?v=4"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js?v=17"></script>
+<script src="../js/assess-data.js"></script>
+<script src="../js/teacher-kit.js"></script>
+<script src="../js/platform-kit.js?v=12"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'platform', active: 'pv-schools', base: '../' });
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function link(href) { return UI.link(href); }
+  function statusPill(s) {
+    return s === '启用' ? '<span class="pf-status on">启用</span>' : '<span class="pf-status off">停用</span>';
+  }
+  function kpi(k, v, unit) {
+    return '<div class="pf-kpi"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v) + (unit ? '<small>' + esc(unit) + '</small>' : '') + '</div></div>';
+  }
+  function item(k, v) {
+    return '<div><div class="kk">' + esc(k) + '</div><div class="vv">' + esc(v || '—') + '</div></div>';
+  }
+
+  var id = new URLSearchParams(location.search).get('id');
+  var school = id ? PF.byId(id) : null;
+
+  if (!school) {
+    document.getElementById('body').innerHTML =
+      '<a class="pf-back" href="' + link('schools.html') + '">← 返回院校管理</a>' +
+      '<div class="pf-card"><div class="pf-empty">未找到该院校，可能已被删除。<br><a href="' + link('schools.html') + '">返回院校列表</a></div></div>';
+    return;
+  }
+
+  var st = PF.stats(school);
+  var a = school.admin || {};
+
+  var h = '<a class="pf-back" href="' + link('schools.html') + '">← 返回院校管理</a>';
+  h += '<div class="pf-hd"><span class="t">' + esc(school.name) + '</span>' + statusPill(school.status) +
+    '<span class="pf-mono">' + esc(school.code) + '</span><span class="sp"></span>' +
+    '<span class="pf-mono">最近活跃：' + esc(PF.lastActive(school) || '—') + '</span></div>';
+
+  h += '<div class="pf-card"><div class="pf-card-h">基本信息</div><div class="pf-card-b">' +
+    '<div class="pf-detail">' +
+    item('院校名称', school.name) + item('院校简称', school.short) + item('院校编码', school.code) + item('所在地区', school.region) +
+    item('联系人', school.contact) + item('联系电话', school.phone) + item('开通时间', school.createdAt) + item('创建人', school.createdBy) +
+    '</div></div></div>';
+
+  h += '<div class="pf-card"><div class="pf-card-h">院校管理员</div><div class="pf-card-b">' +
+    (a.name
+      ? '<div class="pf-detail">' + item('管理员姓名', a.name) + item('手机号', a.phone) + item('登录账号', a.accountId) + item('账号状态', '正常') + '</div>'
+      : '<div class="pf-empty">该院校尚未开通管理员账号。</div>') +
+    '</div></div>';
+
+  h += '<div class="pf-sec-title">账号概况</div>' +
+    '<div class="pf-kpis four">' +
+    kpi('账号总数', st.accounts) + kpi('教师账号', st.teachers) + kpi('管理员账号', st.admins) + kpi('在读学生', st.students) +
+    '</div>';
+
+  h += '<div class="pf-sec-title">教学规模与运行</div>' +
+    '<div class="pf-kpis">' +
+    kpi('组织节点', st.orgs) + kpi('专业', st.majors) + kpi('班级', st.klasses) +
+    kpi('课程计划', st.plans) + kpi('课次', st.lessons) + kpi('备课资源', st.resources) +
+    '</div>';
+
+  h += '<div class="pf-card"><div class="pf-card-b"><div class="pf-note">' +
+    (school.demo
+      ? '该院校为现有演示院校，统计实时取自院校业务数据。平台侧只读，不提供进入院校的操作。'
+      : '该院校为空白骨架：业务数据由院校侧维护后同步，因此当前统计为 0。平台侧只读，不提供进入院校的操作。') +
+    '</div></div></div>';
+
+  document.getElementById('body').innerHTML = h;
+})();
+</script>
+</body>
+</html>

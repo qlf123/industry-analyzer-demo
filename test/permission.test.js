@@ -38,6 +38,7 @@ test('mock 数据引用一致', function () {
     if (s.internshipBaseId) assert.ok(baseIds.has(s.internshipBaseId), '学生实习基地存在 ' + s.id);
   });
   c.accounts.forEach(function (a) {
+    if (a.kind === '平台管理员') { assert.equal(a.orgId, null, '平台账号不挂组织 ' + a.id); return; }
     assert.ok(orgIds.has(a.orgId), '账号组织存在 ' + a.id);
     if (a.partOrgIds) a.partOrgIds.forEach(function (oid) { assert.ok(orgIds.has(oid), '账号兼职组织存在 ' + a.id); });
     if (a.studentId) assert.ok(studentIds.has(a.studentId), '账号学生存在 ' + a.id);

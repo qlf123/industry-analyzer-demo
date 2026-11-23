@@ -10,7 +10,7 @@
   'use strict';
 
   var STORAGE_KEY = 'permission-demo-state';
-  var DATA_VERSION = 10; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
+  var DATA_VERSION = 16; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
 
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
@@ -189,13 +189,28 @@
     { id: 'P-EDU-MANAGE',        code: 'edu:base:manage',          name: '教务管理与课程计划维护', module: '教务', resource: '教务管理', action: '维护' },
     { id: 'P-TEACH-QUALITY',     code: 'teach:quality:view',       name: '教学质量查看与改进处理', module: '教学质量', resource: '教学达成 / 课程改进建议', action: '查看处理' },
     { id: 'P-LAB-MANAGE',        code: 'edu:lab:manage',           name: '实训资源维护',   module: '教务', resource: '实训资源', action: '维护' },
-    { id: 'P-GRAPH-SUGGEST',     code: 'graph:suggest:review',     name: '图谱建议审核', module: '图谱中心', resource: '图谱建议', action: '审核发布' }
+    { id: 'P-GRAPH-SUGGEST',     code: 'graph:suggest:review',     name: '图谱建议审核', module: '图谱中心', resource: '图谱建议', action: '审核发布' },
+    { id: 'P-PLATFORM-SCHOOL-VIEW',   code: 'platform:school:view',   name: '院校查看',     module: '平台', resource: '院校', action: '查看' },
+    { id: 'P-PLATFORM-SCHOOL-CREATE', code: 'platform:school:create', name: '院校创建',     module: '平台', resource: '院校', action: '创建' },
+    { id: 'P-PLATFORM-SCHOOL-EDIT',   code: 'platform:school:edit',   name: '院校编辑',     module: '平台', resource: '院校', action: '编辑' },
+    { id: 'P-PLATFORM-ACCOUNT-MANAGE',code: 'platform:account:manage',name: '院校账号开通', module: '平台', resource: '院校账号', action: '开通' },
+    { id: 'P-PLATFORM-STAFF-MANAGE',  code: 'platform:staff:manage',  name: '平台账号管理', module: '平台', resource: '平台账号', action: '维护' },
+    { id: 'P-PLATFORM-DATA-VIEW',     code: 'platform:data:view',     name: '平台数据查看', module: '平台', resource: '平台数据', action: '查看' },
+    { id: 'P-PLATFORM-AUDIT-VIEW',    code: 'platform:audit:view',    name: '平台审计查看', module: '平台', resource: '审计日志', action: '查看' },
+    { id: 'P-PLATFORM-DICT-EDIT',     code: 'platform:dict:edit',     name: '全局字典维护', module: '平台', resource: '全局字典', action: '维护' },
+    { id: 'P-PLATFORM-MENU-MANAGE',   code: 'platform:menu:manage',   name: '默认菜单维护', module: '平台', resource: '默认菜单', action: '维护' },
+    { id: 'P-PLATFORM-TENANT-GRANT',  code: 'platform:tenant:grant',  name: '院校功能与配额授权', module: '平台', resource: '院校功能与配额', action: '授权' },
+    { id: 'P-PLATFORM-GRAPH-TPL',     code: 'platform:graph-template:manage', name: '图谱模板维护', module: '平台', resource: '图谱模板', action: '维护' }
   ];
 
   /* ── 角色（type：内置 / 预设 / 部门模板 / 自定义；key 供权限模块判定用） ── */
   var ROLES = [
-    { id: 'R-SUPER', key: 'super', portal: 'admin', name: '平台超级管理员', type: '内置',     status: '启用', aiQuota: 200,
-      description: '系统内置的最高权限角色，覆盖全校全部功能与数据', createdBy: '系统', createdAt: '2024-09-01', permissionIds: [
+    { id: 'R-PLATFORM', key: 'platform', portal: 'platform', name: '平台超级管理员', type: '内置', status: '启用', aiQuota: 0,
+      description: '平台内部使用：创建院校、开通院校管理员账号、查看平台数据', createdBy: '系统', createdAt: '2026-11-22', permissionIds: [
+      'platform:school:view','platform:school:create','platform:school:edit','platform:account:manage','platform:staff:manage','platform:data:view',
+      'platform:audit:view','platform:dict:edit','platform:tenant:grant','platform:menu:manage','platform:graph-template:manage' ] },
+    { id: 'R-SUPER', key: 'super', portal: 'admin', name: '院校超级管理员', type: '内置',     status: '启用', aiQuota: 200,
+      description: '系统内置的最高权限角色，覆盖本校全部功能与数据', createdBy: '系统', createdAt: '2024-09-01', permissionIds: [
       'org:node:view','org:node:edit','org:account:view','org:account:edit','org:account:assign','org:teachingScope:grant',
       'org:role:define','org:audit:view','student:info:view','student:score:view','student:idcard:plain','teaching:profile:view',
       'teaching:content:view','teaching:content:audit','intern:task:view','resource:share','resource:schoolpub:publish','resource:schoolpub:view','org:member:manage','account:account:create',
@@ -245,7 +260,10 @@
 
   /* ── 账号 ── */
   var ACCOUNTS = [
-    { id: 'ACC-SUPER', name: '超管',     orgId: 'ORG-ROOT',       kind: '超管',     status: '正常', studentId: null, phone: '13800000001', lastLoginAt: '2026-10-12 08:45', createdAt: '2024-09-01', createdBy: '系统',     updatedAt: '2026-10-12 08:45', updatedBy: '系统' },
+    { id: 'ACC-PLATFORM', name: '平台超管', orgId: null, kind: '平台管理员', status: '正常', studentId: null, phone: '13800000000', lastLoginAt: '2026-11-22 09:00', createdAt: '2026-11-22', createdBy: '系统', updatedAt: '2026-11-22 09:00', updatedBy: '系统' },
+    { id: 'ACC-PLATFORM-OPS', name: '林运营', orgId: null, kind: '平台管理员', status: '正常', studentId: null, phone: '13800000031', lastLoginAt: '2026-11-22 14:20', createdAt: '2026-11-22', createdBy: '平台超管', updatedAt: '2026-11-22 14:20', updatedBy: '平台超管' },
+    { id: 'ACC-PLATFORM-AUDIT', name: '周审计', orgId: null, kind: '平台管理员', status: '正常', studentId: null, phone: '13800000032', lastLoginAt: '2026-11-21 10:05', createdAt: '2026-11-22', createdBy: '平台超管', updatedAt: '2026-11-21 10:05', updatedBy: '平台超管' },
+    { id: 'ACC-SUPER', name: '超管',     orgId: 'ORG-ROOT',       kind: '院校超级管理员', platformProvisioned: true, status: '正常', studentId: null, phone: '13800000001', lastLoginAt: '2026-10-12 08:45', createdAt: '2024-09-01', createdBy: '系统',     updatedAt: '2026-10-12 08:45', updatedBy: '系统' },
     { id: 'ACC-ZHANG', name: '张校管',   orgId: 'ORG-ROOT',       kind: '管理员',   status: '正常', studentId: null, phone: '13800000002', lastLoginAt: '2026-10-12 09:10', createdAt: '2024-09-05', createdBy: '系统',     updatedAt: '2026-10-11 18:22', updatedBy: '超管' },
     { id: 'ACC-LIU',   name: '刘院管',   orgId: 'ORG-TOURISM',    kind: '管理员',   status: '正常', studentId: null, phone: '13800000003', lastLoginAt: '2026-10-11 16:30', createdAt: '2024-09-06', createdBy: '系统',     updatedAt: '2026-10-10 10:05', updatedBy: '张校管' },
     { id: 'ACC-CHEN',  name: '陈双管',   orgId: 'ORG-EAST',       kind: '管理员',   status: '正常', studentId: null, phone: '13800000004', lastLoginAt: '2026-10-11 14:20', createdAt: '2024-09-07', createdBy: '系统',     updatedAt: '2026-10-09 11:40', updatedBy: '张校管' },
@@ -264,11 +282,17 @@
     { id: 'ACC-GRAD',  name: '已毕业学生', orgId: 'ORG-TOUR-DEPT', kind: '学生',   status: '正常', studentId: 'STU-T23-1-01', phone: '13800000017', lastLoginAt: '2025-06-30 12:00', createdAt: '2024-09-20', createdBy: '系统', updatedAt: '2025-07-01 09:00', updatedBy: '系统' },
     { id: 'ACC-STU',   name: '林同学',     orgId: 'ORG-GUIDE-ROOM', kind: '学生',   status: '正常', studentId: 'STU-G24-1-01', phone: '13800000020', lastLoginAt: '2026-10-20 09:30', createdAt: '2024-09-20', createdBy: '系统', updatedAt: '2026-10-20 09:30', updatedBy: '系统' },
     { id: 'ACC-STOP',  name: '停用老师', orgId: 'ORG-HOTEL',      kind: '教师',     status: '停用', studentId: null, phone: '13800000018', lastLoginAt: '2026-01-15 09:00', createdAt: '2024-09-21', createdBy: '系统',     updatedAt: '2026-02-10 10:00', updatedBy: '刘院管' },
-    { id: 'ACC-QIN',   name: '秦秘书',   orgId: 'ORG-TOURISM',    kind: '管理员',   status: '正常', studentId: null, phone: '13800000019', lastLoginAt: null, createdAt: '2026-10-16', createdBy: '系统', updatedAt: '2026-10-16', updatedBy: '系统' }
+    { id: 'ACC-QIN',   name: '秦秘书',   orgId: 'ORG-TOURISM',    kind: '管理员',   status: '正常', studentId: null, phone: '13800000019', lastLoginAt: null, createdAt: '2026-10-16', createdBy: '系统', updatedAt: '2026-10-16', updatedBy: '系统' },
+    { id: 'ACC-S2-ADMIN', name: '王敏', orgId: 'ORG-ROOT', kind: '院校超级管理员', platformProvisioned: true, status: '正常', studentId: null, phone: '13800000102', lastLoginAt: '2026-11-22 10:20', createdAt: '2026-06-15', createdBy: '平台超管', updatedAt: '2026-11-22 10:20', updatedBy: '平台超管' },
+    { id: 'ACC-S3-ADMIN', name: '陈涛', orgId: 'ORG-ROOT', kind: '院校超级管理员', platformProvisioned: true, status: '正常', studentId: null, phone: '13800000103', lastLoginAt: '2026-11-20 14:05', createdAt: '2026-07-28', createdBy: '平台超管', updatedAt: '2026-11-20 14:05', updatedBy: '平台超管' },
+    { id: 'ACC-S5-ADMIN', name: '赵磊', orgId: 'ORG-ROOT', kind: '院校超级管理员', platformProvisioned: true, status: '正常', studentId: null, phone: '13800000105', lastLoginAt: '2026-10-19 09:00', createdAt: '2026-10-15', createdBy: '平台超管', updatedAt: '2026-10-19 09:00', updatedBy: '平台超管' }
   ];
 
   /* ── 角色分配（一条 = 角色 + 数据范围 + 教学范围 + 额外权限点） ── */
   var ASSIGNMENTS = [
+    { id: 'A-24', accountId: 'ACC-PLATFORM', roleId: 'R-PLATFORM', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
+    { id: 'A-28', accountId: 'ACC-PLATFORM-OPS', roleId: 'R-PLATFORM', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
+    { id: 'A-29', accountId: 'ACC-PLATFORM-AUDIT', roleId: 'R-PLATFORM', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-01', accountId: 'ACC-SUPER', roleId: 'R-SUPER', scopeOrgIds: ['ORG-ROOT'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-02', accountId: 'ACC-ZHANG', roleId: 'R-ORG-ADMIN', scopeOrgIds: ['ORG-ROOT'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-03', accountId: 'ACC-LIU', roleId: 'R-ORG-ADMIN', scopeOrgIds: ['ORG-TOURISM'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
@@ -292,11 +316,17 @@
     { id: 'A-19', accountId: 'ACC-GRAD', roleId: 'R-STUDENT', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
     { id: 'A-20', accountId: 'ACC-STOP', roleId: 'R-TEACHER', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: ['K-H26-1'], courseIds: ['CRS-H1'] }, extraPermIds: [] },
     { id: 'A-21', accountId: 'ACC-QIN', roleId: 'R-SECRETARY', scopeOrgIds: ['ORG-TOURISM'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
-    { id: 'A-23', accountId: 'ACC-STU', roleId: 'R-STUDENT', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] }
+    { id: 'A-23', accountId: 'ACC-STU', roleId: 'R-STUDENT', scopeOrgIds: [], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
+    { id: 'A-25', accountId: 'ACC-S2-ADMIN', roleId: 'R-SUPER', scopeOrgIds: ['ORG-ROOT'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
+    { id: 'A-26', accountId: 'ACC-S3-ADMIN', roleId: 'R-SUPER', scopeOrgIds: ['ORG-ROOT'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] },
+    { id: 'A-27', accountId: 'ACC-S5-ADMIN', roleId: 'R-SUPER', scopeOrgIds: ['ORG-ROOT'], scopeGrades: {}, scopeClassIds: [], teachingScope: { majorIds: [], classIds: [], courseIds: [] }, extraPermIds: [] }
   ];
 
   /* ── 演示身份（下拉用；停用老师不进下拉） ── */
   var DEMO_IDENTITIES = [
+    { id: 'D-00', label: '平台超管', accountId: 'ACC-PLATFORM' },
+    { id: 'D-00a', label: '林运营（平台）', accountId: 'ACC-PLATFORM-OPS' },
+    { id: 'D-00b', label: '周审计（平台）', accountId: 'ACC-PLATFORM-AUDIT' },
     { id: 'D-01', label: '超管',     accountId: 'ACC-SUPER' },
     { id: 'D-02', label: '张校管',   accountId: 'ACC-ZHANG' },
     { id: 'D-03', label: '刘院管',   accountId: 'ACC-LIU' },
@@ -316,7 +346,10 @@
     { id: 'D-17', label: '已毕业学生', accountId: 'ACC-GRAD' },
     { id: 'D-18', label: '停用老师', accountId: 'ACC-STOP' },
     { id: 'D-19', label: '秦秘书', accountId: 'ACC-QIN' },
-    { id: 'D-20', label: '林同学', accountId: 'ACC-STU' }
+    { id: 'D-20', label: '林同学', accountId: 'ACC-STU' },
+    { id: 'D-21', label: '江南旅院·管理员', accountId: 'ACC-S2-ADMIN' },
+    { id: 'D-22', label: '海港旅院·管理员', accountId: 'ACC-S3-ADMIN' },
+    { id: 'D-23', label: '北方旅院·管理员', accountId: 'ACC-S5-ADMIN' }
   ];
 
   /* ── 教师档案（简单档案，组织随账号） ── */

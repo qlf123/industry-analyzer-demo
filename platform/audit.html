@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>平台审计日志</title>
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="platform.css">
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">平台审计日志</h1>
+          <div class="pt-d">平台侧操作记录：院校创建、启停、管理员开通、功能授权与字典维护</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="../js/mock-data.js?v=4"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js?v=17"></script>
+<script src="../js/platform-kit.js?v=12"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'platform', active: 'pv-audit', base: '../' });
+
+  var F = { q: '', action: '', range: 'all' };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function renderShell() {
+    var actions = [];
+    PF.audits().forEach(function (a) { if (actions.indexOf(a.action) < 0) actions.push(a.action); });
+    actions.sort();
+
+    document.getElementById('body').innerHTML =
+      '<div class="pf-toolbar">' +
+      '<input class="pf-in" id="pfQ" placeholder="搜索院校、操作人、说明" value="' + esc(F.q) + '">' +
+      '<select class="pf-sel" id="pfAction"><option value="">全部操作</option>' +
+      actions.map(function (a) { return '<option value="' + esc(a) + '">' + esc(a) + '</option>'; }).join('') +
+      '</select>' +
+      '<select class="pf-sel" id="pfRange">' +
+      '<option value="all">全部时间</option><option value="7">近 7 天</option><option value="30">近 30 天</option>' +
+      '</select>' +
+      '<span class="sp"></span><span class="pf-mono" id="pfCount"></span>' +
+      '</div>' +
+      '<div class="pf-card"><div class="pf-card-h">操作记录</div><div id="list"></div></div>';
+
+    document.getElementById('pfQ').addEventListener('input', function (e) { F.q = e.target.value; renderList(); });
+    document.getElementById('pfAction').addEventListener('change', function (e) { F.action = e.target.value; renderList(); });
+    document.getElementById('pfRange').addEventListener('change', function (e) { F.range = e.target.value; renderList(); });
+    renderList();
+  }
+
+  function filtered() {
+    var q = F.q.trim().toLowerCase();
+    var now = Date.now();
+    var days = F.range === '7' ? 7 : F.range === '30' ? 30 : 0;
+    return PF.audits().filter(function (a) {
+      if (F.action && a.action !== F.action) return false;
+      if (days) {
+        var t = new Date(String(a.at).replace(' ', 'T')).getTime();
+        if (!t || now - t > days * 864e5) return false;
+      }
+      if (!q) return true;
+      return [a.actor, a.action, a.object, a.detail].filter(Boolean).join(' ').toLowerCase().indexOf(q) >= 0;
+    });
+  }
+
+  function renderList() {
+    var rows = filtered();
+    document.getElementById('pfCount').textContent = '共 ' + rows.length + ' 条';
+    if (!rows.length) {
+      document.getElementById('list').innerHTML = '<div class="pf-empty">暂无符合条件的操作记录。</div>';
+      return;
+    }
+    var h = '<table class="pf-tbl"><thead><tr><th>时间</th><th>操作人</th><th>操作</th><th>对象</th><th>说明</th></tr></thead><tbody>';
+    rows.forEach(function (a) {
+      h += '<tr><td class="pf-mono">' + esc(a.at) + '</td><td>' + esc(a.actor || '—') + '</td>' +
+        '<td>' + esc(a.action) + '</td><td class="nm">' + esc(a.object || '—') + '</td>' +
+        '<td>' + esc(a.detail || '—') + '</td></tr>';
+    });
+    h += '</tbody></table>';
+    document.getElementById('list').innerHTML = h;
+  }
+
+  renderShell();
+})();
+</script>
+</body>
+</html>

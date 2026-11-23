@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>图谱模板库</title>
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="platform.css?v=6">
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">图谱模板库</h1>
+          <div class="pt-d">平台维护公共 / 行业图谱模板，院校后续按模板引用；本期仅平台侧维护</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="../js/mock-data.js?v=4"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js?v=17"></script>
+<script src="../js/platform-kit.js?v=12"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'platform', active: 'pv-graph-tpl', base: '../' });
+
+  var ctx = DEMO.getState();
+  var identity = UI.currentIdentity(ctx);
+  var ACTOR = (identity && identity.account && identity.account.name) || '平台超管';
+  var F = { q: '', industry: '', status: '' };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function link(href) { return UI.link(href); }
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2400);
+  }
+  function statusPill(s) {
+    if (s === '启用') return '<span class="pf-status on">启用</span>';
+    if (s === '停用') return '<span class="pf-status off">停用</span>';
+    return '<span class="pf-status draft">草稿</span>';
+  }
+
+  function renderShell() {
+    document.getElementById('body').innerHTML =
+      '<div class="pf-toolbar">' +
+      '<input class="pf-in" id="gtQ" placeholder="搜索模板名称、行业、说明" value="' + esc(F.q) + '">' +
+      '<select class="pf-sel" id="gtIndustry"><option value="">全部行业</option>' +
+      PF.TEMPLATE_INDUSTRIES.map(function (x) { return '<option value="' + esc(x) + '">' + esc(x) + '</option>'; }).join('') +
+      '</select>' +
+      '<select class="pf-sel" id="gtStatus"><option value="">全部状态</option>' +
+      PF.TEMPLATE_STATUSES.map(function (x) { return '<option value="' + esc(x) + '">' + esc(x) + '</option>'; }).join('') +
+      '</select>' +
+      '<span class="sp"></span>' +
+      '<button class="btn" type="button" data-new>新建模板</button>' +
+      '</div>' +
+      '<div class="pf-card"><div class="pf-card-h">模板列表<span class="sp"></span><span class="pf-mono" id="gtCount"></span></div><div id="list"></div></div>';
+
+    document.getElementById('gtQ').addEventListener('input', function (e) { F.q = e.target.value; renderList(); });
+    document.getElementById('gtIndustry').addEventListener('change', function (e) { F.industry = e.target.value; renderList(); });
+    document.getElementById('gtStatus').addEventListener('change', function (e) { F.status = e.target.value; renderList(); });
+    document.querySelector('[data-new]').addEventListener('click', function () { openDialog(null); });
+    document.getElementById('list').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-edit],[data-toggle]');
+      if (!b) return;
+      var tpl = PF.templateById(b.getAttribute('data-id'));
+      if (!tpl) return;
+      if (b.hasAttribute('data-edit')) openDialog(tpl);
+      else toggleStatus(tpl);
+    });
+    renderList();
+  }
+
+  function filtered() {
+    var q = F.q.trim().toLowerCase();
+    return PF.templates().filter(function (t) {
+      if (F.industry && t.industry !== F.industry) return false;
+      if (F.status && t.status !== F.status) return false;
+      if (!q) return true;
+      return [t.name, t.industry, t.scope, t.desc].filter(Boolean).join(' ').toLowerCase().indexOf(q) >= 0;
+    }).sort(function (a, b) { return String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')); });
+  }
+
+  function renderList() {
+    var rows = filtered();
+    document.getElementById('gtCount').textContent = '筛选 ' + rows.length + ' / 共 ' + PF.templates().length + ' 个模板';
+    if (!rows.length) {
+      document.getElementById('list').innerHTML = '<div class="pf-empty">没有匹配的图谱模板。<br>点击右上角「新建模板」开始搭建公共 / 行业模板。</div>';
+      return;
+    }
+    var h = '<table class="pf-tbl"><thead><tr>' +
+      '<th>模板名称</th><th>行业</th><th>范围</th><th class="num">节点 · 关系</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody>';
+    rows.forEach(function (t) {
+      h += '<tr>' +
+        '<td><a class="nm" href="' + link('graph-template-editor.html?id=' + encodeURIComponent(t.id)) + '" style="color:inherit;text-decoration:none">' + esc(t.name) + '</a>' +
+        '<span class="sub gt-desc">' + esc(t.desc || '暂无说明') + '</span></td>' +
+        '<td>' + esc(t.industry || '—') + '</td>' +
+        '<td>' + esc(t.scope || '—') + '</td>' +
+        '<td class="num">' + (t.nodes || []).length + ' · ' + (t.edges || []).length + '</td>' +
+        '<td>' + statusPill(t.status) + '</td>' +
+        '<td><span class="pf-mono">' + esc(t.updatedAt || '—') + '</span><span class="sub">' + esc(t.updatedBy || '—') + '</span></td>' +
+        '<td><div class="pf-acts">' +
+        '<a class="btn-s" href="' + link('graph-template-editor.html?id=' + encodeURIComponent(t.id)) + '">编辑图谱</a>' +
+        '<button class="btn-s" type="button" data-edit data-id="' + esc(t.id) + '">编辑信息</button>' +
+        '<button class="btn-s" type="button" data-toggle data-id="' + esc(t.id) + '">' + (t.status === '启用' ? '停用' : '启用') + '</button>' +
+        '</div></td></tr>';
+    });
+    h += '</tbody></table>';
+    document.getElementById('list').innerHTML = h;
+  }
+
+  function toggleStatus(tpl) {
+    var next = tpl.status === '启用' ? '停用' : '启用';
+    if (!confirm('确定要' + next + '模板「' + tpl.name + '」吗？')) return;
+    PF.setTemplateStatus(tpl.id, next, ACTOR);
+    toast('已' + next + '模板');
+    renderList();
+  }
+
+  function options(list, current) {
+    return list.map(function (x) {
+      return '<option value="' + esc(x) + '"' + (x === current ? ' selected' : '') + '>' + esc(x) + '</option>';
+    }).join('');
+  }
+
+  function openDialog(tpl) {
+    var isNew = !tpl;
+    var dlg = document.createElement('dialog');
+    dlg.className = 'aidlg pf-dlg';
+    dlg.innerHTML = '<form>' +
+      '<h2>' + (isNew ? '新建图谱模板' : '编辑模板信息') + '</h2>' +
+      '<div class="pf-form">' +
+      '<label class="full"><span class="req">模板名称</span><input data-k="name" value="' + esc(tpl ? tpl.name : '') + '" placeholder="如：旅游业 · 岗位能力图谱"></label>' +
+      '<label><span class="req">所属行业</span><select data-k="industry">' + options(PF.TEMPLATE_INDUSTRIES, tpl ? tpl.industry : PF.TEMPLATE_INDUSTRIES[0]) + '</select></label>' +
+      '<label><span>模板范围</span><select data-k="scope">' + options(PF.TEMPLATE_SCOPES, tpl ? tpl.scope : '公共') + '</select></label>' +
+      '<label><span>状态</span><select data-k="status">' + options(PF.TEMPLATE_STATUSES, tpl ? tpl.status : '草稿') + '</select></label>' +
+      '<label class="full"><span>模板说明</span><textarea data-k="desc" rows="3" placeholder="说明模板覆盖的岗位、课程或适用专业">' + esc(tpl ? tpl.desc : '') + '</textarea></label>' +
+      '</div>' +
+      '<div class="pf-note">模板启用后可供院校按模板引用；本期只做平台侧维护，院校端引用后续开放。</div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:2px">' +
+      '<button type="button" class="btn ghost" data-cancel>取消</button>' +
+      (isNew ? '<button type="button" class="btn ghost" data-save-edit>保存并编辑图谱</button>' : '') +
+      '<button type="button" class="btn" data-save>保存</button>' +
+      '</div></form>';
+    document.body.appendChild(dlg);
+    dlg.showModal();
+    dlg.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); });
+    dlg.addEventListener('close', function () { dlg.remove(); });
+
+    function val(k) { return dlg.querySelector('[data-k="' + k + '"]').value.trim(); }
+
+    function submit(editAfter) {
+      var nameEl = dlg.querySelector('[data-k="name"]');
+      nameEl.classList.remove('pf-err');
+      if (!nameEl.value.trim()) { nameEl.classList.add('pf-err'); toast('请填写模板名称'); return; }
+      var data = { name: val('name'), industry: val('industry'), scope: val('scope'), status: val('status'), desc: val('desc') };
+      if (!isNew) data.id = tpl.id;
+      var saved = PF.saveGraphTemplate(data, ACTOR);
+      if (!saved) { toast('保存失败，请检查模板名称'); return; }
+      dlg.close();
+      toast(isNew ? '已新建模板' : '已保存');
+      if (editAfter) { location.href = link('graph-template-editor.html?id=' + encodeURIComponent(saved.id)); return; }
+      renderList();
+    }
+
+    dlg.querySelector('[data-cancel]').addEventListener('click', function () { dlg.close(); });
+    dlg.querySelector('[data-save]').addEventListener('click', function () { submit(false); });
+    var se = dlg.querySelector('[data-save-edit]');
+    if (se) se.addEventListener('click', function () { submit(true); });
+  }
+
+  renderShell();
+})();
+</script>
+</body>
+</html>

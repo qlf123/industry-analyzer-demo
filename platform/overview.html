@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>平台概览</title>
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="platform.css?v=6">
+<style>
+.ov-grid{display:grid;grid-template-columns:1.65fr 1fr;gap:14px;margin-bottom:14px}
+.ov-three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.ov-two{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px}
+@media (max-width:1180px){.ov-grid,.ov-three,.ov-two{grid-template-columns:1fr}}
+.ov-card-b{padding:14px 18px 16px}
+.ov-tabs{display:flex;gap:6px;margin-left:auto}
+.ov-tab{border:1px solid var(--rule);background:var(--card-2);border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;color:var(--ink-2);cursor:pointer}
+.ov-tab.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink);font-weight:600}
+.ov-chart{height:218px;padding-top:4px}
+.ov-chart svg{width:100%;height:100%;overflow:visible}
+.ov-chart .grid line{stroke:var(--rule-2);stroke-dasharray:3 4}
+.ov-chart text{fill:var(--muted);font-size:10.5px}
+.ov-chart text.v{fill:var(--ink);font-size:10.5px;font-weight:600}
+.ov-chart .dots circle{fill:var(--card);stroke:var(--brand);stroke-width:2.2}
+.ov-legend{display:flex;align-items:center;gap:16px;font-size:11.5px;color:var(--muted);margin-top:8px}
+.ov-legend span{display:inline-flex;align-items:center;gap:6px}
+.ov-dot{width:8px;height:8px;border-radius:50%;background:var(--brand);display:inline-block}
+.ov-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 16px}
+.ov-quick a{display:flex;align-items:center;gap:10px;padding:12px 11px;border:1px solid var(--rule);border-radius:10px;background:var(--card-2);font-size:12.5px;color:var(--ink);text-decoration:none}
+.ov-quick a:hover{border-color:var(--brand);color:var(--brand-ink);background:var(--brand-soft)}
+.ov-qi{width:28px;height:28px;border-radius:8px;background:var(--brand-soft);color:var(--brand-ink);display:grid;place-items:center;font-size:13px;font-weight:600;flex:0 0 auto}
+.ov-list{padding:6px 18px 12px}
+.ov-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:12.5px;min-width:0}
+.ov-row:last-child{border-bottom:0}
+.ov-row .sp{flex:1}
+.ov-row .nm{font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-row .sub{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-rank-head{display:flex;justify-content:flex-end;padding:8px 18px 6px;border-bottom:1px solid var(--rule-2);font-size:11px;color:var(--muted)}
+.ov-rank-head span{width:120px;text-align:right}
+.ov-rank{width:21px;height:21px;border-radius:50%;background:var(--card-2);display:grid;place-items:center;font-size:11px;color:var(--muted);font-weight:600;flex:0 0 auto}
+.ov-rank.top{background:var(--brand);color:#fff}
+.ov-bar{height:7px;border-radius:999px;background:var(--card-2);overflow:hidden;flex:1;min-width:40px}
+.ov-bar i{display:block;height:100%;border-radius:999px;background:var(--brand)}
+.ov-donut{display:grid;grid-template-columns:118px 1fr;gap:16px;align-items:center;padding:14px 18px 16px}
+.ov-ring{width:112px;height:112px;border-radius:50%;position:relative}
+.ov-ring::after{content:'';position:absolute;inset:14px;border-radius:50%;background:var(--card)}
+.ov-ring b{position:absolute;inset:0;display:grid;place-items:center;z-index:1;font-size:24px;color:var(--ink)}
+.ov-ring b small{font-size:11px;color:var(--muted);font-weight:400;margin-left:2px}
+.ov-lg{display:flex;flex-direction:column;gap:9px;font-size:12px;color:var(--ink-2)}
+.ov-lg span{display:flex;align-items:center;gap:8px}
+.ov-lg i{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.ov-lg em{font-style:normal;color:var(--muted);font-size:11.5px;margin-left:auto}
+.ov-pending{padding:4px 18px 10px}
+.ov-pending a{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:12.5px;color:var(--ink);text-decoration:none}
+.ov-pending a:last-child{border-bottom:0}
+.ov-pending a:hover{color:var(--brand-ink)}
+.ov-pending b{margin-left:auto;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--card-2);display:grid;place-items:center;font-size:11px;color:var(--muted)}
+.ov-pending b.crit{background:var(--crit-bg);color:var(--crit)}
+.ov-empty{padding:32px 0;text-align:center;color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">平台概览</h1>
+          <div class="pt-d">平台规模、运营趋势与待处理事项</div>
+        </div>
+        <div class="sp" style="flex:1"></div>
+        <a class="btn" id="newSchool" href="#">新建院校</a>
+      </div>
+    </div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="../js/mock-data.js?v=4"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js?v=17"></script>
+<script src="../js/assess-data.js"></script>
+<script src="../js/teacher-kit.js"></script>
+<script src="../js/platform-kit.js?v=12"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'platform', active: 'pv-overview', base: '../' });
+
+  var trendMode = 'open';
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function link(href) { return UI.link(href); }
+  function kpi(k, v, unit) {
+    return '<div class="pf-kpi"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v) + (unit ? '<small>' + esc(unit) + '</small>' : '') + '</div></div>';
+  }
+  function parseDate(s) {
+    if (!s) return null;
+    var d = new Date(String(s).replace(' ', 'T'));
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function weekStart(d) {
+    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+    return x;
+  }
+  function fmtMD(d) { return (d.getMonth() + 1) + '/' + d.getDate(); }
+
+  function lineChart(series, opts) {
+    // series = [{ name, color, points: [{label, value}] }]
+    opts = opts || {};
+    var first = series.length ? series[0].points : [];
+    if (!first.length) return '<div class="ov-empty">暂无数据</div>';
+    var w = 640, h = 214, l = 36, r = 18, t = 18, b = 30;
+    var max = 1;
+    series.forEach(function (s) {
+      s.points.forEach(function (p) { if (p.value > max) max = p.value; });
+    });
+    var n = first.length;
+    var stepX = n > 1 ? (w - l - r) / (n - 1) : 0;
+    var grid = [0, 0.5, 1].map(function (f) {
+      var y = t + (h - t - b) * (1 - f);
+      return '<line x1="' + l + '" y1="' + y + '" x2="' + (w - r) + '" y2="' + y + '"/>';
+    }).join('');
+    var single = series.length === 1;
+    var showArea = opts.area !== false && single;
+    var showValues = opts.showValues !== false && single;
+    var paths = series.map(function (s) {
+      var xy = s.points.map(function (p, i) {
+        return { x: l + i * stepX, y: t + (h - t - b) * (1 - p.value / max), p: p };
+      });
+      var line = xy.map(function (q, i) { return (i ? 'L' : 'M') + q.x.toFixed(1) + ' ' + q.y.toFixed(1); }).join(' ');
+      var area = showArea ? ('<path d="' + line + ' L' + xy[xy.length - 1].x.toFixed(1) + ' ' + (h - b) + ' L' + xy[0].x.toFixed(1) + ' ' + (h - b) + ' Z" fill="url(#ovArea)"/>') : '';
+      var dots = xy.map(function (q) { return '<circle cx="' + q.x.toFixed(1) + '" cy="' + q.y.toFixed(1) + '" r="3.6" style="fill:var(--card);stroke:' + s.color + ';stroke-width:2.2"/>'; }).join('');
+      var vals = showValues ? xy.map(function (q) { return '<text class="v" x="' + q.x.toFixed(1) + '" y="' + (q.y - 9) + '" text-anchor="middle">' + q.p.value + '</text>'; }).join('') : '';
+      return area + '<path d="' + line + '" fill="none" stroke="' + s.color + '" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>' + dots + vals;
+    }).join('');
+    var labels = first.map(function (p, i) {
+      return '<text x="' + (l + i * stepX).toFixed(1) + '" y="' + (h - b + 18) + '" text-anchor="middle">' + esc(p.label) + '</text>';
+    }).join('');
+    var defs = showArea ? '<defs><linearGradient id="ovArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--brand)" stop-opacity=".22"/><stop offset="1" stop-color="var(--brand)" stop-opacity="0"/></linearGradient></defs>' : '';
+    var legend = series.map(function (s) {
+      return '<span><i class="ov-dot" style="background:' + s.color + '"></i>' + esc(s.name) + '</span>';
+    }).join('');
+    if (opts.footnote) legend += '<span>' + esc(opts.footnote) + '</span>';
+    return '<div class="ov-chart"><svg viewBox="0 0 ' + w + ' ' + h + '">' + defs +
+      '<g class="grid">' + grid + '</g>' + paths + labels + '</svg></div>' +
+      '<div class="ov-legend">' + legend + '</div>';
+  }
+
+  function weeklyTrend(n) {
+    var t = null;
+    try { t = TK.load(); } catch (e) { t = {}; }
+    var now = new Date();
+    var start = weekStart(now);
+    start.setDate(start.getDate() - (n - 1) * 7);
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      var from = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i * 7);
+      var to = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7);
+      var lessons = (t.courses || []).filter(function (c) { var d = parseDate(c.start); return d && d >= from && d < to; }).length;
+      var res = (t.resources || []).filter(function (r) { var d = parseDate(r.createdAt); return d && d >= from && d < to; }).length;
+      out.push({ label: fmtMD(from), lessons: lessons, resources: res });
+    }
+    return out;
+  }
+
+  function lineTeach(weeks) {
+    return lineChart([
+      { name: '课次', color: 'var(--brand)', points: weeks.map(function (w) { return { label: w.label, value: w.lessons }; }) },
+      { name: '资源生成', color: 'var(--brand-soft)', points: weeks.map(function (w) { return { label: w.label, value: w.resources }; }) }
+    ], { footnote: '近 6 周' });
+  }
+
+  function trendCard() {
+    var body = trendMode === 'open'
+      ? lineChart([{ name: '累计开通院校', color: 'var(--brand)', points: PF.openTrend(6) }], { footnote: '近 6 个月' })
+      : lineTeach(weeklyTrend(6));
+    return '<div class="pf-card"><div class="pf-card-h">数据趋势<span class="sp"></span>' +
+      '<div class="ov-tabs"><button class="ov-tab' + (trendMode === 'open' ? ' on' : '') + '" data-trend="open">开通趋势</button>' +
+      '<button class="ov-tab' + (trendMode === 'teach' ? ' on' : '') + '" data-trend="teach">教学运行</button></div></div>' +
+      '<div class="ov-card-b">' + body + '</div></div>';
+  }
+
+  function quickCard() {
+    var acts = [
+      { icon: '＋', label: '新建院校', href: 'schools.html?new=1' },
+      { icon: '人', label: '开通管理员', href: 'accounts.html' },
+      { icon: '菜', label: '菜单管理', href: 'menu.html' },
+      { icon: '字', label: '字典管理', href: 'dict.html' },
+      { icon: '谱', label: '图谱模板', href: 'graph-templates.html' },
+      { icon: '审', label: '平台审计', href: 'audit.html' }
+    ];
+    return '<div class="pf-card"><div class="pf-card-h">快捷操作</div><div class="ov-quick">' +
+      acts.map(function (a) { return '<a href="' + link(a.href) + '"><span class="ov-qi">' + a.icon + '</span><span>' + a.label + '</span></a>'; }).join('') +
+      '</div></div>';
+  }
+
+  function regionCard() {
+    var list = PF.regionDist();
+    var max = 1; list.forEach(function (x) { max = Math.max(max, x.count); });
+    var rows = list.slice(0, 6).map(function (x) {
+      return '<div class="ov-row"><span class="nm" style="width:92px">' + esc(x.name) + '</span><div class="ov-bar"><i style="width:' + Math.round(x.count / max * 100) + '%"></i></div><span class="sub" style="width:28px;text-align:right">' + x.count + '</span></div>';
+    }).join('');
+    return '<div class="pf-card"><div class="pf-card-h">地区分布<span class="sp"></span><a class="btn-s" href="' + link('schools.html') + '">查看详情</a></div><div class="ov-list">' + (rows || '<div class="ov-empty">暂无数据</div>') + '</div></div>';
+  }
+
+  function accessCard() {
+    var a = PF.accessStatus(), total = a.total || 0;
+    var p1 = total ? a.connected / total * 100 : 0;
+    var p2 = total ? (a.connected + a.empty) / total * 100 : 0;
+    var ring = 'conic-gradient(var(--brand) 0 ' + p1 + '%, var(--warn, #d99b00) ' + p1 + '% ' + p2 + '%, var(--rule) ' + p2 + '% 100%)';
+    return '<div class="pf-card"><div class="pf-card-h">院校接入状态<span class="sp"></span><a class="btn-s" href="' + link('schools.html') + '">查看详情</a></div><div class="ov-donut">' +
+      '<div class="ov-ring" style="background:' + ring + '"><b>' + total + '<small>所</small></b></div>' +
+      '<div class="ov-lg">' +
+      '<span><i style="background:var(--brand)"></i>已接入业务数据<em>' + a.connected + '</em></span>' +
+      '<span><i style="background:var(--warn, #d99b00)"></i>空骨架<em>' + a.empty + '</em></span>' +
+      '<span><i style="background:var(--rule)"></i>停用<em>' + a.disabled + '</em></span>' +
+      '</div></div></div>';
+  }
+
+  function rankingCard() {
+    var list = PF.ranking(5);
+    var rows = list.map(function (x, i) {
+      return '<div class="ov-row"><span class="ov-rank' + (i < 3 ? ' top' : '') + '">' + (i + 1) + '</span>' +
+        '<div style="min-width:0;flex:1"><div class="nm">' + esc(x.school.name) + '</div><div class="sub">' + esc(x.school.region || '未填写') + '</div></div>' +
+        '<div style="text-align:right"><div class="nm">' + x.active + '</div><div class="sub">近 7 天活跃账号</div></div>' +
+        '<div class="sub" style="width:120px;text-align:right">' + esc(x.last || '—') + '</div></div>';
+    }).join('');
+    return '<div class="pf-card"><div class="pf-card-h">活跃院校排行<span class="sp"></span><span class="pf-mono">Top 5</span></div>' +
+      '<div class="ov-rank-head"><span>最近活跃</span></div>' +
+      '<div class="ov-list">' + (rows || '<div class="ov-empty">暂无数据</div>') + '</div></div>';
+  }
+
+  function pendingCard() {
+    var rows = PF.pending().map(function (x) {
+      return '<a href="' + link(x.href) + '"><span>' + esc(x.label) + '</span><b class="' + (x.count ? 'crit' : '') + '">' + x.count + '</b></a>';
+    }).join('');
+    return '<div class="pf-card"><div class="pf-card-h">待处理事项</div><div class="ov-pending">' + rows + '</div></div>';
+  }
+
+  function recentCard() {
+    var list = PF.recentAudits(5);
+    var rows = list.map(function (a) {
+      return '<div class="ov-row"><div style="min-width:0;flex:1"><div class="nm">' + esc(a.action) + '</div><div class="sub">' + esc(a.object || '—') + ' · ' + esc(a.actor || '—') + '</div></div><div class="sub" style="width:128px;text-align:right">' + esc(a.at) + '</div></div>';
+    }).join('');
+    return '<div class="pf-card"><div class="pf-card-h">最近平台操作<span class="sp"></span><a class="btn-s" href="' + link('audit.html') + '">查看全部</a></div><div class="ov-list">' + (rows || '<div class="ov-empty">暂无操作记录</div>') + '</div></div>';
+  }
+
+  function graphCard() {
+    var g = PF.templateStats();
+    var rate = g.activeSchools ? Math.round(g.graphOn / g.activeSchools * 100) : 0;
+    return '<div class="pf-card"><div class="pf-card-h">图谱使用情况<span class="sp"></span>' +
+      '<a class="btn-s" href="' + link('graph-templates.html') + '">管理模板</a></div>' +
+      '<div class="ov-list">' +
+      '<div class="ov-row"><span class="nm">公共 / 行业模板</span><span class="sp"></span><span class="sub">' + g.total + ' 个</span></div>' +
+      '<div class="ov-row"><span class="nm">已启用模板</span><span class="sp"></span><span class="sub">' + g.enabled + ' 个</span></div>' +
+      '<div class="ov-row"><span class="nm">覆盖行业</span><span class="sp"></span><span class="sub">' + (g.industries.length ? esc(g.industries.join('、')) : '—') + '</span></div>' +
+      '<div class="ov-row"><span class="nm">院校图谱开通率</span><div class="ov-bar"><i style="width:' + rate + '%"></i></div><span class="sub" style="width:52px;text-align:right">' + g.graphOn + '/' + g.activeSchools + '</span></div>' +
+      '</div></div>';
+  }
+
+  function schoolTableCard() {
+    var rows = PF.list().map(function (s) {
+      var st = PF.stats(s);
+      var admins = PF.accountsOf(s).map(function (a) { return a.name; }).filter(Boolean).join('、') || '—';
+      var blank = st.accounts + st.teachers + st.students === 0;
+      return '<tr>' +
+        '<td><a class="nm" href="' + link('school-detail.html?id=' + encodeURIComponent(s.id)) + '" style="color:inherit;text-decoration:none">' + esc(s.name) + '</a>' +
+        '<span class="sub">' + esc(s.code || s.id) + '</span></td>' +
+        '<td><span class="pf-status ' + (s.status === '启用' ? 'on' : 'off') + '">' + esc(s.status) + '</span></td>' +
+        '<td>' + esc(admins) + '</td>' +
+        '<td class="num">' + st.accounts + '</td>' +
+        '<td class="num">' + st.teachers + '</td>' +
+        '<td class="num">' + st.students + (blank ? '<span class="sub">尚未接入业务数据</span>' : '') + '</td>' +
+        '<td><span class="pf-mono">' + esc(PF.lastActive(s) || '—') + '</span></td>' +
+        '</tr>';
+    }).join('');
+    return '<div class="pf-card"><div class="pf-card-h">院校汇总<span class="sp"></span>' +
+      '<a class="btn-s" href="' + link('schools.html') + '">院校管理</a></div>' +
+      (rows ? '<table class="pf-tbl"><thead><tr><th>院校</th><th>状态</th><th>管理员</th>' +
+        '<th class="num">账号数</th><th class="num">教师数</th><th class="num">在读学生</th><th>最近活跃</th></tr></thead><tbody>' +
+        rows + '</tbody></table>' : '<div class="pf-empty">暂无院校</div>') +
+      '</div>';
+  }
+
+  function render() {
+    var sum = PF.summary();
+    var h = '<div class="pf-kpis">' +
+      kpi('院校总数', sum.schools) +
+      kpi('启用院校', sum.enabled) +
+      kpi('账号数', sum.accounts) +
+      kpi('教师数', sum.teachers) +
+      kpi('在读学生', sum.students) +
+      kpi('近 7 天活跃院校', sum.active7) +
+      '</div>';
+    h += trendCard();
+    h += '<div class="ov-two">' + regionCard() + accessCard() + '</div>';
+    h += rankingCard();
+    document.getElementById('body').innerHTML = h;
+  }
+
+  document.getElementById('newSchool').href = link('schools.html?new=1');
+  document.getElementById('body').addEventListener('click', function (e) {
+    var t = e.target.closest('[data-trend]');
+    if (t) { trendMode = t.dataset.trend; render(); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

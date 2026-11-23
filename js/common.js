@@ -14,6 +14,7 @@
     if (p === 'admin') return '管理端';
     if (p === 'teacher') return '教师端';
     if (p === 'student') return '学生端';
+    if (p === 'platform') return '平台管理端';
     return p || '';
   }
 
@@ -90,24 +91,24 @@
         ] },
         // 教学质量：课程计划执行后的结果（老师确认的课堂证据汇总）；「课程改进建议」导航本期隐藏（2026-11-19），条目与页面保留
         { label: '教学质量', items: [
-          { key: 'tq-reach', label: '教学达成', icon: '▤', href: 'teach-quality.html?t=reach', perms: ['teach:quality:view'], landing: false }
+          { key: 'tq-reach', label: '教学达成', icon: '▤', href: 'teach-quality.html?t=reach', perms: ['teach:quality:view'], landing: false, feature: 'quality' }
         ] },
         { key: 'top-assess', label: '', items: [
-          { key: 'assess', label: '专业建设测评', icon: '◈', href: 'assess.html',
+          { key: 'assess', label: '专业建设测评', icon: '◈', href: 'assess.html', feature: 'majorAssess',
             perms: ['major:assess:view'], landing: false }
         ] },
         // 图谱中心：由原独立的图谱平台迁入（graph/ 目录），管理端可维护；按建图谱的先后排：知识库 → 能力图谱 → 知识体系 → 映射审核 → 知识图谱 → 图谱建议审核
         { label: '图谱中心', items: [
-          { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true },
-          { key: 'gc-ag', label: '能力图谱', icon: '◇', href: 'graph/ability-graph.html', external: true },
-          { key: 'gc-ks', label: '知识体系', icon: '◇', href: 'graph/knowledge-system.html', external: true },
-          { key: 'gc-mr', label: '映射审核', icon: '◇', href: 'graph/mapping-review.html', external: true },
-          { key: 'gc-kg', label: '知识图谱', icon: '◇', href: 'graph/knowledge-graph.html', external: true },
+          { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true, feature: 'graph' },
+          { key: 'gc-ag', label: '能力图谱', icon: '◇', href: 'graph/ability-graph.html', external: true, feature: 'graph' },
+          { key: 'gc-ks', label: '知识体系', icon: '◇', href: 'graph/knowledge-system.html', external: true, feature: 'graph' },
+          { key: 'gc-mr', label: '映射审核', icon: '◇', href: 'graph/mapping-review.html', external: true, feature: 'graph' },
+          { key: 'gc-kg', label: '知识图谱', icon: '◇', href: 'graph/knowledge-graph.html', external: true, feature: 'graph' },
           // 图谱建议审核：老师在能力地图里提交的个人节点，管理员 / 专业负责人审核、发布
-          { key: 'gc-sr', label: '图谱建议审核', icon: '◇', href: 'graph/suggest-review.html', perms: ['graph:suggest:review'], landing: false }
+          { key: 'gc-sr', label: '图谱建议审核', icon: '◇', href: 'graph/suggest-review.html', perms: ['graph:suggest:review'], landing: false, feature: 'graph' }
         ] },
         { key: 'top-pano', label: '', items: [
-          { key: 'panorama', label: '行业分析', icon: '◎', href: 'panorama.html', external: true }
+          { key: 'panorama', label: '行业分析', icon: '◎', href: 'panorama.html', external: true, feature: 'industry' }
         ] },
         // 账号与角色：和参考系统一致
         { label: '账号与角色', items: [
@@ -116,13 +117,12 @@
           { key: 'role', label: '角色管理', icon: '▤', href: 'role.html', landing: false, perms: ['org:role:define'] },
           { key: 'menu', label: '菜单管理', icon: '▤', href: 'menu.html', landing: false, perms: ['org:role:define'] }
         ] },
-        // 系统配置：院校信息、组织管理、字典、平台品牌配置、操作日志
+        // 系统配置：院校信息、组织管理、字典、操作日志
         { label: '系统配置', items: [
           { key: 'college', label: '院校信息', icon: '▤', href: 'college.html', landing: false, perms: ['org:node:edit'] },
           { key: 'system', label: '组织管理', icon: '▤', href: 'system.html',
             perms: ['org:node:view'] },
           { key: 'dict', label: '字典管理', icon: '▤', href: 'dict.html', landing: false, perms: ['org:node:edit'] },
-          { key: 'sysconf', label: '平台品牌配置', icon: '▤', href: 'sysconf.html', landing: false, perms: ['org:node:edit'] },
           { key: 'audit', label: '操作日志', icon: '▤', href: 'audit.html', perms: ['org:audit:view'], landing: false }
         ] }
       ]
@@ -134,7 +134,7 @@
       groups: [
         { key: 'top', label: '', items: [
           { key: 'workbench', label: '工作台', icon: '▤', href: 'workbench.html', landing: false },
-          { key: 'kmap', label: '能力地图', icon: '◇', href: 'kmap.html', external: true },
+          { key: 'kmap', label: '能力地图', icon: '◇', href: 'kmap.html', external: true, feature: 'graph' },
           // 备课中心隐藏（teacher-resources.html 保留，菜单管理页可重新启用）；teacher-profile.html 为权限演示旧页，教师档案改用 teacher-file.html；我的班级不在菜单中显示
           { key: 'resources', label: '备课中心', icon: '▤', empty: true, hidden: true },
         ] },
@@ -148,10 +148,10 @@
         ] },
         // 图谱中心：教师端可新建，自己创建的可维护、他人创建的仅查看；不含映射审核；顺序同管理端
         { label: '图谱中心', items: [
-          { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true },
-          { key: 'gc-ag', label: '能力图谱', icon: '◇', href: 'graph/ability-graph.html', external: true },
-          { key: 'gc-ks', label: '知识体系', icon: '◇', href: 'graph/knowledge-system.html', external: true },
-          { key: 'gc-kg', label: '知识图谱', icon: '◇', href: 'graph/knowledge-graph.html', external: true }
+          { key: 'gc-kb', label: '知识库', icon: '◇', href: 'graph/knowledge-base.html', external: true, feature: 'graph' },
+          { key: 'gc-ag', label: '能力图谱', icon: '◇', href: 'graph/ability-graph.html', external: true, feature: 'graph' },
+          { key: 'gc-ks', label: '知识体系', icon: '◇', href: 'graph/knowledge-system.html', external: true, feature: 'graph' },
+          { key: 'gc-kg', label: '知识图谱', icon: '◇', href: 'graph/knowledge-graph.html', external: true, feature: 'graph' }
         ] },
         { key: 'bottom', label: '', items: [
           { key: 'growth', label: '教师成长中心', icon: '▤', href: 'teacher-growth.html' },
@@ -167,6 +167,28 @@
           { key: 'assess', label: '能力测评', icon: '◈', href: 'student-assess.html' },
           { key: 'growth', label: '学生成长中心', icon: '▤', href: 'student-growth.html' },
           { key: 'mine', label: '我的信息', icon: '▤', href: 'student.html' }
+        ] }
+      ]
+    },
+    // 平台管理端：平台内部使用，只做院校创建、院校管理员开通与数据查看
+    platform: {
+      title: 'AIGC 智慧课堂<br>教学平台 · 平台管理端',
+      groups: [
+        { key: 'top', label: '', items: [
+          { key: 'pv-overview', label: '平台概览', icon: '▤', href: 'platform/overview.html', perms: ['platform:data:view'] }
+        ] },
+        { label: '院校与账号', items: [
+          { key: 'pv-schools', label: '院校管理', icon: '▤', href: 'platform/schools.html', perms: ['platform:school:view'] },
+          { key: 'pv-features', label: '功能与配额', icon: '▤', href: 'platform/features.html', perms: ['platform:tenant:grant'], hidden: true },
+          { key: 'pv-accounts', label: '院校账号', icon: '▤', href: 'platform/accounts.html', perms: ['platform:account:manage'] }
+        ] },
+        { label: '平台配置', items: [
+          { key: 'pv-menu', label: '菜单管理', icon: '▤', href: 'platform/menu.html', perms: ['platform:menu:manage'] },
+          { key: 'pv-dict', label: '字典管理', icon: '▤', href: 'platform/dict.html', perms: ['platform:dict:edit'] },
+          { key: 'pv-graph-tpl', label: '图谱模板库', icon: '◇', href: 'platform/graph-templates.html', perms: ['platform:graph-template:manage'] },
+          { key: 'pv-staff', label: '平台账号', icon: '▤', href: 'platform/staff.html', perms: ['platform:staff:manage'] },
+          { key: 'pv-brand', label: '平台品牌配置', icon: '◈', href: 'platform/brand.html' },
+          { key: 'pv-audit', label: '平台审计日志', icon: '▤', href: 'platform/audit.html', perms: ['platform:audit:view'] }
         ] }
       ]
     }
@@ -229,7 +251,16 @@
     // 学生端
     'student.tasks': svgI('<rect x="5" y="4.5" width="14" height="16.5" rx="2"/><rect x="9" y="2.7" width="6" height="3.6" rx="1"/><path d="M9 11h6"/><path d="M9 14.5h6"/>'),
     'student.growth': svgI('<path d="M12 21.5V13"/><path d="M12 13C12 9 9 6.8 4.5 6.8c0 4.5 3 6.2 7.5 6.2z"/><path d="M12 13c0-4 3-6.2 7.5-6.2 0 4.5-3 6.2-7.5 6.2z"/>'),
-    mine: svgI('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="9.8" r="2.8"/><path d="M6.2 18.6c1.2-2.5 3.3-3.8 5.8-3.8s4.6 1.3 5.8 3.8"/>')
+    mine: svgI('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="9.8" r="2.8"/><path d="M6.2 18.6c1.2-2.5 3.3-3.8 5.8-3.8s4.6 1.3 5.8 3.8"/>'),
+    // 平台管理端
+    'pv-overview': svgI('<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="11" width="7" height="9.5" rx="1.5"/>'),
+    'pv-schools': svgI('<path d="M4 20V9l8-5 8 5v11"/><path d="M4 20h16"/><path d="M9 20v-5h6v5"/><path d="M9 10.5h.01"/><path d="M15 10.5h.01"/>'),
+    'pv-accounts': svgI('<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5c.7-3.2 2.9-4.8 5.5-4.8s4.8 1.6 5.5 4.8"/><circle cx="17" cy="9" r="2.3"/><path d="M16.2 14.9c2.4.4 3.9 1.8 4.4 4.3"/>'),
+    'pv-features': svgI('<path d="M4 7h7"/><path d="M15 7h5"/><circle cx="13" cy="7" r="2.2"/><path d="M4 17h5"/><path d="M13 17h7"/><circle cx="11" cy="17" r="2.2"/>'),
+    'pv-dict': svgI('<rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M9 3.5v17"/><path d="M12.5 8.5h4"/><path d="M12.5 12.5h4"/>'),
+    'pv-menu': svgI('<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/><circle cx="18.5" cy="18" r="1.4"/>'),
+    'pv-graph-tpl': svgI('<circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="7" r="2.4"/><circle cx="12" cy="17.5" r="2.4"/><path d="M8.1 7.2l7.5-.2"/><path d="M7 8.2l3.8 7.2"/><path d="M17 9.2l-3.9 6.3"/>'),
+    'pv-audit': svgI('<path d="M14 3H7a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V7.5z"/><path d="M14 3v4.5h4.5"/><path d="M8.5 12.5l2 2 4-4"/>')
   };
   /* 一级菜单（分组标题）图标：按分组名匹配，与子项图标同一套风格 */
   var GICONS = {
@@ -239,32 +270,64 @@
     '课程计划管理': svgI('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M8.8 14.5l2.2 2.2 4.2-4.7"/>'),
     '智慧课堂': svgI('<rect x="3" y="4.5" width="18" height="12" rx="1.8"/><path d="M8 20.5h8"/><path d="M12 16.5v4"/><path d="M8.5 12l2.2-2.8 2 1.8 2.8-3.5"/>'),
     '教学质量': svgI('<circle cx="12" cy="12" r="8.5"/><path d="M8.4 12.4l2.5 2.5 4.7-5.6"/>'),
-    '系统配置': svgI('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.8"/><path d="M12 18.7v2.8"/><path d="M2.5 12h2.8"/><path d="M18.7 12h2.8"/><path d="M5.3 5.3l2 2"/><path d="M16.7 16.7l2 2"/><path d="M18.7 5.3l-2 2"/><path d="M7.3 16.7l-2 2"/>')
+    '系统配置': svgI('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.8"/><path d="M12 18.7v2.8"/><path d="M2.5 12h2.8"/><path d="M18.7 12h2.8"/><path d="M5.3 5.3l2 2"/><path d="M16.7 16.7l2 2"/><path d="M18.7 5.3l-2 2"/><path d="M7.3 16.7l-2 2"/>'),
+    '院校与账号': svgI('<path d="M3 20.5h18"/><path d="M5 20.5V8l7-4.5L19 8v12.5"/><path d="M9.5 20.5v-5h5v5"/><path d="M9.5 11h.01"/><path d="M14.5 11h.01"/>'),
+    '平台配置': svgI('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.8"/><path d="M12 18.7v2.8"/><path d="M2.5 12h2.8"/><path d="M18.7 12h2.8"/><path d="M5.3 5.3l2 2"/><path d="M16.7 16.7l2 2"/><path d="M18.7 5.3l-2 2"/><path d="M7.3 16.7l-2 2"/>')
   };
 
-  /* ── 菜单管理的改动（localStorage menuConf.v1）：改名、图标、排序、禁用隐藏，以及新增的占位菜单 ──
+  /* ── 菜单配置（localStorage）：平台默认 menuConf.default.v1 + 院校本校 menuConf.v1 ──
+   *   平台默认是院校的基线；院校可在此基础上改名、排序、隐藏、新增本校占位菜单。
+   *   平台禁用的菜单院校不可恢复。
    *   { <portal>: { items: { <key>: {label, icon, order, hidden} }, groups: { <分组名>: {label, order, hidden} }, added: [{key, label, icon, group, order, hidden}] } } */
   var MENU_CONF_KEY = 'menuConf.v1';
-  function menuConf() { try { return JSON.parse(localStorage.getItem(MENU_CONF_KEY)) || {}; } catch (e) { return {}; } }
-  function saveMenuConf(c) { try { localStorage.setItem(MENU_CONF_KEY, JSON.stringify(c)); } catch (e) {} }
-  // 应用改动后的菜单；withHidden 为 true 时保留已禁用的（菜单管理页用），并带上 base（原始配置）
-  function effectiveMenu(portal, withHidden) {
-    var base = MENUS[portal], c = menuConf()[portal] || {}, io = c.items || {}, go = c.groups || {};
+  var MENU_CONF_DEFAULT_KEY = 'menuConf.default.v1';
+  function readConf(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+  function menuConf(scope) { return readConf(scope === 'default' ? MENU_CONF_DEFAULT_KEY : MENU_CONF_KEY); }
+  function saveMenuConf(c, scope) {
+    try { localStorage.setItem(scope === 'default' ? MENU_CONF_DEFAULT_KEY : MENU_CONF_KEY, JSON.stringify(c)); } catch (e) {}
+  }
+  // 应用改动后的菜单：base → 平台默认 → 院校本校；withHidden 为 true 时保留已禁用的（菜单管理页用）
+  function effectiveMenu(portal, withHidden, scope) {
+    var base = MENUS[portal];
+    var def = menuConf('default')[portal] || {};
+    var sch = scope === 'default' ? {} : (menuConf()[portal] || {});
+    var dIo = def.items || {}, sIo = sch.items || {}, dGo = def.groups || {}, sGo = sch.groups || {};
     var groups = base.groups.map(function (g, gi) {
-      var gid = g.key || g.label, o = go[gid] || {};
+      var gid = g.key || g.label, dg = dGo[gid] || {}, sg = sGo[gid] || {};
       var items = g.items.map(function (it, ii) {
         var x = {}, k; for (k in it) x[k] = it[k];
-        var ov = io[it.key] || {};
-        if (ov.label) x.label = ov.label; if (ov.icon) { x.icon = ov.icon; x.iconOverride = true; }
-        x.order = ov.order != null ? ov.order : ii + 1; x.hidden = ov.hidden != null ? !!ov.hidden : !!it.hidden; x.builtin = true; x.group = gid;
+        var di = dIo[it.key] || {}, si = sIo[it.key] || {};
+        if (si.label || di.label) x.label = si.label || di.label;
+        if (si.icon || di.icon) { x.icon = si.icon || di.icon; x.iconOverride = true; }
+        x.order = si.order != null ? si.order : (di.order != null ? di.order : ii + 1);
+        // 平台默认可覆盖内置的隐藏状态；院校只能在平台结果上继续隐藏
+        x.platformHidden = di.hidden != null ? di.hidden === true : it.hidden === true;
+        x.schoolHidden = si.hidden === true;
+        x.hidden = x.platformHidden || x.schoolHidden;
+        x.builtin = true; x.group = gid;
         return x;
       });
-      (c.added || []).filter(function (a) { return a.group === gid; }).forEach(function (a) {
-        items.push({ key: a.key, label: a.label, icon: a.icon || '▤', empty: true, order: a.order || items.length + 1, hidden: !!a.hidden, builtin: false, group: gid });
+      // 新增占位菜单：平台默认 + 院校本校，同 key 时院校覆盖名称/排序，禁用取并集
+      var added = {}, defKeys = {};
+      (def.added || []).forEach(function (a) { added[a.key] = a; defKeys[a.key] = 1; });
+      (sch.added || []).forEach(function (a) {
+        var prev = added[a.key];
+        added[a.key] = prev ? Object.assign({}, prev, a, { hidden: !!(prev.hidden || a.hidden) }) : a;
+      });
+      Object.keys(added).forEach(function (k) {
+        var a = added[k];
+        if (a.group !== gid) return;
+        items.push({ key: a.key, label: a.label, icon: a.icon || '▤', empty: true, order: a.order || items.length + 1, hidden: !!a.hidden, builtin: false, defaultAdded: !!defKeys[k], group: gid });
       });
       items.sort(function (x, y) { return x.order - y.order; });
-      return { id: gid, label: g.label, name: o.label || g.label, order: o.order != null ? o.order : gi + 1, hidden: !!o.hidden,
-        items: withHidden ? items : items.filter(function (it) { return !it.hidden; }) };
+      return {
+        id: gid, label: g.label, name: sg.label || dg.label || g.label,
+        order: sg.order != null ? sg.order : (dg.order != null ? dg.order : gi + 1),
+        hidden: !!(dg.hidden === true || sg.hidden === true),
+        platformHidden: dg.hidden === true,
+        schoolHidden: sg.hidden === true,
+        items: withHidden ? items : items.filter(function (it) { return !it.hidden; })
+      };
     });
     groups.sort(function (x, y) { return x.order - y.order; });
     var title = base.title, sc = sysConfActive();
@@ -330,8 +393,20 @@
   }
   function indent(n) { return new Array(n + 1).join('　'); }
 
+  /* ── 院校功能开关：平台端在 platform.v1 里为演示院校配置，关闭后隐藏对应菜单 ── */
+  var PLATFORM_KEY = 'platform.v1';
+  function schoolFeature(key) {
+    try {
+      var s = JSON.parse(localStorage.getItem(PLATFORM_KEY));
+      var demo = ((s && s.schools) || []).find(function (x) { return x.demo; });
+      if (!demo || !demo.features) return true;
+      return demo.features[key] !== false;
+    } catch (e) { return true; }
+  }
+
   /* ── 菜单项是否对当前身份可见 ── */
   function itemVisible(ctx, identity, item) {
+    if (item.feature && !schoolFeature(item.feature)) return false;
     if (item.external || (item.empty && !item.perms)) return true;
     if (!item.perms) return true;
     return hasAnyPerm(ctx, identity, item.perms);
@@ -522,6 +597,17 @@
     if (enterable.length && enterable.indexOf(_config.portal) < 0) {
       location.replace(link(abs(firstPage(ctx, identity))));
       return;
+    }
+    // 当前页面对应的功能模块被平台关闭时，跳回该端首页（防止直接输 URL 绕过）
+    if (_config.active) {
+      var pageItem = null;
+      effectiveMenu(_config.portal).groups.forEach(function (g) {
+        g.items.forEach(function (it) { if (it.key === _config.active) pageItem = it; });
+      });
+      if (pageItem && pageItem.feature && !schoolFeature(pageItem.feature)) {
+        location.replace(link(abs(firstPage(ctx, identity, _config.portal))));
+        return;
+      }
     }
     renderAll(ctx, _config);
   }

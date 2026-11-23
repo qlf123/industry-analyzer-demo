@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>院校管理</title>
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="platform.css?v=6">
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">院校管理</h1>
+          <div class="pt-d">新建院校、维护院校基本信息；院校业务数据由院校侧维护</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="../js/mock-data.js?v=4"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js?v=17"></script>
+<script src="../js/sys-dict.js?v=2"></script>
+<script src="../js/platform-kit.js?v=12"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'platform', active: 'pv-schools', base: '../' });
+
+  var ctx = DEMO.getState();
+  var identity = UI.currentIdentity(ctx);
+  var F = { q: '', status: '' };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function link(href) { return UI.link(href); }
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2400);
+  }
+  function statusPill(s) {
+    return s === '启用' ? '<span class="pf-status on">启用</span>' : '<span class="pf-status off">停用</span>';
+  }
+  function field(label, key, value, opts) {
+    opts = opts || {};
+    return '<label' + (opts.full ? ' class="full"' : '') + '><span' + (opts.req ? ' class="req"' : '') + '>' + esc(label) + '</span>' +
+      '<input data-k="' + key + '" value="' + esc(value || '') + '"' + (opts.ph ? ' placeholder="' + esc(opts.ph) + '"' : '') + (opts.disabled ? ' disabled' : '') + '></label>';
+  }
+  function fieldSelect(label, key, options, value) {
+    return '<label><span>' + esc(label) + '</span><select data-k="' + key + '"><option value="">请选择</option>' +
+      options.map(function (o) { return '<option' + (o === value ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') +
+      '</select></label>';
+  }
+  function fieldChips(label, key, options, values) {
+    values = values || [];
+    return '<label><span>' + esc(label) + '</span><div class="pf-chips" data-k="' + key + '">' +
+      options.map(function (o) {
+        return '<button type="button" class="pf-chip' + (values.indexOf(o) >= 0 ? ' on' : '') + '" data-v="' + esc(o) + '">' + esc(o) + '</button>';
+      }).join('') + '</div></label>';
+  }
+  function fieldArea(label, key, value, opts) {
+    opts = opts || {};
+    return '<label' + (opts.full ? ' class="full"' : '') + '><span>' + esc(label) + '</span>' +
+      '<textarea data-k="' + key + '" rows="' + (opts.rows || 3) + '" placeholder="' + esc(opts.ph || '') + '">' + esc(value || '') + '</textarea></label>';
+  }
+  function dictOpts(code, parent) {
+    try { return (window.SysDict && SysDict.opts(code, parent)) || []; } catch (e) { return []; }
+  }
+  function regionField(province, city) {
+    var provs = dictOpts('DM_DQ');
+    if (province && provs.indexOf(province) < 0) provs = provs.concat([province]);
+    var cities = province ? dictOpts('DM_DQ', province) : [];
+    if (city && cities.indexOf(city) < 0) cities = cities.concat([city]);
+    return '<label class="full"><span>所在地区</span><div class="pf-region">' +
+      '<select data-k="province"><option value="">省 / 直辖市</option>' +
+      provs.map(function (o) { return '<option' + (o === province ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>' +
+      '<select data-k="city"><option value="">市</option>' +
+      cities.map(function (o) { return '<option' + (o === city ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>' +
+      '</div></label>';
+  }
+  function splitRegion(region) {
+    var parts = String(region || '').trim().split(/[\s,，、/]+/).filter(Boolean);
+    return { province: parts[0] || '', city: parts[1] || '' };
+  }
+  function wireRegion(dlg) {
+    var ps = dlg.querySelector('[data-k="province"]');
+    var cs = dlg.querySelector('[data-k="city"]');
+    if (!ps || !cs) return;
+    ps.addEventListener('change', function () {
+      var list = dictOpts('DM_DQ', ps.value);
+      cs.innerHTML = '<option value="">市</option>' +
+        list.map(function (o) { return '<option>' + esc(o) + '</option>'; }).join('');
+    });
+  }
+
+  /* ── 列表 ── */
+  function renderShell() {
+    document.getElementById('body').innerHTML =
+      '<div class="pf-toolbar">' +
+      '<input class="pf-in" id="pfQ" placeholder="搜索院校名称、编码、管理员" value="' + esc(F.q) + '">' +
+      '<select class="pf-sel" id="pfStatus"><option value="">全部状态</option><option value="启用">启用</option><option value="停用">停用</option></select>' +
+      '<span class="sp"></span>' +
+      '<button class="btn" type="button" data-new>新建院校</button>' +
+      '</div>' +
+      '<div class="pf-card"><div class="pf-card-h">院校列表<span class="sp"></span><span class="pf-mono" id="pfCount"></span></div><div id="list"></div></div>';
+
+    document.getElementById('pfQ').addEventListener('input', function (e) { F.q = e.target.value; renderList(); });
+    document.getElementById('pfStatus').addEventListener('change', function (e) { F.status = e.target.value; renderList(); });
+    document.querySelector('[data-new]').addEventListener('click', openCreate);
+    document.getElementById('list').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-edit],[data-toggle]');
+      if (!b) return;
+      var school = PF.byId(b.getAttribute('data-id'));
+      if (!school) return;
+      if (b.hasAttribute('data-edit')) openEdit(school);
+      else toggleStatus(school);
+    });
+    renderList();
+  }
+
+  function filtered() {
+    var q = F.q.trim().toLowerCase();
+    return PF.list().filter(function (s) {
+      if (F.status && s.status !== F.status) return false;
+      if (!q) return true;
+      return [s.name, s.code, s.region, s.admin && s.admin.name, s.admin && s.admin.phone].filter(Boolean).join(' ').toLowerCase().indexOf(q) >= 0;
+    });
+  }
+
+  function renderList() {
+    var rows = filtered();
+    var all = PF.list();
+    document.getElementById('pfCount').textContent = '筛选 ' + rows.length + ' / 共 ' + all.length + ' 所';
+    if (!rows.length) {
+      document.getElementById('list').innerHTML = '<div class="pf-empty">没有匹配的院校。</div>';
+      return;
+    }
+    var h = '<table class="pf-tbl"><thead><tr>' +
+      '<th>院校</th><th>地区</th><th>状态</th><th>管理员</th><th class="num">账号</th><th>开通时间</th><th></th></tr></thead><tbody>';
+    rows.forEach(function (s) {
+      var st = PF.stats(s);
+      h += '<tr>' +
+        '<td><span class="nm">' + esc(s.name) + '</span><span class="sub">' + esc(s.code) + (s.short ? ' · ' + esc(s.short) : '') + '</span></td>' +
+        '<td>' + esc(s.region || '—') + '</td>' +
+        '<td>' + statusPill(s.status) + '</td>' +
+        '<td>' + (s.admin && s.admin.name ? esc(s.admin.name) + '<span class="sub">' + esc(s.admin.phone || '') + '</span>' : '<span class="pf-mono">未开通</span>') + '</td>' +
+        '<td class="num">' + st.accounts + '</td>' +
+        '<td>' + esc(s.createdAt || '—') + '</td>' +
+        '<td><div class="pf-acts">' +
+        '<a class="btn-s" href="' + link('school-detail.html?id=' + encodeURIComponent(s.id)) + '">查看</a>' +
+        '<button class="btn-s" type="button" data-edit data-id="' + esc(s.id) + '">编辑</button>' +
+        '<button class="btn-s" type="button" data-toggle data-id="' + esc(s.id) + '">' + (s.status === '启用' ? '停用' : '启用') + '</button>' +
+        '</div></td></tr>';
+    });
+    h += '</tbody></table>';
+    document.getElementById('list').innerHTML = h;
+  }
+
+  /* ── 新建 ── */
+  function openCreate() {
+    var dlg = document.createElement('dialog');
+    dlg.className = 'aidlg pf-dlg';
+    dlg.innerHTML = '<form>' +
+      '<h2>新建院校</h2>' +
+      '<div class="pf-form inline">' +
+      '<div class="sec">院校信息</div>' +
+      field('院校名称', 'name', '', { req: true, full: true, ph: '请输入院校全称' }) +
+      field('院校简称', 'short', '', { ph: '请输入' }) +
+      field('院校编码', 'code', '', { req: true, ph: '如：教育部院校代码' }) +
+      fieldChips('办学类型', 'type', dictOpts('DM_BXLX'), []) +
+      fieldSelect('办学性质', 'nature', dictOpts('DM_BXXZ'), '') +
+      regionField('', '') +
+      field('详细地址', 'address', '', { ph: '请输入详细地址', full: true }) +
+      field('联系人', 'contact', '', { ph: '请输入' }) +
+      field('联系电话', 'phone', '', { ph: '手机或座机' }) +
+      field('联系邮箱', 'email', '', { ph: '请输入邮箱', full: true }) +
+      fieldArea('院校简介', 'intro', '', { full: true, ph: '请输入院校简介', rows: 3 }) +
+      '<div class="sec">管理员账号信息</div>' +
+      field('管理员姓名', 'adminName', '', { ph: '院校超级管理员' }) +
+      field('管理员账号', 'adminAccount', '', { ph: '登录账号，留空自动生成' }) +
+      field('管理员手机号', 'adminPhone', '', { ph: '请输入' }) +
+      field('初始密码', 'initPassword', '', { ph: '请输入初始密码' }) +
+      '</div>' +
+      '<div class="pf-note">管理员信息可暂不填写，开通后在「院校账号」中创建；若填写管理员信息，则账号与初始密码必填。</div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:2px">' +
+      '<button type="button" class="btn ghost" data-cancel>取消</button>' +
+      '<button type="button" class="btn" data-submit>开通院校</button>' +
+      '</div></form>';
+    document.body.appendChild(dlg);
+    wireChips(dlg);
+    wireRegion(dlg);
+    dlg.showModal();
+    dlg.addEventListener('close', function () { dlg.remove(); });
+    dlg.querySelector('[data-cancel]').addEventListener('click', function () { dlg.close(); });
+    dlg.querySelector('[data-submit]').addEventListener('click', function () {
+      var d = readDialog(dlg);
+      var bad = [];
+      if (!d.name) bad.push('name');
+      if (!d.code) bad.push('code');
+      var wantAdmin = !!(d.adminName || d.adminAccount || d.adminPhone || d.initPassword);
+      if (wantAdmin) {
+        if (!d.adminAccount) bad.push('adminAccount');
+        if (!d.initPassword) bad.push('initPassword');
+      }
+      if (bad.length) return markBad(dlg, bad, '请填写必填项');
+      if (codeExists(d.code)) return markBad(dlg, ['code'], '院校编码已存在');
+      if (d.adminAccount && accountExists(d.adminAccount)) return markBad(dlg, ['adminAccount'], '管理员账号已存在');
+      if (d.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return markBad(dlg, ['email'], '联系邮箱格式不正确');
+      var school = PF.create({
+        name: d.name, short: d.short, code: d.code, region: d.region, address: d.address, contact: d.contact, phone: d.phone,
+        type: d.type, nature: d.nature, email: d.email, intro: d.intro,
+        admin: { name: d.adminName, phone: d.adminPhone, accountId: d.adminAccount, initPassword: d.initPassword }
+      }, identity.account.name);
+      dlg.close();
+      toast('已开通院校：' + school.name);
+      renderList();
+    });
+  }
+
+  /* ── 编辑 ── */
+  function openEdit(school) {
+    var rg = splitRegion(school.region);
+    var dlg = document.createElement('dialog');
+    dlg.className = 'aidlg pf-dlg';
+    dlg.innerHTML = '<form>' +
+      '<h2>编辑院校</h2>' +
+      '<div class="pf-form inline">' +
+      '<div class="sec">院校信息</div>' +
+      field('院校名称', 'name', school.name, { req: true, full: true }) +
+      field('院校简称', 'short', school.short) +
+      field('院校编码', 'code', school.code, { req: true }) +
+      fieldChips('办学类型', 'type', dictOpts('DM_BXLX'), school.type) +
+      fieldSelect('办学性质', 'nature', dictOpts('DM_BXXZ'), school.nature) +
+      regionField(rg.province, rg.city) +
+      field('详细地址', 'address', school.address, { ph: '请输入详细地址', full: true }) +
+      field('联系人', 'contact', school.contact) +
+      field('联系电话', 'phone', school.phone) +
+      field('联系邮箱', 'email', school.email, { full: true }) +
+      fieldArea('院校简介', 'intro', school.intro, { full: true, ph: '请输入院校简介', rows: 3 }) +
+      '</div>' +
+      '<div class="pf-note">管理员账号信息请在「院校账号」中维护。</div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:2px">' +
+      '<button type="button" class="btn ghost" data-cancel>取消</button>' +
+      '<button type="button" class="btn" data-submit>保存</button>' +
+      '</div></form>';
+    document.body.appendChild(dlg);
+    wireChips(dlg);
+    wireRegion(dlg);
+    dlg.showModal();
+    dlg.addEventListener('close', function () { dlg.remove(); });
+    dlg.querySelector('[data-cancel]').addEventListener('click', function () { dlg.close(); });
+    dlg.querySelector('[data-submit]').addEventListener('click', function () {
+      var d = readDialog(dlg);
+      var bad = [];
+      if (!d.name) bad.push('name');
+      if (!d.code) bad.push('code');
+      if (bad.length) return markBad(dlg, bad, '请填写必填项');
+      if (codeExists(d.code, school.id)) return markBad(dlg, ['code'], '院校编码已存在');
+      if (d.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return markBad(dlg, ['email'], '联系邮箱格式不正确');
+      PF.update(school.id, {
+        name: d.name, short: d.short, code: d.code, region: d.region, address: d.address, contact: d.contact, phone: d.phone,
+        type: d.type, nature: d.nature, email: d.email, intro: d.intro
+      }, identity.account.name);
+      dlg.close();
+      toast('已保存');
+      renderList();
+    });
+  }
+
+  function toggleStatus(school) {
+    var next = school.status === '启用' ? '停用' : '启用';
+    if (!confirm('确定' + next + '「' + school.name + '」吗？')) return;
+    PF.setStatus(school.id, next, identity.account.name);
+    toast('已' + next);
+    renderList();
+  }
+
+  function wireChips(dlg) {
+    dlg.addEventListener('click', function (e) {
+      var b = e.target.closest('.pf-chip');
+      if (!b) return;
+      e.preventDefault();
+      b.classList.toggle('on');
+    });
+  }
+
+  function readDialog(dlg) {
+    function v(k) {
+      var el = dlg.querySelector('[data-k="' + k + '"]');
+      return el ? el.value.trim() : '';
+    }
+    var type = [].map.call(dlg.querySelectorAll('[data-k="type"] .pf-chip.on'), function (b) { return b.getAttribute('data-v'); });
+    var province = v('province'), city = v('city');
+    return {
+      name: v('name'), short: v('short'), code: v('code'),
+      province: province, city: city, region: [province, city].filter(Boolean).join(' '),
+      address: v('address'), contact: v('contact'), phone: v('phone'),
+      type: type, nature: v('nature'), email: v('email'), intro: v('intro'),
+      adminName: v('adminName'), adminAccount: v('adminAccount'), adminPhone: v('adminPhone'), initPassword: v('initPassword')
+    };
+  }
+
+  function markBad(dlg, keys, msg) {
+    dlg.querySelectorAll('.pf-err').forEach(function (x) { x.classList.remove('pf-err'); });
+    keys.forEach(function (k) {
+      var el = dlg.querySelector('[data-k="' + k + '"]');
+      if (el) el.classList.add('pf-err');
+    });
+    toast(msg);
+  }
+
+  function codeExists(code, exceptId) {
+    var c = String(code || '').toLowerCase();
+    return PF.list().some(function (s) { return s.id !== exceptId && String(s.code || '').toLowerCase() === c; });
+  }
+
+  function accountExists(accId) {
+    var a = String(accId || '').trim().toLowerCase();
+    if (!a) return false;
+    if (PF.list().some(function (s) { return s.admin && String(s.admin.accountId || '').toLowerCase() === a; })) return true;
+    try {
+      return (DEMO.getState().accounts || []).some(function (x) { return String(x.id || '').toLowerCase() === a; });
+    } catch (e) { return false; }
+  }
+
+  renderShell();
+  if (/[?&]new=1(&|$)/.test(location.search)) openCreate();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>图谱模板编辑</title>
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="platform.css?v=6">
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t" id="gtTitle">图谱模板</h1>
+          <div class="pt-d" id="gtSub"></div>
+        </div>
+        <div class="sp" style="flex:1"></div>
+        <a class="btn ghost" id="gtBack">返回模板库</a>
+        <button class="btn ghost" type="button" data-layout>自动布局</button>
+        <button class="btn" type="button" data-save>保存图谱</button>
+      </div>
+    </div>
+    <div class="body">
+      <div class="gt-wrap">
+        <aside class="gt-palette pf-card">
+          <div class="pf-card-h">节点类型</div>
+          <div id="gtTypes"></div>
+          <div class="gt-tip">点击类型添加节点；拖动节点调整位置。</div>
+          <div class="pf-card-h gt-sect-h">关系</div>
+          <div class="gt-kinds" id="gtKinds"></div>
+          <label class="gt-linkmode"><input type="checkbox" id="gtLinkMode"> 连线模式</label>
+          <div class="gt-tip" id="gtLinkHint">开启后依次点击起点、终点节点创建关系。</div>
+        </aside>
+        <div class="gt-canvas-wrap">
+          <svg id="gtSvg" viewBox="0 0 1200 760" aria-label="图谱模板画布"></svg>
+          <div class="gt-empty" id="gtEmpty">画布还没有节点，从左侧选择类型添加。</div>
+        </div>
+        <aside class="gt-side">
+          <div class="pf-card" id="gtNodeCard"></div>
+          <div class="pf-card" id="gtEdgeCard"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/mock-data.js?v=4"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js?v=17"></script>
+<script src="../js/platform-kit.js?v=12"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'platform', active: 'pv-graph-tpl', base: '../' });
+
+  var ctx = DEMO.getState();
+  var identity = UI.currentIdentity(ctx);
+  var ACTOR = (identity && identity.account && identity.account.name) || '平台超管';
+
+  var params = {};
+  location.search.replace(/[?&]([^=&]+)=([^&]*)/g, function (_, k, v) {
+    params[decodeURIComponent(k)] = decodeURIComponent(v);
+    return '';
+  });
+
+  var tpl = params.id ? PF.templateById(params.id) : null;
+  if (!tpl) { location.replace(UI.link('graph-templates.html')); return; }
+
+  var nodes = (tpl.nodes || []).map(function (n) { return Object.assign({}, n); });
+  var edges = (tpl.edges || []).map(function (e) { return Object.assign({}, e); });
+  var selectedId = null, linkMode = false, linkFrom = null, edgeKind = 'contain', dirty = false;
+  var seq = 0, edgeSeq = 0;
+  nodes.forEach(function (n) { var m = /^n(\d+)$/.exec(n.id); if (m) seq = Math.max(seq, +m[1]); });
+  edges.forEach(function (e) { var m = /^e(\d+)$/.exec(e.id); if (m) edgeSeq = Math.max(edgeSeq, +m[1]); });
+
+  var svg = document.getElementById('gtSvg');
+  var NS = 'http://www.w3.org/2000/svg';
+  var typeMap = {};
+  PF.TEMPLATE_NODE_TYPES.forEach(function (t) { typeMap[t.type] = t; });
+  var kindMap = {};
+  PF.TEMPLATE_EDGE_KINDS.forEach(function (k) { kindMap[k.kind] = k.name; });
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function link(href) { return UI.link(href); }
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2200);
+  }
+  function byId(id) { return nodes.find(function (n) { return n.id === id; }) || null; }
+  function nameOf(id) { var n = byId(id); return n ? n.name : id; }
+  function kindName(k) { return kindMap[k] || k; }
+
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS(NS, tag);
+    Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+    return el;
+  }
+
+  /* ── 顶部信息与返回 ── */
+  document.getElementById('gtTitle').textContent = tpl.name;
+  document.getElementById('gtBack').href = link('graph-templates.html');
+
+  function updateSub() {
+    document.getElementById('gtSub').textContent =
+      (tpl.industry || '未指定行业') + ' · ' + tpl.scope + ' · ' + tpl.status +
+      ' · 节点 ' + nodes.length + ' · 关系 ' + edges.length;
+  }
+
+  /* ── 左侧节点类型 / 关系类型 ── */
+  function initPalette() {
+    var groups = {}, order = [];
+    PF.TEMPLATE_NODE_TYPES.forEach(function (t) {
+      if (!groups[t.group]) { groups[t.group] = []; order.push(t.group); }
+      groups[t.group].push(t);
+    });
+    var html = '';
+    order.forEach(function (g) {
+      html += '<div class="gt-type-group"><b>' + esc(g) + '</b>';
+      groups[g].forEach(function (t) {
+        html += '<button type="button" class="gt-type" data-type="' + esc(t.type) + '"><i style="background:' + t.color + '"></i>' + esc(t.type) + '</button>';
+      });
+      html += '</div>';
+    });
+    document.getElementById('gtTypes').innerHTML = html;
+    document.getElementById('gtKinds').innerHTML = PF.TEMPLATE_EDGE_KINDS.map(function (k) {
+      return '<label class="gt-kind"><input type="radio" name="gtKind" value="' + k.kind + '"' + (k.kind === edgeKind ? ' checked' : '') + '>' + esc(k.name) + '</label>';
+    }).join('');
+  }
+
+  document.getElementById('gtTypes').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-type]');
+    if (!b) return;
+    addNode(b.getAttribute('data-type'));
+  });
+  document.getElementById('gtKinds').addEventListener('change', function (e) {
+    if (e.target.name === 'gtKind') edgeKind = e.target.value;
+  });
+
+  document.getElementById('gtLinkMode').addEventListener('change', function (e) {
+    linkMode = e.target.checked;
+    linkFrom = null;
+    document.querySelector('.gt-wrap').classList.toggle('link-mode', linkMode);
+    document.getElementById('gtLinkHint').textContent = linkMode
+      ? '连线模式：依次点击起点、终点节点。'
+      : '开启后依次点击起点、终点节点创建关系。';
+    renderCanvas();
+  });
+
+  /* ── 画布渲染 ── */
+  function renderCanvas() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    var defs = svgEl('defs');
+    var marker = svgEl('marker', { id: 'gtArrow', viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' });
+    marker.appendChild(svgEl('path', { d: 'M0,0 L10,5 L0,10 z', fill: '#9aa7b8' }));
+    defs.appendChild(marker);
+    svg.appendChild(defs);
+
+    var gEdges = svgEl('g', { class: 'gt-edges' });
+    edges.forEach(function (edge) {
+      var a = byId(edge.source), b = byId(edge.target);
+      if (!a || !b) return;
+      var line = svgEl('line', {
+        x1: a.x, y1: a.y, x2: b.x, y2: b.y,
+        class: 'gt-edge ' + edge.kind,
+        'marker-end': 'url(#gtArrow)'
+      });
+      var title = svgEl('title');
+      title.textContent = nameOf(edge.source) + ' → ' + nameOf(edge.target) + ' · ' + kindName(edge.kind);
+      line.appendChild(title);
+      gEdges.appendChild(line);
+    });
+    svg.appendChild(gEdges);
+
+    var gNodes = svgEl('g', { class: 'gt-nodes' });
+    nodes.forEach(function (n) {
+      var t = typeMap[n.type] || { color: '#8b99ac' };
+      var g = svgEl('g', {
+        class: 'gt-node' + (n.id === selectedId ? ' on' : '') + (n.id === linkFrom ? ' from' : ''),
+        'data-id': n.id,
+        transform: 'translate(' + n.x + ',' + n.y + ')'
+      });
+      var label = String(n.name || '');
+      var w = Math.max(104, Math.min(190, label.length * 13 + 36));
+      g.appendChild(svgEl('rect', {
+        x: -w / 2, y: -17, width: w, height: 34, rx: 9,
+        fill: t.color, 'fill-opacity': '.12', stroke: t.color,
+        'stroke-width': n.id === selectedId ? '2.2' : '1.3'
+      }));
+      g.appendChild(svgEl('circle', { cx: -w / 2 + 13, cy: 0, r: 4, fill: t.color }));
+      var tx = svgEl('text', { x: -w / 2 + 23, y: 4, class: 'gt-node-t', 'font-size': '12' });
+      tx.textContent = label.length > 12 ? label.slice(0, 12) + '…' : label;
+      g.appendChild(tx);
+      var title = svgEl('title');
+      title.textContent = label + '（' + n.type + '）';
+      g.appendChild(title);
+      gNodes.appendChild(g);
+    });
+    svg.appendChild(gNodes);
+
+    document.getElementById('gtEmpty').style.display = nodes.length ? 'none' : 'grid';
+    updateSub();
+  }
+
+  /* ── 右侧属性 / 关系面板 ── */
+  function renderSide() {
+    var n = selectedId ? byId(selectedId) : null;
+    var h = '<div class="pf-card-h">节点属性</div><div class="pf-card-b">';
+    if (!n) {
+      h += '<div class="gt-hint">点击画布中的节点查看和编辑；开启连线模式后点击两个节点建立关系。</div>';
+    } else {
+      h += '<div class="pf-form gt-form-one">' +
+        '<label><span>节点名称</span><input data-np="name" value="' + esc(n.name) + '"></label>' +
+        '<label><span>节点类型</span><select data-np="type">' +
+        PF.TEMPLATE_NODE_TYPES.map(function (t) { return '<option value="' + esc(t.type) + '"' + (t.type === n.type ? ' selected' : '') + '>' + esc(t.type) + '</option>'; }).join('') +
+        '</select></label>' +
+        '</div>' +
+        '<div class="gt-node-acts"><button class="btn-s danger" type="button" data-np="del">删除节点</button></div>';
+    }
+    h += '</div>';
+    document.getElementById('gtNodeCard').innerHTML = h;
+
+    var eh = '<div class="pf-card-h">关系<span class="sp"></span><span class="pf-mono">' + edges.length + '</span></div><div class="gt-edge-list">';
+    if (!edges.length) {
+      eh += '<div class="gt-hint">暂无关系。开启连线模式后依次点击两个节点即可创建。</div>';
+    }
+    edges.forEach(function (edge, i) {
+      eh += '<div class="gt-edge-row">' +
+        '<span class="nm">' + esc(nameOf(edge.source)) + ' → ' + esc(nameOf(edge.target)) + '</span>' +
+        '<span class="pf-mono">' + esc(kindName(edge.kind)) + '</span>' +
+        '<button class="btn-s" type="button" data-edel="' + i + '">删除</button></div>';
+    });
+    eh += '</div>';
+    document.getElementById('gtEdgeCard').innerHTML = eh;
+  }
+
+  function renderAll() { renderCanvas(); renderSide(); }
+
+  /* ── 节点操作 ── */
+  function typeCount(type) {
+    return nodes.filter(function (n) { return n.type === type; }).length;
+  }
+  function addNode(type) {
+    var i = nodes.length;
+    var n = {
+      id: 'n' + (++seq),
+      name: type + (typeCount(type) + 1),
+      type: type,
+      x: Math.round(480 + (i % 5) * 55),
+      y: Math.round(260 + (Math.floor(i / 5) % 5) * 70)
+    };
+    nodes.push(n);
+    selectedId = n.id;
+    dirty = true;
+    renderAll();
+  }
+
+  function addEdge(a, b) {
+    if (edges.some(function (e) { return e.source === a && e.target === b; })) {
+      toast('该关系已存在');
+      linkFrom = null;
+      renderCanvas();
+      return;
+    }
+    edges.push({ id: 'e' + (++edgeSeq), source: a, target: b, kind: edgeKind });
+    linkFrom = null;
+    dirty = true;
+    renderAll();
+    toast('已添加关系');
+  }
+
+  document.getElementById('gtNodeCard').addEventListener('input', function (e) {
+    var k = e.target.getAttribute('data-np');
+    var n = selectedId ? byId(selectedId) : null;
+    if (!n || k !== 'name') return;
+    n.name = e.target.value;
+    dirty = true;
+    renderCanvas();
+  });
+  document.getElementById('gtNodeCard').addEventListener('change', function (e) {
+    var k = e.target.getAttribute('data-np');
+    var n = selectedId ? byId(selectedId) : null;
+    if (!n) return;
+    if (k === 'type') { n.type = e.target.value; dirty = true; renderAll(); }
+    else if (k === 'name') { n.name = e.target.value; dirty = true; renderAll(); }
+  });
+  document.getElementById('gtNodeCard').addEventListener('click', function (e) {
+    if (!e.target.closest('[data-np="del"]')) return;
+    var n = selectedId ? byId(selectedId) : null;
+    if (!n) return;
+    if (!confirm('删除节点「' + n.name + '」及其关联关系？')) return;
+    nodes = nodes.filter(function (x) { return x.id !== n.id; });
+    edges = edges.filter(function (x) { return x.source !== n.id && x.target !== n.id; });
+    selectedId = null;
+    dirty = true;
+    renderAll();
+  });
+  document.getElementById('gtEdgeCard').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-edel]');
+    if (!b) return;
+    edges.splice(Number(b.getAttribute('data-edel')), 1);
+    dirty = true;
+    renderAll();
+  });
+
+  /* ── 画布拖拽与连线 ── */
+  var drag = null;
+
+  function toSvg(evt) {
+    var pt = svg.createSVGPoint();
+    pt.x = evt.clientX;
+    pt.y = evt.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  svg.addEventListener('pointerdown', function (e) {
+    var g = e.target.closest('.gt-node');
+    if (!g) {
+      selectedId = null;
+      linkFrom = null;
+      renderAll();
+      return;
+    }
+    var id = g.getAttribute('data-id');
+    if (linkMode) {
+      if (!linkFrom) { linkFrom = id; renderCanvas(); return; }
+      if (linkFrom === id) { linkFrom = null; renderCanvas(); return; }
+      addEdge(linkFrom, id);
+      return;
+    }
+    selectedId = id;
+    var n = byId(id), p = toSvg(e);
+    drag = { id: id, dx: p.x - n.x, dy: p.y - n.y, moved: false, x0: e.clientX, y0: e.clientY };
+    try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    renderAll();
+  });
+
+  svg.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    if (!drag.moved && Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0) > 3) drag.moved = true;
+    if (!drag.moved) return;
+    var n = byId(drag.id);
+    if (!n) return;
+    var p = toSvg(e);
+    n.x = Math.round(Math.max(40, Math.min(1160, p.x - drag.dx)));
+    n.y = Math.round(Math.max(40, Math.min(720, p.y - drag.dy)));
+    renderCanvas();
+  });
+
+  svg.addEventListener('pointerup', function (e) {
+    if (!drag) return;
+    if (drag.moved) dirty = true;
+    drag = null;
+    try { svg.releasePointerCapture(e.pointerId); } catch (err) {}
+  });
+
+  /* ── 自动布局：按关系层级从上到下排布 ── */
+  function autoLayout() {
+    if (!nodes.length) return;
+    var depth = {}, queue = [], indeg = {};
+    nodes.forEach(function (n) { indeg[n.id] = 0; });
+    edges.forEach(function (e) { if (indeg[e.target] != null) indeg[e.target]++; });
+    nodes.forEach(function (n) {
+      if (!indeg[n.id]) { depth[n.id] = 0; queue.push(n.id); }
+    });
+    if (!queue.length) {
+      nodes.forEach(function (n) { depth[n.id] = 0; queue.push(n.id); });
+    }
+    var guard = 0;
+    while (queue.length && guard++ < nodes.length * 12) {
+      var id = queue.shift();
+      edges.filter(function (e) { return e.source === id; }).forEach(function (e) {
+        if (indeg[e.target] == null) return;
+        var d = (depth[id] || 0) + 1;
+        if (depth[e.target] == null || depth[e.target] < d) {
+          depth[e.target] = d;
+          queue.push(e.target);
+        }
+      });
+    }
+
+    var byDepth = {}, maxD = 0;
+    nodes.forEach(function (n) {
+      var d = depth[n.id] || 0;
+      maxD = Math.max(maxD, d);
+      (byDepth[d] = byDepth[d] || []).push(n);
+    });
+    var W = 1200, padX = 150, top = 80, bottom = 80;
+    Object.keys(byDepth).forEach(function (k) {
+      var arr = byDepth[k];
+      var y = maxD ? Math.round(top + (760 - top - bottom) * (Number(k) / maxD)) : 380;
+      arr.forEach(function (n, i) {
+        n.x = Math.round(arr.length === 1 ? W / 2 : padX + i * (W - padX * 2) / (arr.length - 1));
+        n.y = y;
+      });
+    });
+    dirty = true;
+    renderAll();
+    toast('已按层级重新布局');
+  }
+
+  /* ── 保存 ── */
+  function save() {
+    var saved = PF.saveGraphTemplate({
+      id: tpl.id,
+      nodes: nodes.map(function (n) { return { id: n.id, name: n.name, type: n.type, x: n.x, y: n.y }; }),
+      edges: edges.map(function (e) { return { id: e.id, source: e.source, target: e.target, kind: e.kind }; })
+    }, ACTOR);
+    if (!saved) { toast('保存失败'); return; }
+    dirty = false;
+    toast('已保存模板图谱');
+  }
+
+  document.querySelector('[data-save]').addEventListener('click', save);
+  document.querySelector('[data-layout]').addEventListener('click', autoLayout);
+  window.addEventListener('beforeunload', function (e) {
+    if (!dirty) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
+  initPalette();
+  renderAll();
+})();
+</script>
+</body>
+</html>

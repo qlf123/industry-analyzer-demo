@@ -44,19 +44,21 @@
     academic:       { phone: 'mask', idCard: 'hidden', address: 'hidden', score: 'plain' },
     orgAdmin:       { phone: 'plain', idCard: 'id',    address: 'hidden', score: 'plain' },
     majorLeadEnter: { phone: 'phone', idCard: 'hidden', address: 'hidden', score: 'plain' },
+    platform:       { phone: 'hidden', idCard: 'hidden', address: 'hidden', score: 'hidden' },
     other:          { phone: 'hidden', idCard: 'hidden', address: 'hidden', score: 'hidden' }
   };
 
   var ROLE_TO_MASK = {
     super: 'all', teacher: 'teacher', headTeacher: 'headCouns', counselor: 'headCouns',
     studentAffairs: 'stuAff', supervisor: 'supervisor', info: 'info', academic: 'academic',
-    orgAdmin: 'orgAdmin', majorLead: 'majorLeadEnter', enterprise: 'majorLeadEnter', student: 'other'
+    orgAdmin: 'orgAdmin', majorLead: 'majorLeadEnter', enterprise: 'majorLeadEnter', student: 'other',
+    platform: 'platform'
   };
 
   var MASK_NAME = {
-    all: '全量（平台超级管理员）', teacher: '教师', headCouns: '班主任/辅导员', stuAff: '学工',
+    all: '全量（院校超级管理员）', teacher: '教师', headCouns: '班主任/辅导员', stuAff: '学工',
     supervisor: '督导', info: '信息中心', academic: '教务', orgAdmin: '组织管理员',
-    majorLeadEnter: '专业负责人/企业导师', other: '其他'
+    majorLeadEnter: '专业负责人/企业导师', platform: '平台管理员', other: '其他'
   };
 
   /* 带「组织节点范围」的角色（用于「当前组织」视图过滤：教师/班主任/学生/企业导师没有当前组织） */
@@ -204,7 +206,7 @@
       var role = roleOf(ctx, a.roleId);
       if (role && role.portal) set[role.portal] = 1;
     });
-    var order = ['admin', 'teacher', 'student'];
+    var order = ['platform', 'admin', 'teacher', 'student'];
     var out = order.filter(function (p) { return set[p]; });
     Object.keys(set).forEach(function (p) { if (out.indexOf(p) < 0) out.push(p); });
     return out;

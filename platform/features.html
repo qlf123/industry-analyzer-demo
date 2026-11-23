@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>功能与配额</title>
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="platform.css">
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop">
+      <div class="ptop-r">
+        <div class="pt-l">
+          <h1 class="pt-t">功能与配额</h1>
+          <div class="pt-d">按院校开通功能模块、配置 AI 配额；关闭模块会隐藏院校端对应菜单</div>
+        </div>
+      </div>
+    </div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<script src="../js/mock-data.js?v=4"></script>
+<script src="../js/permission.js"></script>
+<script src="../js/common.js?v=17"></script>
+<script src="../js/platform-kit.js?v=12"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'platform', active: 'pv-features', base: '../' });
+
+  var ctx = DEMO.getState();
+  var identity = UI.currentIdentity(ctx);
+  var schools = PF.list();
+  var currentId = new URLSearchParams(location.search).get('id') || (schools[0] && schools[0].id);
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2400);
+  }
+  function statusPill(s) {
+    return s === '启用' ? '<span class="pf-status on">启用</span>' : '<span class="pf-status off">停用</span>';
+  }
+
+  function renderShell() {
+    if (!schools.length) {
+      document.getElementById('body').innerHTML = '<div class="pf-card"><div class="pf-empty">暂无院校，请先在「院校管理」中创建。</div></div>';
+      return;
+    }
+    document.getElementById('body').innerHTML =
+      '<div class="pf-toolbar">' +
+      '<select class="pf-sel" id="schoolSel">' +
+      schools.map(function (s) { return '<option value="' + esc(s.id) + '"' + (s.id === currentId ? ' selected' : '') + '>' + esc(s.name) + '（' + esc(s.code) + '）</option>'; }).join('') +
+      '</select>' +
+      '<span class="sp"></span>' +
+      '<button class="btn-s" type="button" data-all>全部开启</button>' +
+      '</div>' +
+      '<div id="panel"></div>';
+
+    document.getElementById('schoolSel').addEventListener('change', function (e) {
+      currentId = e.target.value;
+      renderPanel();
+    });
+    document.querySelector('[data-all]').addEventListener('click', function () {
+      document.querySelectorAll('[data-f]').forEach(function (x) { x.checked = true; });
+      toast('已勾选全部模块，点击保存生效');
+    });
+    renderPanel();
+  }
+
+  function renderPanel() {
+    var school = PF.byId(currentId);
+    if (!school) { document.getElementById('panel').innerHTML = ''; return; }
+    var f = PF.featuresOf(school);
+    var quota = PF.quotaOf(school);
+
+    var h = '<div class="pf-card"><div class="pf-card-h">' + esc(school.name) + statusPill(school.status) +
+      '<span class="sp"></span><span class="pf-mono">' + esc(school.code) + '</span></div>' +
+      '<div class="pf-card-b">' +
+      '<div class="pf-switch-grid">' +
+      PF.FEATURE_DEFS.map(function (x) {
+        return '<label class="pf-switch"><input type="checkbox" data-f="' + esc(x.key) + '"' + (f[x.key] ? ' checked' : '') + '>' +
+          '<span class="sw"></span><span class="tx"><b>' + esc(x.name) + '</b><span>' + esc(x.desc) + '</span></span></label>';
+      }).join('') +
+      '</div>' +
+      '<div class="pf-quota"><span>AI 配额</span><input type="number" min="0" step="10" id="quota" value="' + quota + '"><span>次 / 月（演示配置，不做实际扣减）</span></div>' +
+      '<div class="pf-note">' + (school.demo
+        ? '该院校是当前演示院校：关闭模块后，院校端对应菜单会立即隐藏；演示前可点「全部开启」恢复。'
+        : '该院校为空白骨架：配置会保存，待院校接入业务数据后按此授权生效。') + '</div>' +
+      '<div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" type="button" data-save>保存配置</button></div>' +
+      '</div></div>';
+
+    document.getElementById('panel').innerHTML = h;
+    document.querySelector('[data-save]').addEventListener('click', function () {
+      var next = {};
+      document.querySelectorAll('[data-f]').forEach(function (x) { next[x.getAttribute('data-f')] = x.checked; });
+      var q = Math.max(0, Math.round(Number(document.getElementById('quota').value) || 0));
+      PF.updateFeatures(currentId, { features: next, aiQuota: q }, identity.account.name);
+      toast('已保存功能与配额');
+      renderPanel();
+    });
+  }
+
+  renderShell();
+})();
+</script>
+</body>
+</html>

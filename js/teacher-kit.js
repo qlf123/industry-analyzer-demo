@@ -433,9 +433,10 @@
     function finish(s) { registerCustomNodes(s); return s; }   // 自定义节点注册进 kn() 运行时索引（跨页面共享）
     try {
       var s = JSON.parse(localStorage.getItem(KEY));
-      if (s && s.v === 15) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据（否则管理端新增的计划/资源被抹掉）
-      if (s && s.v === 14) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); migrateResFileTags(s); s.v = 15; save(s); return finish(s); }   // v15：资源标注下沉到文件
-      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); migratePlanMulti(s); migrateResFileTags(s); s.v = 15; save(s); return finish(s); }   // v14→v15：计划多班 + 资源文件级标注
+      if (s && s.v === 16) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据（否则管理端新增的计划/资源被抹掉）
+      if (s && s.v === 15) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); seedExtDemo(s); s.v = 16; save(s); return finish(s); }   // v16：演示拓展技能（学情「标准 6 / 覆盖 10（6 标准 + 4 拓展）」）
+      if (s && s.v === 14) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); migrateResFileTags(s); seedExtDemo(s); s.v = 16; save(s); return finish(s); }   // v15 资源文件级标注 → v16 演示拓展
+      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); migratePlanMulti(s); migrateResFileTags(s); seedExtDemo(s); s.v = 16; save(s); return finish(s); }   // v14→v16：多班 + 文件级标注 + 演示拓展
       if (s && s.v === 6) { seedEdu(s); s.v = 7; }   // 补上管理端教务基础数据，原有数据保留
       if (s && s.v === 7) { seedCourseType(s); s.v = 8; save(s); }   // 补上课程类型与公共基础课
       if (s && s.v === 8) { seedMajorLevel(s); s.v = 9; save(s); }   // 专业树补第三层
@@ -444,7 +445,7 @@
       if (s && s.v === 11) { var ch1 = seedLabs(s), ch2 = seedPeriods(s), ch3 = seedKpSnap(s); if (ch1 || ch2 || ch3) save(s); Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); s.v = 12; save(s); }
       if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); return finish(s); }   // 课程类型细分为五类，旧值自动映射
     } catch (e) {}
-    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); s2.v = 15; save(s2); return finish(s2);
+    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); seedExtDemo(s2); s2.v = 16; save(s2); return finish(s2);
   }
   /* v14 迁移：课程计划支持多班——存量 classId 单班转 classIds 数组 */
   function migratePlanMulti(st) {
@@ -471,6 +472,16 @@
         if (!f.kpIds) f.kpIds = kp.slice();
       });
     });
+  }
+  /* v16 演示数据：给 CP1「三日游线路规划与成本」已发布任务挂 4 个客源地体系的技能并标记拓展，
+     用于展示学情「标准要求 6 项 / 教学覆盖 10 项（标准 6 · 拓展 4）」；幂等，重复执行不重复添加 */
+  function seedExtDemo(st) {
+    var c = (st.courses || []).filter(function (x) { return x.id === 'CRS3'; })[0];
+    if (!c || !c.publish || !c.publish.task) return;
+    var t = c.publish.task, add = ['K56ba45cbb1', 'K2bdb710e81', 'K959b9f831b', 'Keed9766b76'];
+    t.skillIds = t.skillIds || []; t.skillExt = t.skillExt || [];
+    add.forEach(function (id) { if (t.skillIds.indexOf(id) < 0) t.skillIds.push(id); if (t.skillExt.indexOf(id) < 0) t.skillExt.push(id); });
+    c.skillIds = t.skillIds.slice();
   }
   /* 课程类型细分迁移：旧两分类映射到新五分类（专业课默认归入专业核心课程） */
   function migrateCourseType(st) {
