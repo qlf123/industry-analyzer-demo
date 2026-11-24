@@ -24,9 +24,9 @@
 </div>
 <script src="../js/mock-data.js?v=4"></script>
 <script src="../js/permission.js"></script>
-<script src="../js/common.js?v=17"></script>
+<script src="../js/common.js?v=19"></script>
 <script src="../js/sys-dict.js?v=2"></script>
-<script src="../js/platform-kit.js?v=13"></script>
+<script src="../js/platform-kit.js?v=14"></script>
 <script>
 (function () {
   'use strict';
@@ -73,6 +73,13 @@
     opts = opts || {};
     return '<label' + (opts.full ? ' class="full"' : '') + '><span>' + esc(label) + '</span>' +
       '<textarea data-k="' + key + '" rows="' + (opts.rows || 3) + '" placeholder="' + esc(opts.ph || '') + '">' + esc(value || '') + '</textarea></label>';
+  }
+  /* 单选：与 pf-chip 同款样式，容器带 data-single 由 wireChips 保证互斥 */
+  function fieldRadio(label, key, options, value) {
+    return '<label class="full"><span>' + esc(label) + '</span><div class="pf-chips" data-k="' + key + '" data-single>' +
+      options.map(function (o) {
+        return '<button type="button" class="pf-chip' + (o.v === value ? ' on' : '') + '" data-v="' + esc(o.v) + '">' + esc(o.l) + '</button>';
+      }).join('') + '</div></label>';
   }
   function dictOpts(code, parent) {
     try { return (window.SysDict && SysDict.opts(code, parent)) || []; } catch (e) { return []; }
@@ -187,6 +194,8 @@
       field('联系电话', 'phone', '', { ph: '手机或座机' }) +
       field('联系邮箱', 'email', '', { ph: '请输入邮箱', full: true }) +
       fieldArea('院校简介', 'intro', '', { full: true, ph: '请输入院校简介', rows: 3 }) +
+      '<div class="sec">门户信息</div>' +
+      fieldRadio('门户版本', 'portalVersion', [{ v: 1, l: '版本1' }, { v: 2, l: '版本2' }, { v: 3, l: '版本3' }], 1) +
       '<div class="sec">管理员账号信息</div>' +
       field('管理员姓名', 'adminName', '', { ph: '院校超级管理员' }) +
       field('管理员账号', 'adminAccount', '', { ph: '登录账号，留空自动生成' }) +
@@ -220,7 +229,7 @@
       if (d.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return markBad(dlg, ['email'], '联系邮箱格式不正确');
       var school = PF.create({
         name: d.name, short: d.short, code: d.code, region: d.region, address: d.address, contact: d.contact, phone: d.phone,
-        type: d.type, nature: d.nature, email: d.email, intro: d.intro,
+        type: d.type, nature: d.nature, email: d.email, intro: d.intro, portalVersion: d.portalVersion,
         admin: { name: d.adminName, phone: d.adminPhone, accountId: d.adminAccount, initPassword: d.initPassword }
       }, identity.account.name);
       dlg.close();
@@ -292,6 +301,12 @@
       var b = e.target.closest('.pf-chip');
       if (!b) return;
       e.preventDefault();
+      var wrap = b.parentNode;
+      if (wrap && wrap.hasAttribute('data-single')) {
+        [].forEach.call(wrap.querySelectorAll('.pf-chip'), function (x) { x.classList.remove('on'); });
+        b.classList.add('on');
+        return;
+      }
       b.classList.toggle('on');
     });
   }
@@ -302,12 +317,14 @@
       return el ? el.value.trim() : '';
     }
     var type = [].map.call(dlg.querySelectorAll('[data-k="type"] .pf-chip.on'), function (b) { return b.getAttribute('data-v'); });
+    var pvEl = dlg.querySelector('[data-k="portalVersion"] .pf-chip.on');
     var province = v('province'), city = v('city');
     return {
       name: v('name'), short: v('short'), code: v('code'),
       province: province, city: city, region: [province, city].filter(Boolean).join(' '),
       address: v('address'), contact: v('contact'), phone: v('phone'),
       type: type, nature: v('nature'), email: v('email'), intro: v('intro'),
+      portalVersion: pvEl ? Number(pvEl.getAttribute('data-v')) : 1,
       adminName: v('adminName'), adminAccount: v('adminAccount'), adminPhone: v('adminPhone'), initPassword: v('initPassword')
     };
   }

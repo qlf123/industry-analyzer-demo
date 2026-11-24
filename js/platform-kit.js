@@ -395,6 +395,7 @@
       nature: String(data.nature || '').trim(),
       email: String(data.email || '').trim(),
       intro: String(data.intro || '').trim(),
+      portalVersion: Number(data.portalVersion) || 1,
       status: '启用',
       createdAt: now,
       createdBy: actor || '',

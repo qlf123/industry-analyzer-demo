@@ -187,7 +187,7 @@
           { key: 'pv-dict', label: '字典管理', icon: '▤', href: 'platform/dict.html', perms: ['platform:dict:edit'] },
           { key: 'pv-graph-tpl', label: '图谱模板库', icon: '◇', href: 'platform/graph-templates.html', perms: ['platform:graph-template:manage'] },
           { key: 'pv-staff', label: '平台账号', icon: '▤', href: 'platform/staff.html', perms: ['platform:staff:manage'] },
-          { key: 'pv-brand', label: '平台品牌配置', icon: '◈', href: 'platform/brand.html' },
+          { key: 'pv-brand', label: '门户信息管理', icon: '◈', href: 'platform/brand.html' },
           { key: 'pv-audit', label: '平台审计日志', icon: '▤', href: 'platform/audit.html', perms: ['platform:audit:view'] }
         ] }
       ]

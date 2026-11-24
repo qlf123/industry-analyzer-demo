@@ -73,7 +73,7 @@
 .rs-g{margin-bottom:16px}
 .rs-gh{display:flex;align-items:center;gap:8px;margin:0 2px 8px;font-size:13.5px}.rs-gh .note{font-size:12px;color:var(--muted)}
 .rs-list{padding:0;overflow:hidden}
-.rs-row{display:grid;grid-template-columns:minmax(230px,2.3fr) minmax(100px,.9fr) minmax(130px,1.1fr) minmax(150px,1.25fr) minmax(185px,1.35fr);align-items:center;gap:12px;padding:11px 16px;border-top:1px solid var(--rule-2);font-size:12.5px}
+.rs-row{display:grid;grid-template-columns:minmax(230px,2.3fr) minmax(100px,.9fr) minmax(130px,1.1fr) minmax(150px,1.25fr) minmax(125px,1fr) minmax(185px,1.35fr);align-items:center;gap:12px;padding:11px 16px;border-top:1px solid var(--rule-2);font-size:12.5px}
 .rs-row:first-child{border-top:0}.rs-row:hover{background:var(--card-2)}
 .rs-n .rs-l2{margin-top:4px;font-size:11.5px;line-height:1.4}
 .rs-row .rs-n b{color:var(--ink)}
@@ -85,6 +85,7 @@
 .rs-src{display:inline-block;font-size:10.5px;border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px;background:var(--card-2);color:var(--muted);font-weight:400}
 .rs-src.ai{background:var(--brand-soft);color:var(--brand-ink)}
 .rs-u{font-size:12px;color:var(--ink-2);display:flex;flex-direction:column;gap:4px;align-items:flex-start}.rs-u .note{font-size:11px}.rs-u .rs-skg{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.rs-u .rs-chip{white-space:nowrap}
+.rs-d{font-size:11.5px;color:var(--muted);font-family:var(--mono);white-space:nowrap}
 /* 资源表单技能 / 知识点选择区：已选 chips 行、chip 内移除按钮 */
 .rs-sel{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:26px}.rs-sel:empty{display:none}
 .rs-xdel{border:0;background:none;cursor:pointer;font-size:13px;line-height:1;color:var(--muted);padding:0 0 0 2px}.rs-xdel:hover{color:var(--danger,#e5484d)}
@@ -110,7 +111,7 @@
 .rs-mn button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 14px;font:inherit;font-size:12.5px;color:var(--ink);cursor:pointer}
 .rs-mn button:hover{background:var(--brand-soft)}.rs-mn button.del{color:var(--crit)}
 .lt-reuse{display:inline-block;margin-left:8px;border:1px dashed var(--brand);background:none;color:var(--brand-ink);border-radius:5px;font:inherit;font-size:11.5px;padding:0 7px;cursor:pointer}
-@media(max-width:1100px){.rs-row{grid-template-columns:28px 1fr;}.rs-t,.rs-u,.rs-s,.rs-a{grid-column:2}.rs-a{justify-content:flex-start}.rs-head{display:none}}
+@media(max-width:1100px){.rs-row{grid-template-columns:28px 1fr;}.rs-t,.rs-u,.rs-d,.rs-s,.rs-a{grid-column:2}.rs-a{justify-content:flex-start}.rs-head{display:none}}
 .mc{background:var(--card);border:1px solid var(--rule);border-radius:14px;margin-bottom:16px;overflow:hidden}
 .mc-top{display:flex;align-items:center;gap:16px;padding:14px 18px;border-bottom:1px solid var(--rule-2);flex-wrap:wrap}
 .mc-name{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;cursor:pointer}
@@ -981,7 +982,7 @@ a.stat:hover .go{opacity:1}
       '<input class="inp search" data-rf="q" placeholder="搜索名称、文件、任务或技能" value="' + esc(RF.q) + '" style="width:200px">' +
       '<span style="display:flex;gap:8px;margin-left:auto"><button class="btn-s" type="button" data-rup style="height:32px">上传资源</button></span></div>';
     if (!list.length) return h + '<div class="card empty2">' + (emptyTxt || '没有符合条件的备课资源') + '</div>';
-    var head = '<div class="rs-row rs-head"><span>文件</span><span>内容</span><span>关联技能</span><span>关联知识点</span><span style="text-align:right">操作</span></div>';
+    var head = '<div class="rs-row rs-head"><span>文件</span><span>内容</span><span>关联技能</span><span>关联知识点</span><span>时间</span><span style="text-align:right">操作</span></div>';
     // 包级操作（查看详情 / 编辑 / 删除）：文件行收进 ⋯，无文件包直接平铺
     function pkgOps(r, more, fid) {
       var mi = function (a, l, cls) { return '<button type="button" class="' + (cls || '') + '" data-ract="' + a + '" data-id="' + r.id + '"' + (fid ? ' data-fid="' + esc(fid) + '"' : '') + '>' + l + '</button>'; };
@@ -989,25 +990,27 @@ a.stat:hover .go{opacity:1}
       return '<details class="rs-more"><summary title="资源包操作">⋯</summary><div class="rs-mn">' + (fid ? mi('fdel', '删除此文件', 'del') : '') + mi('view', '查看资源包') + mi('edit', '编辑资源包') + mi('del', '删除资源包', 'del') + '</div></details>';
     }
     // 文件平铺（2026-11-19：不再按资源包 ▸ 折叠展开，每个文件一行直接展示）。资源包作为文件的归属信息放在行内第二行；
-    // 技能 / 知识点是包级属性，随文件行展示；操作 = 文件级预览 / 在线编辑 / 下载 + ⋯（包级查看 / 编辑 / 删除）
+    // 技能 / 知识点是包级属性，随文件行展示；时间（2026-11-24 起独立一列，不再混在文件名下方 meta 里）；操作 = 文件级预览 / 在线编辑 / 下载 + ⋯（包级查看 / 编辑 / 删除）
     function fileRowHTML(r, f) {
       var canEd = f.type !== '图片' && f.type !== '视频';
       var cols = resSkKpHTML(r, f);
-      var meta = (r.name ? '📦 ' + esc(r.name) + ' ' : '') + '<span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span> · ' + esc(f.size) + ' · ' + r.createdAt + (r.owner && r.owner !== teacherName() ? ' · ' + esc(r.owner) : '');
+      var meta = (r.name ? '📦 ' + esc(r.name) + ' ' : '') + '<span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span> · ' + esc(f.size) + (r.owner && r.owner !== teacherName() ? ' · ' + esc(r.owner) : '');
       return '<div class="rs-row" data-rid="' + r.id + '" data-fid="' + esc(f.id) + '"><div class="rs-n"><b title="' + esc(f.name) + '">' + esc(f.name) + '</b><div class="rs-l2"><span class="note">' + meta + '</span></div></div>' +
         '<div class="rs-t"><span class="rs-chip"><i style="background:' + (TK.FT_COLOR[f.type] || '#7f63d8') + '"></i>' + esc(f.type) + '</span></div>' +
         '<div class="rs-u">' + cols.sk + '</div>' +
         '<div class="rs-u">' + cols.kp + '</div>' +
+        '<div class="rs-d">' + esc(r.createdAt) + '</div>' +
         '<span class="rs-a"><button class="lk" data-fpv>预览</button>' + (canEd ? '<button class="lk" data-fed>在线编辑</button>' : '') + '<button class="lk" data-fdl>下载</button>' + pkgOps(r, true, f.id) + '</span></div>';
     }
     // 没有文件的资源包也占一行（否则编辑 / 删除入口丢了）
     function pkgRowHTML(r) {
       var cols = resSkKpHTML(r);
-      var meta = r.createdAt + (r.owner && r.owner !== teacherName() ? ' · ' + esc(r.owner) : '') + ' · 暂无文件，可在「编辑」里上传';
+      var meta = (r.owner && r.owner !== teacherName() ? esc(r.owner) + ' · ' : '') + '暂无文件，可在「编辑」里上传';
       return '<div class="rs-row" data-rid="' + r.id + '"><div class="rs-n"><b title="' + esc(r.name || '独立资源') + '">' + (r.name ? '📦 ' + esc(r.name) + ' ' : '') + '<span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span></b><div class="rs-l2"><span class="note">' + meta + '</span></div></div>' +
         '<div class="rs-t"><span class="note">暂无文件</span></div>' +
         '<div class="rs-u">' + cols.sk + '</div>' +
         '<div class="rs-u">' + cols.kp + '</div>' +
+        '<div class="rs-d">' + esc(r.createdAt) + '</div>' +
         '<span class="rs-a">' + pkgOps(r, false) + '</span></div>';
     }
     // 单一文件平铺列表（2026-11-19 去掉「待关联 / 已关联课次」教学分组与资源包折叠）
