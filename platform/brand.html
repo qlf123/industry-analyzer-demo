@@ -9,10 +9,11 @@
 <style>
 /* 门户信息管理：多套版本，每套含登录页 / 教师端 / 学生端的品牌与入口配置，同一时间只启用一套 */
 .vbar{background:var(--card);border:1px solid var(--rule);border-radius:13px;margin-bottom:12px}
-.vtabs{display:flex;gap:24px;padding:0 18px;border-bottom:1px solid var(--rule-2)}
+.vtabs{display:flex;flex-wrap:wrap;gap:0 24px;padding:0 18px;border-bottom:1px solid var(--rule-2)}
 .vtabs button{border:0;background:none;font:inherit;font-size:13px;color:var(--ink-2);padding:11px 0;cursor:pointer;border-bottom:2px solid transparent}
 .vtabs button.on{color:var(--brand-ink);border-color:var(--brand);font-weight:500}
 .vtabs .act{font-size:10.5px;color:var(--good);margin-left:4px}
+.vtabs button.addv{margin-left:auto;color:var(--brand-ink);font-weight:500}
 .ven{display:flex;align-items:center;gap:10px;padding:10px 18px;font-size:12.5px}
 .ven .sp{flex:1}
 .seg{display:inline-flex;background:var(--card);border:1px solid var(--rule);border-radius:9px;padding:3px;margin-bottom:12px}
@@ -104,7 +105,8 @@
   }
   function render() {
     var v = V(), L = v.login, T = v.teacher, S = v.student, h = '';
-    h += '<div class="vbar"><div class="vtabs">' + W.versions.map(function (_, i) { return '<button data-v="' + i + '" class="' + (F.v === i ? 'on' : '') + '">版本' + (i + 1) + (W.active === i ? '<span class="act">● 启用中</span>' : '') + '</button>'; }).join('') + '</div>' +
+    h += '<div class="vbar"><div class="vtabs">' + W.versions.map(function (_, i) { return '<button data-v="' + i + '" class="' + (F.v === i ? 'on' : '') + '">版本' + (i + 1) + (W.active === i ? '<span class="act">● 启用中</span>' : '') + '</button>'; }).join('') +
+      '<button type="button" class="addv" data-addv>＋ 新增版本</button></div>' +
       '<div class="ven">启用版本' + (F.v + 1) + '<span class="sp"></span><button type="button" class="sw" data-enable aria-pressed="' + (W.active === F.v) + '"></button></div></div>';
     h += '<div class="seg">' + [['login', '登录页配置'], ['teacher', '教师端配置'], ['student', '学生端配置']].map(function (x) { return '<button data-tab="' + x[0] + '" aria-pressed="' + (F.tab === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div>';
     if (F.tab === 'login') {
@@ -169,6 +171,11 @@
   document.addEventListener('click', function (e) {
     var t, p;
     if ((t = e.target.closest('[data-v]'))) { F.v = +t.dataset.v; render(); }
+    else if (e.target.closest('[data-addv]')) {
+      W.versions.push(JSON.parse(JSON.stringify(V())));
+      F.v = W.versions.length - 1; mark(); render();
+      TK.toast('已新增版本' + W.versions.length + '，保存配置后生效');
+    }
     else if ((t = e.target.closest('[data-tab]'))) { F.tab = t.dataset.tab; render(); }
     else if (e.target.closest('[data-enable]')) {
       if (W.active === F.v) return TK.toast('至少启用一套版本；启用其他版本即可切换');

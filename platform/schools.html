@@ -84,6 +84,19 @@
   function dictOpts(code, parent) {
     try { return (window.SysDict && SysDict.opts(code, parent)) || []; } catch (e) { return []; }
   }
+  /* 门户版本：取「门户信息管理」已保存的版本集合，未配置时回退 3 个 */
+  function portalVerConf() {
+    try {
+      var c = JSON.parse(localStorage.getItem('sysConf.v1'));
+      if (c && Array.isArray(c.versions) && c.versions.length) return { n: c.versions.length, active: c.active || 0 };
+    } catch (e) {}
+    return { n: 3, active: 0 };
+  }
+  function portalVersionOpts() {
+    var o = [], n = portalVerConf().n;
+    for (var i = 1; i <= n; i++) o.push({ v: i, l: '版本' + i });
+    return o;
+  }
   function regionField(province, city) {
     var provs = dictOpts('DM_DQ');
     if (province && provs.indexOf(province) < 0) provs = provs.concat([province]);
@@ -195,7 +208,7 @@
       field('联系邮箱', 'email', '', { ph: '请输入邮箱', full: true }) +
       fieldArea('院校简介', 'intro', '', { full: true, ph: '请输入院校简介', rows: 3 }) +
       '<div class="sec">门户信息</div>' +
-      fieldRadio('门户版本', 'portalVersion', [{ v: 1, l: '版本1' }, { v: 2, l: '版本2' }, { v: 3, l: '版本3' }], 1) +
+      fieldRadio('门户版本', 'portalVersion', portalVersionOpts(), portalVerConf().active + 1) +
       '<div class="sec">管理员账号信息</div>' +
       field('管理员姓名', 'adminName', '', { ph: '院校超级管理员' }) +
       field('管理员账号', 'adminAccount', '', { ph: '登录账号，留空自动生成' }) +
