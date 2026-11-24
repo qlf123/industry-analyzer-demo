@@ -355,6 +355,7 @@ a.kp-link:hover{border-color:#5149e9;}
 <script src="../js/mock-data.js?v=4"></script>
 <script src="../js/permission.js"></script>
 <script src="../js/common.js"></script>
+<script src="../js/resource-bridge.js"></script>
 <script src="gc-shell.js"></script>
 <script>GC.boot('gc-kb');</script>
 <div class="platform-page">
@@ -493,6 +494,7 @@ a.kp-link:hover{border-color:#5149e9;}
       <h1 class="kbd-title" id="docTitle"></h1>
       <span class="kbd-meta" id="docMeta"></span>
       <div class="kbd-head-actions">
+        <button class="kbd-ghost" id="docPrepBtn" onclick="forPrep(activeDoc)">用于备课</button>
         <button class="kbd-ghost" id="docPreviewBtn" onclick="openPreview()">源文预览</button>
         <button class="kbd-ghost" onclick="toast('下载「'+activeDoc.name+'」')">↓ 下载</button>
       </div>
@@ -511,6 +513,7 @@ a.kp-link:hover{border-color:#5149e9;}
   <div class="kbd-menu-item" data-act="rename">✎ 重命名</div>
   <div class="kbd-menu-item" data-act="download">↓ 下载</div>
   <div class="kbd-menu-item" data-act="toggle">⏸ 停用 / 启用</div>
+  <div class="kbd-menu-item" data-act="forprep">↗ 用于备课</div>
   <div class="kbd-menu-divider"></div>
   <div class="kbd-menu-item danger" data-act="delete">🗑 删除</div>
 </div>
@@ -702,6 +705,11 @@ let DOCS = [
     ]},
   {id:'d16', cat:'av', media:'video', name:'研学活动全程记录.mov', ext:'MOV', size:'1.8 GB', status:'error', source:'local', time:'2026-09-11 09:00', hits:0, sec:5400, speakers:{}, segs:[], errReason:'时长超过 1 小时，无法导入'}
 ];
+/* P0：知识库读取统一资源池——备课资源里标了「加入知识库」的文件，作为文档出现在同一张表里。
+   静态演示文档中已引入备课资源的，只保留资源池这一份（按 kbDocId 去重）。 */
+const RB_DOCS = (window.ResourceBridge ? ResourceBridge.teacherDocs() : []);
+const RB_IMPORTED = RB_DOCS.map(d => d.kbDocId).filter(Boolean);
+DOCS = RB_DOCS.concat(DOCS.filter(d => !RB_IMPORTED.includes(d.id)));
 
 let selected = new Set();
 let menuDocId = null;
@@ -835,6 +843,9 @@ function clearSelection(){selected.clear();renderTable();}
 function removeDocs(ids){
   let voided=0, unlinked=0;
   ids.forEach(id=>{
+    const d=DOCS.find(x=>x.id===id);
+    /* 来自备课资源的文件：从知识库移除只下架索引，不删备课文件本体 */
+    if(d && d.teacherFileId && window.ResourceBridge) ResourceBridge.removeFromKb(d.teacherFileId);
     const st=SEG_STATE[id];
     if(st) Object.values(st).forEach(x=>{ voided+=x.sugg.filter(g=>g.status==='pending').length; unlinked+=x.kps.length; });
     delete SEG_STATE[id];
@@ -859,6 +870,23 @@ function openMenu(e,id){
 }
 function hideMenu(){document.getElementById('rowMenu').classList.remove('show');}
 document.addEventListener('click',e=>{ if(!e.target.closest('.kbd-menu') && !e.target.closest('.kbd-more')) hideMenu(); });
+/* P1：知识库文档 → 备课资源，作为独立文件加入（技能/知识点留空，由老师标注） */
+function forPrep(d){
+  if(!d) return;
+  if(d.teacherFileId){ toast('这份文档就来自备课资源，无需重复加入'); return; }
+  if(!window.ResourceBridge){ toast('统一资源组件未加载，请刷新页面'); return; }
+  const owner=(window.GC && GC.teacher && GC.me) ? GC.me() : '李老师';
+  const r=ResourceBridge.pullFromKb(d,owner);
+  if(r.ok){
+    /* 同一份文件继续留在知识库视图：用统一资源池里的那条替换静态演示文档，避免重复行 */
+    const nd=ResourceBridge.teacherDocs().find(x=>x.teacherFileId===r.file.id);
+    DOCS=DOCS.filter(x=>x.id!==d.id).concat(nd?[nd]:[]);
+    toast('已加入备课资源：可在「智慧课堂 → 备课资源」补技能/知识点');
+  }
+  else if(r.reason==='exists') toast('这份文档已在备课资源里，无需重复加入');
+  else toast('请先打开一次智慧课堂，再用于备课');
+  renderTable();
+}
 /* 重新处理：按「分段内容被编辑」处理全部分段 */
 function reparse(d){
   const wasError=d.status==='error';
@@ -884,6 +912,7 @@ document.getElementById('rowMenu').addEventListener('click',e=>{
   else if(act==='rename'){const n=prompt('重命名文档',d.name);if(n&&n.trim()){d.name=n.trim();renderTable();toast('已重命名');}}
   else if(act==='download') toast('下载「'+d.name+'」');
   else if(act==='toggle'){ if(d.status==='unavailable'){d.status='available';toast('已启用「'+d.name+'」');} else {d.status='unavailable';toast('已停用「'+d.name+'」');} renderTable(); }
+  else if(act==='forprep') forPrep(d);
   else if(act==='delete'){const extra=removeDocs([d.id]);renderTable();toast('已删除「'+d.name+'」'+extra);}
 });
 
@@ -1163,6 +1192,8 @@ function openDoc(id){
   curTime=0;
   document.getElementById('docTitle').innerHTML=docIcon(activeDoc,22)+'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(activeDoc.name)+'</span>';
   document.getElementById('docMeta').textContent=activeDoc.size+' · 上传于 '+activeDoc.time;
+  const prepBtn=document.getElementById('docPrepBtn');
+  if(prepBtn) prepBtn.textContent=(activeDoc.teacherFileId || (window.ResourceBridge&&ResourceBridge.hasTeacherCopy(activeDoc.id))) ? '已在备课资源' : '用于备课';
   document.getElementById('docPreviewBtn').style.display = activeDoc.status==='available' ? '' : 'none';
   showDocDetail();
   refreshDoc();
@@ -1407,7 +1438,8 @@ function suggCardMini(k,g){
     <div class="sugg-quote">${esc(g.quote||g.def||'')}</div>${activeDoc&&activeDoc.cat==='image'&&g.src==='desc'?'<div>'+quoteMeta(activeDoc,k,g)+'</div>':''}</div>`;
 }
 function docInfoRows(d){
-  const rows=[['类型',d.ext+' · '+(d.cat==='av'?MEDIA_LABEL[d.media]:TYPE[d.cat].label)],['大小',d.size],['来源',SOURCE[d.source]],['上传时间',d.time]];
+  const rows=[['类型',d.ext+' · '+(d.cat==='av'?MEDIA_LABEL[d.media]:TYPE[d.cat].label)],['大小',d.size],['来源',d.fromTeacher?'备课资源（统一资源池）':SOURCE[d.source]],['上传时间',d.time]];
+  if(d.kbDocId) rows.push(['原知识库文档',d.kbDocId]);
   if(d.cat==='av') rows.push(['时长',fmt(d.sec)]);
   return rows.map(([k,v])=>`<div style="display:flex;justify-content:space-between;gap:12px"><span>${k}</span><span style="color:#41536f">${esc(v)}</span></div>`).join('');
 }

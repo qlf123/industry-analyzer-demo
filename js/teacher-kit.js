@@ -433,19 +433,20 @@
     function finish(s) { registerCustomNodes(s); return s; }   // 自定义节点注册进 kn() 运行时索引（跨页面共享）
     try {
       var s = JSON.parse(localStorage.getItem(KEY));
-      if (s && s.v === 16) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据（否则管理端新增的计划/资源被抹掉）
-      if (s && s.v === 15) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); seedExtDemo(s); s.v = 16; save(s); return finish(s); }   // v16：演示拓展技能（学情「标准 6 / 覆盖 10（6 标准 + 4 拓展）」）
-      if (s && s.v === 14) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); migrateResFileTags(s); seedExtDemo(s); s.v = 16; save(s); return finish(s); }   // v15 资源文件级标注 → v16 演示拓展
-      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); migratePlanMulti(s); migrateResFileTags(s); seedExtDemo(s); s.v = 16; save(s); return finish(s); }   // v14→v16：多班 + 文件级标注 + 演示拓展
+      if (s && s.v === 17) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据（否则管理端新增的计划/资源被抹掉）
+      if (s && s.v === 16) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return finish(s); }   // v17：备课资源文件补知识属性（知识库统一资源池 P0）
+      if (s && s.v === 15) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); seedExtDemo(s); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return finish(s); }   // v16 演示拓展 → v17 知识属性
+      if (s && s.v === 14) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); migrateResFileTags(s); seedExtDemo(s); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return finish(s); }   // v15 资源文件级标注 → v17
+      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); migratePlanMulti(s); migrateResFileTags(s); seedExtDemo(s); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return finish(s); }   // v14→v17：多班 + 文件级标注 + 演示拓展 + 知识属性
       if (s && s.v === 6) { seedEdu(s); s.v = 7; }   // 补上管理端教务基础数据，原有数据保留
       if (s && s.v === 7) { seedCourseType(s); s.v = 8; save(s); }   // 补上课程类型与公共基础课
       if (s && s.v === 8) { seedMajorLevel(s); s.v = 9; save(s); }   // 专业树补第三层
       if (s && s.v === 9) { seedStudents(s); s.v = 10; save(s); }   // 学生档案
       if (s && s.v === 10) { syncSessions(s); s.v = 11; save(s); }   // 排课自动生成课次
       if (s && s.v === 11) { var ch1 = seedLabs(s), ch2 = seedPeriods(s), ch3 = seedKpSnap(s); if (ch1 || ch2 || ch3) save(s); Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); s.v = 12; save(s); }
-      if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); return finish(s); }   // 课程类型细分为五类，旧值自动映射
+      if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); }   // 课程类型细分为五类，旧值自动映射（继续往下走完 v13→v17 迁移）
     } catch (e) {}
-    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); seedExtDemo(s2); s2.v = 16; save(s2); return finish(s2);
+    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); seedExtDemo(s2); migrateAssetFields(s2); seedAssetDemo(s2); s2.v = 17; save(s2); return finish(s2);
   }
   /* v14 迁移：课程计划支持多班——存量 classId 单班转 classIds 数组 */
   function migratePlanMulti(st) {
@@ -472,6 +473,34 @@
         if (!f.kpIds) f.kpIds = kp.slice();
       });
     });
+  }
+  /* v17：备课资源文件补知识属性（统一资源池 P0）。不新增实体，只在现有 file 上扩字段；
+     默认 kbOn=false（不自动进知识库），已有值原样保留 */
+  var KB_CAT = { '课件': 'text', '教案': 'text', '图片': 'image', '视频': 'av', '情景互动游戏': 'av' };
+  function ensureAssetFile(f) {
+    if (!f) return f;
+    if (typeof f.kbOn !== 'boolean') f.kbOn = false;
+    if (!f.kbStatus) f.kbStatus = 'waiting';       // waiting=待处理（已加入知识库、尚未建立索引）
+    if (!f.kbCat) f.kbCat = KB_CAT[f.type] || 'text';
+    if (!Array.isArray(f.kbTags)) f.kbTags = [];
+    if (!Array.isArray(f.kbSegs)) f.kbSegs = [];
+    if (typeof f.kbHits !== 'number') f.kbHits = 0;
+    if (!Array.isArray(f.kbSharedTo)) f.kbSharedTo = [];
+    if (!f.kbDocId) f.kbDocId = '';                // 从知识库引入时记录原文档 id，用于去重
+    return f;
+  }
+  function migrateAssetFields(st) {
+    (st.resources || []).forEach(function (r) { (r.files || []).forEach(ensureAssetFile); });
+  }
+  /* v17 演示：把「策划方案呈现与营销推广」课件标成已加入知识库，便于在两个页面看到同一份文件；幂等 */
+  function seedAssetDemo(st) {
+    var r = (st.resources || []).filter(function (x) { return x.id === 'RES2'; })[0];
+    var f = r && r.files && r.files[0];
+    if (!f) return;
+    ensureAssetFile(f);
+    if (f.kbOn) return;
+    f.kbOn = true; f.kbStatus = 'available'; f.kbHits = 4; f.kbTags = ['备课资源'];
+    f.kbSegs = ['《策划方案呈现与营销推广》课件：围绕方案结构、呈现逻辑与推广渠道整理。', '方案呈现要点：目标客群、产品卖点、行程亮点与报价策略。', '营销推广要点：线上渠道触达、门店咨询转化与客户跟进。'];
   }
   /* v16 演示数据：给 CP1「三日游线路规划与成本」已发布任务挂 4 个客源地体系的技能并标记拓展，
      用于展示学情「标准要求 6 项 / 教学覆盖 10 项（标准 6 · 拓展 4）」；幂等，重复执行不重复添加 */
@@ -937,5 +966,5 @@
     formHTML: formHTML, bindForm: bindForm, bindSearchSelect: bindSearchSelect, readForm: readForm, fileRow: fileRow, FT_COLOR: FT_COLOR,
     TERM: TERM, PERIODS: PERIODS, periodOf: periodOf, periods: periods, periodSpan: periodSpan, periodText: periodText, periodTime: periodTime, switchTmode: switchTmode, ttGrid: ttGrid,
     kn: kn, skillName: skillName, registerCustomNodes: registerCustomNodes, kpsUnion: kpsUnion, courseKps: courseKps, kpById: kpById, kpCount: kpCount, kpHTML: kpHTML, kpCrit: kpCrit, kpCritDefault: kpCritDefault, kpCritHTML: kpCritHTML, taskKps: taskKps, snapKps: snapKps, aiKpMarks: aiKpMarks, aiKpMarksOf: aiKpMarksOf, kpMarksOf: kpMarksOf, stdSkillMap: stdSkillMap, stdKpMap: stdKpMap, extTag: extTag, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs, planClassIds: planClassIds, planCls: planCls, planStus: planStus, planClsTxt: planClsTxt, planMajors: planMajors,
-    syncRoster: syncRoster, syncSessions: syncSessions, planState: planState, lessonConflict: lessonConflict, fillSkillsFromRes: fillSkillsFromRes, syncResTags: syncResTags, studentHasRecords: studentHasRecords, majorPath: majorPath, majorTop: majorTop, majorSubIds: majorSubIds, majorTree: majorTree, majorChain: majorChain, GRADES: GRADES, genCriteria: genCriteria, overall: overall, addEvidence: addEvidence };
+    syncRoster: syncRoster, syncSessions: syncSessions, planState: planState, lessonConflict: lessonConflict, fillSkillsFromRes: fillSkillsFromRes, syncResTags: syncResTags, ensureAssetFile: ensureAssetFile, studentHasRecords: studentHasRecords, majorPath: majorPath, majorTop: majorTop, majorSubIds: majorSubIds, majorTree: majorTree, majorChain: majorChain, GRADES: GRADES, genCriteria: genCriteria, overall: overall, addEvidence: addEvidence };
 })(window);

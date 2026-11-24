@@ -334,6 +334,7 @@ a.stat:hover .go{opacity:1}
 <script src="js/common.js"></script>
 <script src="js/assess-data.js"></script>
 <script src="js/teacher-kit.js"></script>
+<script src="js/resource-bridge.js"></script>
 <script>
 (function () {
   'use strict';
@@ -920,7 +921,7 @@ a.stat:hover .go{opacity:1}
     if (kc) { var pp = myPlans().filter(function (p) { return TK.planKsId(S, p) === kc.id; })[0]; return pp ? pp.course : kc.name; }
     return '';
   }
-  function resSrc(r) { return r.source === '上传' ? '上传' : 'AI 生成'; }
+  function resSrc(r) { return r.source === '上传' ? '上传' : r.source === '知识库' ? '知识库' : 'AI 生成'; }
   function lessonNo(c) {
     var seq = S.courses.filter(function (x) { return x.planId === c.planId && !x.targets && x.source !== '补训课次'; }).sort(function (a, b) { return a.start < b.start ? -1 : 1; });
     var i = seq.indexOf(c); return i >= 0 ? '第' + (i + 1) + '次课' : c.name;
@@ -987,7 +988,8 @@ a.stat:hover .go{opacity:1}
     function pkgOps(r, more, fid) {
       var mi = function (a, l, cls) { return '<button type="button" class="' + (cls || '') + '" data-ract="' + a + '" data-id="' + r.id + '"' + (fid ? ' data-fid="' + esc(fid) + '"' : '') + '>' + l + '</button>'; };
       if (!more) return mi('view', '查看') + mi('edit', '编辑') + mi('del', '删除', 'del');
-      return '<details class="rs-more"><summary title="资源包操作">⋯</summary><div class="rs-mn">' + (fid ? mi('fdel', '删除此文件', 'del') : '') + mi('view', '查看资源包') + mi('edit', '编辑资源包') + mi('del', '删除资源包', 'del') + '</div></details>';
+      var kbf = fid ? (r.files || []).filter(function (x) { return x.id === fid; })[0] : null;
+      return '<details class="rs-more"><summary title="资源包操作">⋯</summary><div class="rs-mn">' + (kbf && !kbf.kbOn ? mi('kbadd', '加入知识库') : '') + (fid ? mi('fdel', '删除此文件', 'del') : '') + mi('view', '查看资源包') + mi('edit', '编辑资源包') + mi('del', '删除资源包', 'del') + '</div></details>';
     }
     // 文件平铺（2026-11-19：不再按资源包 ▸ 折叠展开，每个文件一行直接展示）。资源包作为文件的归属信息放在行内第二行；
     // 技能 / 知识点是包级属性，随文件行展示；时间（2026-11-24 起独立一列，不再混在文件名下方 meta 里）；操作 = 文件级预览 / 在线编辑 / 下载 + ⋯（包级查看 / 编辑 / 删除）
@@ -1181,7 +1183,7 @@ a.stat:hover .go{opacity:1}
       if (v.bad.length) { TK.toast('请填写：' + v.bad.join('、')); return; }
       if (!v.v.files.length) { TK.toast('请上传至少一个文件'); return; }
       var old = {}; (r ? r.files : []).forEach(function (f0) { old[f0.name] = f0; });
-      var files = v.v.files.map(function (f0) { return old[f0.name] || { id: TK.uid('F'), type: fileType(f0.name), name: f0.name, size: f0.size || '', url: '' }; });
+      var files = v.v.files.map(function (f0) { return old[f0.name] || TK.ensureAssetFile({ id: TK.uid('F'), type: fileType(f0.name), name: f0.name, size: f0.size || '', url: '' }); });
       var rec = r || { id: TK.uid('RES'), status: '已完成', source: '上传', createdAt: TK.fmt(new Date()), owner: teacherName() };
       // 标注下沉到文件级（2026-11-20）：选择区的技能/知识点写入每个文件；包级标注由 syncResTags 重算为并集（发布/学情读包级不变）
       files.forEach(function (f0) { f0.skillIds = skSel.slice(); f0.kpIds = kpSel.slice(); });
@@ -2444,9 +2446,10 @@ a.stat:hover .go{opacity:1}
             g[t].map(function (f) {
               var fsk = (f.skillIds || []).map(TK.skillName).filter(Boolean);
               var fkp = (f.kpIds || []).map(function (id) { var k = TK.kpById(id); return k && k.name; }).filter(Boolean);
-              var tagLine = fsk.length || fkp.length ? '<small style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">' +
+              var kbTag = f.kbOn ? '<span class="rs-chip" title="该文件已在知识库，可在图谱中心知识库查看">知识库 · ' + (f.kbStatus === 'available' ? '可检索' : '待解析') + '</span>' : '';
+              var tagLine = fsk.length || fkp.length || kbTag ? '<small style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">' +
                 (fsk.length ? fsk.map(function (n) { return '<span class="rs-chip">' + esc(n) + '</span>'; }).join('') : '') +
-                (fkp.length ? fkp.map(function (n) { return '<span class="rs-chip">' + esc(n) + '</span>'; }).join('') : '') + '</small>' : '';
+                (fkp.length ? fkp.map(function (n) { return '<span class="rs-chip">' + esc(n) + '</span>'; }).join('') : '') + kbTag + '</small>' : '';
               return '<div class="fitem" data-fid="' + esc(f.id) + '"><span class="fn">' + esc(f.name) + '<small>' + esc(f.size) + '</small>' + tagLine + '</span><button class="lk" data-ftag>标注</button><button class="lk" data-dl>下载</button><button class="lk" data-pv>预览</button>' + (t === '图片' || t === '视频' ? '' : '<button class="lk" data-ed>在线编辑</button>') + '<button class="lk" data-fdel style="color:var(--danger,#e5484d)">删除</button></div>';
             }).join('') + '</div>';
         }).join('') : '<div class="empty2">还没有文件</div>') + '</div>';
@@ -2617,6 +2620,14 @@ a.stat:hover .go{opacity:1}
       if (ra === 'fdel') {
         var fid3 = t.getAttribute('data-fid'), ff3 = r.files.filter(function (x) { return x.id === fid3; })[0];
         if (ff3) resFileDelete(r, ff3);
+      }
+      else if (ra === 'kbadd') {
+        var fid4 = t.getAttribute('data-fid'), ff4 = r.files.filter(function (x) { return x.id === fid4; })[0];
+        if (ff4) {
+          var z = ResourceBridge.pushToKb(r.id, fid4);
+          TK.toast(z.reason === 'exists' ? '这个文件已在知识库' : z.ok ? '已加入知识库（待解析，可在图谱中心知识库查看）' : '加入失败，请刷新后重试');
+          render(); if (curR) curR.render();
+        }
       }
       else if (ra === 'dl') TK.toast(r.status === '已完成' ? '已开始打包下载' : r.status === '生成中' ? '资源还在生成中' : '资源生成失败，暂无可下载内容');
       else if (ra === 'view') resDetail(r);

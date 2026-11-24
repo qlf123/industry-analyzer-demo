@@ -3,7 +3,7 @@
 ## 范围与铁律
 - 只改 industry-analyzer-demo，不动其他项目；外项目截图/需求先确认
 - **PRD 冻结**：页面调整一律不主动同步 PRD，等用户明说「同步 PRD」再统一一次性同步（2026-11-19 起长期有效）
-- **load 升版铁律**：teacher-kit.js load() 升 vN→v(N+1) 必须保留最新版直通分支 `if(s && s.v===最新){...return finish(s)}`，否则已最新数据 fall through 到 seed() 被全量重置。当前 **v16**（v16 直通 + v15→v16 迁移 seedExtDemo 已加）。改版本后验证「写新数据→刷新→仍在」
+- **load 升版铁律**：teacher-kit.js load() 升 vN→v(N+1) 必须保留最新版直通分支 `if(s && s.v===最新){...return finish(s)}`，否则已最新数据 fall through 到 seed() 被全量重置。当前 **v17**（v17 直通；v16→v17 补资源文件知识属性 migrateAssetFields + seedAssetDemo；v12 分支去掉 return 让旧数据走完 v13→v17）。改版本后验证「写新数据→刷新→仍在」
 - 调试账号 `?u=ACC-LI`；学情 `#course/CP1/stat`、学生 `#course/CP1/stu`、备课资源 `?t=res`；同 URL agent-browser 不重载加 `?r=N`
 - agent-browser 被 SIGKILL 时写 localStorage 可能损坏 JSON → TK.load() catch 静默重置；判断数据前先 close 重开浏览器
 
@@ -13,8 +13,9 @@
 - 删除渲染块时若末尾带父卡片闭合 `</div>`，必须逐个数 div 开闭，否则后续卡片被吞进前一张卡
 - 课堂首页「接下来的课」要带日期（x月x日 周x）
 
-## 备课资源（文件为主，v15）
+## 备课资源（文件为主，v15；知识属性 v17）
 - 文件平铺为主（每文件一行），包仅作可选归属（行内 📦 标注）；上传不强制进包（包名非必填，留空=独立文件）；无文件包仍占一行保住操作入口
+- 【统一资源 P0/P1，2026-11-24】备课资源文件与知识库文档是**一套文件实体、两个视图**：在 `S.resources[].files` 上扩 `kbOn/kbStatus/kbCat/kbSegs/kbTags/kbHits/kbDocId/kbSharedTo`（默认 kbOn=false），不新建 S.assets、不改发布/学情口径。`js/resource-bridge.js` 为共用适配层：teacherDocs() 把 kbOn 文件映射成知识库 DOCS，pushToKb/removeFromKb/pullFromKb 做双向入口。备课 ⋯ 加「加入知识库」（已在库不显示），知识库行菜单/详情加「用于备课」（导入为独立文件，source='知识库'、技能知识点留空），从知识库删 teacher 文件只下架 kbOn=false 不删本体。知识库详情 DOCS 由 RB_DOCS + 静态演示文档（按 kbDocId 去重）组成；seed 文件 RES2 课件默认 kbOn=true 作演示
 - **标注下沉到文件级** f.skillIds/f.kpIds；包级 = 包内文件并集（TK.syncResTags 重算），发布/学情仍读包级；v14→v15 迁移把包级标注复制给文件。resSkKpHTML(r,f) 传文件读文件标注
 - 列表列：文件 / 内容 / 关联技能 / 关联知识点 / **时间（2026-11-24 独立一列，不再混在文件名 meta 内，.rs-d）** / 操作；技能、知识点两列独立、chips 最多 4 个（+N），空态各自独立
 - 资源页只做资源管理（上传/编辑/删除/预览下载 + 技能知识点），**不做教学层操作**（关联课次/复用/发布/下发数据全去）；关联入口在课次侧；筛选含「资源包」（含未归属）；文件级删除 resFileDelete（已下发受 publish.fileIds 保护），包级操作在 ⋯

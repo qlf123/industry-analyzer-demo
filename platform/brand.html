@@ -16,6 +16,7 @@
 .vtabs button.addv{margin-left:auto;color:var(--brand-ink);font-weight:500}
 .ven{display:flex;align-items:center;gap:10px;padding:10px 18px;font-size:12.5px}
 .ven .sp{flex:1}
+.savebar .delv{margin-right:auto;align-self:center;color:var(--crit)}
 .seg{display:inline-flex;background:var(--card);border:1px solid var(--rule);border-radius:9px;padding:3px;margin-bottom:12px}
 .seg button{border:0;background:none;font:inherit;font-size:12.5px;padding:5px 16px;border-radius:7px;color:var(--ink-2);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--brand-soft);color:var(--brand-ink);font-weight:500}
@@ -68,6 +69,7 @@
 <script src="../js/common.js?v=19"></script>
 <script src="../js/assess-data.js"></script>
 <script src="../js/teacher-kit.js"></script>
+<script src="../js/platform-kit.js?v=14"></script>
 <script>
 (function () {
   'use strict';
@@ -89,6 +91,35 @@
   var F = { v: 0, tab: 'login' }, W = JSON.parse(JSON.stringify(C)), dirty = false;   // W：编辑中的副本，保存配置后才写入
   function V() { return W.versions[F.v]; }
   function mark() { dirty = true; }
+  /* 已分配院校统计：院校按序号引用门户版本（未设置视为版本1） */
+  function schoolsOf(idx) {
+    var ver = idx + 1, n = 0;
+    try { PF.list().forEach(function (s) { if ((Number(s.portalVersion) || 1) === ver) n++; }); } catch (e) {}
+    return n;
+  }
+  function schoolTotal() { try { return PF.list().length; } catch (e) { return 0; } }
+  function delVersion() {
+    var i = F.v;
+    if (W.versions.length <= 1) return TK.toast('至少保留一个版本');
+    if (W.active === i) return TK.toast('启用中的版本不能删除，请先切换到其他版本并设为启用');
+    var used = schoolsOf(i);
+    if (used) return TK.toast('该版本已分配给 ' + used + ' 所院校，无法删除');
+    if (schoolTotal() > 0 && i !== W.versions.length - 1) return TK.toast('已有院校使用门户版本，仅支持删除最后一个版本，避免版本序号错位');
+    /* 二次确认：① 影响说明 ② 不可恢复的最终确认 */
+    var m = TK.modal({ title: '删除版本', width: 440, body: '<div style="font-size:13px;line-height:1.9">即将删除 <b>版本' + (i + 1) + '</b>。该版本当前未分配给任何院校。' +
+      '<div style="margin-top:8px;font-size:12px;color:var(--muted)">删除后版本序号会重新排列，需点击「保存配置」才会生效。</div></div>',
+      foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px;background:var(--crit);border-color:var(--crit)">继续删除</button>' });
+    m.foot.querySelector('[data-c]').onclick = m.close;
+    m.foot.querySelector('[data-o]').onclick = function () {
+      m.close();
+      TK.confirm('删除后不可恢复，确定删除版本' + (i + 1) + '吗？', function () {
+        W.versions.splice(i, 1);
+        if (W.active > i) W.active--;
+        F.v = Math.min(i, W.versions.length - 1);
+        mark(); render(); TK.toast('已删除版本' + (i + 1) + '，保存配置后生效');
+      });
+    };
+  }
 
   function img(path, val, wide, hint) {
     return '<div class="img"><span class="th' + (wide ? ' wide' : '') + '">' + (val ? '<img src="' + val + '" alt="">' : '未上传') + '</span><div><label class="btn-s">⤒ 上传替换<input type="file" accept="image/png,image/jpeg" hidden data-img="' + path + '"></label>' + (val ? ' <button class="lk" data-clrimg="' + path + '">恢复默认</button>' : '') + '<div class="hint">' + hint + '</div></div></div>';
@@ -176,6 +207,7 @@
       F.v = W.versions.length - 1; mark(); render();
       TK.toast('已新增版本' + W.versions.length + '，保存配置后生效');
     }
+    else if (e.target.closest('[data-delv]')) delVersion();
     else if ((t = e.target.closest('[data-tab]'))) { F.tab = t.dataset.tab; render(); }
     else if (e.target.closest('[data-enable]')) {
       if (W.active === F.v) return TK.toast('至少启用一套版本；启用其他版本即可切换');
