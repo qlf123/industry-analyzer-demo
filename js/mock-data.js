@@ -10,7 +10,7 @@
   'use strict';
 
   var STORAGE_KEY = 'permission-demo-state';
-  var DATA_VERSION = 16; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效
+  var DATA_VERSION = 17; // 数据版本：seed 结构变更时 +1，旧 localStorage 缓存自动失效（v17：模块「教学成果统计」更名「教学达成分析」，权限名同步）
 
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
@@ -187,7 +187,7 @@
     { id: 'P-ASSESS-VIEW',       code: 'major:assess:view',        name: '专业建设测评查看', module: '专业建设', resource: '专业建设测评', action: '查看' },
     { id: 'P-ASSESS-RUN',        code: 'major:assess:run',         name: '发起专业建设测评', module: '专业建设', resource: '专业建设测评', action: '发起' },
     { id: 'P-EDU-MANAGE',        code: 'edu:base:manage',          name: '教务管理与课程计划维护', module: '教务', resource: '教务管理', action: '维护' },
-    { id: 'P-TEACH-QUALITY',     code: 'teach:quality:view',       name: '教学质量查看与改进处理', module: '教学质量', resource: '教学达成 / 课程改进建议', action: '查看处理' },
+    { id: 'P-TEACH-QUALITY',     code: 'teach:quality:view',       name: '教学达成分析查看与改进处理', module: '教学达成分析', resource: '教学达成 / 课程改进建议', action: '查看处理' },
     { id: 'P-LAB-MANAGE',        code: 'edu:lab:manage',           name: '实训资源维护',   module: '教务', resource: '实训资源', action: '维护' },
     { id: 'P-GRAPH-SUGGEST',     code: 'graph:suggest:review',     name: '图谱建议审核', module: '图谱中心', resource: '图谱建议', action: '审核发布' },
     { id: 'P-PLATFORM-SCHOOL-VIEW',   code: 'platform:school:view',   name: '院校查看',     module: '平台', resource: '院校', action: '查看' },

@@ -198,10 +198,7 @@
       }).join('') + '</div>';
     // 情景任务
     if (t.task) h += '<div class="card pad" style="margin-bottom:14px"><div class="blk-t">情景任务</div><div class="taskbox"><b>' + esc(t.task.name) + '</b><p>' + esc(t.task.desc) + '</p><div class="m">提交方式：' + t.task.modes.join('、') + '　·　截止时间：' + esc(t.due) + '</div></div>' +
-      ((t.task.skillIds || []).length || TK.taskKps(t.task).length ? '<div class="blk-t" style="margin-top:12px">考查的技能和知识点</div>' + ((t.task.skillIds || []).length ? '<div style="font-size:12.5px;margin-bottom:6px">' + t.task.skillIds.map(function (id) { return '<span class="tag">' + esc(TK.skillName(id)) + '</span>'; }).join(' ') + '</div>' : '') + TK.kpHTML(t.task.kpIds, t.task) + (TK.kpCritHTML(t.task) ? '<details style="margin-top:6px"><summary style="font-size:12.5px;color:var(--brand-ink);cursor:pointer">知识点怎样算掌握</summary>' + TK.kpCritHTML(t.task) + '</details>' : '') : '') +
-      (t.task.aiReq ? '<div class="blk-t" style="margin-top:12px">评价要求</div><div style="font-size:12.5px;line-height:1.8;white-space:pre-wrap;color:var(--ink-2)">' + esc(t.task.aiReq) + '</div>' : '') +
-      (!t.task.aiReq && t.task.criteria.length ? '<div class="blk-t" style="margin-top:12px">评价标准<span style="font-size:11.5px;font-weight:400;color:var(--muted);margin-left:8px">老师会按下面每一项评价，每项对应一个技能</span></div><table class="crit"><thead><tr><th style="width:18%">评价项（技能）</th><th>优秀</th><th>合格</th><th>需改进</th></tr></thead><tbody>' +
-        t.task.criteria.map(function (x) { return '<tr><td class="sn">' + esc(x.name) + '</td><td>' + esc(x.levels['优秀']) + '</td><td>' + esc(x.levels['合格']) + '</td><td>' + esc(x.levels['需改进']) + '</td></tr>'; }).join('') + '</tbody></table>' : '') + '</div>';
+      ((t.task.skillIds || []).length || TK.taskKps(t.task).length ? '<div class="blk-t" style="margin-top:12px">考查的技能和知识点</div>' + ((t.task.skillIds || []).length ? '<div style="font-size:12.5px;margin-bottom:6px">' + t.task.skillIds.map(function (id) { return '<span class="tag">' + esc(TK.skillName(id)) + '</span>'; }).join(' ') + '</div>' : '') + TK.kpHTML(t.task.kpIds, t.task) : '') + '</div>';
     // 提交与评价记录
     if (t.task) {
       h += '<div class="card pad"><div class="blk-t">我的提交与评价记录</div>';

@@ -494,7 +494,6 @@ a.kp-link:hover{border-color:#5149e9;}
       <h1 class="kbd-title" id="docTitle"></h1>
       <span class="kbd-meta" id="docMeta"></span>
       <div class="kbd-head-actions">
-        <button class="kbd-ghost" id="docPrepBtn" onclick="forPrep(activeDoc)">用于备课</button>
         <button class="kbd-ghost" id="docPreviewBtn" onclick="openPreview()">源文预览</button>
         <button class="kbd-ghost" onclick="toast('下载「'+activeDoc.name+'」')">↓ 下载</button>
       </div>
@@ -513,7 +512,6 @@ a.kp-link:hover{border-color:#5149e9;}
   <div class="kbd-menu-item" data-act="rename">✎ 重命名</div>
   <div class="kbd-menu-item" data-act="download">↓ 下载</div>
   <div class="kbd-menu-item" data-act="toggle">⏸ 停用 / 启用</div>
-  <div class="kbd-menu-item" data-act="forprep">↗ 用于备课</div>
   <div class="kbd-menu-divider"></div>
   <div class="kbd-menu-item danger" data-act="delete">🗑 删除</div>
 </div>
@@ -563,7 +561,7 @@ const STATUS = {
 };
 const TYPE = { text:{label:'文本',color:'#5149e9'}, image:{label:'图文',color:'#0e9384'}, av:{label:'音视频',color:'#dc6803'} };
 const MEDIA_LABEL = {audio:'音频',video:'视频'};
-const SOURCE = {local:'本地文件',web:'网页导入',notion:'Notion 导入'};
+const SOURCE = {local:'本地文件',prep:'备课资源',web:'网页导入',notion:'Notion 导入'};
 
 const IMG_BOARD = `<svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="白板手写房态表">
   <rect width="480" height="320" fill="#DDE3EA"/><rect x="20" y="16" width="440" height="288" rx="6" fill="#FDFDFB" stroke="#AEB8C4" stroke-width="6"/>
@@ -870,7 +868,7 @@ function openMenu(e,id){
 }
 function hideMenu(){document.getElementById('rowMenu').classList.remove('show');}
 document.addEventListener('click',e=>{ if(!e.target.closest('.kbd-menu') && !e.target.closest('.kbd-more')) hideMenu(); });
-/* P1：知识库文档 → 备课资源，作为独立文件加入（技能/知识点留空，由老师标注） */
+/* 入口已移除（2026-11-25）：知识库不再提供「用于备课 / 加入备课资源」，保留实现以便后续恢复 */
 function forPrep(d){
   if(!d) return;
   if(d.teacherFileId){ toast('这份文档就来自备课资源，无需重复加入'); return; }
@@ -912,7 +910,6 @@ document.getElementById('rowMenu').addEventListener('click',e=>{
   else if(act==='rename'){const n=prompt('重命名文档',d.name);if(n&&n.trim()){d.name=n.trim();renderTable();toast('已重命名');}}
   else if(act==='download') toast('下载「'+d.name+'」');
   else if(act==='toggle'){ if(d.status==='unavailable'){d.status='available';toast('已启用「'+d.name+'」');} else {d.status='unavailable';toast('已停用「'+d.name+'」');} renderTable(); }
-  else if(act==='forprep') forPrep(d);
   else if(act==='delete'){const extra=removeDocs([d.id]);renderTable();toast('已删除「'+d.name+'」'+extra);}
 });
 
@@ -984,10 +981,20 @@ function goAddFiles(){
 function loadAddedDocs(id){
   let added=[];
   try{ added=JSON.parse(sessionStorage.getItem('kb-added-'+id)||'[]'); }catch(e){}
-  added.forEach(d=>{ if(!DOCS.some(x=>x.id===d.id)) DOCS.unshift(d); });
+  added.forEach(d=>{ if(d.teacherFileId) DOCS=DOCS.filter(x=>!(x.teacherFileId===d.teacherFileId&&x.id!==d.id)); if(!DOCS.some(x=>x.id===d.id)) DOCS.unshift(d); });
   const pending=added.filter(d=>d.status==='indexing');
   if(pending.length) setTimeout(()=>{ pending.forEach(p=>{ const d=DOCS.find(x=>x.id===p.id); if(d) d.status='available'; }); renderTable(); if(activeDoc) refreshDoc(); },3000);
   return added.length;
+}
+
+/* 知识库文档共享给资料库（备课资源自动映射，2026-11-25）：只存轻量元信息，不存分段正文 */
+function persistKbDocs(id){
+  try{
+    const all=JSON.parse(localStorage.getItem('kbDocs.v1')||'{}');
+    const meta=KB_META[id]||{name:'知识库'};
+    all[id]={name:meta.name,docs:DOCS.map(d=>({id:d.id,kbId:id,kb:meta.name,name:d.name,ext:d.ext,size:d.size,cat:d.cat,media:d.media||'',status:d.status,time:d.time,teacherFileId:d.teacherFileId||''}))};
+    localStorage.setItem('kbDocs.v1',JSON.stringify(all));
+  }catch(e){}
 }
 
 /* ================= 知识点 ================= */
@@ -1192,8 +1199,6 @@ function openDoc(id){
   curTime=0;
   document.getElementById('docTitle').innerHTML=docIcon(activeDoc,22)+'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(activeDoc.name)+'</span>';
   document.getElementById('docMeta').textContent=activeDoc.size+' · 上传于 '+activeDoc.time;
-  const prepBtn=document.getElementById('docPrepBtn');
-  if(prepBtn) prepBtn.textContent=(activeDoc.teacherFileId || (window.ResourceBridge&&ResourceBridge.hasTeacherCopy(activeDoc.id))) ? '已在备课资源' : '用于备课';
   document.getElementById('docPreviewBtn').style.display = activeDoc.status==='available' ? '' : 'none';
   showDocDetail();
   refreshDoc();
@@ -1438,7 +1443,7 @@ function suggCardMini(k,g){
     <div class="sugg-quote">${esc(g.quote||g.def||'')}</div>${activeDoc&&activeDoc.cat==='image'&&g.src==='desc'?'<div>'+quoteMeta(activeDoc,k,g)+'</div>':''}</div>`;
 }
 function docInfoRows(d){
-  const rows=[['类型',d.ext+' · '+(d.cat==='av'?MEDIA_LABEL[d.media]:TYPE[d.cat].label)],['大小',d.size],['来源',d.fromTeacher?'备课资源（统一资源池）':SOURCE[d.source]],['上传时间',d.time]];
+  const rows=[['类型',d.ext+' · '+(d.cat==='av'?MEDIA_LABEL[d.media]:TYPE[d.cat].label)],['大小',d.size],['来源',d.fromTeacher?'备课资源':SOURCE[d.source]||SOURCE.local],['上传时间',d.time]];
   if(d.kbDocId) rows.push(['原知识库文档',d.kbDocId]);
   if(d.cat==='av') rows.push(['时长',fmt(d.sec)]);
   return rows.map(([k,v])=>`<div style="display:flex;justify-content:space-between;gap:12px"><span>${k}</span><span style="color:#41536f">${esc(v)}</span></div>`).join('');
@@ -1755,6 +1760,7 @@ document.addEventListener('change',e=>{
   document.getElementById('kbMeta').textContent=meta.creator+' · 更新于 '+(meta.editTime||'3 周前')+' · 知识体：旅游类-酒店管理与数字化运营';
   if(meta.isNew) DOCS=[];
   const addedN=loadAddedDocs(id);
+  persistKbDocs(id);
   document.getElementById('pageSummary').textContent='共 '+((meta.total||DOCS.length-addedN)+addedN)+' 条文档';
   document.getElementById('apiId').textContent=id==='KB004'?'9a87bbc1-9075-4b61-aaf0-0658ed9cc568':('kb-'+id.toLowerCase()+'-'+Math.random().toString(16).slice(2,10));
   document.getElementById('apiCode').textContent=`curl --location --request POST 'http://<your-host>/v1/knowledge-bases/{id}/retrieval' \\

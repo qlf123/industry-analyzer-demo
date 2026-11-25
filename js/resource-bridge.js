@@ -81,6 +81,19 @@
     if (!f.kbTags.length) f.kbTags = ['备课资源'];
     return { ok: save(st), file: f };
   }
+  /* 备课资源（资料库）全部文件：供知识库选择数据来源 */
+  function libraryFiles() {
+    var st = load(), out = [];
+    if (!st) return out;
+    st.resources.forEach(function (r) {
+      (r.files || []).forEach(function (f) {
+        ensure(f);
+        out.push({ resId: r.id, fileId: f.id, name: f.name, ext: ext(f), size: f.size || '', type: f.type || '',
+          resName: r.name || '', owner: r.owner || '', source: r.source || '', kbOn: !!f.kbOn });
+      });
+    });
+    return out;
+  }
   function removeFromKb(fileId) {
     var st = load(); if (!st) return false;
     var f = null;
@@ -111,5 +124,5 @@
     var st = load(); if (!st) return false;
     return st.resources.some(function (r) { return (r.files || []).some(function (f) { return f.kbDocId === docId; }); });
   }
-  root.ResourceBridge = { ensure: ensure, load: load, save: save, teacherDocs: teacherDocs, pushToKb: pushToKb, removeFromKb: removeFromKb, pullFromKb: pullFromKb, hasTeacherCopy: hasTeacherCopy };
+  root.ResourceBridge = { ensure: ensure, load: load, save: save, teacherDocs: teacherDocs, libraryFiles: libraryFiles, pushToKb: pushToKb, removeFromKb: removeFromKb, pullFromKb: pullFromKb, hasTeacherCopy: hasTeacherCopy };
 })(window);

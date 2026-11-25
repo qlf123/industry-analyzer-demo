@@ -1139,8 +1139,10 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       || kc.tasks.filter(function (t) { return ids.indexOf(t.id) >= 0; })[0] || null;
   }
   // 这门课上次备到哪个任务：已发布或已挂资源的课次里最近一次选的任务
+  // 课次是否已备课（2026-11-25 起支持文件级关联：整包 / 单文件 / 知识库引用都算已备课）
+  function hasPrep(c) { return !!(c && ((c.resIds || []).length || (c.resFileIds || []).length || (c.resKbIds || []).length)); }
   function sgLast(S, pl, kc) {
-    var done = S.courses.filter(function (c) { return c.planId === pl.id && (c.status === '已发布' || (c.resIds || []).length) && sgTaskOf(kc, c); })
+    var done = S.courses.filter(function (c) { return c.planId === pl.id && (c.status === '已发布' || hasPrep(c)) && sgTaskOf(kc, c); })
       .sort(function (a, b) { return a.start < b.start ? 1 : -1; })[0];
     if (!done) return null;
     var t = sgTaskOf(kc, done), i = kc.tasks.indexOf(t);
@@ -1184,7 +1186,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
     if (sc0) { add(sessOpt(sc0, p.session ? '从课次带入' : '你选的课次')); return out; }
     // 2. 7 天内还没备课的课次
     var now = new Date(), wk = new Date(now.getTime() + 7 * 864e5), ids = mine.map(function (x) { return x.pl.id; });
-    var up = S.courses.filter(function (c) { var d = new Date(c.start.replace(' ', 'T')); return ids.indexOf(c.planId) >= 0 && d >= now && d <= wk && c.status !== '已发布' && !(c.resIds || []).length; })
+    var up = S.courses.filter(function (c) { var d = new Date(c.start.replace(' ', 'T')); return ids.indexOf(c.planId) >= 0 && d >= now && d <= wk && c.status !== '已发布' && !hasPrep(c); })
       .sort(function (a, b) { return a.start < b.start ? -1 : 1; })[0];
     if (up) { var dd = Math.round((new Date(up.start.slice(0, 10) + 'T00:00:00') - new Date(TK.fmt(now, false) + 'T00:00:00')) / 864e5); add(sessOpt(up, dd <= 0 ? '你今天要上这节课' : dd === 1 ? '你明天要上这节课' : dd + ' 天后要上这节课')); }
     // 3. 任教课程里和输入最相关的任务
@@ -1524,7 +1526,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
   function taskInfo(kind, id) {
     var S = window.TK ? TK.load() : null, t = kind === 'run' ? loadTasks().filter(function (x) { return x.id === id; })[0] : null;
     var resId = kind === 'res' ? id : t && t.res, r = S && resId ? S.resources.filter(function (x) { return x.id === resId; })[0] : null;
-    var c = S && resId ? S.courses.filter(function (x) { return (x.resIds || []).indexOf(resId) >= 0; })[0] : null;
+    var c = S && resId ? S.courses.filter(function (x) { return (x.resIds || []).indexOf(resId) >= 0 || (x.resFileIds || []).some(function (k) { return k.split('|')[0] === resId; }); })[0] : null;
     return { t: t, r: r, c: c, title: t ? t.title : r ? r.name : '' };
   }
   function taskMenu(btn) {
@@ -1610,7 +1612,7 @@ select.wb-tool{max-width:220px;outline:none;appearance:auto}
       if (next < 0) next = st.length - 1;
       st.forEach(function (x, i) { if (i === next) { x.status = r.status === '生成中' ? 'run' : 'fail'; x.shown = r.status === '生成中' ? 1 : x.msgs.length - 1; if (r.status === '生成失败') x.msgs = x.msgs.slice(0, 1); } else if (i > next) { x.status = 'idle'; x.shown = 0; } });
     }
-    var c = S.courses.filter(function (x) { return (x.resIds || []).indexOf(r.id) >= 0; })[0];
+    var c = S.courses.filter(function (x) { return (x.resIds || []).indexOf(r.id) >= 0 || (x.resFileIds || []).some(function (k) { return k.split('|')[0] === r.id; }); })[0];
     if (c) run.linked = { id: c.id, name: c.name, res: r.id }; else run.saved = { res: r.id };
     run.steps = st;
     $('#wbHero').hidden = true; $('#wbInput').hidden = true;

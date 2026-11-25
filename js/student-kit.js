@@ -73,7 +73,7 @@
 
   /* 知识点掌握统计（学生端，两维独立）：知识点不按技能分组，按任务维度统计——
      每个任务取本人最近一次老师确认的评价（含退回的那次），看发布时勾选的考查知识点（task.kpIds；存量任务没有则视为全部）是否体现；
-     只用于学习参考，不进证据、不汇总到技能达成 */
+     只统计老师明确标注过的知识点，未标注（未考查）的不进明细；只用于学习参考，不进证据、不汇总到技能达成 */
   function kpView(S, who) {
     var last = {};
     S.courses.forEach(function (c) {
@@ -87,13 +87,15 @@
     });
     var list = Object.keys(last).map(function (cid) {
       var l = last[cid];
-      var kps = l.ks.map(function (k) { return { id: k.id, name: k.name, type: k.type, core: k.core, ext: k.ext ? 1 : 0, miss: l.marks[k.id] === 'miss', none: l.marks[k.id] !== 'miss' && l.marks[k.id] !== 'ok' }; });
-      return { name: l.task, kps: kps, ok: kps.filter(function (k) { return !k.miss && !k.none; }).length, miss: kps.filter(function (k) { return k.miss; }).length,
+      // 未考查（老师没标注的知识点）不进入明细（2026-11-25）：只保留明确判定为已掌握 / 未掌握的知识点
+      var kps = l.ks.map(function (k) { return { id: k.id, name: k.name, type: k.type, core: k.core, ext: k.ext ? 1 : 0, miss: l.marks[k.id] === 'miss', none: l.marks[k.id] !== 'miss' && l.marks[k.id] !== 'ok' }; })
+        .filter(function (k) { return !k.none; });
+      return { name: l.task, kps: kps, ok: kps.filter(function (k) { return !k.miss; }).length, miss: kps.filter(function (k) { return k.miss; }).length,
         at: l.at, tid: l.tid, task: l.task, course: l.course };
-    }).sort(function (a, b) { return a.at < b.at ? 1 : -1; });
+    }).filter(function (g) { return g.kps.length; }).sort(function (a, b) { return a.at < b.at ? 1 : -1; });
     var all = list.reduce(function (a, x) { return a.concat(x.kps); }, []), seen = {}, uni = [];
     all.forEach(function (k) { if (!seen[k.id]) { seen[k.id] = 1; uni.push(k); } });
-    return { list: list, total: uni.length, ok: uni.filter(function (k) { return !k.miss && !k.none; }).length, miss: uni.filter(function (k) { return k.miss; }).length };
+    return { list: list, total: uni.length, ok: uni.filter(function (k) { return !k.miss; }).length, miss: uni.filter(function (k) { return k.miss; }).length };
   }
 
   /* ── 学生操作（写回共用数据） ── */
@@ -126,7 +128,8 @@
   }
   function submit(cid, items) {
     return edit(cid, function (S, c, who) {
-      var sub = c.submissions.find(function (x) { return x.student === who; }), t = c.publish.task, late = t.due < TK.fmt(new Date());
+      var pub = c.publish || (c.publishes || [])[0];   // 学生端 P0 仍看最近一次发布（镜像）；提交挂 taskId 便于教师端按任务聚合
+      var sub = c.submissions.find(function (x) { return x.student === who && x.taskId === pub.id; }), t = pub.task, late = t.due < TK.fmt(new Date());
       var first = !sub.at;
       if (!first) { sub.history = sub.history || []; sub.history.push({ at: sub.at, late: !!sub.late, files: sub.files, teacher: sub.teacher }); }
       Object.assign(sub, { status: '已提交', at: TK.fmt(new Date()), late: late, files: items, modes: items.map(function (x) { return x.type; }).filter(function (m, i, a) { return a.indexOf(m) === i; }), teacher: null, ai: t.ai ? mockAi(items, t.modes, t.criteria, who, t) : null, evalSeen: true });

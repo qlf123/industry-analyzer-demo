@@ -18,7 +18,7 @@
     { key: 'industry', name: '行业分析', desc: '行业分析页面（管理端）' },
     { key: 'graph', name: '图谱中心', desc: '知识库、能力图谱、知识体系、映射审核、知识图谱、图谱建议审核' },
     { key: 'majorAssess', name: '专业建设测评', desc: '管理端专业建设测评' },
-    { key: 'quality', name: '教学质量', desc: '管理端教学达成' }
+    { key: 'quality', name: '教学达成分析', desc: '管理端教学达成分析' }
   ];
 
   function defaultFeatures() {

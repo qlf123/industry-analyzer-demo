@@ -268,8 +268,16 @@
     var K = kn(), sk = function (tid) { return ((K.task[tid] || {}).skills || []).map(function (x) { return x.id; }); };
     var kw = function (tid) { return sk(tid).map(skillName).join(' › '); };
     // 文件级标注（2026-11-20）：seed 时把包的技能标注写到每个文件上，包级仍保留并集（发布链路读它）
+    // 2026-11-25：AI 生成的资源同时带知识点（技能与知识点是两个维度，但都由资源本身标注）
+    var kpIdsOf = function (ids) {
+      var out = [], seen = {};
+      (ids || []).forEach(function (sid) { (((K.skill || {})[sid] || {}).kps || []).forEach(function (k) { if (!seen[k.id]) { seen[k.id] = 1; out.push(k.id); } }); });
+      return out;
+    };
     var tagFiles = function (res) {
-      (res.files || []).forEach(function (f) { f.skillIds = (res.skillIds || []).slice(); f.kpIds = []; });
+      var kp = (res.kpIds && res.kpIds.length ? res.kpIds : kpIdsOf(res.skillIds)).slice();
+      res.kpIds = kp.slice();
+      (res.files || []).forEach(function (f) { f.skillIds = (res.skillIds || []).slice(); f.kpIds = kp.slice(); });
       return res;
     };
     // 知识体系任务：旅行策划 / 旅行社经营与管理
@@ -301,7 +309,7 @@
     var tk9 = task(T_GUIDE, { name: '景区导览讲解演练', desc: '以本市一处景区为对象，录制一段 5 分钟的导览讲解，并写出讲解提纲和针对亲子游客的调整方案。', modes: ['语音', '文档'], due: daysAgo(9, 18, 0) });
     var tk10 = task(T_EMERG, { name: '带团突发事件处置预案', desc: '针对游客中暑和游客投诉两种情形，写出现场处置步骤、沟通话术和事后报告要点。', modes: ['文字', '文档'], due: daysAgo(4, 18, 0) });
     var tk8 = task(T_ROUTE, { name: '三日游线路设计与报价', desc: '设计一条本地三日游线路，完成成本核算与报价单。', modes: ['文档'], due: daysAgo(-1, 18, 0) });
-    var base = function (id, planId, ktask, name, o) { return Object.assign({ id: id, planId: planId, ktask: ktask, skillIds: sk(ktask), name: name, major: '导游', source: '自建课次', term: TERM, status: '已发布', resIds: [], publish: null, submissions: [], feedbacks: [], learn: {} }, o); };
+    var base = function (id, planId, ktask, name, o) { return Object.assign({ id: id, planId: planId, ktask: ktask, skillIds: sk(ktask), name: name, major: '导游', source: '自建课次', term: TERM, status: '已发布', resIds: [], publish: null, publishes: [], submissions: [], feedbacks: [], learn: {} }, o); };
     var courses = [
       base('CRS1', 'CP2', T_ADMIN, '旅行社基层管理', { classIds: ['CL1'], start: daysAgo(-6, 9, 0), end: daysAgo(-6, 11, 0), status: '未发布', createdAt: today(8, 40) }),
       base('CRS2', 'CP2', T_RECEIVE, '客户咨询与接待', { classIds: ['CL1'], start: today(14, 0), end: today(16, 0), resIds: ['RES1'], createdAt: daysAgo(1, 14, 42),
@@ -420,33 +428,59 @@
       var fname = {}; st.resources.forEach(function (r) { r.files.forEach(function (f) { fname[f.id] = f.name; }); });
       Object.keys(c.learn || {}).forEach(function (who) { Object.keys(c.learn[who]).forEach(function (fid) { addStuGrowth(st, who, { at: c.learn[who][fid], type: '学习资源', target: fname[fid], desc: '学习资源完成', stars: STU_STAR.learn, tid: c.id }); }); });
       c.submissions.forEach(function (x) {
+        var pk = pubsOf(c).find(function (pp) { return pp.id === x.taskId; }) || c.publish;
+        var tk = (pk && pk.task) || (c.publish && c.publish.task);
+        if (!tk) return;
         var first = (x.history && x.history[0]) || (x.at ? x : null);
-        if (first) addStuGrowth(st, x.student, { at: first.at, type: '提交任务', target: c.publish.task.name, desc: first.late ? '超时提交情景任务' : '正常提交情景任务', stars: first.late ? STU_STAR.submitLate : STU_STAR.submit, tid: c.id });
-        if (x.teacher && x.teacher.result === '通过') addStuGrowth(st, x.student, { at: x.teacher.at, type: '老师评价', target: c.publish.task.name, desc: '老师评价：' + x.teacher.grade, stars: STU_STAR.grade[x.teacher.grade], tid: c.id });
+        if (first) addStuGrowth(st, x.student, { at: first.at, type: '提交任务', target: tk.name, desc: first.late ? '超时提交情景任务' : '正常提交情景任务', stars: first.late ? STU_STAR.submitLate : STU_STAR.submit, tid: c.id });
+        if (x.teacher && x.teacher.result === '通过') addStuGrowth(st, x.student, { at: x.teacher.at, type: '老师评价', target: tk.name, desc: '老师评价：' + x.teacher.grade, stars: STU_STAR.grade[x.teacher.grade], tid: c.id });
       });
       c.feedbacks.forEach(function (f) { addStuGrowth(st, f.student, { at: f.at, type: '课程反馈', target: c.name, desc: '提交课程反馈', stars: STU_STAR.feedback, tid: c.id }); });
     });
     Object.keys(st.stuGrowth).forEach(function (k) { st.stuGrowth[k].sort(function (a, b) { return a.at < b.at ? 1 : -1; }); });
   }
   function addStuGrowth(st, who, rec) { (st.stuGrowth[who] = st.stuGrowth[who] || []).unshift(Object.assign({ id: uid('G'), at: fmt(new Date()) }, rec)); }
+  // 演示数据：CP4「导游业务」补两条学生课程反馈（一条未读），用于课堂首页待办 / 课程反馈汇总 / 学生页的反馈链路演示（2026-11-25）
+  function seedFbDemo(st) {
+    var c = (st.courses || []).filter(function (x) { return x.id === 'CRS9'; })[0];
+    if (!c) return;
+    if (c.publish) c.publish.feedback = true;
+    c.feedbacks = c.feedbacks || [];
+    if (!c.feedbacks.length) {
+      c.feedbacks.push({ student: '张晓雨', at: daysAgo(9, 17, 20), scores: { '讲授内容': 5, '教学方式': 4, '互动体验': 4, '学习收获': 5 }, text: '讲解示范很清楚，希望多给每个人练习的机会。', read: false });
+      c.feedbacks.push({ student: '王思琪', at: daysAgo(9, 18, 5), scores: { '讲授内容': 4, '教学方式': 4, '互动体验': 3, '学习收获': 4 }, text: '应急案例很实用，想再练一次。', read: true });
+    }
+  }
   function load() {
     function finish(s) { registerCustomNodes(s); return s; }   // 自定义节点注册进 kn() 运行时索引（跨页面共享）
     try {
       var s = JSON.parse(localStorage.getItem(KEY));
-      if (s && s.v === 17) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据（否则管理端新增的计划/资源被抹掉）
-      if (s && s.v === 16) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return finish(s); }   // v17：备课资源文件补知识属性（知识库统一资源池 P0）
-      if (s && s.v === 15) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); seedExtDemo(s); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return finish(s); }   // v16 演示拓展 → v17 知识属性
-      if (s && s.v === 14) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); migrateResFileTags(s); seedExtDemo(s); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return finish(s); }   // v15 资源文件级标注 → v17
-      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); migratePlanMulti(s); migrateResFileTags(s); seedExtDemo(s); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return finish(s); }   // v14→v17：多班 + 文件级标注 + 演示拓展 + 知识属性
+      /* v17→v22 统一迁移（v13–v16 分支升到 v17 后也走这里，避免落穿到重置路径） */
+      var upFrom17 = function (st) {
+        Object.keys(st.gks || {}).forEach(function (k) { registerGks(st.gks[k]); });
+        migratePubs(st); seedKpSnap(st); seedKpMarks(st); seedExtEvals(st); seedExtSkills(st); seedFbDemo(st); fillResKpIds(st);
+        st.v = 23; save(st); return finish(st);
+      };
+      if (s && s.v === 23) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); return finish(s); }   // 已是最新版：直接用，切勿走到下面重置演示数据（否则管理端新增的计划/资源被抹掉）
+      if (s && s.v === 22) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); fillResKpIds(s); s.v = 23; save(s); return finish(s); }   // v23：AI 资源补知识点标注
+      if (s && s.v === 21) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); seedExtSkills(s); fillResKpIds(s); s.v = 23; save(s); return finish(s); }   // v22：拓展技能补进发布快照（教学拓展列表口径对齐）
+      if (s && s.v === 20) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); seedExtEvals(s); seedExtSkills(s); seedFbDemo(s); fillResKpIds(s); s.v = 23; save(s); return finish(s); }   // v20 拓展评价 → v23
+      if (s && s.v === 19) { return upFrom17(Object.assign(s, { v: 17 })); }   // v19 → v22
+      if (s && s.v === 18) { return upFrom17(Object.assign(s, { v: 17 })); }   // v18 多次发布 → v22
+      if (s && s.v === 17) { return upFrom17(s); }   // v17 → v22
+      if (s && s.v === 16) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return upFrom17(s); }   // v17：备课资源文件补知识属性 → 继续 v18→v22
+      if (s && s.v === 15) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); seedExtDemo(s); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return upFrom17(s); }   // v16 演示拓展 → v17 → v22
+      if (s && s.v === 14) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); migrateResFileTags(s); seedExtDemo(s); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return upFrom17(s); }   // v15 资源文件级标注 → v17 → v22
+      if (s && s.v === 13) { Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); repairEduKs(s); seedKsDemo(s); migratePlanMulti(s); migrateResFileTags(s); seedExtDemo(s); migrateAssetFields(s); seedAssetDemo(s); s.v = 17; save(s); return upFrom17(s); }   // v14→v17：多班 + 文件级标注 + 演示拓展 + 知识属性 → 继续 v18→v22
       if (s && s.v === 6) { seedEdu(s); s.v = 7; }   // 补上管理端教务基础数据，原有数据保留
       if (s && s.v === 7) { seedCourseType(s); s.v = 8; save(s); }   // 补上课程类型与公共基础课
       if (s && s.v === 8) { seedMajorLevel(s); s.v = 9; save(s); }   // 专业树补第三层
       if (s && s.v === 9) { seedStudents(s); s.v = 10; save(s); }   // 学生档案
       if (s && s.v === 10) { syncSessions(s); s.v = 11; save(s); }   // 排课自动生成课次
       if (s && s.v === 11) { var ch1 = seedLabs(s), ch2 = seedPeriods(s), ch3 = seedKpSnap(s); if (ch1 || ch2 || ch3) save(s); Object.keys(s.gks || {}).forEach(function (k) { registerGks(s.gks[k]); }); s.v = 12; save(s); }
-      if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); }   // 课程类型细分为五类，旧值自动映射（继续往下走完 v13→v17 迁移）
+      if (s && s.v === 12) { migrateCourseType(s); s.v = 13; save(s); }   // 课程类型细分为五类，旧值自动映射（落到上面 v13 分支继续走完到 v22）
     } catch (e) {}
-    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); seedExtDemo(s2); migrateAssetFields(s2); seedAssetDemo(s2); s2.v = 17; save(s2); return finish(s2);
+    var s2 = seed(); seedEdu(s2); seedCourseType(s2); seedMajorLevel(s2); seedStudents(s2); syncSessions(s2); seedLabs(s2); seedPeriods(s2); seedKpSnap(s2); seedKsDemo(s2); seedExtDemo(s2); migrateAssetFields(s2); seedAssetDemo(s2); migratePubs(s2); seedKpMarks(s2); seedExtEvals(s2); seedExtSkills(s2); seedFbDemo(s2); s2.v = 23; save(s2); return finish(s2);
   }
   /* v14 迁移：课程计划支持多班——存量 classId 单班转 classIds 数组 */
   function migratePlanMulti(st) {
@@ -471,6 +505,22 @@
       (r.files || []).forEach(function (f) {
         if (!f.skillIds) f.skillIds = sk.slice();
         if (!f.kpIds) f.kpIds = kp.slice();
+      });
+    });
+  }
+  /* v23：AI 生成的备课资源应同时标注知识点（2026-11-25）。技能与知识点是两个维度，
+     但资源在生成时就该带上两方面的标注；历史数据知识点为空时按资源自身技能对应的知识点补齐（仅补空，不覆盖已有） */
+  function fillResKpIds(st) {
+    var K = kn();
+    function kpOf(ids) {
+      var out = [], seen = {};
+      (ids || []).forEach(function (sid) { ((K.skill[sid] || {}).kps || []).forEach(function (k) { if (!seen[k.id]) { seen[k.id] = 1; out.push(k.id); } }); });
+      return out;
+    }
+    (st.resources || []).forEach(function (r) {
+      if (!(r.kpIds || []).length) r.kpIds = kpOf(r.skillIds);
+      (r.files || []).forEach(function (f) {
+        if (!(f.kpIds || []).length) f.kpIds = kpOf((f.skillIds || []).length ? f.skillIds : r.skillIds);
       });
     });
   }
@@ -516,6 +566,109 @@
   function migrateCourseType(st) {
     var MAP = { '专业课': '专业核心课程', '公共基础课': '公共基础课程' };
     st.edu.courses.forEach(function (c) { if (MAP[c.type]) c.type = MAP[c.type]; });
+  }
+  /* v18 迁移：一课次多次发布 —— c.publish → c.publishes[0]，submissions 补 taskId 指向所属发布；c.publish 保留为最近一次镜像 */
+  function migratePubs(st) {
+    (st.courses || []).forEach(function (c, i) {
+      if (c.publish && (!c.publishes || !c.publishes.length)) c.publishes = [Object.assign({}, c.publish, { id: 'PB0' + i })];   // 注意 publishes 可能是 []（seed base 默认），不能只用真值判断
+      if (!c.publishes) c.publishes = [];
+      (c.submissions || []).forEach(function (sb) { if (!sb.taskId) sb.taskId = c.publishes.length ? c.publishes[0].id : ''; });
+    });
+  }
+  /* 课次的全部发布（新数据读 publishes[]，旧数据兜底 c.publish 单元素）；发布文件并集用 pubFileIds */
+  function pubsOf(c) { return (c && c.publishes && c.publishes.length) ? c.publishes : (c && c.publish ? [c.publish] : []); }
+  function pubFileIds(c) { var ids = []; pubsOf(c).forEach(function (p) { (p.fileIds || []).forEach(function (id) { if (ids.indexOf(id) < 0) ids.push(id); }); }); return ids; }
+  /* v19 演示：给存量评价补知识点标注（sb.teacher.kpMarks / sb.ai.kpMarks），让管理端「教学达成率-知识点」有数。
+     等级来源：老师评价用 sb.teacher.grade，AI 初评用 sb.ai.result；标注按 aiKpMarks 确定性生成（同一学生×知识点结果稳定）。
+     幂等：已有标注（kpMarksOf/aiKpMarksOf 非空，含 items[].kps 兼容路径）不覆盖；任务无考查知识点则跳过 */
+  function seedKpMarks(st) {
+    if (!root.ASSESS_DATA) return false;
+    var ch = false;
+    (st.courses || []).forEach(function (c) {
+      var pubs = pubsOf(c), byId = {}; pubs.forEach(function (p) { byId[p.id] = p; });
+      (c.submissions || []).forEach(function (sb) {
+        var p = byId[sb.taskId] || pubs[0], t = p && p.task;
+        if (!t || !t.on || !taskKps(t).length) return;
+        if (sb.teacher && sb.teacher.grade && !Object.keys(kpMarksOf(sb, t)).length) {
+          var mk = aiKpMarks(t, sb.teacher.grade, sb.student);
+          if (Object.keys(mk).length) { sb.teacher.kpMarks = mk; ch = true; }
+        }
+        if (sb.ai && sb.ai.result && !aiKpMarksOf(sb, t)) {
+          var mk2 = aiKpMarks(t, sb.ai.result, sb.student);
+          if (Object.keys(mk2).length) { sb.ai.kpMarks = mk2; ch = true; }
+        }
+      });
+    });
+    return ch;
+  }
+  /* v20 演示：补拓展考查的评价数据，让「教学达成分析」达成趋势 6 线真正拉开（此前拓展技能零评价证据、拓展知识点 0 个）。
+     ① 拓展技能证据：李老师在 CP1（三日游线路规划与成本）拓展融入「导游基础知识」内容——区域概况与历史文化解读、
+        旅游资源评估与整合（不在课程标准、也不在任何已发布任务快照 → 达成率拆分计入拓展），
+        对 CRS3 已交的 3 名学生单独评价 6 对证据（证据按 planId+student+sid 判重）；
+     ② 拓展知识点：给 CRS3 / CRS5 已发布任务快照追加 2 个拓展知识点（旅游地理与交通网络、旅游景观分类与审美，
+        ext:1），并给最近一次评价落在这些课次的学生（张晓雨·CRS5、李嘉豪 / 王思琪·CRS3）补知识点标注（只补缺）。
+     幂等：重复执行不重复添加、不覆盖已有标注。 */
+  function seedExtEvals(st) {
+    if (!root.ASSESS_DATA) return false;
+    var ch = false;
+    var EXT_SK = ['K42effc8c6d', 'K043162d940'];   // 导游基础知识：区域概况与历史文化深度解读 / 旅游资源评估与整合
+    var EXT_KP = [
+      { id: 'Pa4943e91e5', name: '全国旅游地理与交通网络', type: '概念', core: '掌握全国主要旅游城市分布、铁路/航空/公路干线网络及区域可达性' },
+      { id: 'P159253246e', name: '旅游景观分类与审美特征', type: '原理', core: '理解地文、水域、生物、天象、遗址、建筑、人文活动等资源的审美价值与组合规律' }
+    ];
+    var EV = [
+      { student: '张晓雨', grades: ['优秀', '合格'], d: 27 },   // 10 月底拓展专题练习第一期（让拓展线跨两个月份、能画出折线）
+      { student: '李嘉豪', grades: ['合格', '需改进'], d: 1 },
+      { student: '王思琪', grades: ['需改进', '合格'], d: 1 }
+    ];
+    if (!st.evidence) st.evidence = [];
+    var hasEv = function (pl, stu, sid) { return st.evidence.some(function (e) { return e.planId === pl && e.student === stu && e.sid === sid; }); };
+    EV.forEach(function (x, i) {
+      EXT_SK.forEach(function (sid, j) {
+        if (hasEv('CP1', x.student, sid)) return;
+        st.evidence.push({ id: uid('E'), student: x.student, sid: sid, grade: x.grades[j], tid: 'CRS3', planId: 'CP1', subAt: daysAgo(x.d, 21, 45 + i), by: st.teacher, at: daysAgo(x.d, 22, 10 + i * 2 + j) });
+        ch = true;
+      });
+    });
+    (st.courses || []).forEach(function (c) {
+      if (c.id !== 'CRS3' && c.id !== 'CRS5') return;
+      pubsOf(c).forEach(function (p) {
+        var t = p && p.task; if (!t || !t.on) return;
+        if (!Array.isArray(t.kpSnap)) t.kpSnap = snapKps(t);
+        EXT_KP.forEach(function (k) {
+          if (!t.kpSnap.some(function (x) { return x.id === k.id; })) { t.kpSnap.push(Object.assign({ ext: 1 }, k)); ch = true; }
+          if (t.kpIds && t.kpIds.length && t.kpIds.indexOf(k.id) < 0) { t.kpIds.push(k.id); ch = true; }
+        });
+      });
+    });
+    var MARKS = { CRS3: { '李嘉豪': { 'Pa4943e91e5': 'miss', 'P159253246e': 'ok' }, '王思琪': { 'Pa4943e91e5': 'miss', 'P159253246e': 'miss' } }, CRS5: { '张晓雨': { 'Pa4943e91e5': 'ok', 'P159253246e': 'ok' } } };
+    (st.courses || []).forEach(function (c) {
+      var mk = MARKS[c.id]; if (!mk) return;
+      (c.submissions || []).forEach(function (sb) {
+        var m = mk[sb.student]; if (!m || !sb.teacher || !sb.teacher.kpMarks) return;
+        Object.keys(m).forEach(function (k) { if (sb.teacher.kpMarks[k] == null) { sb.teacher.kpMarks[k] = m[k]; ch = true; } });
+      });
+    });
+    return ch;
+  }
+  /* v21 修正：v20 只给拓展技能补了评价证据、没把它们写进 CRS3 的发布任务快照 skillIds，
+     导致「已教」（teachScope 按发布快照统计）不含这 2 项、拓展列表漏掉它们，而拓展达成率又按证据算到了它们
+     （口径不自洽）。此迁移把 2 项拓展技能补进 CRS3 发布任务快照（幂等，只补缺），
+     使「拓展列表 = 拓展达成率的证据来源」完全对齐。 */
+  function seedExtSkills(st) {
+    var EXT_SK = ['K42effc8c6d', 'K043162d940'];
+    var ch = false;
+    (st.courses || []).forEach(function (c) {
+      if (c.id !== 'CRS3') return;
+      pubsOf(c).forEach(function (p) {
+        var t = p && p.task; if (!t) return;
+        if (!Array.isArray(t.skillIds)) t.skillIds = [];
+        EXT_SK.forEach(function (sid) {
+          if (t.skillIds.indexOf(sid) < 0) { t.skillIds.push(sid); ch = true; }
+        });
+      });
+    });
+    return ch;
   }
   /* 存量数据修复：旧版本种子的专业课没有写 ks（以前 load 每次重置掩盖了这一点），
      加载时按课程名从知识体系回填（幂等，只补空的专业课程，公共课程/已关联/手动新增的不动） */
@@ -581,7 +734,7 @@
   function seedKpSnap(st) {
     if (!root.ASSESS_DATA) return false;
     var ch = false;
-    (st.courses || []).forEach(function (c) { var t = c.publish && c.publish.task; if (t && t.on && !t.kpSnap) { t.kpSnap = snapKps(t); ch = true; } });
+    (st.courses || []).forEach(function (c) { pubsOf(c).forEach(function (p) { var t = p.task; if (t && t.on && !t.kpSnap) { t.kpSnap = snapKps(t); ch = true; } }); });
     return ch;
   }
   function seedPeriods(st) {
@@ -725,7 +878,7 @@
         if (!c) { c = st.courses.filter(function (x) { return x.planId === p.id && !x.slotId && x.source !== '补训课次' && x.source !== '自建课次' && !x.disabled && !x.swappedIn && x.status !== '待审核' && x.start === sl.start; })[0]; if (c) { c.slotId = sl.id; c.source = '排课'; changed = true; } }
         if (!c) {
           st.courses.push({ id: uid('CRS'), planId: p.id, slotId: sl.id, source: '排课', autoName: true, name: name, ktask: '', skillIds: [], classIds: planClassIds(st, p), major: cl.major || '', term: p.term,
-            start: sl.start, end: sl.end, status: '未发布', resIds: [], createdAt: fmt(new Date()), publish: null, submissions: [], feedbacks: [], learn: {} });
+            start: sl.start, end: sl.end, status: '未发布', resIds: [], createdAt: fmt(new Date()), publish: null, publishes: [], submissions: [], feedbacks: [], learn: {} });
           changed = true; return;
         }
         if (c.status !== '已发布') {
@@ -879,7 +1032,7 @@
     else if (f.type === 'textarea') body = '<textarea id="' + id + '" data-f="' + f.k + '" placeholder="' + esc(f.ph || '请输入') + '" maxlength="' + (f.max || 500) + '">' + esc(v || '') + '</textarea>';
     else if (f.type === 'switch') body = '<span class="lh"><button type="button" class="sw" data-f="' + f.k + '" data-sw aria-pressed="' + (!!v) + '"></button><span class="note" style="font-size:12px;color:var(--muted)">' + esc(f.ph || '') + '</span></span>';
     else if (f.type === 'chips') body = '<div class="chips2" data-f="' + f.k + '" data-chips>' + f.options.map(function (o) { return '<button type="button" aria-pressed="' + ((v || []).indexOf(o) >= 0) + '">' + esc(o) + '</button>'; }).join('') + '</div>';
-    else if (f.type === 'files') body = '<div data-f="' + f.k + '" data-files><label class="upl">点击上传' + (f.ph ? '，' + esc(f.ph) : '') + '<input type="file" multiple hidden' + (f.accept ? ' accept="' + f.accept + '"' : '') + '></label><div class="flist">' + (v || []).map(fileRow).join('') + '</div></div>';
+    else if (f.type === 'files') body = '<div data-f="' + f.k + '" data-files><label class="upl">' + esc(f.upLabel || '点击上传' + (f.ph ? '，' + esc(f.ph) : '')) + '<input type="file" multiple hidden' + (f.accept ? ' accept="' + f.accept + '"' : '') + '></label><div class="flist">' + (v || []).map(fileRow).join('') + '</div></div>';
     else body = '<input id="' + id + '" data-f="' + f.k + '" type="' + (f.type === 'datetime' ? 'datetime-local' : f.type || 'text') + '" value="' + esc(f.type === 'datetime' && v ? String(v).replace(' ', 'T') : v || '') + '" placeholder="' + esc(f.ph || '请输入') + '">';
     return '<div class="ff' + (f.full || f.type === 'textarea' || f.type === 'files' || f.type === 'chips' ? ' full' : '') + '">' + head + body + '</div>';
   }
@@ -962,7 +1115,7 @@
 
   var FT_COLOR = { '课件': '#7f63d8', '教案': '#10b981', '图片': '#0ea5e9', '情景互动游戏': '#f59e0b', '视频': '#ef4444', '文档': '#ef4444', '语音': '#0ea5e9', '文字': '#7f63d8' };
   root.TK = { load: load, save: save, reset: function () { localStorage.removeItem(KEY); }, fmt: fmt, uid: uid, esc: esc, TERM: TERM,
-    periodRange: periodRange, inRange: inRange, addGrowth: addGrowth, addStuGrowth: addStuGrowth, STU_STAR: STU_STAR, toast: toast, drawer: drawer, modal: modal, confirm: confirmBox,
+    periodRange: periodRange, inRange: inRange, addGrowth: addGrowth, addStuGrowth: addStuGrowth, STU_STAR: STU_STAR, toast: toast, drawer: drawer, modal: modal, confirm: confirmBox, pubsOf: pubsOf, pubFileIds: pubFileIds,
     formHTML: formHTML, bindForm: bindForm, bindSearchSelect: bindSearchSelect, readForm: readForm, fileRow: fileRow, FT_COLOR: FT_COLOR,
     TERM: TERM, PERIODS: PERIODS, periodOf: periodOf, periods: periods, periodSpan: periodSpan, periodText: periodText, periodTime: periodTime, switchTmode: switchTmode, ttGrid: ttGrid,
     kn: kn, skillName: skillName, registerCustomNodes: registerCustomNodes, kpsUnion: kpsUnion, courseKps: courseKps, kpById: kpById, kpCount: kpCount, kpHTML: kpHTML, kpCrit: kpCrit, kpCritDefault: kpCritDefault, kpCritHTML: kpCritHTML, taskKps: taskKps, snapKps: snapKps, aiKpMarks: aiKpMarks, aiKpMarksOf: aiKpMarksOf, kpMarksOf: kpMarksOf, stdSkillMap: stdSkillMap, stdKpMap: stdKpMap, extTag: extTag, graphSystems: graphSystems, importGks: importGks, planTasks: planTasks, planKind: planKind, planKsId: planKsId, eduCourse: eduCourse, ensureKs: ensureKs, planClassIds: planClassIds, planCls: planCls, planStus: planStus, planClsTxt: planClsTxt, planMajors: planMajors,

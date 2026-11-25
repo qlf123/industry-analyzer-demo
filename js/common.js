@@ -69,8 +69,8 @@
     admin: {
       title: 'AIGC 智慧课堂<br>教学平台 · 管理端',
       groups: [
-        // 一级菜单顺序：数据概览 → 教务管理 → 课程计划管理 → 教学质量 → 专业建设测评 → 图谱中心 → 行业分析 → 账号与角色 → 系统配置
-        // （先放教务日常，再放专业建设与图谱，最后是平台管理）；不分组的一级菜单用各自的 key 区分
+        // 一级菜单顺序：数据概览 → 教务管理 → 课程计划管理 → 专业建设测评 → 图谱中心 → 行业分析 → 账号与角色 → 系统配置
+        // （先放教务日常，再放专业建设与图谱，最后是平台管理）；「教学达成分析」是数据概览内的二级详情页，不在侧栏单独成菜单
         { key: 'top', label: '', items: [
           { key: 'dash', label: '数据概览', icon: '▤', href: 'dashboard.html' }
         ] },
@@ -88,10 +88,6 @@
         ] },
         { label: '课程计划管理', items: [
           { key: 'plan', label: '课程计划', icon: '▤', href: 'course-plan.html', perms: ['edu:base:manage'], landing: false }
-        ] },
-        // 教学质量：课程计划执行后的结果（老师确认的课堂证据汇总）；「课程改进建议」导航本期隐藏（2026-11-19），条目与页面保留
-        { label: '教学质量', items: [
-          { key: 'tq-reach', label: '教学达成', icon: '▤', href: 'teach-quality.html?t=reach', perms: ['teach:quality:view'], landing: false, feature: 'quality' }
         ] },
         { key: 'top-assess', label: '', items: [
           { key: 'assess', label: '专业建设测评', icon: '◈', href: 'assess.html', feature: 'majorAssess',
@@ -144,7 +140,7 @@
           { key: 'cr-courses', label: '我的课程', icon: '▤', href: 'teacher-tasks.html?t=courses' },
           { key: 'cr-tt', label: '我的课表', icon: '▤', href: 'teacher-tasks.html?t=tt' },
           { key: 'cr-eval', label: '作业评价', icon: '▤', href: 'teacher-tasks.html?t=eval' },
-          { key: 'cr-res', label: '备课资源', icon: '▤', href: 'teacher-tasks.html?t=res' }
+          { key: 'cr-res', label: '资料库', icon: '▤', href: 'teacher-tasks.html?t=res' }
         ] },
         // 图谱中心：教师端可新建，自己创建的可维护、他人创建的仅查看；不含映射审核；顺序同管理端
         { label: '图谱中心', items: [
@@ -226,7 +222,7 @@
     'edu-course': svgI('<rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M8.5 3.5v17"/><path d="M12 9h4.5"/><path d="M12 13h4.5"/>'),
     'edu-lab': svgI('<path d="M21 8.2L12 3.8 3 8.2v7.6l9 4.4 9-4.4z"/><path d="M3 8.2l9 4.4 9-4.4"/><path d="M12 12.6v8"/>'),
     plan: svgI('<rect x="5" y="4.5" width="14" height="16.5" rx="2"/><rect x="9" y="2.7" width="6" height="3.6" rx="1"/><path d="M9 11h6"/><path d="M9 14.5h6"/><path d="M9 18h4"/>'),
-    // 管理端 · 教学质量
+    // 管理端 · 教学达成分析
     'tq-reach': svgI('<path d="M3.5 17.5l5.5-5.5 3.5 3.5 7.5-8"/><path d="M15.5 7.5H20V12"/>'),
     'tq-kps': svgI('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.3"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>'),
     'tq-improve': svgI('<path d="M9.5 18h5"/><path d="M10.5 21h3"/><path d="M12 3a6.2 6.2 0 0 1 3.8 11.1c-.7.6-1.1 1.4-1.2 2.4H9.4c-.1-1-.5-1.8-1.2-2.4A6.2 6.2 0 0 1 12 3z"/>'),
@@ -269,7 +265,6 @@
     '教务管理': svgI('<rect x="3.5" y="4" width="17" height="4.5" rx="1"/><path d="M5.3 8.5V19a1.5 1.5 0 0 0 1.5 1.5h10.4a1.5 1.5 0 0 0 1.5-1.5V8.5"/><path d="M10 13h4"/>'),
     '课程计划管理': svgI('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M8.8 14.5l2.2 2.2 4.2-4.7"/>'),
     '智慧课堂': svgI('<rect x="3" y="4.5" width="18" height="12" rx="1.8"/><path d="M8 20.5h8"/><path d="M12 16.5v4"/><path d="M8.5 12l2.2-2.8 2 1.8 2.8-3.5"/>'),
-    '教学质量': svgI('<circle cx="12" cy="12" r="8.5"/><path d="M8.4 12.4l2.5 2.5 4.7-5.6"/>'),
     '系统配置': svgI('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.8"/><path d="M12 18.7v2.8"/><path d="M2.5 12h2.8"/><path d="M18.7 12h2.8"/><path d="M5.3 5.3l2 2"/><path d="M16.7 16.7l2 2"/><path d="M18.7 5.3l-2 2"/><path d="M7.3 16.7l-2 2"/>'),
     '院校与账号': svgI('<path d="M3 20.5h18"/><path d="M5 20.5V8l7-4.5L19 8v12.5"/><path d="M9.5 20.5v-5h5v5"/><path d="M9.5 11h.01"/><path d="M14.5 11h.01"/>'),
     '平台配置': svgI('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.8"/><path d="M12 18.7v2.8"/><path d="M2.5 12h2.8"/><path d="M18.7 12h2.8"/><path d="M5.3 5.3l2 2"/><path d="M16.7 16.7l2 2"/><path d="M18.7 5.3l-2 2"/><path d="M7.3 16.7l-2 2"/>')

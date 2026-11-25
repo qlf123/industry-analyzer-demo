@@ -135,6 +135,7 @@ mark.hw{background:#FEF0C7;color:inherit;border-radius:3px;padding:0 2px}
 <script src="../js/permission.js"></script>
 <script src="../js/common.js"></script>
 <script src="gc-shell.js"></script>
+<script src="../js/resource-bridge.js"></script>
 <script>GC.boot('gc-kb');</script>
 <div class="platform-page">
 <main class="app-shell">
@@ -354,10 +355,11 @@ const sourceCard=(k,ico,label,sub,rec)=>`<button class="src ${S.source===k?'on':
 const staticCard=(ico,label,sub)=>`<div class="src static">
     <span class="src-title">${ico}<span>${label}</span></span>${sub?`<small>${sub}</small>`:''}</div>`;
 function viewStep1(){
-  const canNext = S.source==='local' && valid().length>0 && valid().length===S.files.length;
+  const canNext = valid().length>0 && valid().length===S.files.length;
   if(MODE==='add') return `<section class="col g24">
-    <div class="col g6"><h2 class="h2">上传文件</h2>
+    <div class="col g6"><h2 class="h2">添加文件</h2>
       <span class="muted">文件将添加到知识库「${esc(KB_NAME)}」，按类型自动识别并分别解析。</span></div>
+    <div class="row g8"><span class="muted">数据来源</span><button class="btn mini${S.source==='local'?' pri':''}" data-act="source" data-v="local">本地上传</button><button class="btn mini${S.source==='prep'?' pri':''}" data-act="source" data-v="prep">备课资源</button></div>
     ${uploadBody()}
     <div class="row g12" style="justify-content:flex-end">
       <a class="btn" href="${DETAIL_URL}" style="text-decoration:none">取消</a>
@@ -367,6 +369,7 @@ function viewStep1(){
     <h2 class="h2">选择数据源</h2>
     <div class="srcs">
       ${sourceCard('local','<span class="ico">'+I.upload+'</span>','上传本地文件','文本、图文、音视频',true)}
+      ${sourceCard('prep','<span class="ico">'+I.folder+'</span>','从备课资源选择','资料库中已有的文件')}
       ${staticCard('<span class="ico">'+I.notion+'</span>','同步自 Notion','导入页面与数据库内容')}
       ${staticCard('<span class="ico">'+I.web+'</span>','同步自 Web 站点','抓取站点正文')}</div>
     <div class="col g6">
@@ -380,10 +383,42 @@ function viewStep1(){
 }
 
 /* ======================================================================
-   上传区域（文本 / 图文 / 音视频）
+   上传区域（文本 / 图文 / 音视频 / 备课资源）
    ====================================================================== */
+// 备课资源（资料库）中尚未加入知识库的文件
+function prepLibrary(){
+  if(!window.ResourceBridge) return [];
+  return ResourceBridge.libraryFiles().filter(f=>!f.kbOn);
+}
+// 把备课资源文件转成与本地文件一致的处理对象（复用后续解析流程）
+function fromPrepFile(p){
+  const kind=kindOf(p.ext)||'text';
+  const tpl=MOCK_FILES.find(m=>m.kind===kind&&!m.error)||MOCK_FILES[0];
+  const r=JSON.parse(JSON.stringify(tpl)); r.svg=tpl.svg;
+  Object.assign(r,{id:'p'+(uid++),name:p.name,ext:p.ext,kind:kind,size:p.size||'',
+    fromPrep:{resId:p.resId,fileId:p.fileId,resName:p.resName}});
+  if(kind==='av') r.media=['mp4','mov','mkv','webm'].includes(p.ext)?'video':'audio';
+  return r;
+}
 function uploadBody(){
   let body='';
+  if(S.source==='prep'){
+    const list=prepLibrary();
+    if(!list.length) return `<div class="col g12"><h3 class="h3">从备课资源选择</h3>
+      <div class="drop"><p style="margin:0">备课资源里暂无可选文件，或文件都已加入知识库。</p></div></div>`;
+    const rowOf=f=>{
+      const on=S.files.some(x=>x.fromPrep&&x.fromPrep.fileId===f.fileId);
+      return `<li class="frow"><label style="display:flex;align-items:center;gap:10px;width:100%;cursor:pointer">
+        <input type="checkbox" data-act="prepsel" data-v="${f.fileId}" ${on?'checked':''}>
+        <span class="fname">${esc(f.name)}</span>
+        <span class="muted" style="margin-left:auto;white-space:nowrap">${esc(f.resName||'独立资源')} · ${esc(f.type||'')} · ${esc(f.size)}</span></label></li>`;
+    };
+    body=`<div class="col g12"><h3 class="h3">从备课资源选择</h3>
+      <span class="muted">选择资料库中已有的文件，加入后按类型自动解析与分段。</span>
+      <ul class="col g8">${list.map(rowOf).join('')}</ul>
+      <span class="muted">已选 ${S.files.filter(f=>f.fromPrep).length} 个文件</span></div>`;
+    return body;
+  }
   if(S.source==='local'){
     const counts=['text','image','av'].map(k=>({k,n:S.files.filter(f=>f.kind===k).length})).filter(x=>x.n);
     const rows=S.files.map(f=>`<li class="frow ${f.error?'err':''}">
@@ -651,8 +686,9 @@ function probeDuration(file,r){
 /* 添加模式：把本批文件交给文档详情页（同一会话内），格式与详情页 DOCS 一致 */
 function toDoc(f,status){
   const now=new Date(), p=n=>(n<10?'0':'')+n;
-  const d={id:f.docId, autoKp:extractOn(), cat:f.kind, name:f.name, ext:f.ext.toUpperCase(), size:f.size, status, source:'local',
-    time:now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate())+' '+p(now.getHours())+':'+p(now.getMinutes()), hits:0};
+  const d={id:f.docId, autoKp:extractOn(), cat:f.kind, name:f.name, ext:f.ext.toUpperCase(), size:f.size, status, source:f.fromPrep?'prep':'local',
+    time:now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate())+' '+p(now.getHours())+':'+p(now.getMinutes()), hits:0,
+    fromTeacher:!!f.fromPrep, teacherFileId:f.fromPrep?f.fromPrep.fileId:''};
   if(f.kind==='text') Object.assign(d,{scanned:!!f.scanned, ocrOff:!!f.scanned&&!S.ocrScan, segs:textSegs(f).map(s=>s.t)});
   else if(f.kind==='image') Object.assign(d,{svg:f.svg, imgMode:S.imgMode}, imgParts(f));
   else Object.assign(d,{media:f.media, sec:f.sec, segMode:S.segMode, speakers:f.speakers, segs:f.segs.map(s=>[s[0],s[1],s[2],avText(s)])});
@@ -698,7 +734,16 @@ document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]'); if(!el) return;
   const a=el.dataset.act, v=el.dataset.v;
   switch(a){
-    case 'source': S.source=v; break;
+    case 'source': S.source=v;
+      // 切换来源时只保留当前来源已选的文件，避免本地文件与备课资源文件混批
+      S.files=v==='prep'?S.files.filter(f=>!!f.fromPrep):S.files.filter(f=>!f.fromPrep);
+      break;
+    case 'prepsel': {
+      const ex=S.files.find(f=>f.fromPrep&&f.fromPrep.fileId===v);
+      if(ex) S.files=S.files.filter(f=>f!==ex);
+      else{ const p=prepLibrary().find(x=>x.fileId===v); if(p) S.files.push(fromPrepFile(p)); }
+      break;
+    }
     case 'emptyKb': toast('创建空知识库功能开发中'); return;
     case 'pick': $('#picker').click(); return;
     case 'mock':
