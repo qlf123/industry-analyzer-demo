@@ -98,12 +98,6 @@
 /* 备课资源：规模概览 / 批量选择 / 复选框列（2026-11-25） */
 .rs-stats{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:-2px 2px 12px}
 .rs-stats b{color:var(--ink);font-weight:600}
-.rs-stats .sp{margin-left:auto}
-.rs-stats .selbar{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
-.rs-stats .selbar[hidden]{display:none}
-.rs-cb{display:flex;align-items:center;justify-content:center}
-.rs-cb input{width:14px;height:14px;cursor:pointer;accent-color:var(--brand)}
-.rs-pick .rs-row{grid-template-columns:28px minmax(230px,2.3fr) minmax(100px,.9fr) minmax(130px,1.1fr) minmax(150px,1.25fr) minmax(125px,1fr) minmax(185px,1.35fr)}
 .rs-n .rs-l2{margin-top:4px;font-size:11.5px;line-height:1.4}
 .rs-row .rs-n b{color:var(--ink)}
 .rs-n{min-width:0;display:flex;flex-direction:column}.rs-n b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rs-n span{font-size:11.5px;color:var(--muted);font-family:var(--mono)}
@@ -185,7 +179,7 @@
 .lrt button{border:0;background:none;padding:0 2px 9px;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
 .lrt button:hover{color:var(--ink-2)}
 .lrt button[aria-pressed="true"]{color:var(--brand-ink);font-weight:600;border-bottom-color:var(--brand)}
-@media(max-width:1100px){.rs-row{grid-template-columns:28px 1fr;}.rs-t,.rs-u,.rs-d,.rs-s,.rs-a{grid-column:2}.rs-a{justify-content:flex-start}.rs-head{display:none}}
+@media(max-width:1100px){.rs-row{grid-template-columns:1fr;}.rs-t,.rs-u,.rs-d,.rs-s,.rs-a{grid-column:1}.rs-a{justify-content:flex-start}.rs-head{display:none}}
 .mc{background:var(--card);border:1px solid var(--rule);border-radius:14px;margin-bottom:16px;overflow:hidden}
 .mc-top{display:flex;align-items:center;gap:16px;padding:14px 18px;border-bottom:1px solid var(--rule-2);flex-wrap:wrap}
 .mc-name{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;cursor:pointer}
@@ -438,7 +432,6 @@ a.stat:hover .go{opacity:1}
     return t && t.start ? mondayOf(t.start.replace(' ', 'T')) : mondayOf(new Date());
   }
   var RF = { q: '', qtag: '', st: '', from: '', to: '', course: '', type: '', src: '', pkg: '', sort: '' };
-  var RS_SEL = {};   // 备课资源批量选择：rid|fid → true
   function save() { TK.save(S); }
   // 审计：关键状态变化（发布、评价、证据、补训 / 辅导、改进建议）记入平台审计日志（管理端「系统配置 › 操作日志」查看）
   function audit(action, object, before, after) {
@@ -1264,12 +1257,10 @@ a.stat:hover .go{opacity:1}
     var statFiles = 0; all.forEach(function (r) { statFiles += (r.files || []).length; });
     var wkAgo = (function () { var d0 = new Date(Date.now() - 7 * 864e5), p = function (n) { return (n < 10 ? '0' : '') + n; }; return d0.getFullYear() + '-' + p(d0.getMonth() + 1) + '-' + p(d0.getDate()); })();
     var recentN = 0; all.forEach(function (r) { if ((r.createdAt || '') >= wkAgo) recentN++; }); kbDocs.forEach(function (x) { if ((x.d.time || '') >= wkAgo) recentN++; });
-    var selN = Object.keys(RS_SEL).filter(function (k) { return RS_SEL[k]; }).length;
     var statsHtml = '';
     if (!only) {
-      statsHtml = '<div class="rs-stats"><span>共 <b>' + (statFiles + kbDocs.length) + '</b> 个文件</span><span>知识库 <b>' + kbDocs.length + '</b></span><span>近 7 天新增 <b>' + recentN + '</b></span><span class="sp"></span>' +
-        '<span class="selbar"' + (selN ? '' : ' hidden') + '><span>已选 <b data-seln>' + selN + '</b> 个</span>' +
-        '<button class="btn-s" type="button" data-batchdl style="height:28px">批量下载</button><button class="btn-s" type="button" data-batchdel style="height:28px;color:var(--crit)">批量删除</button><button class="btn-s" type="button" data-batchclr style="height:28px">取消</button></span></div>';
+      // 批量操作条已隐藏（2026-11-26）：行内复选框、表头复选框列同步不渲染；数据层批量下载/删除逻辑保留备恢复
+      statsHtml = '<div class="rs-stats"><span>共 <b>' + (statFiles + kbDocs.length) + '</b> 个文件</span><span>知识库 <b>' + kbDocs.length + '</b></span><span>近 7 天新增 <b>' + recentN + '</b></span></div>';
     }
     var h = statsHtml + '<div class="rs-bar">' + (only ? '' : sel('course', '全部课程', courses)) + sel('type', '全部类型', FTYPES) + sel('src', '全部来源', ['AI 生成', '上传', '知识库']) + (only ? sel('pkg', '全部资源包', pkgNames) : '') +
       '<input class="inp search" data-rf="q" placeholder="搜索名称" value="' + esc(RF.q) + '" style="width:155px">' +
@@ -1281,7 +1272,7 @@ a.stat:hover .go{opacity:1}
       if (hasFilter) return h + '<div class="card empty2">没有符合条件的文件<br><button class="btn-s" type="button" data-rfclear style="margin-top:10px">清除筛选</button></div>';
       return h + '<div class="card empty2">' + (emptyTxt || '资料库还没有文件<br><button class="btn-s" type="button" data-rup style="margin-top:10px">上传资源</button>') + '</div>';
     }
-    var head = '<div class="rs-row rs-head">' + (only ? '' : '<span></span>') + sortHead('name', '文件') + sortHead('type', '内容') + '<span>关联技能</span><span>关联知识点</span>' + sortHead('time', '时间') + '<span style="text-align:right">操作</span></div>';
+    var head = '<div class="rs-row rs-head">' + sortHead('name', '文件') + sortHead('type', '内容') + '<span>关联技能</span><span>关联知识点</span>' + sortHead('time', '时间') + '<span style="text-align:right">操作</span></div>';
     // 包级操作：文件行 ⋯ 只留文件级（删除此文件）；查看 / 编辑 / 删除资源包统一从「文件详情」或资源包详情进入（2026-11-24）
     // 「加入知识库」入口已从行内菜单移除（2026-11-25），知识库方向统一为：知识库上传时选择「备课资源」
     function pkgOps(r, more, fid) {
@@ -1291,15 +1282,11 @@ a.stat:hover .go{opacity:1}
     }
     // 文件平铺（2026-11-19：不再按资源包 ▸ 折叠展开，每个文件一行直接展示）。资源包作为文件的归属信息放在行内第二行；
     // 技能 / 知识点是包级属性，随文件行展示；时间（2026-11-24 起独立一列，不再混在文件名下方 meta 里）；操作 = 查看 / 预览 / 下载 + ⋯（仅加入知识库 / 删除此文件；包级操作移入文件详情与资源包详情）；在线编辑已去掉（2026-11-24）
-    function cbCell(rid, fid) {
-      var key = rid + '|' + fid;
-      return '<span class="rs-cb"><input type="checkbox" class="rscb" data-sel="' + esc(key) + '"' + (RS_SEL[key] ? ' checked' : '') + '></span>';
-    }
     function fileRowHTML(r, f) {
       var cols = resSkKpHTML(r, f, only ? 4 : 2, !only);   // 备课资源列表：关联技能/知识点各展示 2 个、空值显示「-」，其余进详情（2026-11-25）；课程空间页签保持原样
       // 列表第二行只保留来源（2026-11-25：文件大小、归属资源包移入文件详情，避免行内信息拥挤）
       var meta = '<span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span>' + (r.owner && r.owner !== teacherName() ? ' · ' + esc(r.owner) : '');
-      return '<div class="rs-row" data-rid="' + r.id + '" data-fid="' + esc(f.id) + '">' + (only ? '' : cbCell(r.id, f.id)) + '<div class="rs-n"><b title="' + esc(f.name) + '">' + esc(f.name) + '</b><div class="rs-l2"><span class="note">' + meta + '</span></div></div>' +
+      return '<div class="rs-row" data-rid="' + r.id + '" data-fid="' + esc(f.id) + '"><div class="rs-n"><b title="' + esc(f.name) + '">' + esc(f.name) + '</b><div class="rs-l2"><span class="note">' + meta + '</span></div></div>' +
         '<div class="rs-t"><span class="rs-chip"><i style="background:' + (TK.FT_COLOR[f.type] || '#7f63d8') + '"></i>' + esc(f.type) + '</span></div>' +
         '<div class="rs-u">' + cols.sk + '</div>' +
         '<div class="rs-u">' + cols.kp + '</div>' +
@@ -1310,7 +1297,7 @@ a.stat:hover .go{opacity:1}
     function pkgRowHTML(r) {
       var cols = resSkKpHTML(r, null, only ? 4 : 2, !only);
       var meta = (r.owner && r.owner !== teacherName() ? esc(r.owner) + ' · ' : '') + '暂无文件，可在「编辑」里上传';
-      return '<div class="rs-row" data-rid="' + r.id + '">' + (only ? '' : '<span></span>') + '<div class="rs-n"><b title="' + esc(r.name || '独立资源') + '">' + (r.name ? '📦 ' + esc(r.name) + ' ' : '') + '<span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span></b><div class="rs-l2"><span class="note">' + meta + '</span></div></div>' +
+      return '<div class="rs-row" data-rid="' + r.id + '"><div class="rs-n"><b title="' + esc(r.name || '独立资源') + '">' + (r.name ? '📦 ' + esc(r.name) + ' ' : '') + '<span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span></b><div class="rs-l2"><span class="note">' + meta + '</span></div></div>' +
         '<div class="rs-t"><span class="note">暂无文件</span></div>' +
         '<div class="rs-u">' + cols.sk + '</div>' +
         '<div class="rs-u">' + cols.kp + '</div>' +
@@ -1347,7 +1334,7 @@ a.stat:hover .go{opacity:1}
       else r0 = (a.t || '') < (b.t || '') ? -1 : (a.t || '') > (b.t || '') ? 1 : 0;
       return r0 * soD;
     });
-    if (rows.length) h += '<div class="rs-g"><div class="card rs-list' + (only ? '' : ' rs-pick') + '">' + head + rows.map(function (x) { return x.h; }).join('') + '</div></div>';
+    if (rows.length) h += '<div class="rs-g"><div class="card rs-list">' + head + rows.map(function (x) { return x.h; }).join('') + '</div></div>';
     return h;
   }
   // 上传 / 编辑资源：名称、所属课程、任务与技能（按课程的知识体系勾选，可不选）、文件；上传时可直接关联课次
@@ -3248,37 +3235,8 @@ a.stat:hover .go{opacity:1}
       RF.sort = (curK === sk0) ? sk0 + '-' + (curD === 'asc' ? 'desc' : 'asc') : sk0 + '-' + (sk0 === 'time' ? 'desc' : 'asc');
       render(); return;
     }
-    // 批量操作 & 清除筛选（2026-11-25，仅备课资源）
+    // 清除筛选（批量操作条 2026-11-26 隐藏，相关事件与状态一并移除）
     if (e.target.closest('[data-rfclear]')) { RF.q = ''; RF.qtag = ''; RF.course = ''; RF.type = ''; RF.src = ''; RF.pkg = ''; render(); return; }
-    if (e.target.closest('[data-batchclr]')) { RS_SEL = {}; render(); return; }
-    if (e.target.closest('[data-batchdl]')) {
-      var dlN = Object.keys(RS_SEL).filter(function (k) { return RS_SEL[k]; }).length;
-      if (!dlN) return;
-      TK.toast('已开始打包下载 ' + dlN + ' 个文件');
-      return;
-    }
-    if (e.target.closest('[data-batchdel]')) {
-      var keys = Object.keys(RS_SEL).filter(function (k) { return RS_SEL[k]; });
-      if (!keys.length) return;
-      var targets = [], skipN = 0;
-      keys.forEach(function (k) {
-        var pp2 = k.split('|'), rr2 = res(pp2[0]), ff4 = rr2 && (rr2.files || []).filter(function (x) { return x.id === pp2[1]; })[0];
-        if (!rr2 || !ff4) return;
-        var issued = linkedCourses(rr2).some(function (c) { return c.status === '已发布' && pubFileIds(c).indexOf(ff4.id) >= 0; });
-        if (issued) { skipN++; return; }
-        targets.push({ r: rr2, f: ff4 });
-      });
-      if (!targets.length) { TK.toast(skipN ? '所选文件都已下发给学生，不能删除' : '没有可删除的文件'); return; }
-      TK.confirm('删除所选 ' + targets.length + ' 个文件？' + (skipN ? '（另有 ' + skipN + ' 个已下发文件将跳过）' : ''), function () {
-        targets.forEach(function (z) {
-          z.r.files = z.r.files.filter(function (x) { return x !== z.f; });
-          TK.syncResTags(z.r);
-          linkedCourses(z.r).forEach(function (c) { TK.fillSkillsFromRes(S, c); pubs(c).forEach(function (p) { if (p.fileIds) p.fileIds = p.fileIds.filter(function (id) { return id !== z.f.id; }); }); });
-        });
-        RS_SEL = {}; save(); render(); if (curR) curR.render(); TK.toast('已删除 ' + targets.length + ' 个文件');
-      });
-      return;
-    }
     if ((t = e.target.closest('[data-ftag]'))) {
       var row = t.closest('[data-rid]'), rr = res(row && row.getAttribute('data-rid')), fid2 = row && row.getAttribute('data-fid');
       var ff2 = rr && rr.files.filter(function (x) { return x.id === fid2; })[0];
@@ -3418,14 +3376,6 @@ a.stat:hover .go{opacity:1}
   body.addEventListener('change', function (e) {
     var k2 = e.target.getAttribute('data-rf');
     if (e.target.classList.contains('search')) return;
-    // 批量选择：只更新勾选状态与操作条，不整页重绘
-    if (e.target.classList.contains('rscb')) {
-      RS_SEL[e.target.getAttribute('data-sel')] = e.target.checked;
-      var sbn = Object.keys(RS_SEL).filter(function (k) { return RS_SEL[k]; }).length;
-      var sb = body.querySelector('.selbar');
-      if (sb) { sb.hidden = !sbn; var snb = sb.querySelector('[data-seln]'); if (snb) snb.textContent = sbn; }
-      return;
-    }
     if (k2) { RF[k2] = e.target.value; render(); }
     if (e.target.hasAttribute('data-statplan')) { statPlan = e.target.value; render(); }
     if (e.target.hasAttribute('data-evplan')) { evPlan = e.target.value; render(); }
