@@ -925,7 +925,7 @@ a.stat:hover .go{opacity:1}
       var ksIcon = chKs ? '<span class="ks-chg" data-kschg title="' + esc('知识体系已变更：' + chKs.at + ' 起本课程按《' + (ecKs.ksName || ((TK.kn().course[TK.planKsId(S, pp)] || {}).name) || '当前知识体系') + '》统计' + (chKs.from ? '，原《' + chKs.from + '》' : '') + '。已发布课次的评价按发布时快照保留') + '">⟳</span>' : '';
       return '<div class="mc"><div class="mc-top"><div class="mc-name" data-space="' + pp.id + '|lessons"><b>' + esc(pp.course) + '</b>' + ksIcon + '<span>' + esc(TK.planClsTxt(S, pp)) + ' · ' + nStu + ' 人 · ' + esc(pp.term) + '</span>' +
           (kind === 'public' ? '<span class="tag">公共基础课</span>' : kind === 'linked' ? '<span class="tag g">已关联知识体系</span>' : '<span class="tag w">未关联知识体系</span>') + '</div>' +
-          '<div class="mc-tabs">' + go('lessons', '课次') + go('eval', '作业评价') + go('stu', '学生') + '</div>' + go('lessons', '进入课程 ›', 'btn') + '</div>' +
+          '<div class="mc-tabs">' + go('lessons', '课次') + go('eval', '作业评价') + '</div>' + go('lessons', '进入课程 ›', 'btn') + '</div>' +
         '<div class="mc-body">' + prog + eff + todoH + '</div></div>';
     }).join('') || '<div class="card empty2">' + (hist ? '这个学期的课程都已结束，在下方查看' : '进行中的课程都已结束') + '</div>';
     if (ended.length) h += '<details class="mc-ended"' + (act.length && !hist ? '' : ' open') + '><summary>已结束的课程（' + ended.length + '）</summary>' + ended.map(function (pp) {
@@ -935,7 +935,7 @@ a.stat:hover .go{opacity:1}
     }).join('') + '</details>';
     return h;
   }
-  var CTABS = [['lessons', '课次'], ['eval', '作业评价'], ['stat', '学情'], ['stu', '学生']];   // 「本课资料」页签已去掉（2026-11-25）：课程级资源汇总与资料库、课次资料重复；「改进建议」页签本期隐藏（2026-11-19），CTABS 保留 imp 渲染函数
+  var CTABS = [['lessons', '课次'], ['eval', '作业评价'], ['stat', '学情']];   // 「学生」页签已隐藏（2026-11-26）：学生明细改从学情页下钻；「本课资料」页签已去掉（2026-11-25）：课程级资源汇总与资料库、课次资料重复；「改进建议」页签本期隐藏（2026-11-19），CTABS 保留 imp 渲染函数
   function spaceView(pp) {
     var now = new Date();
     var list = S.courses.filter(function (c) { return c.planId === pp.id; }), pend = list.filter(function (c) { return !auditPend(c) && !c.disabled; }).reduce(function (a, c) { return a + pending(c); }, 0);
@@ -947,7 +947,7 @@ a.stat:hover .go{opacity:1}
     if (ctab === 'lessons') return h + lessonTimeline(pp);
     if (ctab === 'eval') return h + evalList(pp);
     if (ctab === 'stat') { statPlan = pp.id; return h + statView(true); }
-    if (ctab === 'stu') return h + stuRoster(pp);
+    if (ctab === 'stu') return h + stuRoster(pp);   // 页签已隐藏（2026-11-26），保留渲染分支供旧链接/内部调用兼容（路由兜底已回落 lessons）
     if (ctab === 'imp') return h + '<div class="card pad">' + improveBody(pp) + '</div>';   // 页签本期隐藏，ctab=imp 直链兜底仍可渲染
     return h;
   }
@@ -1707,13 +1707,13 @@ a.stat:hover .go{opacity:1}
     }
     return rows.sort(function (a, b) { return (b.no.length - a.no.length) || ((b.sess.length ? 1 : 0) - (a.sess.length ? 1 : 0)) || ((a.origin === 'snap' ? 1 : 0) - (b.origin === 'snap' ? 1 : 0)); });
   }
-  /* ═══ 学情：我的课程总览 → 选一门看课程整体情况、技能状态、知识点掌握（学生明细在「学生」页签） ═══
+  /* ═══ 学情：我的课程总览 → 选一门看课程整体情况、技能状态、知识点掌握（学生明细已并入学情页内） ═══
      每个学生在每个技能上只有一种状态：达成 / 未达成（最近一次老师确认为「需改进」）/ 待评价（已提交、老师未确认，不算达成）/ 未提交 / 未教 */
   var SK = ['ok', 'no', 'wait', 'ret', 'todo', 'none'];
   var SN = { ok: '达成', no: '未达成', wait: '待评价', ret: '已退回', todo: '未提交', none: '未教' };
   var SC = { ok: 'var(--good)', no: 'var(--crit)', wait: 'var(--warn)', ret: 'var(--warn-ink)', todo: '#a8b3c7', none: 'var(--rule)' };
   // 明细卡收纳：默认收起的卡（技能状态 / 知识点掌握），点标题展开；「课程改进建议」本期隐藏
-  var secOpen = { tskill: true, tkps: true, timp: false };   // 技能状态 / 知识点掌握默认展开（2026-11-23），学生明细已迁到「学生」tab
+  var secOpen = { tskill: true, tkps: true, timp: false };   // 技能状态 / 知识点掌握默认展开（2026-11-23），学生明细已并入学情页（学生 tab 2026-11-26 隐藏）
   function secCard(id, head, body) {
     var open = !!secOpen[id];
     return '<div class="card pad" style="margin-bottom:14px"><div class="blk-t" data-sec="' + id + '" style="cursor:pointer">' + head + '<span class="sp"></span><span style="font-size:12px;font-weight:400;color:var(--muted)">' + (open ? '收起 ▾' : '展开 ▸') + '</span></div>' + (open ? body : '') + '</div>';
