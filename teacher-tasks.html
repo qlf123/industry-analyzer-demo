@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>智慧课堂</title>
 <link rel="stylesheet" href="css/common.css">
-<link rel="stylesheet" href="css/teacher.css">
+<link rel="stylesheet" href="css/teacher.css?v=22">
 <style>
 .rcard .cb{display:flex;flex-direction:column;gap:8px}
 .rcard .rh{display:flex;align-items:center;gap:10px}
@@ -401,8 +401,9 @@ a.stat:hover .go{opacity:1}
 <script src="js/mock-data.js?v=4"></script>
 <script src="js/permission.js"></script>
 <script src="js/common.js"></script>
+<script src="js/proto-notes.js?v=1"></script>
 <script src="js/assess-data.js"></script>
-<script src="js/teacher-kit.js"></script>
+<script src="js/teacher-kit.js?v=22"></script>
 <script src="js/resource-bridge.js"></script>
 <script>
 (function () {
@@ -1166,7 +1167,7 @@ a.stat:hover .go{opacity:1}
   }
   // 资源包关联的技能、知识点（2026-11-19：列表拆成「关联技能」「关联知识点」两列；拓展判定同发布抽屉——
   // 不在所属课程标准体系内的标「拓展」徽标）。每列最多平铺 4 个 chip，多的收进「+N」；
-  // 知识点口径：配置了展示已勾选的，没配置展示课程匹配全集（不再加「未勾选」文案，2026-11-20）
+  // 知识点口径：只展示文件自己标注的知识点 chip，超过 4 个收进「+N」；不显示「已勾选 x」计数徽标（2026-11-26）
   function resSkKpHTML(r, f, cap, dashEmpty) {
     var maxShow = cap || 4;
     // 资料库只展示文件本身的标注，不与课程关联，因此没有标准 / 拓展之分（2026-11-25）
@@ -1178,12 +1179,11 @@ a.stat:hover .go{opacity:1}
     // 技能与知识点是两个维度（2026-11-25）：知识点只展示文件自己标注的，不再按技能推断
     var cfg = (kpSrc || []).map(function (id) { return TK.kpById(id); }).filter(Boolean);   // kpById 兜底：自定义知识点也在此解析
     var use = cfg;
-    var kpNote = cfg.length ? '<span class="note">已勾选 ' + cfg.length + '</span>' : '';
     var skHtml = skIds.slice(0, maxShow).map(function (id) { return chip(TK.skillName(id)); }).join('') + (skIds.length > maxShow ? '<span class="note">+' + (skIds.length - maxShow) + '</span>' : '');
     var kpHtml = use.slice(0, maxShow).map(function (k) { return chip(k.name); }).join('') + (use.length > maxShow ? '<span class="note">+' + (use.length - maxShow) + '</span>' : '');
     return {
       sk: (skHtml ? '<div class="rs-skg">' + skHtml + '</div>' : (dashEmpty ? '<span class="note">-</span>' : '<span class="note">未记技能</span>')),
-      kp: kpHtml ? '<div class="rs-skg">' + kpNote + kpHtml + '</div>' : (dashEmpty ? '<span class="note">-</span>' : '<span class="note">未记知识点</span>')
+      kp: kpHtml ? '<div class="rs-skg">' + kpHtml + '</div>' : (dashEmpty ? '<span class="note">-</span>' : '<span class="note">未记知识点</span>')
     };
   }
   // 知识库文件 → 资料库（2026-11-25：备课资源=资料库，知识库文件天然属于资料库；只读）
@@ -1275,13 +1275,16 @@ a.stat:hover .go{opacity:1}
     var head = '<div class="rs-row rs-head">' + sortHead('name', '文件') + sortHead('type', '内容') + '<span>关联技能</span><span>关联知识点</span>' + sortHead('time', '时间') + '<span style="text-align:right">操作</span></div>';
     // 包级操作：文件行 ⋯ 只留文件级（删除此文件）；查看 / 编辑 / 删除资源包统一从「文件详情」或资源包详情进入（2026-11-24）
     // 「加入知识库」入口已从行内菜单移除（2026-11-25），知识库方向统一为：知识库上传时选择「备课资源」
+    // 方案C（2026-11-26）：行内只留「查看/预览/下载 + ⋯」统一动作组，「在线编辑/编辑信息」收敛到文件详情底部；
+    // ⋯ 只留删除类。无文件资源包行 = 查看 + ⋯(删除资源包)，不再有包级编辑入口
     function pkgOps(r, more, fid) {
       var mi = function (a, l, cls) { return '<button type="button" class="' + (cls || '') + '" data-ract="' + a + '" data-id="' + r.id + '"' + (fid ? ' data-fid="' + esc(fid) + '"' : '') + '>' + l + '</button>'; };
-      if (!more) return mi('view', '查看') + mi('edit', '编辑') + mi('del', '删除', 'del');
+      if (!more) return mi('view', '查看') + '<details class="rs-more"><summary title="更多操作">⋯</summary><div class="rs-mn">' + mi('del', '删除资源包', 'del') + '</div></details>';
       return '<details class="rs-more"><summary title="文件操作">⋯</summary><div class="rs-mn">' + (fid ? mi('fdel', '删除此文件', 'del') : '') + '</div></details>';
     }
     // 文件平铺（2026-11-19：不再按资源包 ▸ 折叠展开，每个文件一行直接展示）。资源包作为文件的归属信息放在行内第二行；
-    // 技能 / 知识点是包级属性，随文件行展示；时间（2026-11-24 起独立一列，不再混在文件名下方 meta 里）；操作 = 查看 / 预览 / 下载 + ⋯（仅加入知识库 / 删除此文件；包级操作移入文件详情与资源包详情）；在线编辑已去掉（2026-11-24）
+    // 技能 / 知识点是包级属性，随文件行展示；时间（2026-11-24 起独立一列）；操作 = 查看 / 预览 / 下载 + ⋯(删除此文件)；
+    // 编辑信息 / 在线编辑收敛到文件详情底部（2026-11-26 方案C），行内不再出现「编辑」类按钮
     function fileRowHTML(r, f) {
       var cols = resSkKpHTML(r, f, only ? 4 : 2, !only);   // 备课资源列表：关联技能/知识点各展示 2 个、空值显示「-」，其余进详情（2026-11-25）；课程空间页签保持原样
       // 列表第二行只保留来源（2026-11-25：文件大小、归属资源包移入文件详情，避免行内信息拥挤）
@@ -1296,7 +1299,7 @@ a.stat:hover .go{opacity:1}
     // 没有文件的资源包也占一行（否则编辑 / 删除入口丢了）
     function pkgRowHTML(r) {
       var cols = resSkKpHTML(r, null, only ? 4 : 2, !only);
-      var meta = (r.owner && r.owner !== teacherName() ? esc(r.owner) + ' · ' : '') + '暂无文件，可在「编辑」里上传';
+      var meta = (r.owner && r.owner !== teacherName() ? esc(r.owner) + ' · ' : '') + '暂无文件';
       return '<div class="rs-row" data-rid="' + r.id + '"><div class="rs-n"><b title="' + esc(r.name || '独立资源') + '">' + (r.name ? '📦 ' + esc(r.name) + ' ' : '') + '<span class="rs-src' + (resSrc(r) === '上传' ? '' : ' ai') + '">' + resSrc(r) + '</span></b><div class="rs-l2"><span class="note">' + meta + '</span></div></div>' +
         '<div class="rs-t"><span class="note">暂无文件</span></div>' +
         '<div class="rs-u">' + cols.sk + '</div>' +
@@ -1315,7 +1318,7 @@ a.stat:hover .go{opacity:1}
     });
     kbList.forEach(function (x) {
       var d = x.d, kbt = { text: '文档', image: '图片', av: '视频' }[d.cat] || '文档';
-      rows.push({ t: d.time, n: d.name, ty: kbt, sz: d.size, h: '<div class="rs-row">' + (only ? '' : '<span></span>') + '<div class="rs-n"><b title="' + esc(d.name) + '">' + esc(d.name) + '</b><div class="rs-l2"><span class="note"><span class="rs-src">知识库</span></span></div></div>' +
+      rows.push({ t: d.time, n: d.name, ty: kbt, sz: d.size, h: '<div class="rs-row"><div class="rs-n"><b title="' + esc(d.name) + '">' + esc(d.name) + '</b><div class="rs-l2"><span class="note"><span class="rs-src">知识库</span></span></div></div>' +
         '<div class="rs-t"><span class="rs-chip"><i style="background:' + (TK.FT_COLOR[kbt] || '#7f63d8') + '"></i>' + esc(kbt) + '</span></div>' +
         '<div class="rs-u"><span class="note">-</span></div><div class="rs-u"><span class="note">-</span></div>' +
         '<div class="rs-d">' + esc(d.time || '') + '</div>' +
@@ -1388,12 +1391,15 @@ a.stat:hover .go{opacity:1}
     return out;
   }
   function resForm(r, f) {
-    var single = !!f;   // 单文件标注模式（2026-11-20）：只编辑这一个文件的技能/知识点标注，保存后重算包级并集
+    var single = !!f;   // 单文件编辑模式（2026-11-26 语义统一）：「编辑」=编辑这个文件——改所属课程（仅独立文件显示）与该文件的技能/知识点标注；包级并集由 syncResTags 重算
     var courses = []; myPlans().forEach(function (p) { if (courses.indexOf(p.course) < 0) courses.push(p.course); });
     // 「归属资源包」字段先隐藏（2026-11-25）：上传的文件统一作为独立文件/自传文件；保存逻辑里 name 仍可来自编辑态，保留兼容
-    var fields = single ? [] : [
-      { k: 'course', label: '所属课程', type: 'searchselect', full: true, options: courses, ph: '例如：导游业务' },
-      { k: 'files', label: '文件', type: 'files', req: true, upLabel: '+上传文件' }];
+    // 编辑态（r 存在）文件只读：不改文件、不删文件（2026-11-26）；新建上传态仍可传可删
+    var courseField = { k: 'course', label: '所属课程', type: 'searchselect', full: true, options: courses, ph: '例如：旅行策划' };
+    // 单文件模式下仅独立文件（无包名）显示所属课程；包内文件的课程归属在包级，不在文件级改
+    var fields = single ? (r && !r.name ? [courseField] : []) : [
+      courseField,
+      { k: 'files', label: '文件', type: 'files', req: true, upLabel: '+上传文件', ro: !!r }];
     var skSel = single ? (f.skillIds || []).slice() : r ? (r.skillIds || []).slice() : [];
     var kpSel = single ? (f.kpIds || []).slice() : r ? (r.kpIds || []).slice() : [];   // 知识点与技能两维独立：可在知识点区单独勾选 / 自定义
     var newSk = {}, newKp = {};   // 本次新增的自定义节点（保存时写入 S.customNodes 并注册，取消则丢弃）
@@ -1411,8 +1417,9 @@ a.stat:hover .go{opacity:1}
     // 编辑 / 上传与「查看」保持一致，用右侧抽屉（2026-11-17）；从详情里点编辑会叠一层抽屉，保存后回到详情
     var draft = { sk: { ids: [], custom: {} }, kp: { ids: [], custom: {} } };
     var pkTab = { sk: 'all', kp: 'all' }, pkQ = { sk: '', kp: '' }, pkSys = { sk: sys0, kp: sys0 }, pkFold = { sk: false, kp: false }, pkClosed = { sk: {}, kp: {} };
-    var m = TK.drawer({ title: single ? '编辑文件标注' : r ? '编辑资源' : '上传资源', width: 780, tag: '', body: (single ? '<div class="ff full"><span class="lh"><span>文件</span></span><div class="note" style="padding:8px 10px;border:1px solid var(--rule);border-radius:8px">' + esc(f.name) + ' <small style="color:var(--muted)">' + esc(f.type || '') + ' · ' + esc(f.size || '') + '</small></div></div>' : TK.formHTML(fields, r ? { name: r.name, course: resCourse(r), files: r.files } : { course: courses.length === 1 ? courses[0] : '' })) +
-      '<div class="ff full" style="margin-top:8px"><span class="lh"><span>关联技能 · 关联知识点</span><span class="sp"></span><span style="font-size:11.5px;color:var(--muted)">下拉里勾选体系节点，也可自定义输入；点「确认」后写入</span></span><div class="rs-pickers">' + pickerHTML('sk') + pickerHTML('kp') + '</div></div>',
+    var m = TK.drawer({ title: single ? '编辑文件' : r ? '编辑资源' : '上传资源', width: 780, tag: '', body: (single ? '<div class="ff full"><span class="lh"><span>文件</span></span><div class="note" style="padding:8px 10px;border:1px solid var(--rule);border-radius:8px">' + esc(f.name) + ' <small style="color:var(--muted)">' + esc(f.type || '') + ' · ' + esc(f.size || '') + '</small></div></div>' + (fields.length ? TK.formHTML(fields, { course: resCourse(r) }) : '') : TK.formHTML(fields, r ? { name: r.name, course: resCourse(r), files: r.files } : { course: courses.length === 1 ? courses[0] : '' })) +
+      // 「关联技能 · 关联知识点」整行说明已去掉（2026-11-26）：两个选择器各自带标签，无需重复标题与提示
+      '<div class="ff full" style="margin-top:8px"><div class="rs-pickers">' + pickerHTML('sk') + pickerHTML('kp') + '</div></div>',
       foot: '<button class="btn-s" data-c>取消</button><button class="btn" data-o style="height:32px">保存</button>' });
     TK.bindForm(m.body); TK.bindSearchSelect(m.body);
     function nameOf(kind, id, inDraft) {
@@ -1607,12 +1614,17 @@ a.stat:hover .go{opacity:1}
         TK.registerCustomNodes(S);
       }
       if (single) {
-        // 单文件标注模式：只改这一个文件的 skillIds/kpIds，包级由 syncResTags 重算为并集（发布链路读包级不变）
+        // 单文件编辑模式：独立文件可改所属课程；标注只改这一个文件的 skillIds/kpIds，包级由 syncResTags 重算为并集（发布链路读包级不变）
+        if (fields.length) {
+          var cv = TK.readForm(m.body, fields);
+          if (cv.bad.length) { TK.toast('请填写：' + cv.bad.join('、')); return; }
+          r.course = (cv.v.course || '').trim();
+        }
         f.skillIds = skSel.slice(); f.kpIds = kpSel.slice();
         TK.syncResTags(r);
         linkedCourses(r).forEach(function (c) { TK.fillSkillsFromRes(S, c); });
         save(); m.close(); if (curR) curR.render(); render();
-        TK.toast('已保存文件标注');
+        TK.toast('已保存');
         return;
       }
       var v = TK.readForm(m.body, fields);
@@ -3067,12 +3079,12 @@ a.stat:hover .go{opacity:1}
   /* ═══ 备课资源详情 ═══ */
   var curR = null;
   function resDetail(r) {
-    var d = TK.drawer({ title: '文件详情', width: 780, tag: '<span class="tag ' + (resSrc(r) === '上传' ? 'k' : 'g') + '">' + resSrc(r) + '</span>', onClose: function () { curR = null; } });
+    var d = TK.drawer({ title: '备课资源包详情', width: 780, tag: '<span class="tag ' + (resSrc(r) === '上传' ? 'k' : 'g') + '">' + resSrc(r) + '</span>', onClose: function () { curR = null; } });
     curR = { render: paint, close: function () { d.close(); } };
     function paint() {
       var g = {};
       r.files.forEach(function (f) { (g[f.type] = g[f.type] || []).push(f); });
-      d.body.innerHTML = '<div class="blk"><div class="blk-t" style="font-size:15px">' + esc(r.name || '独立资源') + '<span class="sp"></span><button class="btn-s" data-red>编辑</button><button class="btn-s" data-dlall>下载全部</button><button class="btn-s" data-rdel style="color:var(--danger,#e5484d)">删除资源包</button></div>' +
+      d.body.innerHTML = '<div class="blk"><div class="blk-t" style="font-size:15px">' + esc(r.name || '独立资源') + '<span class="sp"></span><button class="btn-s" data-dlall>下载全部</button><button class="btn-s" data-rdel style="color:var(--danger,#e5484d)">删除资源包</button></div>' +
           '<div class="kvg" style="grid-template-columns:1fr 1fr 1fr 1fr"><div><div class="k">来源</div><div class="v">' + resSrc(r) + '</div></div><div><div class="k">所属课程</div><div class="v">' + esc(resCourse(r) || '—') + '</div></div>' +
           '<div><div class="k">' + (resSrc(r) === '上传' ? '上传时间' : '生成时间') + '</div><div class="v">' + esc(r.createdAt) + '</div></div><div><div class="k">创建人</div><div class="v">' + esc(r.owner || teacherName()) + '</div></div></div></div>' +
         // 「任务 · 技能 · 知识点」块已去掉（2026-11-19）：关联技能 / 关联知识点在列表两列即有展示，详情不再重复包级覆盖说明
@@ -3085,20 +3097,17 @@ a.stat:hover .go{opacity:1}
               var tagLine = fsk.length || fkp.length || kbTag ? '<small style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">' +
                 (fsk.length ? fsk.map(function (n) { return '<span class="rs-chip">' + esc(n) + '</span>'; }).join('') : '') +
                 (fkp.length ? fkp.map(function (n) { return '<span class="rs-chip">' + esc(n) + '</span>'; }).join('') : '') + kbTag + '</small>' : '';
-              return '<div class="fitem" data-fid="' + esc(f.id) + '"><span class="fn">' + esc(f.name) + '<small>' + esc(f.size) + '</small>' + tagLine + '</span><button class="lk" data-fview2>查看</button><button class="lk" data-ftag>标注</button><button class="lk" data-dl>下载</button><button class="lk" data-pv>预览</button>' + '<button class="lk" data-fdel style="color:var(--danger,#e5484d)">删除</button></div>';
+              // 资源包详情文件操作（2026-11-26 16:39）：预览 / 下载 / 在线编辑(图片无) / 删除；「查看」已去掉（文件信息看 fitem 自身展开，编辑信息走文件详情）
+              return '<div class="fitem" data-fid="' + esc(f.id) + '"><span class="fn">' + esc(f.name) + '<small>' + esc(f.size) + '</small>' + tagLine + '</span><button class="lk" data-pv>预览</button><button class="lk" data-dl>下载</button>' + (f.type === '图片' ? '' : '<button class="lk" data-fedit>在线编辑</button>') + '<button class="lk" data-fdel style="color:var(--danger,#e5484d)">删除</button></div>';
             }).join('') + '</div>';
         }).join('') : '<div class="empty2">还没有文件</div>') + '</div>';
     }
     d.body.addEventListener('click', function (e) {
       var t;
-      if ((t = e.target.closest('[data-fview2]'))) {
-        var fid0 = t.closest('[data-fid]').getAttribute('data-fid'), ff0 = r.files.filter(function (x) { return x.id === fid0; })[0];
-        if (ff0) resFileView(r, ff0);
-        return;
-      }
-      if ((t = e.target.closest('[data-ftag]'))) {
-        var fid = t.closest('[data-fid]').getAttribute('data-fid'), ff = r.files.filter(function (x) { return x.id === fid; })[0];
-        if (ff) resForm(r, ff);
+      if ((t = e.target.closest('[data-fedit]'))) {
+        // 包内文件「在线编辑」（2026-11-26 16:34 加回）：内容编辑器演示；按文件传伪资源使标题/来源正确
+        var fid4 = t.closest('[data-fid]').getAttribute('data-fid'), ff4 = r.files.filter(function (x) { return x.id === fid4; })[0];
+        if (ff4) editFileDemo({ name: ff4.name, files: [ff4], source: r.source });
         return;
       }
       if ((t = e.target.closest('[data-fdel]'))) {
@@ -3106,8 +3115,8 @@ a.stat:hover .go{opacity:1}
         if (ff2) resFileDelete(r, ff2);
         return;
       }
-      if (e.target.closest('[data-red]')) resForm(r);
-      else if (e.target.closest('[data-rdel]')) { d.close(); resDelete(r); }
+      // 资源包头部「编辑」已去掉（2026-11-26）：资源包本身不支持编辑，编辑只在文件级/自传文件行进行
+      if (e.target.closest('[data-rdel]')) { d.close(); resDelete(r); }
       else if (e.target.closest('[data-dlall]')) TK.toast(r.files.length ? '已开始打包下载' : '暂无可下载的资源');
       else if (e.target.closest('[data-dl]')) TK.toast('已开始下载');
       else if (e.target.closest('[data-pv]')) TK.toast('预览文件');
@@ -3142,6 +3151,33 @@ a.stat:hover .go{opacity:1}
     }
     TK.modal({ title: '预览 · ' + fn, width: 640, body: body + '<div class="note" style="margin-top:10px;font-size:11.5px">演示环境：此处为文件内容占位预览</div>', foot: '<span class="sp"></span><button class="btn-s" data-tk-close>关闭</button>' });
   }
+  // 编辑（2026-11-26）：演示占位弹窗，真实编辑器待接入（按资源类型：PPT / Word / 课件编辑器 / 图片编辑器等）
+  function editFileDemo(r) {
+    if (!r) return;
+    var fn = (r.files && r.files[0] && r.files[0].name) || r.name || '未命名';
+    var ftype = (r.files && r.files[0] && r.files[0].type) || '课件';
+    var src = resSrc(r);
+    var body =
+      '<div style="background:var(--card, #fff);border:1px solid var(--rule, #e5e7eb);border-radius:10px;overflow:hidden">' +
+        '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--rule);background:var(--card-2, #f9fafb)">' +
+          '<span style="width:14px;height:14px;border-radius:50%;background:#ef4444"></span>' +
+          '<span style="width:14px;height:14px;border-radius:50%;background:#f59e0b"></span>' +
+          '<span style="width:14px;height:14px;border-radius:50%;background:#10b981"></span>' +
+          '<span style="flex:1"></span>' +
+          '<span style="font-size:11px;color:var(--muted)">' + esc(fn) + '</span>' +
+        '</div>' +
+        '<div style="padding:28px 24px;display:flex;flex-direction:column;gap:10px">' +
+          '<div style="height:18px;width:56%;border-radius:4px;background:#dfe4ec"></div>' +
+          '<div style="height:8px;border-radius:4px;background:#eef1f6;width:92%"></div>' +
+          '<div style="height:8px;border-radius:4px;background:#eef1f6;width:78%"></div>' +
+          '<div style="height:8px;border-radius:4px;background:#eef1f6;width:86%"></div>' +
+          '<div style="height:8px;border-radius:4px;background:#eef1f6;width:64%"></div>' +
+          '<div style="height:8px;border-radius:4px;background:#eef1f6;width:88%"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="note" style="margin-top:10px;font-size:11.5px">演示环境：此处为文件编辑器占位演示，实际编辑能力将按内容类型接入对应编辑器（' + esc(ftype) + ' · 来源 ' + esc(src) + '）</div>';
+    TK.modal({ title: '编辑 · ' + esc(r.name || fn), width: 640, body: body, foot: '<span class="sp"></span><button class="btn-s" data-tk-close>关闭</button>' });
+  }
   function resFileView(r, f, ro, roView) {
     if (!r || !f) return;
     var d = TK.drawer({ title: '文件详情', width: 720, tag: '<span class="tag ' + (ro ? 'k' : (resSrc(r) === '上传' ? 'k' : 'g')) + '">' + (ro ? '知识库' : resSrc(r)) + '</span>', foot: '<span></span>' });
@@ -3156,18 +3192,23 @@ a.stat:hover .go{opacity:1}
       d.body.innerHTML =
         '<div class="blk"><div class="blk-t" style="font-size:15px">' + esc(f.name) + '</div>' +
         '<div class="kvg" style="grid-template-columns:1fr 1fr 1fr">' +
-          [['内容类型', f.type || '—'], ['大小', esc(f.size || '—')], ['来源', ro ? '知识库' : resSrc(r)], ['上传时间', esc(r.createdAt || '—')],
-           [ro ? '所属知识库' : '所属资源包', r.name ? esc(r.name) : '独立文件'], ['创建人', ro ? '—' : esc(r.owner || teacherName())]
+          [['内容类型', f.type || '—'], ['大小', esc(f.size || '—')], ['来源', ro ? '知识库' : resSrc(r)], ['所属课程', esc(resCourse(r) || '-')], ['上传时间', esc(r.createdAt || '—')],
+           [ro ? '所属知识库' : '所属资源包', r.name ? esc(r.name) : '-'], ['创建人', ro ? '—' : esc(r.owner || teacherName())]
           ].map(function (x) { return '<div><div class="k">' + x[0] + '</div><div class="v">' + x[1] + '</div></div>'; }).join('') +
         '</div></div>' +
         '<div class="blk"><div class="blk-t">关联技能 <span class="tag">' + skAll.length + '</span></div>' +
           (skAll.length ? '<div class="rs-skg">' + skIds.map(function (id) { return chip(TK.skillName(id)); }).join('') + '</div>' : '<span class="note">未记技能</span>') + '</div>' +
         '<div class="blk"><div class="blk-t">关联知识点 <span class="tag">' + kpUse.length + '</span></div>' +
           (kpUse.length ? '<div class="rs-skg">' + kpUse.map(function (k) { return chip(k.name); }).join('') + '</div>' : '<span class="note">未记知识点</span>') + '</div>';
-      d.foot.innerHTML = (ro || roView ? '' : '<button class="btn-s" data-vtag>标注</button><button class="btn-s" data-vpkg>查看资源包</button>') + '<button class="btn-s" data-vpv>预览</button><button class="btn-s" data-vdl>下载</button>' +
+      // 方案C（2026-11-26）：编辑入口收敛到文件详情——「编辑信息」=编辑文件表单（课程+标注），**只在自传（上传来源）文件详情显示**（2026-11-26 16:41）；「在线编辑」=内容编辑器演示（图片无）
+      // 「查看资源包」按钮（2026-11-26）：文件无所属资源包（独立文件）时不显示
+      d.foot.innerHTML = (ro || roView || resSrc(r) !== '上传' ? '' : '<button class="btn" data-vinfo style="height:32px">编辑信息</button>') + (!ro && !roView && f.type !== '图片' ? '<button class="btn-s" data-vedit>在线编辑</button>' : '') +
+        (!ro && !roView && r.name ? '<button class="btn-s" data-vpkg>查看资源包</button>' : '') +
+        '<button class="btn-s" data-vpv>预览</button><button class="btn-s" data-vdl>下载</button>' +
         '<span class="sp"></span><button class="btn-s" data-tk-close>关闭</button>';
-      if (!ro && !roView) d.foot.querySelector('[data-vtag]').onclick = function () { d.close(); resForm(r, f); };
-      if (!ro && !roView) d.foot.querySelector('[data-vpkg]').onclick = function () { d.close(); if (!curR) resDetail(r); };
+      if (!ro && !roView && resSrc(r) === '上传') d.foot.querySelector('[data-vinfo]').onclick = function () { d.close(); resForm(r, f); };
+      if (!ro && !roView && f.type !== '图片') d.foot.querySelector('[data-vedit]').onclick = function () { d.close(); editFileDemo({ name: f.name, files: [f], source: r.source }); };
+      if (!ro && !roView && r.name) d.foot.querySelector('[data-vpkg]').onclick = function () { d.close(); if (!curR) resDetail(r); };
       d.foot.querySelector('[data-vpv]').onclick = function () { previewFile(f.name, f.type); };
       d.foot.querySelector('[data-vdl]').onclick = function () { TK.toast('已开始下载'); };
       d.foot.querySelector('[data-tk-close]').onclick = d.close;
@@ -3237,12 +3278,6 @@ a.stat:hover .go{opacity:1}
     }
     // 清除筛选（批量操作条 2026-11-26 隐藏，相关事件与状态一并移除）
     if (e.target.closest('[data-rfclear]')) { RF.q = ''; RF.qtag = ''; RF.course = ''; RF.type = ''; RF.src = ''; RF.pkg = ''; render(); return; }
-    if ((t = e.target.closest('[data-ftag]'))) {
-      var row = t.closest('[data-rid]'), rr = res(row && row.getAttribute('data-rid')), fid2 = row && row.getAttribute('data-fid');
-      var ff2 = rr && rr.files.filter(function (x) { return x.id === fid2; })[0];
-      if (rr && ff2) resForm(rr, ff2);
-      return;
-    }
     if ((t = e.target.closest('[data-newextra]'))) { courseForm(null, t.getAttribute('data-newextra')); return; }
     if ((t = e.target.closest('[data-newcourse]'))) { courseForm(null, t.getAttribute('data-newcourse')); return; }   // 课程空间内新建：锁定本课程计划
     if ((t = e.target.closest('[data-fview]'))) {
@@ -3364,7 +3399,6 @@ a.stat:hover .go{opacity:1}
       }
       else if (ra === 'dl') TK.toast(r.status === '已完成' ? '已开始打包下载' : r.status === '生成中' ? '资源还在生成中' : '资源生成失败，暂无可下载内容');
       else if (ra === 'view') resDetail(r);
-      else if (ra === 'edit') resForm(r);
       else if (ra === 'del') resDelete(r);
       else if (ra === 'regen') resRegen(r);
     }

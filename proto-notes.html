@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>原型标注</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/teacher.css">
+<style>
+.pn-legend{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;padding:12px 16px;margin-bottom:14px;font-size:12px;color:var(--ink-2)}
+.pn-legend .it{display:flex;align-items:center;gap:6px}
+.pn-legend .sp{flex:1}
+.pn-st{font-size:11px;border-radius:5px;padding:1px 7px;line-height:18px;white-space:nowrap}
+.pn-prio{font-family:var(--mono);font-size:11px;color:var(--ink-2);background:var(--card-2);border-radius:5px;padding:1px 6px}
+.pn-tbl .mod{font-weight:600;color:var(--ink)}
+.pn-tbl .note{color:var(--ink-2);max-width:520px;line-height:1.65}
+.pn-tbl .pg{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.pn-tbl a.open{color:var(--brand-ink);text-decoration:none;white-space:nowrap}
+.pn-tbl a.open:hover{text-decoration:underline}
+.pn-empty{font-size:12.5px;color:var(--muted);padding:40px 0;text-align:center}
+.pn-foot{padding:10px 14px;border-top:1px solid var(--rule-2);font-size:12px;color:var(--muted)}
+.pn-card{background:var(--card);border:1px solid var(--rule);border-radius:13px;overflow:hidden}
+.pn-card .tw{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lnav" id="lnav"></aside>
+  <div class="panel">
+    <div class="ptop"><div class="ptop-r"><div class="pt-l"><h1 class="pt-t">原型标注</h1><div class="pt-d">原型中标注各模块的实现状态、优先级与关键业务规则，供研发对照 PRD 判断开发范围与口径；业务页面右下角有「打开标注/关闭标注」开关，开启后标注直接贴在页面模块名称或对应操作旁（没有标题的页面显示在内容区左上角），不遮挡页面内容，关闭即恢复演示状态</div></div></div></div>
+    <div class="body">
+      <div class="card pn-legend" id="legend"></div>
+      <div class="card filters" id="filters"></div>
+      <div class="pn-card"><div class="tw"><table class="tbl2 pn-tbl"><thead><tr><th style="width:70px">门户</th><th style="width:150px">模块</th><th style="width:180px">页面</th><th style="width:90px">状态</th><th style="width:70px">优先级</th><th>说明</th><th style="width:90px">操作</th></tr></thead><tbody id="rows"></tbody></table></div><div class="pn-foot" id="foot"></div></div>
+    </div>
+  </div>
+</div>
+<script src="js/mock-data.js?v=4"></script>
+<script src="js/permission.js"></script>
+<script src="js/common.js"></script>
+<script src="js/proto-notes.js"></script>
+<script>
+(function () {
+  'use strict';
+  UI.boot({ portal: 'auto', active: '' });
+  var PN = window.ProtoNotes || { notes: [], status: {} };
+  var esc = PN.esc, ST = PN.status, RULE = PN.rule || { t: '规则', c: '#1e40af', bg: '#e0e7ff' };
+  var F = { kind: '', st: '', prio: '', portal: '', q: '' };
+  var PORTALS = ['教师端', '学生端', '管理端'];
+
+  function list() {
+    return PN.notes.filter(function (n) {
+      var isRule = n.kind === 'rule';
+      return (!F.kind || (F.kind === 'rule' ? isRule : !isRule)) &&
+        (!F.st || n.status === F.st) && (!F.prio || n.prio === F.prio) && (!F.portal || n.portal === F.portal) &&
+        (!F.q || (n.module + n.page + (n.note || '') + (n.title || '') + (n.items || []).join('') + (n.prd || '')).indexOf(F.q) >= 0);
+    });
+  }
+  function chip(n) {
+    var s = n.kind === 'rule' ? RULE : (ST[n.status] || ST.design);
+    return '<span class="pn-st" style="color:' + s.c + ';background:' + s.bg + '">' + s.t + '</span>';
+  }
+
+  function render() {
+    document.getElementById('legend').innerHTML = '<span style="font-size:12.5px;color:var(--ink)">状态口径</span>' +
+      Object.keys(ST).map(function (k) { return '<span class="it"><span class="pn-st" style="color:' + ST[k].c + ';background:' + ST[k].bg + '">' + ST[k].t + '</span></span>'; }).join('') +
+      '<span class="it"><span class="pn-st" style="color:' + RULE.c + ';background:' + RULE.bg + '">' + RULE.t + '</span><span>业务规则</span></span>' +
+      '<span class="sp"></span><span>优先级：P0 本期必做 · P1 本期争取 · P2 可延后</span><span style="width:100%;font-size:11.5px;color:var(--muted)">业务页面上的标注统一为「✎ 状态 / § 规则 + 等宽字体 + 虚线框」，用于和平台自身的状态标签区分</span>';
+
+    document.getElementById('filters').innerHTML =
+      '<label>类型<select class="sel" data-f="kind"><option value="">全部</option><option value="status"' + (F.kind === 'status' ? ' selected' : '') + '>状态标注</option><option value="rule"' + (F.kind === 'rule' ? ' selected' : '') + '>规则标注</option></select></label>' +
+      '<label>状态<select class="sel" data-f="st"><option value="">全部</option>' + Object.keys(ST).map(function (k) { return '<option value="' + k + '"' + (F.st === k ? ' selected' : '') + '>' + ST[k].t + '</option>'; }).join('') + '</select></label>' +
+      '<label>优先级<select class="sel" data-f="prio"><option value="">全部</option>' + ['P0', 'P1', 'P2'].map(function (p) { return '<option' + (F.prio === p ? ' selected' : '') + '>' + p + '</option>'; }).join('') + '</select></label>' +
+      '<label>门户<select class="sel" data-f="portal"><option value="">全部</option>' + PORTALS.map(function (p) { return '<option' + (F.portal === p ? ' selected' : '') + '>' + p + '</option>'; }).join('') + '</select></label>' +
+      '<label>关键词<input class="inp search" data-f="q" placeholder="模块、页面或说明" value="' + esc(F.q) + '"></label>' +
+      '<span style="flex:1"></span><button class="btn-s" data-reset>重置</button>';
+
+    paint();
+  }
+
+  function paint() {
+    var rows = list();
+    document.getElementById('rows').innerHTML = rows.length ? rows.map(function (n) {
+      var noteHtml = n.kind === 'rule'
+        ? '<b>' + esc(n.title || n.module) + '</b>：' + esc((n.items || []).join('；')) + (n.prd ? '<div class="pg" style="margin-top:2px">PRD 参考：' + esc(n.prd) + '</div>' : '')
+        : esc(n.note);
+      return '<tr><td>' + esc(n.portal) + '</td><td class="mod">' + esc(n.module) + '</td><td class="pg">' + esc(n.page) + '</td><td>' + chip(n) + '</td><td>' + (n.kind === 'rule' ? '—' : '<span class="pn-prio">' + esc(n.prio) + '</span>') + '</td><td class="note">' + noteHtml + '</td><td>' + (n.open ? '<a class="open" href="' + esc(n.open) + '" target="_blank">打开原型 ›</a>' : '—') + '</td></tr>';
+    }).join('') : '<tr><td colspan="7"><div class="pn-empty">当前筛选下没有标注</div></td></tr>';
+
+    var cnt = {};
+    Object.keys(ST).forEach(function (k) { cnt[k] = PN.notes.filter(function (n) { return n.status === k; }).length; });
+    var ruleCnt = PN.notes.filter(function (n) { return n.kind === 'rule'; }).length;
+    document.getElementById('foot').innerHTML = '共 ' + rows.length + ' 条（全部 ' + PN.notes.length + ' 条）　' +
+      Object.keys(ST).map(function (k) { return ST[k].t + ' ' + cnt[k]; }).join(' · ') + ' · 规则 ' + ruleCnt +
+      '　｜　标注维护在 js/proto-notes.js 的 NOTES，业务页面无需改动';
+  }
+
+  document.addEventListener('change', function (e) {
+    var k = e.target.getAttribute && e.target.getAttribute('data-f');
+    if (!k) return;
+    F[k] = e.target.value.trim();
+    paint();
+  });
+  document.addEventListener('input', function (e) {
+    if (e.target.getAttribute && e.target.getAttribute('data-f') === 'q') { F.q = e.target.value.trim(); paint(); }
+  });
+  document.addEventListener('click', function (e) {
+    if (e.target.hasAttribute && e.target.hasAttribute('data-reset')) { F = { kind: '', st: '', prio: '', portal: '', q: '' }; render(); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

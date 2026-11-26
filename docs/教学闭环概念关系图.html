@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>教学闭环 · 概念关系图（可编辑）</title>
+<style>
+  :root{
+    --bg:#F6F8FC; --panel:#FFFFFF; --line:#E5E9F1; --text:#1E293B;
+    --muted:#6B7688; --accent:#4F63C6; --shadow:0 2px 14px rgba(30,41,59,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;overflow:hidden}
+  header{flex:0 0 auto;background:var(--panel);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .title{font-size:17px;font-weight:700;letter-spacing:.3px}
+  .subtitle{font-size:12px;color:var(--muted);margin-top:3px}
+  .stats{display:flex;gap:14px;font-size:12px;color:var(--muted)}
+  .stats b{color:var(--accent);font-size:15px;margin-right:3px}
+  .spacer{flex:1}
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  input[type=text],button,select,textarea{font-family:inherit;font-size:12px;color:var(--text);background:#fff;border:1px solid var(--line);border-radius:7px;padding:7px 11px;outline:none}
+  input[type=text]{width:170px}
+  input[type=text]:focus,textarea:focus,select:focus{border-color:var(--accent)}
+  button{cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.on{background:#EEF1FF;border-color:#BFC8F5;color:var(--accent)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{background:#4255b8;color:#fff}
+  button.danger:hover{border-color:#D9534F;color:#D9534F}
+  .layout{flex:1;display:flex;min-height:0}
+  aside{flex:0 0 252px;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:16px}
+  aside.collapsed{display:none}
+  .sec{margin-bottom:20px}
+  .sec h3{margin:0 0 10px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:1px}
+  .legend-item{display:flex;align-items:center;gap:9px;font-size:12.5px;padding:4px 0}
+  .dot{width:11px;height:11px;border-radius:4px;flex:0 0 auto}
+  .kind-line{width:26px;height:0;border-top:2px solid;flex:0 0 auto}
+  .filters{display:grid;grid-template-columns:1fr 1fr;gap:6px 4px}
+  label.chk{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:var(--text);white-space:nowrap}
+  label.chk input{accent-color:var(--accent);margin:0}
+  .q{font-size:12px;line-height:1.65;color:#5A6474;background:#F4F7FB;border:1px solid #E4EAF3;border-radius:8px;padding:9px 10px;margin-bottom:8px}
+  .q b{color:#3A5BA8}
+  main{flex:1;position:relative;min-width:0;overflow:hidden}
+  svg#canvas{width:100%;height:100%;display:block;cursor:grab}
+  svg#canvas.dragging{cursor:grabbing}
+  svg#canvas.picking{cursor:crosshair}
+  .hint{position:absolute;left:14px;bottom:12px;font-size:11.5px;color:#8A94A6;background:rgba(255,255,255,.86);border:1px solid var(--line);border-radius:7px;padding:6px 10px;pointer-events:none;z-index:5}
+  .modebar{position:absolute;left:14px;top:12px;font-size:12px;color:#fff;background:var(--accent);border-radius:8px;padding:8px 14px;display:none;z-index:6;box-shadow:var(--shadow)}
+  .card{position:absolute;right:14px;top:14px;width:280px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:14px;font-size:12px;display:none;max-height:calc(100% - 28px);overflow-y:auto;z-index:7}
+  .card.show{display:block}
+  .card .x{float:right;cursor:pointer;color:var(--muted);font-size:16px;line-height:1;border:none;background:none}
+  .card h4{margin:0 0 4px;font-size:14px}
+  .card .dm{font-size:11px;color:#fff;border-radius:4px;padding:2px 7px;display:inline-block;margin-bottom:8px}
+  .card p{margin:6px 0;color:var(--muted);line-height:1.6}
+  .card ul{margin:6px 0 0;padding-left:16px;line-height:1.8}
+  .card li{color:#4A5568}
+  .card .arrow{color:var(--accent);font-weight:600}
+  .card .acts{margin-top:10px;display:flex;gap:8px}
+  .card .acts button{flex:1}
+  .card table.attr-t{width:100%;border-collapse:collapse;margin:6px 0}
+  .card table.attr-t td{border-bottom:1px dashed var(--line);padding:3px 4px;font-size:12px;vertical-align:top}
+  .card table.attr-t td.ak{color:var(--accent);font-weight:600;width:36%}
+  .card button.mini{border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 2px}
+  .card button.mini:hover{color:var(--accent)}
+  .toast{position:fixed;left:50%;bottom:46px;transform:translateX(-50%);background:#1E293B;color:#fff;font-size:12.5px;border-radius:8px;padding:9px 18px;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+  .toast.show{opacity:.95}
+  dialog{border:1px solid var(--line);border-radius:12px;padding:18px 20px;width:340px;box-shadow:0 12px 40px rgba(15,23,42,.22)}
+  dialog::backdrop{background:rgba(15,23,42,.28)}
+  dialog h3{margin:0 0 14px;font-size:14.5px}
+  dialog label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  dialog input[type=text],dialog select,dialog textarea{width:100%}
+  dialog textarea{height:56px;resize:vertical}
+  dialog .acts{margin-top:16px;display:flex;gap:8px;justify-content:flex-end}
+  dialog .acts button{min-width:74px}
+  dialog .dir{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:12.5px}
+  dialog .dir .nd{flex:1;text-align:center;background:#F4F7FB;border:1px solid var(--line);border-radius:7px;padding:6px 8px}
+  dialog .dir button{border:none;background:none;font-size:14px;color:var(--accent);cursor:pointer}
+  .edge path{fill:none;stroke-linecap:round;transition:opacity .12s}
+  .edge text{font-size:10px;fill:#7C8798;text-anchor:middle;paint-order:stroke;stroke:#F6F8FC;stroke-width:3.5px;stroke-linejoin:round;font-family:"Microsoft YaHei",sans-serif;pointer-events:none;transition:opacity .12s}
+  .edge.dim,.node.dim{opacity:.10}
+  .edge.hl path{stroke-width:2.6 !important;opacity:1}
+  .edge.hl text{fill:#334155;font-weight:700}
+  .edge.sel path{stroke:#1E293B;stroke-width:2.6}
+  .edge.sel text{fill:#1E293B;font-weight:700}
+  .node{cursor:pointer;transition:opacity .12s}
+  .node rect{stroke-width:1.6;rx:8;ry:8;filter:none}
+  .node text{font-size:13px;font-weight:600;text-anchor:middle;pointer-events:none;font-family:"Microsoft YaHei","PingFang SC",sans-serif}
+  .node.hl rect{stroke-width:2.6}
+  .node.sel rect{stroke-width:2.6;stroke:#1E293B}
+  .node.pending rect{stroke-dasharray:4 3}
+  .cluster{fill:rgba(15,23,42,.015);stroke-width:1.2;stroke-dasharray:5 6;rx:22;ry:22;cursor:move}
+  .pal{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .pal button{width:22px;height:22px;border-radius:50%;padding:0;border:2px solid transparent;cursor:pointer}
+  .clusterLabel{font-size:12px;font-weight:700;font-family:"Microsoft YaHei",sans-serif;opacity:.55}
+  .bg{fill:#F6F8FC}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="title">教学闭环 · 概念关系图（可编辑）</div>
+    <div class="subtitle">点击「＋添加节点 / ＋添加关系」增补概念模型，改动自动保存在本机浏览器</div>
+  </div>
+  <div class="stats">
+    <span><b id="stNodes">0</b>概念</span>
+    <span><b id="stEdges">0</b>关系</span>
+    <span><b id="stDomains">0</b>图谱域</span>
+    <span><b id="stRels">0</b>关系类型</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="tools">
+    <input type="text" id="search" placeholder="搜索概念，回车定位" />
+    <button class="primary" id="btnAddNode">＋ 添加节点</button>
+    <button class="primary" id="btnAddEdge">＋ 添加关系</button>
+    <button class="primary" id="btnAddDomain">＋ 添加模块</button>
+    <button class="primary" id="btnSaveFile" title="把当前模型固化成独立的 HTML 文件下载，换电脑打开也在">保存到文件</button>
+    <button id="btnImport" title="粘贴模型 JSON 导入">导入模型</button>
+    <button id="btnFit">适应画布</button>
+    <button id="btnReset">重新布局</button>
+    <button id="btnLabels" class="on">关系标签</button>
+    <button id="btnSide" class="on">侧栏</button>
+    <button id="btnExport">导出图片</button>
+    <button class="danger" id="btnRestore">恢复默认数据</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside id="aside">
+    <div class="sec">
+      <h3>图谱域（节点配色）</h3>
+      <div id="legendDomains"></div>
+    </div>
+    <div class="sec">
+      <h3>关系类别（连线样式）</h3>
+      <div id="legendKinds"></div>
+    </div>
+    <div class="sec">
+      <h3>显示 · 图谱域</h3>
+      <div class="filters" id="filterDomains"></div>
+    </div>
+    <div class="sec">
+      <h3>显示 · 关系类别</h3>
+      <div class="filters" id="filterKinds"></div>
+    </div>
+    <div class="sec">
+      <h3>编辑说明</h3>
+      <div class="q">＋添加模块：新增一个图谱域（命名、选色）。<br>＋添加节点：选域、填名称。<br>＋添加关系：先点起点，再点终点，填关系名与类别。<br>移动模块：拖动域的虚线框整块挪位置；双击虚线框/标题（或点图例✎）编辑模块。<br>概念属性：点节点 → 详情卡片里「＋属性」新增，点属性行✎编辑/删除。<br>删除关系：点击关系线 → 弹窗里「删除这条关系」。<br>删除节点：点击节点 → 卡片里「删除」（相关关系一并删除）。<br>改动自动保存本机；「恢复默认数据」回到初始模型。</div>
+    </div>
+    <div class="sec">
+      <h3>建模约定（已定稿）</h3>
+      <div id="questions"></div>
+    </div>
+  </aside>
+
+  <main>
+    <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="ar-hierarchy" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#64748B"/></marker>
+        <marker id="ar-cross" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#E07B39"/></marker>
+        <marker id="ar-business" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#9B6FB8"/></marker>
+        <marker id="ar-audit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#D9534F"/></marker>
+      </defs>
+      <rect class="bg" id="bgRect" x="0" y="0" width="100%" height="100%"/>
+      <g id="viewport">
+        <g id="clusterLayer"></g>
+        <g id="edgeLayer"></g>
+        <g id="nodeLayer"></g>
+      </g>
+    </svg>
+    <div class="hint">滚轮缩放 · 拖拽空白平移 · 拖拽节点固定 · 悬停高亮邻域 · 点击节点看说明 · 点击关系线编辑</div>
+    <div class="modebar" id="modebar"></div>
+    <div class="card" id="card"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<dialog id="dlg">
+  <h3 id="dlgTitle"></h3>
+  <div id="dlgBody"></div>
+  <div class="acts">
+    <button id="dlgCancel">取消</button>
+    <button class="primary" id="dlgOk">确定</button>
+  </div>
+</dialog>
+
+<script>
+/* ═══════════════ 默认数据区（编辑后以本机保存为准，可用「恢复默认数据」还原） ═══════════════ */
+/* __DOMAINS_DATA__ */
+const DOMAINS = {
+  std:      { label:'标准域',           color:'#B45309', fill:'#FEF3C7', cx:850,  cy:150 },
+  system:   { label:'知识体系内容',     color:'#4F63C6', fill:'#EEF1FF', cx:240,  cy:380 },
+  industry: { label:'能力图谱内容',     color:'#D98032', fill:'#FFF2E5', cx:1450, cy:320 },
+  res:      { label:'备课资源',         color:'#2B9779', fill:'#E7F6F0', cx:850,  cy:680 },
+  edu:      { label:'教务与组织',       color:'#1F8FA6', fill:'#E6F5F8', cx:240,  cy:950 },
+  biz:      { label:'任务 · 学习 · 评价', color:'#9B6FB8', fill:'#F3EDFB', cx:1450, cy:720 },
+  out:      { label:'结果与干预',       color:'#D9534F', fill:'#FDECEA', cx:850,  cy:1180 },
+};
+/* __DOMAINS_DATA_END__ */
+const KINDS = {
+  hierarchy:{ label:'层级「属于」（图谱内主干）', color:'#64748B', dash:'', width:1.7 },
+  cross:    { label:'跨图谱「关联 / 支撑 / 引用」', color:'#E07B39', dash:'6 4', width:1.4 },
+  business: { label:'业务关系（排课 / 发布 / 评价 …）', color:'#9B6FB8', dash:'', width:1.4 },
+  audit:    { label:'需审核确认才生效（映射 / 实训 / 赛证）', color:'#D9534F', dash:'', width:2.0 },
+};
+const DEF_NODES = /* __NODES_DATA__ */ [
+  ['KSY','知识体系','std','一套教学内容的组织单元：范围/类型（标准·拓展）/状态（构建中·已构建）',[['范围','专业大类 / 专业 / 课程'],['体系类型','标准 / 拓展'],['状态','构建中 / 已构建']]],
+  ['AG','能力图谱','std','一张面向行业的能力图（名称/边界/创建者）'],
+  ['COMP','赛项','std','预留：入图后与能力项对应，走审核确认'],
+  ['CERT','证书','std','预留：入图后与知识点对应，走审核确认'],
+  ['TC','实训条件','std','技能级实训需求（必需/建议），审核后生效；挂技能下',[['级别','必需 / 建议'],['审核状态','已审核/已调整/待审核（与映射共用）']]],
+  ['MINE','个人补充','system','老师挂在标准节点下的个人内容，审核后并入标准（记来源，无主次）'],
+  ['MJ','专业大类','system','体系侧顶层'],
+  ['MAJS','专业（体系）','system','与教务专业为两个不同概念，经对口表连岗位'],
+  ['CATE','课程分类','system','专业与课程之间（理论认知类 / 职业素养类等）'],
+  ['CS','课程（体系）','system','与教务课程为两个不同概念，教务课程关联到它'],
+  ['PROJ','项目','system','课程与任务之间的中间层（项目化课程结构）'],
+  ['TASK','任务（体系）','system','描述性教学任务模板，与「任务发布」不建直接关系'],
+  ['FLOW','操作流程','system','任务与技能之间的中间层（部分课程类型无此层）'],
+  ['SK','技能','system','教学闭环核心枢纽：备课/发布/评价/证据/补训都挂它',[['定位','教学闭环核心枢纽'],['来源','标准 / 个人补充经审核']]],
+  ['KP','知识点','system','名称/类型/核心内容；判定依据默认取核心内容'],
+  ['STP','操作步骤','system','挂 操作流程 / 标准 / 案例 / 技能 下'],
+  ['STD','标准','system','挂 任务 或 技能 下'],
+  ['CASE','案例','system','挂 任务 或 技能 下'],
+  ['IND','行业','industry',''],
+  ['SUB','子行业','industry',''],
+  ['JOB','岗位','industry','岗位 × 能力项 多对多'],
+  ['ABL','能力项','industry','L1–L3 行为化描述；支持「前置」自关联形成能力链'],
+  ['SRC','来源出处','industry','能力项的国家/行业标准依据（链接+原文）'],
+  ['ORG','组织','edu','组织树（校/院系/教研室），自关联'],
+  ['ACC','账号','edu','学生/教师/教务/专业负责人/管理员'],
+  ['ROLE','角色','edu','角色×权限'],
+  ['MAJE','专业（教务）','edu','多层级专业目录，自关联'],
+  ['CLS','班级','edu',''],
+  ['STU','学生','edu','含学籍状态'],
+  ['TCH','教师','edu',''],
+  ['TERM','学期','edu',''],
+  ['EC','教务课程','edu','五类课程；关联知识体系课程节点'],
+  ['PLAN','课程计划','edu','学期×班级×课程×教师'],
+  ['PER','节次时间','edu','全校一张节次表'],
+  ['SLOT','排课','edu','排课即课次；编号稳定（删除不重排）'],
+  ['LES','课次','edu','未发布/待审核/已发布/标记未上'],
+  ['REQ','课次审核单','edu','冲突协调：调时间/允许重叠/替换/驳回'],
+  ['RES','资源包','res','来源（AI 生成/上传）、任务与技能、知识点配置'],
+  ['RF','资源文件','res','类型/大小/下发状态/学习人数'],
+  ['KB','知识库资料','res','可挂 课程/任务/技能（浅挂载仅兜底）'],
+  ['PUB','任务发布','biz','发布即快照：考查技能/知识点/判定依据/AI 评价要求固化',[['发布即快照','考查技能/知识点/判定依据固化，不可改不可撤']]],
+  ['ADD','追加下发','biz','已发布课次补发文件'],
+  ['LRN','学习记录','biz','学生×文件×时间'],
+  ['SUBM','提交','biz','第 N 次提交/超时标记/退回重交'],
+  ['FDB','课程反馈','biz',''],
+  ['AIE','AI 初评','biz','未经老师确认不算结果'],
+  ['TE','老师评价','biz','采用 AI / 逐项确认；通过/退回'],
+  ['EVID','学习证据','biz','学生×技能×等级；只有通过才产生',[['构成','学生 × 技能 × 等级 × 课次'],['产生条件','评价通过才产生；退回/AI/自评不产生']]],
+  ['KPM','知识点掌握','biz','最近一次确认评价（含退回）；不进证据'],
+  ['OV','整体等级','biz','无技能任务/公共基础课'],
+  ['XQ','学情结论','out','达成率/掌握率/教学进度；随证据实时变化'],
+  ['TA','教学达成','out','证据经映射汇总到能力项'],
+  ['PRO','学生画像','out','图谱的一部分：随评价更新，只取确认证据'],
+  ['REM','补训课次','out','针对技能×未达成学生'],
+  ['TUT','辅导课次','out','勾选学生的个别辅导'],
+  ['SUG','课程改进建议','out','老师→专业负责人，结果回老师'],
+  ['CONT','教研贡献','out','个人补充审核并入后计入成长档案'],
+  ['AUDIT','操作日志','out','发布/评价/补训/建议/导出/审核留痕'],
+] /* __NODES_DATA_END__ */.map(([id,label,d,note,attrs,pos]) => ({id,label,d,note,attrs:(attrs||[]).map(a=>Array.isArray(a)?{k:a[0],v:a[1]}:a),x:pos?pos[0]:undefined,y:pos?pos[1]:undefined,pinned:!!(pos&&pos[2])}));
+const DEF_EDGES = /* __EDGES_DATA__ */ [
+  ['MJ','KSY','承纳','hierarchy','专业大类 属于 知识体系'],
+  ['MAJS','MJ','属于','hierarchy'],
+  ['CATE','MAJS','属于','hierarchy','课程分类已插入主干'],
+  ['CS','CATE','属于','hierarchy'],
+  ['PROJ','CS','属于','hierarchy','课程 ← 项目 ← 任务（项目化课程结构）'],
+  ['TASK','PROJ','属于','hierarchy'],
+  ['SK','TASK','属于','hierarchy'],
+  ['FLOW','TASK','属于','hierarchy','任务←操作流程←技能为中间层；部分课程无流程层'],
+  ['STD','TASK','属于','hierarchy'],
+  ['CASE','TASK','属于','hierarchy'],
+  ['KP','SK','属于','hierarchy'],
+  ['STP','SK','属于','hierarchy'],
+  ['STD','SK','属于','hierarchy'],
+  ['CASE','SK','属于','hierarchy'],
+  ['STP','FLOW','属于','hierarchy'],
+  ['STP','STD','属于','hierarchy'],
+  ['STP','CASE','属于','hierarchy'],
+  ['KP','KP','前置','business','知识点→知识点，预留学习路径',1],
+  ['IND','AG','承纳','hierarchy','行业 属于 能力图谱'],
+  ['SUB','IND','属于','hierarchy'],
+  ['JOB','SUB','属于','hierarchy'],
+  ['ABL','JOB','属于','hierarchy'],
+  ['ABL','ABL','前置','business','能力项→能力项，前置依赖'],
+  ['SRC','ABL','有出处','hierarchy'],
+  ['ORG','ORG','上级','hierarchy','组织树自关联'],
+  ['ACC','ORG','属于','business'],
+  ['ACC','ROLE','担任','business'],
+  ['MAJE','MAJE','上级','hierarchy','专业树多层级自关联'],
+  ['CLS','MAJE','属于','hierarchy'],
+  ['STU','CLS','在班','business'],
+  ['EC','MAJE','属于','hierarchy'],
+  ['PLAN','EC','计划','hierarchy'],
+  ['PLAN','TERM','在学期','business'],
+  ['SLOT','PLAN','排课','hierarchy'],
+  ['SLOT','PER','按节次','business'],
+  ['LES','SLOT','生成课次','business','排课即课次；未发布随排课变，已发布锁定'],
+  ['LES','PLAN','属于','hierarchy','自建/补训课次也挂计划'],
+  ['LES','REQ','冲突提交','business','与教务排课时间冲突'],
+  ['REQ','LES','处理','business','调时间通过/允许重叠/替换/驳回'],
+  ['LES','LES','标记未上','business','调课/停课标记，不计入进度'],
+  ['SK','ABL','支撑 · 已确认映射','audit','能力—技能映射，已审核/已调整才生效；待审核不建边'],
+  ['MAJS','JOB','对口','cross','专业—岗位对口表（已确认数据）'],
+  ['CS','ABL','推导覆盖','cross','课程技能经映射推导支撑能力（可重算）'],
+  ['EC','CS','关联','cross','课程级体系优先；解除后回落到专业体系同名课程'],
+  ['KSY','MAJE','关联专业','cross','标准体系关联教务专业后匹配课程'],
+  ['RES','SK','覆盖','cross','资源挂技能，带知识点配置（未配置=默认全选）'],
+  ['KB','CS','挂载','cross','知识库资料可挂课程/任务/技能（浅挂载仅兜底）'],
+  ['MINE','SK','挂标准节点','cross','个人补充挂在标准节点下，提交审核并入'],
+  ['KP','SK','安全约束','cross','预留：安全知识点未达标，实操任务发布被拦截',1],
+  ['TC','SK','需要实训条件 · 审核','audit','与映射共用审核状态：已审核/已调整/待审核'],
+  ['COMP','ABL','对应 · 审核','audit','赛项对应能力项，入图后走审核确认',1],
+  ['CERT','KP','对应 · 审核','audit','证书对应知识点，入图后走审核确认',1],
+  ['TCH','RES','生成 / 上传','business'],
+  ['TCH','MINE','个人补充','business','老师补充内容，审核后并入标准'],
+  ['LES','RES','用资源','business','课次技能 = 关联资源技能并集'],
+  ['RES','RF','包含','hierarchy'],
+  ['LES','PUB','发布','business','一次课一个任务；发布即快照'],
+  ['PUB','SK','考查技能','cross','发布时确认（快照，图谱改不影响）'],
+  ['PUB','KP','考查知识点 · 判定依据','cross','默认全选，判定依据默认取核心内容'],
+  ['PUB','RF','下发','business'],
+  ['PUB','ADD','追加下发','business','已发布只可追加，学生端标「新增」'],
+  ['ADD','RF','补发文件','business'],
+  ['PUB','STU','布置给','business','全班或补训目标学生'],
+  ['STU','LRN','学习了','business'],
+  ['LRN','RF','针对','business'],
+  ['STU','SUBM','提交了','business','退回重交=第 N 次提交'],
+  ['SUBM','SUBM','超时补交','business'],
+  ['STU','FDB','反馈了','business'],
+  ['FDB','LES','针对课次','business'],
+  ['PUB','AIE','AI 评价要求','business','一份任务一份，≤500 字'],
+  ['SUBM','AIE','AI 初评','business','未经老师确认不算结果'],
+  ['SUBM','TE','老师评价','business'],
+  ['AIE','TE','经老师确认','business','采用 AI 或逐项确认'],
+  ['TE','EVID','通过后产生','business','每个考查技能一条；退回不产生'],
+  ['TE','KPM','推导知识点掌握','business','最近一次确认评价（含退回）'],
+  ['TE','OV','整体等级','business'],
+  ['EVID','SK','针对技能','cross'],
+  ['EVID','STU','属于学生','cross'],
+  ['EVID','LES','在哪节课','business'],
+  ['EVID','XQ','汇总','business','学情：技能达成率/知识点掌握率'],
+  ['EVID','TA','汇总','business','教学达成'],
+  ['TA','ABL','汇总到能力项','cross','经已确认映射'],
+  ['EVID','PRO','更新','business','学生画像随评价更新'],
+  ['PRO','SK','掌握情况','cross'],
+  ['PRO','KP','掌握知识点','cross'],
+  ['XQ','REM','未达成技能','business','薄弱技能发起补训'],
+  ['REM','SK','针对技能','business'],
+  ['REM','STU','发给未达成学生','business'],
+  ['TUT','STU','发给勾选学生','business'],
+  ['SUG','EC','提建议','business','老师→专业负责人'],
+  ['SUG','TCH','处理结果回老师','business','采纳/暂不处理+说明'],
+  ['TCH','SK','补充经审核并入','cross','审核后全校可见，保留署名'],
+  ['SK','CONT','贡献署名','business'],
+  ['CONT','TCH','计入成长档案','business'],
+  ['AUDIT','PUB','留痕','business','关键操作写操作日志'],
+  ['AUDIT','TE','留痕','business'],
+  ['AUDIT','REQ','留痕','business'],
+  ['AUDIT','REM','留痕','business'],
+] /* __EDGES_DATA_END__ */.map(([s,t,r,k,note,pending]) => ({s,t,r,k,note,pending:!!pending}));
+
+const MODEL_NOTES = [
+  '<b>标准域</b>：知识体系、能力图谱、赛项、证书同属标准域；实训条件也属标准域（挂技能下、审核后生效）。',
+  '<b>全景图谱</b>：不作为概念节点——入图内容同属一张图，按专业发布版本。',
+  '<b>课程分类</b>：已插入体系主干 → 专业 ← 课程分类 ← 课程。',
+  '<b>项目</b>：已插入体系主干 → 课程 ← 项目 ← 任务（项目化课程结构）。',
+  '<b>操作流程</b>：中间层，任务 ← 操作流程 ← 技能；部分课程类型无此层，技能直挂任务。',
+  '<b>末端挂载</b>：技能 → 知识点/操作步骤/标准/案例；流程/标准/案例 → 操作步骤。',
+  '<b>两个任务</b>：体系「任务」与「任务发布」不建直接关系（发布即快照，引用考查技能与知识点）。',
+  '<b>审核统一</b>：映射、实训条件、赛证对应共用一套审核状态，待审核不生效。',
+  '<b>学生画像</b>：属于图谱，随评价更新，只取老师确认的证据。',
+  '<b>记来源</b>：标准内容记录谁建立/经谁审核；老师补充并入后无主次。',
+  '<b>证据唯一</b>：只有评价通过才产生证据；AI 结果、自评、退回不进证据。',
+];
+/* ═══════════════ 数据区结束 ═══════════════ */
+
+/* ---------- 数据装载与持久化 ---------- */
+const SKEY = 'tjcConcept.v2';
+let NODES = [], EDGES = [];
+(function loadData(){
+  let useSaved = false;
+  try {
+    const raw = localStorage.getItem(SKEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (Array.isArray(d.nodes) && d.nodes.length) {
+        NODES = d.nodes.map(n=>({...n, attrs:n.attrs||[]})); EDGES = d.edges || []; useSaved = true;
+        if (Array.isArray(d.domains)) d.domains.forEach(x=>{
+          if (!x.k) return;
+          if (DOMAINS[x.k]) { Object.assign(DOMAINS[x.k], { cx:x.cx, cy:x.cy, label:x.label||DOMAINS[x.k].label, color:x.color||DOMAINS[x.k].color, fill:x.fill||DOMAINS[x.k].fill }); }
+          else if (x.label) { DOMAINS[x.k] = { label:x.label, color:x.color||'#64748B', fill:x.fill||'#F1F5F9', cx:x.cx||850, cy:x.cy||700 }; }
+        });
+      }
+    }
+  } catch(e) {}
+  if (!useSaved) { NODES = JSON.parse(JSON.stringify(DEF_NODES)); EDGES = JSON.parse(JSON.stringify(DEF_EDGES)); }
+})();
+function save(){
+  try {
+    localStorage.setItem(SKEY, JSON.stringify({
+      nodes: NODES.map(n => ({ id:n.id, label:n.label, d:n.d, note:n.note || '', attrs:(n.attrs||[]), x:Math.round(n.x), y:Math.round(n.y), pinned:!!n.pinned })),
+      edges: EDGES.map(e => ({ s:e.s, t:e.t, r:e.r, k:e.k, note:e.note || '', pending: !!e.pending })),
+      domains: Object.entries(DOMAINS).map(([k,d]) => ({ k, label:d.label, color:d.color, fill:d.fill, cx:d.cx, cy:d.cy }))
+    }));
+  } catch(e) {}
+  toast('已保存到本机');
+}
+function newId(){ return 'N' + Date.now().toString(36) + Math.floor(Math.random()*46656).toString(36); }
+
+/* ---------- 基础元素 ---------- */
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('canvas');
+const viewport = document.getElementById('viewport');
+const edgeLayer = document.getElementById('edgeLayer');
+const nodeLayer = document.getElementById('nodeLayer');
+const clusterLayer = document.getElementById('clusterLayer');
+const card = document.getElementById('card');
+const byId = () => Object.fromEntries(NODES.map(n => [n.id,n]));
+const relNames = () => [...new Set(EDGES.map(e => e.r))].sort((a,b)=>a.localeCompare(b,'zh'));
+const view = {k:1,tx:0,ty:0};
+let alpha = 1, running = true, showLabels = true, suppressClick = false;
+let selectedNodeId = null, selectedEdgeIdx = null;
+const visibleDomains = new Set(Object.keys(DOMAINS));
+const visibleKinds = new Set(Object.keys(KINDS));
+
+function measure(label){
+  let w = 0;
+  for (const ch of label) w += /[\u4e00-\u9fa5]/.test(ch) ? 13.5 : 7.6;
+  return Math.max(66, w + 26);
+}
+function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function initPositions(force){
+  NODES.forEach((n,i)=>{
+    if (force || n.x == null || n.y == null) {
+      const c = DOMAINS[n.d] || DOMAINS.std;
+      const a = i*2.39996, r = 26 + (i%9)*22;
+      n.x = c.cx + Math.cos(a)*r;
+      n.y = c.cy + Math.sin(a)*r;
+      n.pinned = false;
+    }
+    n.vx = 0; n.vy = 0; n.w = measure(n.label); n.h = 30;
+  });
+  alpha = 1; running = true;
+}
+initPositions();
+
+/* ---------- 力导向 ---------- */
+const REP = 28000, DAMP = 0.80, DECAY = 0.988, MAXV = 14;
+function edgeLen(e){
+  if (e.s === e.t) return 0;
+  if (e.k === 'cross') return 300;
+  return (byId()[e.s].d) === (byId()[e.t].d) ? 150 : 240;
+}
+function step(){
+  if (alpha < 0.012) { running = false; return; }
+  const map = byId();
+  for (let i=0;i<NODES.length;i++){
+    const a = NODES[i];
+    for (let j=i+1;j<NODES.length;j++){
+      const b = NODES[j];
+      let dx = b.x-a.x, dy = b.y-a.y;
+      if (dx===0 && dy===0){ dx = 0.5; dy = 0.5; }
+      const d2 = dx*dx+dy*dy+0.01, d = Math.sqrt(d2);
+      const f = Math.min(22, REP/d2) * alpha;
+      const fx = dx/d*f, fy = dy/d*f;
+      a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
+      const ox = (a.w+b.w)/2 + 20 - Math.abs(dx);
+      const oy = (a.h+b.h)/2 + 22 - Math.abs(dy);
+      if (ox>0 && oy>0){
+        const push = Math.min(ox,oy) * 0.46 * alpha;
+        if (ox < oy){ const s = dx>0?1:-1; a.vx -= s*push; b.vx += s*push; }
+        else { const s = dy>0?1:-1; a.vy -= s*push; b.vy += s*push; }
+      }
+    }
+  }
+  for (const e of EDGES){
+    if (e.s === e.t) continue;
+    const a = map[e.s], b = map[e.t];
+    if (!a || !b) continue;
+    const dx = b.x-a.x, dy = b.y-a.y, d = Math.max(1,Math.hypot(dx,dy));
+    const strength = e.k==='hierarchy' ? 0.038 : e.k==='business' ? 0.026 : 0.007;
+    const f = (d - edgeLen(e)) * strength * alpha;
+    const fx = dx/d*f, fy = dy/d*f;
+    a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+    if (e.k==='hierarchy'){
+      const gap = a.y - b.y;
+      if (gap < 52){ const v=(52-gap)*0.010*alpha; b.vy -= v; a.vy += v; }
+    }
+  }
+  for (const n of NODES){
+    const c = DOMAINS[n.d] || DOMAINS.std;
+    n.vx += (c.cx-n.x) * 0.017 * alpha;
+    n.vy += (c.cy-n.y) * 0.017 * alpha;
+    if (n.pinned){ n.vx = 0; n.vy = 0; continue; }
+    n.vx = Math.max(-MAXV,Math.min(MAXV,n.vx*DAMP));
+    n.vy = Math.max(-MAXV,Math.min(MAXV,n.vy*DAMP));
+    n.x += n.vx; n.y += n.vy;
+  }
+  alpha *= DECAY;
+}
+
+/* ---------- 动态构建：节点 / 边 ---------- */
+function el(tag,attrs){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+function styleOf(e){
+  if (e.pending) return {color:'#D9534F',dash:'2 3',width:1.5,marker:'ar-audit'};
+  const k = KINDS[e.k] || KINDS.business;
+  return {color:k.color,dash:k.dash,width:k.width,marker:'ar-'+e.k};
+}
+const edgeEls = [];
+const labelCount = () => { const c = {}, s = {}; EDGES.forEach(e=>{ if(e.pending) return; const k=e.s+'|'+e.r; c[k]=(c[k]||0)+1; }); return c; };
+const labelSeen = {};
+function rebuildLabels(){
+  const c = labelCount(); const s = {};
+  edgeEls.forEach(item=>{
+    const e = item.e;
+    if (e.pending){ item.label.textContent = e.r + ' ?'; return; }
+    const k = e.s+'|'+e.r; s[k]=(s[k]||0)+1;
+    item.label.textContent = s[k]===1 ? e.r + (c[k]>1?' ×'+c[k]:'') : '';
+  });
+}
+function buildEdge(e, idx){
+  const st = styleOf(e), g = el('g',{class:'edge','data-idx':idx});
+  const p = el('path',{stroke:st.color,'stroke-width':st.width,'marker-end':'url(#'+st.marker+')'});
+  if (st.dash) p.setAttribute('stroke-dasharray',st.dash);
+  if (e.k==='cross') p.setAttribute('opacity','0.75');
+  const label = el('text',{});
+  g.appendChild(p); g.appendChild(label);
+  g.addEventListener('click',ev=>{ ev.stopPropagation(); editEdge(idx); });
+  edgeLayer.appendChild(g);
+  const item = {e,g,p,label,idx}; edgeEls.push(item);
+  return item;
+}
+const nodeEls = new Map();
+function buildNode(n){
+  const d = DOMAINS[n.d] || DOMAINS.std, g = el('g',{class:'node'});
+  const rect = el('rect',{fill:d.fill,stroke:d.color,rx:8,ry:8});
+  const txt = el('text',{fill:d.color});
+  txt.textContent = n.label;
+  g.appendChild(rect); g.appendChild(txt);
+  nodeLayer.appendChild(g);
+  nodeEls.set(n.id,{n,g,rect,txt});
+  g.addEventListener('mouseenter',()=> setHighlight(n.id));
+  g.addEventListener('mouseleave',()=> setHighlight(null));
+  g.addEventListener('mousedown',ev=>startNodeDrag(ev,n));
+  g.addEventListener('click',ev=>{ ev.stopPropagation(); if (edgePick){ onNodeClickForEdge(n); return; } if(!suppressClick) showCard(n); });
+}
+function rebuildAll(){
+  edgeLayer.innerHTML = ''; nodeLayer.innerHTML = '';
+  edgeEls.length = 0; nodeEls.clear();
+  EDGES.forEach((e,i)=>buildEdge(e,i));
+  NODES.forEach(n=>buildNode(n));
+  rebuildLabels(); updateStats();
+}
+const clusterEls = [];
+function addCluster(key, d){
+  const r = el('rect',{class:'cluster',stroke:d.color});
+  const t = el('text',{class:'clusterLabel',fill:d.color});
+  t.textContent = d.label;
+  clusterLayer.appendChild(r); clusterLayer.appendChild(t);
+  const item = {key,r,t}; clusterEls.push(item);
+  /* 拖动域虚线框：整体移动该域，位置自动保存 */
+  r.addEventListener('mousedown', ev=>{
+    ev.stopPropagation();
+    const p0 = toWorld(ev);
+    const members = NODES.filter(n=>n.d===key);
+    const starts = members.map(n=>({n, x:n.x, y:n.y}));
+    members.forEach(n=>{ n.pinned = true; });
+    let dx = 0, dy = 0;
+    function mv(e){
+      const q = toWorld(e);
+      dx = q.x - p0.x; dy = q.y - p0.y;
+      starts.forEach(s=>{ s.n.x = s.x + dx; s.n.y = s.y + dy; });
+      render();
+    }
+    function up(){
+      window.removeEventListener('mousemove',mv); window.removeEventListener('mouseup',up);
+      d.cx += dx; d.cy += dy;
+      members.forEach(n=>{ n.pinned = false; });
+      save();
+      running = true; alpha = 1;
+      toast('已调整「'+d.label+'」位置');
+    }
+    window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+  });
+  /* 双击虚线框或标题：编辑模块 */
+  [r,t].forEach(x=>x.addEventListener('dblclick', ()=>{ editDomain(key); }));
+  return item;
+}
+for (const [key,d] of Object.entries(DOMAINS)) addCluster(key, d);
+rebuildAll();
+
+/* ---------- 几何与渲染 ---------- */
+function boundary(n,tx,ty){
+  let dx = tx-n.x, dy = ty-n.y;
+  if (dx===0 && dy===0) return {x:n.x,y:n.y};
+  const s = Math.min((n.w/2+3)/(Math.abs(dx)||1e-6), (n.h/2+3)/(Math.abs(dy)||1e-6));
+  return {x:n.x+dx*s, y:n.y+dy*s};
+}
+function render(){
+  const map = byId();
+  for (const {e,g,p,label} of edgeEls){
+    if (!visibleKinds.has(e.k) && !e.pending){ g.style.display='none'; continue; }
+    const a = map[e.s], b = map[e.t];
+    if (!a || !b || !visibleDomains.has(a.d) || !visibleDomains.has(b.d)){ g.style.display='none'; continue; }
+    g.style.display='';
+    if (e.s === e.t){
+      const y = a.y - a.h/2, x1 = a.x-16, x2 = a.x+16;
+      p.setAttribute('d',`M ${x1} ${y} C ${x1-20} ${y-56}, ${x2+20} ${y-56}, ${x2} ${y}`);
+      label.setAttribute('x',a.x); label.setAttribute('y',y-48);
+    } else {
+      const p1 = boundary(a,b.x,b.y), p2 = boundary(b,a.x,a.y);
+      const dx = p2.x-p1.x, dy = p2.y-p1.y, len = Math.max(1,Math.hypot(dx,dy));
+      const off = (e.k==='hierarchy'&&!e.pending) ? 0 : 16;
+      const cx = (p1.x+p2.x)/2 - dy/len*off, cy = (p1.y+p2.y)/2 + dx/len*off;
+      p.setAttribute('d',`M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`);
+      label.setAttribute('x',(p1.x+2*cx+p2.x)/4);
+      label.setAttribute('y',(p1.y+2*cy+p2.y)/4 - 3);
+    }
+    label.style.display = showLabels ? '' : 'none';
+  }
+  for (const [id,{n,g,rect,txt}] of nodeEls){
+    const d = DOMAINS[n.d] || DOMAINS.std;
+    g.style.display = visibleDomains.has(n.d) ? '' : 'none';
+    rect.setAttribute('width',n.w); rect.setAttribute('height',n.h);
+    rect.setAttribute('x',-n.w/2); rect.setAttribute('y',-n.h/2);
+    rect.setAttribute('fill',d.fill); rect.setAttribute('stroke',d.color);
+    txt.setAttribute('fill',d.color); txt.textContent = n.label;
+    txt.setAttribute('x',0); txt.setAttribute('y',4);
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);
+  }
+  for (const {key,r,t} of clusterEls){
+    const d = DOMAINS[key];
+    if (!visibleDomains.has(key)){ r.style.display='none'; t.style.display='none'; continue; }
+    r.style.display=''; t.style.display='';
+    let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9, any=false;
+    NODES.forEach(n=>{ if(n.d!==key) return; any=true; mnx=Math.min(mnx,n.x-n.w/2); mny=Math.min(mny,n.y-n.h/2); mxx=Math.max(mxx,n.x+n.w/2); mxy=Math.max(mxy,n.y+n.h/2); });
+    if (!any){ r.style.display='none'; t.style.display='none'; continue; }
+    r.setAttribute('x',mnx-20); r.setAttribute('y',mny-30); r.setAttribute('width',mxx-mnx+40); r.setAttribute('height',mxy-mny+52);
+    t.setAttribute('x',mnx+8); t.setAttribute('y',mny-8);
+  }
+  viewport.setAttribute('transform',`translate(${view.tx},${view.ty}) scale(${view.k})`);
+}
+function setHighlight(id){
+  const rel = new Set();
+  if (id) EDGES.forEach(e=>{ if(e.s===id||e.t===id) rel.add(e); });
+  edgeEls.forEach(item=>{ const on = !!id && rel.has(item.e); item.g.classList.toggle('hl',on); item.g.classList.toggle('dim',!!id && !on); });
+  for (const [nid,{n,g}] of nodeEls){
+    let on = true;
+    if (id){ on = nid===id || EDGES.some(e=> (e.s===id&&e.t===nid)||(e.t===id&&e.s===nid) ); }
+    g.classList.toggle('hl',!!id && on); g.classList.toggle('dim',!!id && !on);
+  }
+}
+function clearSel(){
+  selectedNodeId = null; selectedEdgeIdx = null;
+  document.querySelectorAll('.node.sel').forEach(g=>g.classList.remove('sel'));
+  document.querySelectorAll('.edge.sel').forEach(g=>g.classList.remove('sel'));
+}
+
+/* ---------- 详情卡片 ---------- */
+function showCard(n){
+  selectedNodeId = n.id; selectedEdgeIdx = null;
+  document.querySelectorAll('.node').forEach(g=>g.classList.toggle('sel',g===nodeEls.get(n.id).g));
+  document.querySelectorAll('.edge.sel').forEach(g=>g.classList.remove('sel'));
+  const d = DOMAINS[n.d] || DOMAINS.std;
+  const out = EDGES.filter(e=>e.s===n.id).map(e=>'→ <span class="arrow">'+e.r+(e.pending?' ?':'')+'</span> → '+(byId()[e.t]?byId()[e.t].label:'?'));
+  const inn = EDGES.filter(e=>e.t===n.id && e.s!==n.id).map(e=>(byId()[e.s]?byId()[e.s].label:'?')+' <span class="arrow">'+e.r+(e.pending?' ?':'')+'</span> →');
+  const attrs = (n.attrs||[]).map((a,i)=>'<tr><td class="ak">'+esc(a.k)+'</td><td>'+esc(a.v)+'</td><td style="width:26px"><button class="mini" onclick="editAttr(\''+n.id+'\','+i+')" title="编辑/删除这个属性">✎</button></td></tr>').join('');
+  card.innerHTML = '<button class="x" onclick="closeCard()">×</button>'+
+    '<h4>'+n.label+'</h4><span class="dm" style="background:'+d.color+'">'+d.label+'</span>'+
+    '<p>'+(n.note||'')+'</p>'+
+    '<p style="margin-bottom:2px;font-weight:600;color:var(--text)">属性</p>'+
+    '<table class="attr-t">'+(attrs||'<tr><td colspan="3" style="color:var(--muted);border:none">暂无属性，点下方「＋ 属性」添加</td></tr>')+'</table>'+
+    (inn.length?'<p style="margin-bottom:2px">入向关系</p><ul>'+inn.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'')+
+    (out.length?'<p style="margin-bottom:2px">出向关系</p><ul>'+out.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'')+
+    '<div class="acts"><button onclick="addAttr(\''+n.id+'\')">＋ 属性</button><button onclick="editNode(\''+n.id+'\')">编辑</button><button class="danger" onclick="removeNode(\''+n.id+'\')">删除</button></div>';
+  card.classList.add('show');
+}
+function closeCard(){ card.classList.remove('show'); }
+
+/* ---------- 编辑：对话框 ---------- */
+const PALETTE = [
+  { c:'#4F63C6', f:'#EEF1FF' }, { c:'#D98032', f:'#FFF2E5' }, { c:'#2B9779', f:'#E7F6F0' },
+  { c:'#1F8FA6', f:'#E6F5F8' }, { c:'#9B6FB8', f:'#F3EDFB' }, { c:'#D9534F', f:'#FDECEA' },
+  { c:'#B45309', f:'#FEF3C7' }, { c:'#0F766E', f:'#F0FDFA' }, { c:'#C2410C', f:'#FFF7ED' },
+  { c:'#7E22CE', f:'#FAF5FF' }, { c:'#BE185D', f:'#FDF2F8' }, { c:'#0E7490', f:'#ECFEFF' }
+];
+window.pickPal = function(btn){
+  document.querySelectorAll('#dlgBody .pal button').forEach(b=>b.style.border='2px solid transparent');
+  btn.style.border='2px solid #1E293B';
+  window.__pal = { c: btn.dataset.c, f: btn.dataset.f };
+};
+function paletteHTML(cur){
+  return '<div class="pal">'+PALETTE.map(p=>'<button type="button" data-c="'+p.c+'" data-f="'+p.f+'" style="background:'+p.f+';border:2px solid '+(p.c===cur?'#1E293B':'transparent')+'" onclick="pickPal(this)"></button>').join('')+'</div>';
+}
+const dlg = document.getElementById('dlg');
+let dlgOnOk = null;
+function openDlg(title, bodyHTML, onOk){
+  document.getElementById('dlgTitle').textContent = title;
+  document.getElementById('dlgBody').innerHTML = bodyHTML;
+  dlgOnOk = onOk;
+  dlg.showModal();
+}
+document.getElementById('dlgCancel').onclick = ()=>dlg.close();
+document.getElementById('dlgOk').onclick = ()=>{ if (dlgOnOk) dlgOnOk(); };
+function domainOpts(sel){ return Object.entries(DOMAINS).map(([k,d])=>'<option value="'+k+'"'+(k===sel?' selected':'')+'>'+d.label+'</option>').join(''); }
+function kindOpts(sel){ return Object.entries(KINDS).map(([k,d])=>'<option value="'+k+'"'+(k===sel?' selected':'')+'>'+d.label+'</option>').join(''); }
+
+function editNode(id){
+  const n = byId()[id]; if (!n) return;
+  openDlg('编辑概念',
+    '<label>名称</label><input type="text" id="f_label" value="'+n.label.replace(/"/g,'&quot;')+'">'+
+    '<label>所属域</label><select id="f_d">'+domainOpts(n.d)+'</select>'+
+    '<label>备注</label><textarea id="f_note">'+(n.note||'').replace(/"/g,'&quot;')+'</textarea>',
+    ()=>{
+      n.label = document.getElementById('f_label').value.trim() || n.label;
+      n.d = document.getElementById('f_d').value;
+      n.note = document.getElementById('f_note').value.trim();
+      n.w = measure(n.label);
+      const d = DOMAINS[n.d];
+      nodeEls.get(n.id).rect.setAttribute('fill',d.fill); nodeEls.get(n.id).rect.setAttribute('stroke',d.color);
+      nodeEls.get(n.id).txt.setAttribute('fill',d.color); nodeEls.get(n.id).txt.textContent = n.label;
+      dlg.close(); save(); render(); showCard(n);
+    });
+}
+function editEdge(idx){
+  const e = EDGES[idx]; if (!e) return;
+  const a = byId()[e.s], b = byId()[e.t];
+  let rev = false;
+  const body = ()=>
+    '<label>起点</label><div class="dir"><span class="nd">'+(rev?b.label:a.label)+'</span><button type="button" onclick="flipDir()">⇄</button><span class="nd">'+(rev?a.label:b.label)+'</span></div>'+
+    '<label>关系名</label><input type="text" id="f_r" value="'+e.r.replace(/"/g,'&quot;')+'">'+
+    '<label>关系类别</label><select id="f_k">'+kindOpts(e.k)+'</select>'+
+    '<label>备注</label><textarea id="f_note">'+(e.note||'').replace(/"/g,'&quot;')+'</textarea>'+
+    '<label><input type="checkbox" id="f_p" style="width:auto"'+(e.pending?' checked':'')+'> 预留（图中标「?」）</label>'+
+    '<div class="acts" style="margin-top:14px;justify-content:flex-start"><button type="button" class="danger" onclick="delEdge('+idx+')">删除这条关系</button></div>';
+  window.flipDir = function(){ rev = !rev; document.getElementById('dlgBody').innerHTML = body(); };
+  openDlg('编辑关系', body(), ()=>{
+    e.r = document.getElementById('f_r').value.trim() || e.r;
+    e.k = document.getElementById('f_k').value;
+    e.note = document.getElementById('f_note').value.trim();
+    e.pending = document.getElementById('f_p').checked;
+    if (rev){ const t = e.s; e.s = e.t; e.t = t; }
+    dlg.close(); save(); rebuildLabels(); updateStats(); render();
+  });
+}
+window.delEdge = function(idx){
+  const e = EDGES[idx]; if (!e) return;
+  if (!confirm('删除这条关系「'+(byId()[e.s]?byId()[e.s].label:'?')+' → '+(e.r||'关联')+' → '+(byId()[e.t]?byId()[e.t].label:'?')+'」？')) return;
+  EDGES.splice(idx, 1);
+  dlg.close();
+  save(); rebuildAll(); render();
+  toast('已删除关系');
+};
+function removeNode(id){
+  const n = byId()[id]; if (!n) return;
+  const cnt = EDGES.filter(e=>e.s===id||e.t===id).length;
+  if (!confirm('删除概念「'+n.label+'」？'+(cnt?' 与它相关的 '+cnt+' 条关系会一起删除。':'') )) return;
+  NODES = NODES.filter(x=>x.id!==id);
+  EDGES = EDGES.filter(e=>e.s!==id && e.t!==id);
+  closeCard(); clearSel(); save(); rebuildAll(); render();
+  running = true; alpha = 1;
+}
+
+/* ---------- 编辑：添加 ---------- */
+let edgePick = null; // null | {s: id}
+const modebar = document.getElementById('modebar');
+function setMode(txt, on){
+  modebar.style.display = txt ? 'block' : 'none';
+  modebar.textContent = txt;
+  svg.classList.toggle('picking', !!txt);
+  document.getElementById('btnAddEdge').classList.toggle('on', !!txt);
+}
+document.getElementById('btnAddNode').onclick = ()=>{
+  openDlg('添加概念',
+    '<label>名称</label><input type="text" id="f_label" placeholder="如：岗位标准">'+
+    '<label>所属域</label><select id="f_d">'+domainOpts('std')+'</select>'+
+    '<label>备注</label><textarea id="f_note" placeholder="说明这个概念的用途或口径"></textarea>',
+    ()=>{
+      const label = document.getElementById('f_label').value.trim();
+      if (!label) return;
+      const d = document.getElementById('f_d').value;
+      const c = DOMAINS[d];
+      const n = { id:newId(), label, d, note:document.getElementById('f_note').value.trim() };
+      n.x = c.cx + (Math.random()-0.5)*120; n.y = c.cy + (Math.random()-0.5)*80;
+      n.vx=0; n.vy=0; n.w = measure(label); n.h = 30; n.pinned = false;
+      NODES.push(n); buildNode(n);
+      dlg.close(); save(); updateStats(); render();
+      running = true; alpha = 1;
+      toast('已添加概念「'+label+'」');
+    });
+};
+document.getElementById('btnAddEdge').onclick = ()=>{
+  if (edgePick) { setMode('',false); edgePick = null; return; }
+  edgePick = { s:null };
+  setMode('添加关系：请点击起点概念（再点一次按钮取消）', true);
+};
+function onNodeClickForEdge(n){
+  if (!edgePick) return;
+  if (!edgePick.s){ edgePick.s = n.id; setMode('起点：'+n.label+' → 请点击终点概念', true); return; }
+  const s = edgePick.s, t = n.id;
+  setMode('',false); edgePick = null;
+  const a = byId()[s], b = byId()[t];
+  let rev = false;
+  const body = ()=>
+    '<label>起点</label><div class="dir"><span class="nd">'+(rev?b.label:a.label)+'</span><button type="button" onclick="flipDir()">⇄</button><span class="nd">'+(rev?a.label:b.label)+'</span></div>'+
+    '<label>关系名</label><input type="text" id="f_r" placeholder="如：属于 / 支撑 / 发布">'+
+    '<label>关系类别</label><select id="f_k">'+kindOpts('cross')+'</select>'+
+    '<label>备注</label><textarea id="f_note"></textarea>'+
+    '<label><input type="checkbox" id="f_p" style="width:auto"> 预留（图中标「?」）</label>';
+  window.flipDir = function(){ rev = !rev; document.getElementById('dlgBody').innerHTML = body(); };
+  openDlg('添加关系', body(), ()=>{
+    const r = document.getElementById('f_r').value.trim() || '关联';
+    const k = document.getElementById('f_k').value;
+    const note = document.getElementById('f_note').value.trim();
+    const pending = document.getElementById('f_p').checked;
+    const e = rev ? { s:t, t:s, r, k, note, pending } : { s, t, r, k, note, pending };
+    EDGES.push(e);
+    buildEdge(e, EDGES.length-1);
+    dlg.close(); save(); rebuildLabels(); updateStats(); render();
+    toast('已添加关系「'+(rev?b.label:a.label)+' → '+r+' → '+(rev?a.label:b.label)+'」');
+  });
+}
+
+/* ---------- 固化与迁移 ---------- */
+function download(name, text, mime){
+  const blob = new Blob([text], {type: mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  URL.revokeObjectURL(a.href);
+}
+document.getElementById('btnSaveFile').onclick = async function(){
+  try {
+    const raw = await (await fetch(location.href)).text();
+    const n = JSON.stringify(NODES.map(x=>[x.id,x.label,x.d,x.note||'',(x.attrs||[]).map(a=>[a.k,a.v]),[Math.round(x.x),Math.round(x.y),x.pinned?1:0]]));
+    const e = JSON.stringify(EDGES.map(x=>[x.s,x.t,x.r,x.k,x.note||'',x.pending?1:0]));
+    const domSrc = 'const DOMAINS = {\n' + Object.entries(DOMAINS).map(([k,d])=>'  '+k+': { label:\''+d.label+'\', color:\''+d.color+'\', fill:\''+d.fill+'\', cx:'+d.cx+', cy:'+d.cy+' }').join(',\n') + '\n};';
+    const src = raw
+      .replace(/\/\* __DOMAINS_DATA__ \*\/[\s\S]*?\/\* __DOMAINS_DATA_END__ \*\//, '/* __DOMAINS_DATA__ */\n' + domSrc + '\n/* __DOMAINS_DATA_END__ */')
+      .replace(/\/\* __NODES_DATA__ \*\/[\s\S]*?\/\* __NODES_DATA_END__ \*\//, '/* __NODES_DATA__ */ ' + n + ' /* __NODES_DATA_END__ */')
+      .replace(/\/\* __EDGES_DATA__ \*\/[\s\S]*?\/\* __EDGES_DATA_END__ \*\//, '/* __EDGES_DATA__ */ ' + e + ' /* __EDGES_DATA_END__ */');
+    download('教学闭环概念关系图-快照.html', src, 'text/html');
+    toast('已保存到文件：快照 HTML 包含全部修改（含模块位置），换电脑打开也在');
+  } catch(err) {
+    toast('导出失败：需通过 http 服务打开本页（如 localhost:8765）');
+  }
+};
+document.getElementById('btnImport').onclick = function(){  openDlg('导入 / 导出模型数据',
+    '<label>粘贴模型 JSON（{"nodes":[...],"edges":[...]}）</label><textarea id="f_json" style="height:110px" placeholder=\'{"nodes":[{"id":"N1","label":"岗位标准","d":"std","note":""}],"edges":[]}\'></textarea>'+
+    '<label><input type="checkbox" id="f_merge" style="width:auto" checked> 合并到当前模型（取消勾选 = 整体替换）</label>',
+    ()=>{
+      const txt = document.getElementById('f_json').value.trim();
+      if (!txt) return;
+      try {
+        const d = JSON.parse(txt);
+        if (!Array.isArray(d.nodes)) { toast('格式不对：需要 {"nodes":[...],"edges":[...]}'); return; }
+        if (document.getElementById('f_merge').checked) {
+          const ids = new Set(NODES.map(n=>n.id));
+          d.nodes.forEach(n=>{ if (n.id && !ids.has(n.id)) { NODES.push(n); ids.add(n.id); } });
+          (d.edges||[]).forEach(e=>{ const dup = EDGES.some(x=>x.s===e.s&&x.t===e.t&&x.r===e.r); if (!dup) EDGES.push(e); });
+        } else {
+          NODES = d.nodes; EDGES = d.edges || [];
+        }
+        dlg.close(); save(); rebuildAll(); render();
+        running = true; alpha = 1;
+        toast('导入完成，共 ' + NODES.length + ' 个概念');
+      } catch(e) { toast('JSON 解析失败'); }
+    });
+};
+
+/* ---------- 编辑：概念属性 ---------- */
+window.addAttr = function(id){
+  const n = byId()[id]; if (!n) return;
+  openDlg('添加属性 · '+n.label,
+    '<label>属性名</label><input type="text" id="f_ak" placeholder="如：范围 / 类型 / 状态">'+
+    '<label>属性值</label><textarea id="f_av" placeholder="属性值，如：标准 / 拓展"></textarea>',
+    ()=>{
+      const k = document.getElementById('f_ak').value.trim();
+      const v = document.getElementById('f_av').value.trim();
+      if (!k || !v) return;
+      n.attrs = n.attrs || [];
+      n.attrs.push({ k, v });
+      dlg.close(); save(); showCard(n);
+      toast('已添加属性「'+k+'」');
+    });
+};
+window.editAttr = function(id, idx){
+  const n = byId()[id]; if (!n || !n.attrs || !n.attrs[idx]) return;
+  const a = n.attrs[idx];
+  openDlg('编辑属性 · '+n.label,
+    '<label>属性名</label><input type="text" id="f_ak" value="'+a.k.replace(/"/g,'&quot;')+'">'+
+    '<label>属性值</label><textarea id="f_av">'+a.v.replace(/"/g,'&quot;')+'</textarea>'+
+    '<div class="acts" style="margin-top:14px;justify-content:flex-start"><button type="button" class="danger" onclick="delAttr(\''+id+'\','+idx+')">删除这个属性</button></div>',
+    ()=>{
+      const k = document.getElementById('f_ak').value.trim();
+      const v = document.getElementById('f_av').value.trim();
+      if (!k || !v) return;
+      a.k = k; a.v = v;
+      dlg.close(); save(); showCard(n);
+    });
+};
+window.delAttr = function(id, idx){
+  const n = byId()[id]; if (!n || !n.attrs || !n.attrs[idx]) return;
+  if (!confirm('删除属性「'+n.attrs[idx].k+'」？')) return;
+  n.attrs.splice(idx, 1);
+  dlg.close(); save(); showCard(n);
+  toast('已删除属性');
+};
+
+/* ---------- 编辑：模块（图谱域） ---------- */
+document.getElementById('btnAddDomain').onclick = ()=>{
+  const used = new Set(Object.values(DOMAINS).map(d=>d.color));
+  window.__pal = PALETTE.find(p=>!used.has(p.c)) || PALETTE[0];
+  openDlg('添加模块',
+    '<label>模块名称</label><input type="text" id="f_dl" placeholder="如：标准库">'+
+    '<label>模块颜色</label>'+paletteHTML(window.__pal.c),
+    ()=>{
+      const label = document.getElementById('f_dl').value.trim();
+      if (!label) return;
+      if (Object.values(DOMAINS).some(d=>d.label===label)){ toast('已有同名模块'); return; }
+      const key = 'd' + Date.now().toString(36);
+      DOMAINS[key] = { label, color: window.__pal.c, fill: window.__pal.f, cx: 850 + Math.random()*300-150, cy: 700 + Math.random()*200-100 };
+      visibleDomains.add(key);
+      addCluster(key, DOMAINS[key]);
+      rebuildLegends();
+      dlg.close(); save(); render(); updateStats();
+      toast('已添加模块「'+label+'」，拖动虚线框可摆位置');
+    });
+};
+window.editDomain = function(key){
+  const d = DOMAINS[key]; if (!d) return;
+  window.__pal = { c: d.color, f: d.fill };
+  const cnt = NODES.filter(n=>n.d===key).length;
+  openDlg('编辑模块',
+    '<label>模块名称</label><input type="text" id="f_dl" value="'+d.label.replace(/"/g,'&quot;')+'">'+
+    '<label>模块颜色</label>'+paletteHTML(d.color)+
+    (cnt ? '<div style="font-size:11.5px;color:var(--muted);margin-top:10px">模块内有 '+cnt+' 个概念，不能删除（请先把概念移走或删除）</div>' :
+      '<div class="acts" style="margin-top:14px;justify-content:flex-start"><button type="button" class="danger" onclick="delDomain(\''+key+'\')">删除模块</button></div>'),
+    ()=>{
+      const label = document.getElementById('f_dl').value.trim();
+      if (!label) return;
+      if (Object.entries(DOMAINS).some(([k,x])=>k!==key && x.label===label)){ toast('已有同名模块'); return; }
+      d.label = label; d.color = window.__pal.c; d.fill = window.__pal.f;
+      const ce = clusterEls.find(c=>c.key===key);
+      if (ce){ ce.r.setAttribute('stroke',d.color); ce.t.setAttribute('fill',d.color); ce.t.textContent = d.label; }
+      NODES.forEach(n=>{ if (n.d===key){ const nel = nodeEls.get(n.id); if (nel){ nel.rect.setAttribute('fill',d.fill); nel.rect.setAttribute('stroke',d.color); nel.txt.setAttribute('fill',d.color); } } });
+      rebuildLegends();
+      dlg.close(); save(); render();
+    });
+};
+window.delDomain = function(key){
+  const d = DOMAINS[key]; if (!d) return;
+  if (!confirm('删除模块「'+d.label+'」？')) return;
+  delete DOMAINS[key];
+  visibleDomains.delete(key);
+  const ce = clusterEls.find(c=>c.key===key);
+  if (ce){ ce.r.remove(); ce.t.remove(); clusterEls.splice(clusterEls.indexOf(ce),1); }
+  rebuildLegends();
+  dlg.close(); save(); render(); updateStats();
+  toast('已删除模块「'+d.label+'」');
+};
+
+/* ---------- 恢复默认 ---------- */
+document.getElementById('btnRestore').onclick = ()=>{
+  if (!confirm('恢复默认数据？你添加/修改的概念和关系都会被清除。')) return;
+  try { localStorage.removeItem(SKEY); } catch(e) {}
+  location.reload();
+};
+
+/* ---------- 拖拽 / 缩放 / 平移 ---------- */
+function toWorld(ev){
+  const r = svg.getBoundingClientRect();
+  return { x:(ev.clientX-r.left-view.tx)/view.k, y:(ev.clientY-r.top-view.ty)/view.k };
+}
+function startNodeDrag(ev,n){
+  const p = toWorld(ev);
+  const offx = p.x-n.x, offy = p.y-n.y;
+  n.pinned = true; suppressClick = false;
+  function mv(e){
+    const q = toWorld(e);
+    if (Math.hypot(q.x-p.x, q.y-p.y) > 4) suppressClick = true;
+    n.x = q.x-offx; n.y = q.y-offy; render();
+  }
+  function up(){ window.removeEventListener('mousemove',mv); window.removeEventListener('mouseup',up); save(); setTimeout(()=>suppressClick=false,50); }
+  window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+}
+let pan = null;
+svg.addEventListener('mousedown',ev=>{
+  if (ev.target === svg || ev.target.id==='viewport' || ev.target.id==='bgRect' || ev.target.classList.contains('cluster')){
+    pan = {x:ev.clientX,y:ev.clientY,tx:view.tx,ty:view.ty}; svg.classList.add('dragging');
+  }
+});
+window.addEventListener('mousemove',ev=>{
+  if (pan){ view.tx = pan.tx + (ev.clientX-pan.x); view.ty = pan.ty + (ev.clientY-pan.y); render(); }
+});
+window.addEventListener('mouseup',()=>{ pan=null; svg.classList.remove('dragging'); });
+svg.addEventListener('wheel',ev=>{
+  ev.preventDefault();
+  const r = svg.getBoundingClientRect();
+  const px = ev.clientX-r.left, py = ev.clientY-r.top;
+  const nk = Math.max(0.25, Math.min(3, view.k * (ev.deltaY<0?1.12:0.9)));
+  const k = nk/view.k;
+  view.tx = px-(px-view.tx)*k; view.ty = py-(py-view.ty)*k; view.k = nk;
+  render();
+},{passive:false});
+svg.addEventListener('click',ev=>{
+  if (edgePick){ if (ev.target === svg || ev.target.id==='bgRect' || ev.target.id==='viewport') return; }
+  if (ev.target === svg || ev.target.id==='bgRect' || ev.target.id==='viewport' || ev.target.id==='nodeLayer') { closeCard(); clearSel(); }
+});
+function fitView(){
+  const W = 1700, H = 1400, vw = svg.clientWidth, vh = svg.clientHeight;
+  view.k = Math.max(0.25, Math.min(vw/W, vh/H));
+  view.tx = (vw-W*view.k)/2; view.ty = (vh-H*view.k)/2;
+  render();
+}
+
+/* ---------- 添加关系模式下，节点点击在 buildNode 的 click 里已分派 ---------- */
+
+/* ---------- 工具栏 ---------- */
+document.getElementById('btnFit').onclick = fitView;
+document.getElementById('btnReset').onclick = ()=>{ initPositions(true); };
+document.getElementById('btnLabels').onclick = function(){ showLabels=!showLabels; this.classList.toggle('on',showLabels); render(); };
+document.getElementById('btnSide').onclick = function(){ document.getElementById('aside').classList.toggle('collapsed'); this.classList.toggle('on',!document.getElementById('aside').classList.contains('collapsed')); };
+document.getElementById('btnExport').onclick = function(){
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  clone.setAttribute('width',1700); clone.setAttribute('height',1400);
+  clone.querySelector('#bgRect').setAttribute('width',1700); clone.querySelector('#bgRect').setAttribute('height',1400);
+  const blob = new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '教学闭环概念关系图.svg'; a.click();
+  URL.revokeObjectURL(a.href);
+};
+const si = document.getElementById('search');
+si.addEventListener('keydown',ev=>{
+  if (ev.key !== 'Enter') return;
+  const q = si.value.trim();
+  const n = NODES.find(x=>x.label.includes(q)||x.id===q.toUpperCase());
+  if (!n) return;
+  view.k = 1.6; view.tx = svg.clientWidth/2 - n.x*view.k; view.ty = svg.clientHeight/2 - n.y*view.k;
+  setHighlight(null); showCard(n); render();
+});
+
+/* ---------- 图例与筛选 ---------- */
+function rebuildLegends(){
+  document.getElementById('legendDomains').innerHTML = Object.entries(DOMAINS).map(([k,d])=>
+    '<div class="legend-item" data-dk="'+k+'" style="cursor:pointer" title="点击编辑该模块（名称 / 颜色 / 删除）"><span class="dot" style="background:'+d.fill+';border:1px solid '+d.color+'"></span>'+d.label+' <span style="color:#9aa3b2;font-size:10px">✎</span></div>').join('');
+  document.getElementById('filterDomains').innerHTML = Object.entries(DOMAINS).map(([k,d])=>
+    '<label class="chk"><input type="checkbox" '+(visibleDomains.has(k)?'checked':'')+' data-d="'+k+'">'+d.label.slice(0,8)+'</label>').join('');
+}
+document.getElementById('legendDomains').addEventListener('click', ev=>{
+  const it = ev.target.closest('.legend-item[data-dk]');
+  if (it) editDomain(it.dataset.dk);
+});
+rebuildLegends();
+document.getElementById('legendKinds').innerHTML = Object.entries(KINDS).map(([k,d])=>
+  '<div class="legend-item"><span class="kind-line" style="border-color:'+d.color+(d.dash?';border-top-style:dashed':'')+'"></span>'+d.label+'</div>').join('');
+document.getElementById('filterKinds').innerHTML = Object.entries(KINDS).map(([k,d])=>
+  '<label class="chk"><input type="checkbox" checked data-k="'+k+'">'+d.label.split('（')[0]+'</label>').join('');
+document.getElementById('filterDomains').addEventListener('change',ev=>{
+  const k = ev.target.dataset.d;
+  if (ev.target.checked) visibleDomains.add(k); else visibleDomains.delete(k);
+  render();
+});
+document.getElementById('filterKinds').addEventListener('change',ev=>{
+  const k = ev.target.dataset.k;
+  if (ev.target.checked) visibleKinds.add(k); else visibleKinds.delete(k);
+  render();
+});
+document.getElementById('questions').innerHTML = MODEL_NOTES.map(x=>'<div class="q">'+x+'</div>').join('');
+
+/* ---------- 统计 / toast / 启动 ---------- */
+function updateStats(){
+  document.getElementById('stNodes').textContent = NODES.length;
+  document.getElementById('stEdges').textContent = EDGES.length;
+  document.getElementById('stDomains').textContent = Object.keys(DOMAINS).length;
+  document.getElementById('stRels').textContent = relNames().length;
+}
+let toastTimer = null;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+updateStats();
+(function loop(){
+  if (running){ for (let i=0;i<2;i++) step(); render(); }
+  requestAnimationFrame(loop);
+})();
+fitView();
+</script>
+</body>
+</html>

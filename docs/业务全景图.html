@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教学闭环 · 业务全景图（交互版）</title>
+<style>
+  :root { --ink:#1f2937; --muted:#6b7280; --card:#fff; --bg:#f3f4f8; --rule:#e5e7eb; --acc:#6366f1; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--ink); height:100vh; overflow:hidden; }
+  header { position:fixed; top:0; left:0; right:0; z-index:10; background:var(--card); border-bottom:1px solid var(--rule); padding:10px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  header h1 { font-size:15px; font-weight:700; white-space:nowrap; }
+  header .lg { display:flex; align-items:center; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); }
+  .lg-item { display:flex; align-items:center; gap:5px; white-space:nowrap; }
+  .line-demo { display:inline-block; vertical-align:middle; }
+  .dot { width:10px; height:10px; border-radius:3px; display:inline-block; }
+  #search { border:1px solid var(--rule); border-radius:8px; padding:5px 10px; font-size:12.5px; width:170px; outline:none; }
+  #search:focus { border-color:var(--acc); }
+  .btn { border:1px solid var(--rule); background:#fff; border-radius:8px; padding:5px 12px; font-size:12.5px; cursor:pointer; color:var(--ink); }
+  .btn:hover { border-color:var(--acc); color:var(--acc); }
+  #wrap { position:fixed; top:52px; left:0; right:0; bottom:0; }
+  svg { width:100%; height:100%; display:block; cursor:grab; }
+  svg:active { cursor:grabbing; }
+  .node { cursor:pointer; }
+  .node rect { transition:filter .15s; }
+  .node:hover rect { filter:brightness(1.05); stroke-width:2.2; }
+  .node.dim, .edge.dim { opacity:.12; }
+  .node.hl rect { stroke-width:2.6; }
+  .edge { pointer-events:stroke; }
+  .edge:hover { opacity:1 !important; }
+  .edge path { cursor:pointer; }
+  .edge text { font-size:9.5px; fill:#7c8494; paint-order:stroke; stroke:#f3f4f8; stroke-width:3px; pointer-events:none; }
+  .edge.hl path { stroke-width:3 !important; }
+  .edge.hl text { fill:#111827; font-weight:600; }
+  .edge.dim text { opacity:.12; }
+  .loop text { font-size:9.5px; fill:#7c8494; paint-order:stroke; stroke:#f3f4f8; stroke-width:3px; }
+  #panel { position:fixed; right:14px; top:66px; bottom:14px; width:300px; background:var(--card); border:1px solid var(--rule); border-radius:12px; box-shadow:0 8px 28px rgba(15,23,42,.12); display:none; flex-direction:column; overflow:hidden; z-index:20; }
+  #panel.open { display:flex; }
+  #panel .p-h { padding:12px 14px; border-bottom:1px solid var(--rule); display:flex; align-items:center; gap:8px; }
+  #panel .p-h .nm { font-size:14.5px; font-weight:700; flex:1; }
+  #panel .p-h .grp { font-size:11px; color:var(--muted); }
+  #panel .x { border:none; background:none; font-size:16px; cursor:pointer; color:var(--muted); padding:2px 6px; }
+  #panel .x:hover { color:var(--ink); }
+  #panel .p-b { padding:12px 14px; overflow-y:auto; flex:1; font-size:12.5px; line-height:1.75; }
+  #panel h4 { font-size:11px; color:var(--muted); font-weight:600; margin:12px 0 4px; }
+  #panel h4:first-child { margin-top:0; }
+  #panel .rel { padding:3px 8px; border-radius:6px; cursor:pointer; font-size:12px; }
+  #panel .rel:hover { background:#f0f2ff; }
+  #panel .rel b { color:var(--acc); font-weight:600; }
+  #hint { position:fixed; left:16px; bottom:14px; font-size:11.5px; color:var(--muted); background:rgba(255,255,255,.85); border:1px solid var(--rule); border-radius:8px; padding:6px 10px; z-index:5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>教学闭环 · 业务全景图</h1>
+  <div class="lg">
+    <span class="lg-item"><svg class="line-demo" width="30" height="8"><line x1="0" y1="4" x2="28" y2="4" stroke="#8b95a8" stroke-width="1.6" marker-end="url(#arrM)"/></svg>业务主线</span>
+    <span class="lg-item"><svg class="line-demo" width="30" height="8"><line x1="0" y1="4" x2="28" y2="4" stroke="#8b95a8" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrM)"/></svg>引用 / 支撑 / 推导</span>
+    <span class="lg-item"><svg class="line-demo" width="30" height="8"><line x1="0" y1="4" x2="28" y2="4" stroke="#c0392b" stroke-width="3.2" marker-end="url(#arrT)"/></svg>需审核确认</span>
+    <span class="lg-item" id="legendGroups"></span>
+  </div>
+  <input id="search" type="text" placeholder="搜索对象…">
+  <button class="btn" id="fitBtn">重置视图</button>
+</header>
+<div id="wrap"><svg id="svg"></svg></div>
+<div id="panel">
+  <div class="p-h"><span class="nm" id="pName"></span><span class="grp" id="pGroup"></span><button class="x" id="pClose">×</button></div>
+  <div class="p-b" id="pBody"></div>
+</div>
+<div id="hint">滚轮缩放 · 拖拽平移 · 悬停高亮关系 · 点击对象看说明</div>
+
+<script>
+/* ═══ 数据：与《教学闭环全要素图谱》第二节、第三节一一对应 ═══ */
+var GROUPS = [
+  { id:'A', name:'① 人员与组织', fill:'#eef2ff', stroke:'#6366f1', ink:'#312e81' },
+  { id:'B', name:'② 标准与结构', fill:'#f0fdf4', stroke:'#2f9e63', ink:'#14532d' },
+  { id:'C', name:'③ 教务与排课', fill:'#fff7ed', stroke:'#ea580c', ink:'#7c2d12' },
+  { id:'D', name:'④ 备课资源', fill:'#f5f3ff', stroke:'#7e22ce', ink:'#4c1d95' },
+  { id:'E', name:'⑤ 任务与学习', fill:'#eff6ff', stroke:'#0284c7', ink:'#0c4a6e' },
+  { id:'F', name:'⑥ 评价与证据', fill:'#fef2f2', stroke:'#dc2626', ink:'#7f1d1d' },
+  { id:'G', name:'⑦ 干预与结果', fill:'#fdf4ff', stroke:'#c026d3', ink:'#701a75' }
+];
+var NODES = [
+  /* ── A 人员与组织 ── */
+  { id:'ORG',  g:'A', n:'组织',   attr:'组织类型（学校/院系/教研室）、上级组织、排序', who:'管理员', use:'数据权限隔离、人员归属' },
+  { id:'ACC',  g:'A', n:'账号',   attr:'姓名、手机号、所属组织（可多个，有主组织）、账号状态', who:'管理员', use:'登录、操作留痕、职责划分' },
+  { id:'ROLE', g:'A', n:'角色',   attr:'所属端（管理/教师/学生）、权限范围', who:'管理员', use:'权限控制' },
+  { id:'MAJE', g:'A', n:'专业（教务）', attr:'专业编码、上级专业（树形：大类→专业→方向）', who:'教务', use:'班级、课程、课程计划的归属' },
+  { id:'CLS',  g:'A', n:'班级',   attr:'年级、所属专业、人数', who:'教务', use:'排课、下发任务、学情统计的范围' },
+  { id:'STU',  g:'A', n:'学生',   attr:'学号、所属班级、学籍状态（在读/休学/毕业）、联系方式', who:'教务', use:'学习、提交、评价、成长' },
+  { id:'TCH',  g:'A', n:'教师',   attr:'任教课程计划、所属组织', who:'管理员/教务', use:'备课、上课、发布、评价' },
+  { id:'TERM', g:'A', n:'学期',   attr:'学年、学期、起止日期、启用状态', who:'教务', use:'课程计划、排课、统计的时间范围' },
+  /* ── B 标准与结构 ── */
+  { id:'AG',   g:'B', n:'能力图谱', attr:'行业范围、边界描述、创建者、创建时间', who:'图谱管理员', use:'能力地图、测评标准' },
+  { id:'KSY',  g:'B', n:'知识体系', attr:'范围（专业大类/专业/课程）、体系类型（标准/拓展）、创建方式、层次、状态（构建中/已构建）、关联专业/课程', who:'专业负责人（标准）、教师（拓展）', use:'课程关联、备课、统计口径' },
+  { id:'MINE', g:'B', n:'个人补充', attr:'挂靠的标准节点、提交人、提交说明、提交状态（待审核/已采纳/已发布/已退回）', who:'教师', use:'反哺标准、教研贡献' },
+  { id:'IND',  g:'B', n:'行业',   attr:'边界描述', who:'图谱管理员', use:'能力图谱的根' },
+  { id:'SUB',  g:'B', n:'子行业', attr:'所属行业、描述', who:'图谱管理员', use:'定位岗位' },
+  { id:'JOB',  g:'B', n:'岗位',   attr:'所属子行业、描述', who:'图谱管理员', use:'能力要求的挂载点' },
+  { id:'ABL',  g:'B', n:'能力项', attr:'类型（知识/技能/素养）、领域、L1–L3 要求与考核方式、核心能力标记、前置能力项、行为描述、来源出处', who:'图谱管理员', use:'测评、覆盖率、毕业标准' },
+  { id:'SRC',  g:'B', n:'来源出处', attr:'标准名称、来源链接、原文片段、所属能力项', who:'图谱管理员', use:'出处可查、不显示无出处数字' },
+  { id:'MJ',   g:'B', n:'专业大类', attr:'所属层次', who:'专业负责人', use:'知识体系分类' },
+  { id:'MAJS', g:'B', n:'专业（体系）', attr:'所属专业大类、对口岗位', who:'专业负责人', use:'与教务专业对应' },
+  { id:'CATE', g:'B', n:'课程分类', attr:'所属专业', who:'专业负责人', use:'课程分组' },
+  { id:'CS',   g:'B', n:'课程（体系）', attr:'所属课程分类、课程类型', who:'专业负责人', use:'教务课程关联的对象' },
+  { id:'PROJ', g:'B', n:'项目', attr:'课程下的项目/模块，任务挂在项目下', who:'专业负责人', use:'任务分组、备课范围' },
+  { id:'TASK', g:'B', n:'任务',   attr:'所属项目、描述', who:'专业负责人', use:'技能分组、备课范围' },
+  { id:'FLOW', g:'B', n:'操作流程', attr:'所属任务、描述', who:'专业负责人', use:'技能归属路径' },
+  { id:'SK',   g:'B', n:'技能规范', attr:'所属任务/流程、来源（标准/个人补充经审核）、状态。教学闭环核心', who:'专业负责人', use:'备课、发布、评价、达成、补训' },
+  { id:'KP',   g:'B', n:'知识点', attr:'类型（概念/原理/方法/技能/知识/规范）、核心内容、来源（谁建立、经谁审核、何时）', who:'专业负责人 + 教师（补充经审核）', use:'判定依据默认值、学情、补训' },
+  { id:'STP',  g:'B', n:'操作步骤', attr:'内容、所属节点（操作流程/标准/案例/技能）', who:'专业负责人', use:'教学参考' },
+  { id:'STD',  g:'B', n:'标准',   attr:'内容、所属节点（任务或技能）', who:'专业负责人', use:'教学参考' },
+  { id:'CASE', g:'B', n:'案例',   attr:'内容、所属节点（任务或技能）', who:'专业负责人', use:'教学参考' },
+  { id:'TC',   g:'B', n:'实训条件', attr:'条件名称、级别（必需/建议）、审核状态（与映射共用：已审核/已调整/待审核）、配置理由', who:'专业负责人', use:'实训资源差距分析' },
+  { id:'COMP', g:'B', n:'赛项',   attr:'名称、对应能力项（入图后走审核确认）。第一阶段预留', who:'预留', use:'备赛、考证场景' },
+  { id:'CERT', g:'B', n:'证书',   attr:'名称、对应知识点（入图后走审核确认）。第一阶段预留', who:'预留', use:'备赛、考证场景' },
+  /* ── C 教务与排课 ── */
+  { id:'EC',   g:'C', n:'教务课程', attr:'课程编码、课程类型（公共基础/专业基础/专业核心/专业拓展/其他）、关联的知识体系课程节点（含来源）', who:'教务', use:'课程计划、统计口径' },
+  { id:'PLAN', g:'C', n:'课程计划', attr:'学年学期、班级、课程、授课教师；已排课即锁定', who:'教务', use:'排课、课次的归属' },
+  { id:'PER',  g:'C', n:'节次时间', attr:'第几节、开始时间、结束时间（全校一张表）', who:'教务', use:'排课、课表' },
+  { id:'SLOT', g:'C', n:'排课',   attr:'日期、节次范围、编号（第几次课，删除不重排、新增取最大+1）', who:'教务', use:'自动生成课次' },
+  { id:'LES',  g:'C', n:'课次',   attr:'上课时间、来源（教务排课/老师自建/补训/辅导）、状态（未发布/待审核/已发布）、标记未上、被替换、关联资源', who:'教务+教师', use:'备课、发布、上课、评价的载体' },
+  { id:'REQ',  g:'C', n:'课次审核单', attr:'冲突描述、冲突课次、状态（待审核/已通过/已驳回/已撤回）、处理方式（调时间/允许重叠/替换/驳回）', who:'教师发起，教务处理', use:'冲突协调' },
+  /* ── D 备课资源 ── */
+  { id:'RES',  g:'D', n:'资源包', attr:'来源（AI 生成/上传）、涉及任务与技能、配置的知识点、状态（生成中/已完成/失败）', who:'教师', use:'挂到课次、发布下发' },
+  { id:'RF',   g:'D', n:'资源文件', attr:'文件类型（课件/教案/游戏/图片/视频）、文件大小、下发状态（未下发/已下发/新增追加）、学习人数', who:'教师', use:'学生学习的材料' },
+  { id:'KB',   g:'D', n:'知识库资料', attr:'资料类型、来源、分段数、挂载节点（课程/任务/技能）、上传时间', who:'图谱管理员/教师', use:'检索、备课时参考' },
+  /* ── E 任务与学习 ── */
+  { id:'PUB',  g:'E', n:'任务发布', attr:'任务说明、提交方式、截止时间、AI 初评开关、考查技能、考查知识点快照、判定依据、AI 评价要求、下发文件。发布时固化', who:'教师', use:'学生作答与评价的依据' },
+  { id:'ADD',  g:'E', n:'追加下发', attr:'追加的文件、追加时间', who:'教师', use:'学生端标「新增」' },
+  { id:'LRN',  g:'E', n:'学习记录', attr:'学生、文件、学习时间', who:'系统自动', use:'学习情况统计' },
+  { id:'SUBM', g:'E', n:'提交',   attr:'学生、内容（文字/图片/语音/文档/视频）、提交时间、超时标记、第几次提交、状态', who:'学生', use:'评价对象' },
+  { id:'FDB',  g:'E', n:'课程反馈', attr:'学生、评分维度、文字建议、反馈时间、未读标记', who:'学生', use:'老师改进教学' },
+  /* ── F 评价与证据 ── */
+  { id:'AIE',  g:'F', n:'AI 初评', attr:'总评（等级+完成情况/亮点/问题/改进意见）、逐技能等级、逐知识点判定。未经老师确认不算结果', who:'系统自动', use:'减轻老师工作量' },
+  { id:'TE',   g:'F', n:'老师评价', attr:'评价方式（采用 AI/逐项确认）、逐技能等级、知识点掌握、整体等级、结果（通过/退回）、评语', who:'教师', use:'结果的唯一来源' },
+  { id:'EVID', g:'F', n:'学习证据', attr:'学生、技能、等级（优秀/合格/需改进）、课次、提交时间、评价人、确认时间。只有通过才产生', who:'系统按评价生成', use:'学情、教学达成、能力测评' },
+  { id:'KPM',  g:'F', n:'知识点掌握', attr:'学生、知识点、掌握/未掌握（按最近一次确认评价，含退回）', who:'系统按评价推导', use:'学情分析、补训——不进证据' },
+  { id:'OV',   g:'F', n:'整体等级', attr:'等级（优秀/合格/需改进）、依据评价', who:'教师', use:'任务完成情况的记录' },
+  /* ── G 干预与结果 ── */
+  { id:'XQ',   g:'G', n:'学情结论', attr:'统计范围、技能达成率、知识点掌握率、教学进度、需要处理的事。随证据实时变化', who:'系统按证据计算', use:'老师看班、发起补训' },
+  { id:'TA',   g:'G', n:'教学达成', attr:'统计范围（专业/学期）、能力项达成数据、标准达成率。随证据实时变化', who:'系统按证据+映射计算', use:'校领导、专业负责人看培养质量' },
+  { id:'PRO',  g:'G', n:'学生画像', attr:'学生、技能达成、知识点掌握、成长记录。随评价更新。图谱的一部分', who:'系统按证据生成', use:'图谱上看学生、补训与辅导的依据' },
+  { id:'REM',  g:'G', n:'补训课次', attr:'针对技能、目标学生（未达成）、上课时间、状态', who:'教师发起', use:'补齐短板' },
+  { id:'TUT',  g:'G', n:'辅导课次', attr:'目标学生（勾选）、上课时间、状态', who:'教师发起', use:'个体帮扶' },
+  { id:'SUG',  g:'G', n:'课程改进建议', attr:'建议类型、涉及课程/技能、内容、处理结果（采纳/暂不处理+说明）、处理人', who:'教师发起，专业负责人处理', use:'课程优化' },
+  { id:'CONT', g:'G', n:'教研贡献', attr:'教师、贡献内容、审核人、发布时间', who:'专业负责人审核后生成', use:'教师成长档案' },
+  { id:'AUDIT',g:'G', n:'操作日志', attr:'操作人、操作、对象、时间、结果', who:'系统自动', use:'追溯与审计' }
+];
+/* 边：t = main 业务主线 / dash 引用支撑 / thick 需审核；loop 为自环 */
+var EDGES = [
+  { a:'ORG', b:'ORG', t:'dash', l:'上级组织', loop:1 },
+  { a:'ACC', b:'ORG', t:'main', l:'属于' },
+  { a:'ACC', b:'ROLE', t:'main', l:'担任' },
+  { a:'MAJE', b:'CLS', t:'main', l:'开设专业' },
+  { a:'CLS', b:'STU', t:'main', l:'在班' },
+  { a:'AG', b:'IND', t:'dash', l:'承纳' },
+  { a:'IND', b:'SUB', t:'main', l:'' },
+  { a:'SUB', b:'JOB', t:'main', l:'' },
+  { a:'JOB', b:'ABL', t:'main', l:'要求' },
+  { a:'ABL', b:'ABL', t:'dash', l:'前置能力项', loop:1 },
+  { a:'ABL', b:'SRC', t:'main', l:'有出处' },
+  { a:'MJ', b:'MAJS', t:'main', l:'' },
+  { a:'MAJS', b:'CATE', t:'main', l:'' },
+  { a:'CATE', b:'CS', t:'main', l:'' },
+  { a:'KSY', b:'CS', t:'dash', l:'承纳' },
+  { a:'CS', b:'PROJ', t:'main', l:'包含' },
+  { a:'PROJ', b:'TASK', t:'main', l:'包含' },
+  { a:'TASK', b:'SK', t:'main', l:'包含' },
+  { a:'TASK', b:'FLOW', t:'main', l:'包含' },
+  { a:'TASK', b:'STD', t:'main', l:'包含' },
+  { a:'TASK', b:'CASE', t:'main', l:'包含' },
+  { a:'SK', b:'KP', t:'main', l:'包含' },
+  { a:'SK', b:'STP', t:'main', l:'包含' },
+  { a:'SK', b:'STD', t:'main', l:'包含' },
+  { a:'SK', b:'CASE', t:'main', l:'包含' },
+  { a:'FLOW', b:'STP', t:'main', l:'包含' },
+  { a:'STD', b:'STP', t:'main', l:'包含' },
+  { a:'CASE', b:'STP', t:'main', l:'包含' },
+  { a:'SK', b:'TC', t:'thick', l:'需要实训条件 · 审核' },
+  { a:'MINE', b:'SK', t:'dash', l:'挂标准节点下' },
+  { a:'ABL', b:'SK', t:'dash', l:'已确认映射' },
+  { a:'MAJS', b:'JOB', t:'dash', l:'对口' },
+  { a:'CS', b:'ABL', t:'dash', l:'推导覆盖' },
+  { a:'COMP', b:'ABL', t:'thick', l:'对应 · 审核' },
+  { a:'CERT', b:'KP', t:'thick', l:'对应 · 审核' },
+  { a:'KP', b:'KP', t:'dash', l:'前置', loop:1 },
+  { a:'KP', b:'SK', t:'dash', l:'安全约束' },
+  { a:'EC', b:'CS', t:'dash', l:'关联' },
+  { a:'PLAN', b:'EC', t:'main', l:'计划' },
+  { a:'PLAN', b:'TERM', t:'main', l:'在学期' },
+  { a:'TCH', b:'PLAN', t:'main', l:'任教' },
+  { a:'PLAN', b:'SLOT', t:'main', l:'排课' },
+  { a:'SLOT', b:'PER', t:'main', l:'按节次' },
+  { a:'SLOT', b:'LES', t:'main', l:'生成课次' },
+  { a:'LES', b:'PLAN', t:'dash', l:'属于计划' },
+  { a:'LES', b:'REQ', t:'dash', l:'时间冲突 · 提交' },
+  { a:'REQ', b:'LES', t:'dash', l:'处理：调时/允许重叠/替换/驳回' },
+  { a:'LES', b:'LES', t:'dash', l:'标记未上 · 被替换', loop:1 },
+  { a:'LES', b:'RES', t:'dash', l:'用资源' },
+  { a:'RES', b:'RF', t:'main', l:'' },
+  { a:'RES', b:'SK', t:'dash', l:'覆盖' },
+  { a:'KB', b:'SK', t:'dash', l:'挂到课程·任务·技能' },
+  { a:'LES', b:'PUB', t:'main', l:'发布' },
+  { a:'PUB', b:'SK', t:'dash', l:'考查技能' },
+  { a:'PUB', b:'KP', t:'dash', l:'考查知识点 · 判定依据' },
+  { a:'PUB', b:'RF', t:'dash', l:'下发' },
+  { a:'PUB', b:'ADD', t:'main', l:'追加下发' },
+  { a:'ADD', b:'RF', t:'main', l:'补发文件' },
+  { a:'PUB', b:'STU', t:'main', l:'布置给' },
+  { a:'STU', b:'LRN', t:'main', l:'学习了' },
+  { a:'LRN', b:'RF', t:'main', l:'针对' },
+  { a:'STU', b:'SUBM', t:'main', l:'提交了' },
+  { a:'SUBM', b:'STU', t:'dash', l:'属于学生' },
+  { a:'SUBM', b:'SUBM', t:'dash', l:'超时补交', loop:1 },
+  { a:'STU', b:'FDB', t:'main', l:'反馈了' },
+  { a:'FDB', b:'LES', t:'dash', l:'针对课次' },
+  { a:'SUBM', b:'AIE', t:'main', l:'AI 初评' },
+  { a:'SUBM', b:'TE', t:'main', l:'老师评价' },
+  { a:'AIE', b:'TE', t:'dash', l:'经老师确认' },
+  { a:'PUB', b:'AIE', t:'dash', l:'AI 评价要求' },
+  { a:'TE', b:'EVID', t:'main', l:'通过后产生' },
+  { a:'TE', b:'KPM', t:'dash', l:'推导知识点掌握' },
+  { a:'TE', b:'OV', t:'main', l:'整体等级' },
+  { a:'EVID', b:'SK', t:'dash', l:'针对技能' },
+  { a:'EVID', b:'STU', t:'dash', l:'属于学生' },
+  { a:'EVID', b:'LES', t:'dash', l:'在哪节课' },
+  { a:'EVID', b:'XQ', t:'main', l:'汇总' },
+  { a:'EVID', b:'TA', t:'main', l:'汇总' },
+  { a:'TA', b:'ABL', t:'main', l:'汇总到能力项' },
+  { a:'EVID', b:'PRO', t:'dash', l:'更新' },
+  { a:'PRO', b:'SK', t:'dash', l:'掌握情况' },
+  { a:'PRO', b:'KP', t:'dash', l:'掌握知识点' },
+  { a:'XQ', b:'REM', t:'dash', l:'未达成技能' },
+  { a:'REM', b:'SK', t:'main', l:'针对技能' },
+  { a:'REM', b:'STU', t:'main', l:'发给未达成学生' },
+  { a:'TUT', b:'STU', t:'main', l:'发给勾选学生' },
+  { a:'SUG', b:'EC', t:'main', l:'提建议' },
+  { a:'SUG', b:'TCH', t:'dash', l:'处理结果回老师' },
+  { a:'TCH', b:'SK', t:'dash', l:'个人补充经审核并入' },
+  { a:'SK', b:'CONT', t:'dash', l:'贡献署名' },
+  { a:'CONT', b:'TCH', t:'dash', l:'计入成长档案' },
+  { a:'AUDIT', b:'PUB', t:'dash', l:'留痕' },
+  { a:'AUDIT', b:'TE', t:'dash', l:'留痕' },
+  { a:'AUDIT', b:'REQ', t:'dash', l:'留痕' },
+  { a:'AUDIT', b:'REM', t:'dash', l:'留痕' }
+];
+
+/* ═══ 布局：7 组从左到右分列，组内纵向排列 ═══ */
+var NODE_W = 150, NODE_H = 34, GAP_Y = 46, COL_W = 240, PAD_X = 40, PAD_TOP = 66, PAD_BOT = 40;
+var gById = {}; GROUPS.forEach(function (g) { gById[g.id] = g; });
+var nodes = {}; NODES.forEach(function (n) { nodes[n.id] = n; n.gObj = gById[n.g]; });
+var colX = {}; GROUPS.forEach(function (g, i) { colX[g.id] = PAD_X + i * COL_W; });
+var rows = {}; NODES.forEach(function (n) { rows[n.g] = (rows[n.g] || 0) + 1; });
+var yOf = {}; (function () { var cur = {}; NODES.forEach(function (n) { var y = PAD_TOP + (cur[n.g] || 0) * GAP_Y; yOf[n.id] = y; n.y = y; cur[n.g] = (cur[n.g] || 0) + 1; }); })();
+NODES.forEach(function (n) { n.x = colX[n.g]; });
+var W = PAD_X * 2 + COL_W * (GROUPS.length - 1) + NODE_W;
+var H = Math.max.apply(null, GROUPS.map(function (g) { return PAD_TOP + rows[g.id] * GAP_Y + PAD_BOT; }));
+
+/* ═══ 渲染 ═══ */
+var NS = 'http://www.w3.org/2000/svg';
+var svg = document.getElementById('svg');
+svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+var defs = document.createElementNS(NS, 'defs');
+function marker(id, color, w) {
+  var m = document.createElementNS(NS, 'marker');
+  m.setAttribute('id', id); m.setAttribute('viewBox', '0 0 10 10'); m.setAttribute('refX', '9'); m.setAttribute('refY', '5');
+  m.setAttribute('markerWidth', '7'); m.setAttribute('markerHeight', '7'); m.setAttribute('orient', 'auto-start-reverse');
+  var p = document.createElementNS(NS, 'path'); p.setAttribute('d', 'M0,0 L10,5 L0,10 z'); p.setAttribute('fill', color);
+  m.appendChild(p); defs.appendChild(m);
+}
+marker('arrM', '#8b95a8'); marker('arrT', '#c0392b');
+svg.appendChild(defs);
+
+var world = document.createElementNS(NS, 'g'); world.id = 'world'; svg.appendChild(world);
+var edgeLayer = document.createElementNS(NS, 'g'); edgeLayer.id = 'edgeLayer'; world.appendChild(edgeLayer);
+var nodeLayer = document.createElementNS(NS, 'g'); nodeLayer.id = 'nodeLayer'; world.appendChild(nodeLayer);
+
+function E(tag, attrs, parent, text) {
+  var el = document.createElementNS(NS, tag);
+  for (var k in attrs) el.setAttribute(k, attrs[k]);
+  if (text != null) el.textContent = text;
+  (parent || world).appendChild(el);
+  return el;
+}
+/* 组标题 */
+GROUPS.forEach(function (g) {
+  E('text', { x: colX[g.id] + NODE_W / 2, y: 34, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: g.stroke }, world, g.name);
+  E('text', { x: colX[g.id] + NODE_W / 2, y: 50, 'text-anchor': 'middle', 'font-size': 9.5, fill: '#9aa3b2' }, world, rows[g.id] + ' 个对象');
+});
+/* 边 */
+var edgeEls = {}, nodeEls = {}, edgeByPair = {}, loopCount = {};
+EDGES.forEach(function (ed, i) {
+  var g = document.createElementNS(NS, 'g');
+  g.classList.add('edge');
+  g.dataset.i = i;
+  var a = nodes[ed.a], b = nodes[ed.b];
+  var d, color, sw;
+  if (ed.t === 'thick') { color = '#c0392b'; sw = 3; d = ''; }
+  else { color = '#8b95a8'; sw = 1.5; d = ed.t === 'dash' ? '4 3' : ''; }
+  if (ed.loop) {
+    var k = ed.a; loopCount[k] = (loopCount[k] || 0) + 1;
+    var off = (loopCount[k] - 1) * 16;
+    var cx = a.x + NODE_W - 8, cy = a.y - 6 - off;
+    var path = E('path', { d: 'M ' + (cx) + ' ' + (a.y + 2 - off) + ' C ' + (cx + 34) + ' ' + (a.y - 26 - off) + ' ' + (cx + 34) + ' ' + (cy + 4) + ' ' + cx + ' ' + (cy + 4), fill: 'none', stroke: color, 'stroke-width': sw, 'stroke-dasharray': d, 'marker-end': 'url(#arrM)' }, g);
+    E('text', { x: cx + 40, y: cy + 4, 'font-size': 9.5, fill: '#7c8494' }, g, ed.l);
+  } else {
+    var x1 = a.x + NODE_W, y1 = a.y + NODE_H / 2, x2 = b.x, y2 = b.y + NODE_H / 2;
+    var same = a.x === b.x;
+    var mx, my, bend;
+    if (same) { mx = a.x - 18; my = (y1 + y2) / 2; bend = 1; x1 = a.x; x2 = b.x; }
+    else { mx = (x1 + x2) / 2; my = (y1 + y2) / 2; bend = 0; }
+    var k2 = ed.a + '>' + ed.b; edgeByPair[k2] = (edgeByPair[k2] || 0) + 1;
+    var bo = bend ? 0 : Math.min(30, (edgeByPair[k2] - 1) * 26);
+    var cx1 = bend ? mx : mx + bo, cy1 = y1, cx2 = bend ? mx : mx + bo, cy2 = y2;
+    var path = E('path', { d: 'M ' + x1 + ' ' + y1 + ' C ' + cx1 + ' ' + cy1 + ' ' + cx2 + ' ' + cy2 + ' ' + x2 + ' ' + y2, fill: 'none', stroke: color, 'stroke-width': sw, 'stroke-dasharray': d, 'marker-end': 'url(#arrM)' }, g);
+    if (ed.l) {
+      var lx = bend ? mx - 24 : mx + bo + 6, ly = my - 5;
+      E('text', { x: lx, y: ly, 'text-anchor': bend ? 'end' : 'start', 'font-size': 9.5, fill: '#7c8494', 'paint-order': 'stroke', stroke: '#f3f4f8', 'stroke-width': 3 }, g, ed.l);
+    }
+  }
+  edgeLayer.appendChild(g);
+  edgeEls[ed.a + '|' + ed.b + '|' + i] = g;
+  ed.el = g;
+});
+/* 节点 */
+NODES.forEach(function (n) {
+  var g = document.createElementNS(NS, 'g');
+  g.classList.add('node');
+  g.dataset.id = n.id;
+  g.setAttribute('transform', 'translate(' + n.x + ',' + n.y + ')');
+  E('rect', { width: NODE_W, height: NODE_H, rx: 8, fill: n.gObj.fill, stroke: n.gObj.stroke, 'stroke-width': 1.4 }, g);
+  E('text', { x: NODE_W / 2, y: NODE_H / 2 + 4, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 600, fill: n.gObj.ink }, g, n.n);
+  var title = E('title', {}, g, n.n);
+  nodeLayer.appendChild(g);
+  nodeEls[n.id] = g;
+  n.el = g;
+});
+/* 邻接表 */
+var adj = {}; NODES.forEach(function (n) { adj[n.id] = { edges: [], nodes: {} }; });
+EDGES.forEach(function (ed) {
+  if (ed.loop) { adj[ed.a].edges.push(ed); adj[ed.a].nodes[ed.a] = 1; }
+  else { adj[ed.a].edges.push(ed); adj[ed.b].edges.push(ed); adj[ed.a].nodes[ed.b] = 1; adj[ed.b].nodes[ed.a] = 1; }
+});
+
+/* ═══ 交互：缩放 / 平移 ═══ */
+var tx = 0, ty = 0, scale = 1, drag = null;
+function applyT() { world.setAttribute('transform', 'translate(' + tx + ',' + ty + ') scale(' + scale + ')'); }
+function fit() {
+  var vw = svg.clientWidth, vh = svg.clientHeight;
+  scale = Math.min(vw / W, vh / H) * 0.96;
+  tx = (vw - W * scale) / 2; ty = (vh - H * scale) / 2;
+  applyT();
+}
+document.getElementById('fitBtn').onclick = fit;
+svg.addEventListener('wheel', function (e) {
+  e.preventDefault();
+  var rect = svg.getBoundingClientRect();
+  var px = e.clientX - rect.left, py = e.clientY - rect.top;
+  var ns = scale * (e.deltaY < 0 ? 1.12 : 0.9);
+  ns = Math.max(0.25, Math.min(3, ns));
+  var k = ns / scale;
+  tx = px - (px - tx) * k; ty = py - (py - ty) * k; scale = ns;
+  applyT();
+}, { passive: false });
+svg.addEventListener('mousedown', function (e) {
+  if (e.target === svg || e.target.id === 'world') { drag = { x: e.clientX, y: e.clientY, tx: tx, ty: ty }; }
+});
+window.addEventListener('mousemove', function (e) {
+  if (!drag) return;
+  tx = drag.tx + (e.clientX - drag.x); ty = drag.ty + (e.clientY - drag.y);
+  applyT();
+});
+window.addEventListener('mouseup', function () { drag = null; });
+
+/* ═══ 交互：hover 高亮 / 点击详情 ═══ */
+function clearHl() {
+  document.querySelectorAll('.node, .edge').forEach(function (el) { el.classList.remove('hl', 'dim'); });
+}
+function highlight(nid) {
+  clearHl();
+  var mine = adj[nid];
+  NODES.forEach(function (n) {
+    var on = n.id === nid || mine.nodes[n.id];
+    n.el.classList.toggle('dim', !on);
+    if (on) n.el.classList.add('hl');
+  });
+  EDGES.forEach(function (ed) {
+    var on = mine.edges.indexOf(ed) >= 0;
+    ed.el.classList.toggle('dim', !on);
+    if (on) ed.el.classList.add('hl');
+  });
+  /* 相关节点提到前面 */
+  NODES.forEach(function (n) { nodeLayer.appendChild(n.el); });
+}
+NODES.forEach(function (n) {
+  n.el.addEventListener('mouseenter', function () { highlight(n.id); });
+});
+svg.addEventListener('mousemove', function (e) {
+  if (e.target === svg || e.target.id === 'world' || e.target.id === 'edgeLayer' || e.target.id === 'nodeLayer') clearHl();
+});
+
+/* 详情面板 */
+var panel = document.getElementById('panel'), curNode = null;
+function relList(id) {
+  var out = [];
+  EDGES.forEach(function (ed) {
+    if (ed.loop && ed.a === id) { out.push('<div class="rel">↻ ' + (ed.l || '自关系') + '（自环）</div>'); return; }
+    var dir = '', other = null;
+    if (ed.a === id) { other = ed.b; dir = '→'; }
+    else if (ed.b === id) { other = ed.a; dir = '←'; }
+    if (other) out.push('<div class="rel" data-other="' + other + '">' + esc(nodes[id].n) + ' <b>' + dir + ' ' + (ed.l || '关联') + '</b> ' + (dir === '→' ? '→' : '←') + ' ' + esc(nodes[other].n) + '</div>');
+  });
+  return out.join('');
+}
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+function openPanel(n) {
+  curNode = n;
+  panel.classList.add('open');
+  document.getElementById('pName').textContent = n.n;
+  document.getElementById('pGroup').textContent = n.gObj.name;
+  document.getElementById('pBody').innerHTML =
+    '<h4>主要属性</h4><div>' + esc(n.attr) + '</div>' +
+    '<h4>维护者</h4><div>' + esc(n.who) + '</div>' +
+    '<h4>用途</h4><div>' + esc(n.use) + '</div>' +
+    '<h4>相关关系</h4>' + relList(n.id);
+}
+document.getElementById('pClose').onclick = function () { panel.classList.remove('open'); curNode = null; };
+panel.addEventListener('click', function (e) {
+  var r = e.target.closest('.rel'); if (!r) return;
+  var other = nodes[r.dataset.other];
+  if (other) { openPanel(other); highlight(other.id); }
+});
+NODES.forEach(function (n) {
+  n.el.addEventListener('click', function (e) { e.stopPropagation(); openPanel(n); highlight(n.id); });
+});
+svg.addEventListener('click', function (e) {
+  if (e.target === svg || e.target.id === 'world' || e.target.id === 'edgeLayer' || e.target.id === 'nodeLayer') { panel.classList.remove('open'); curNode = null; }
+});
+
+/* ═══ 搜索 ═══ */
+var search = document.getElementById('search');
+search.addEventListener('input', function () {
+  var q = search.value.trim().toLowerCase();
+  if (!q) { clearHl(); return; }
+  var hit = {};
+  NODES.forEach(function (n) { if (n.n.toLowerCase().indexOf(q) >= 0 || (n.attr + n.use).toLowerCase().indexOf(q) >= 0) hit[n.id] = 1; });
+  NODES.forEach(function (n) {
+    var on = !!hit[n.id];
+    n.el.classList.toggle('dim', !on);
+    if (on) n.el.classList.add('hl');
+  });
+  EDGES.forEach(function (ed) {
+    var on = hit[ed.a] && hit[ed.b];
+    ed.el.classList.toggle('dim', !on);
+    if (on) ed.el.classList.add('hl');
+  });
+  if (Object.keys(hit).length === 1) { var only = nodes[Object.keys(hit)[0]]; openPanel(only); highlight(only.id); }
+});
+
+/* 图例组色块 */
+document.getElementById('legendGroups').innerHTML = GROUPS.map(function (g) {
+  return '<span class="lg-item"><span class="dot" style="background:' + g.fill + ';border:1px solid ' + g.stroke + '"></span>' + g.name.slice(0, 1) + g.name.slice(2) + '</span>';
+}).join('');
+
+fit();
+window.addEventListener('resize', function () { if (!drag) fit(); });
+</script>
+</body>
+</html>
